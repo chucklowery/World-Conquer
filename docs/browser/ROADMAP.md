@@ -20,7 +20,7 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 - [x] Add initial EMSCRIPTEN-gated SDL2/CMake configuration and CI compile spike (pending engine compilation verification).
 - [x] Configure Emscripten SDL2 port and disable Red Alert, networking, remaster and OpenAL for initial browser build.
 - [ ] Audit remaining unsupported POSIX/platform calls and missing link symbols for browser startup (initial `strupr` compatibility issue fixed).
-- [ ] Add portable browser path/file and timing behavior.
+- [x] Add MEMFS path defaults for Emscripten (the browser's /game and /game/user); actual asset compatibility remains unverified.
 - [x] Produce the actual engine HTML/JS/WASM build artifacts in CI.
 - [ ] Load the engine in a browser and confirm initialization without missing imports or a blocked main thread.
 
@@ -30,7 +30,9 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 
 ## P2: Cooperative execution and graphical front end
 
-- [ ] Inventory blocking loops in tiberiandawn/conquer.cpp, startup.cpp and dialogs.
+**P2a — browser runtime bootstrap:** The custom launcher waits for the actual VanillaTD WebAssembly runtime before starting main(). A `--browser-probe` mode, compiled **into the game executable**, creates an SDL2 canvas, animates a rectangle, and reports keyboard/mouse input with a cooperative Emscripten frame callback. This proves the runtime path only; it is not the in-game menu or mission loop. Manual browser test still required.
+
+- [x] Locate initial blocking paths: startup main() > Main_Game() > Select_Game() and Main_Loop(); full dialog audit remains.
 - [ ] Record main-loop strategy (callback state machine versus temporary Asyncify/worker compatibility) in an ADR.
 - [ ] Make browser event loop responsive without blocking.
 - [ ] Verify SDL2 canvas, mouse, keyboard, focus and palette.
@@ -41,8 +43,8 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 ## P3: Player-provided game-data import
 
 - [ ] Identify and validate a particular compatible set of Tiberian Dawn MIX files.
-- [ ] Add local file picker and readable missing-asset errors.
-- [ ] Stage assets in Emscripten virtual FS before engine initialization.
+- [x] Add preliminary local file/folder picker, duplicate filename checks and runtime error log; compatible game-data testing is outstanding.
+- [x] Stage locally selected user files into MEMFS before game main() (not yet validated with licensed assets).
 - [ ] Validate path/case semantics; confirm no files are uploaded to a server.
 
 **Exit gate P3:** one real campaign mission loads from local user-provided assets.

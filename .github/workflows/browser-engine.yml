@@ -6,6 +6,7 @@ on:
     paths:
       - 'CMakeLists.txt'
       - 'tiberiandawn/**'
+      - 'browser/engine/**'
       - 'common/**'
       - 'cmake/**'
       - '.github/workflows/browser-engine.yml'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'CMakeLists.txt'
       - 'tiberiandawn/**'
+      - 'browser/engine/**'
       - 'common/**'
       - 'cmake/**'
       - '.github/workflows/browser-engine.yml'
@@ -54,6 +56,9 @@ jobs:
           test -s build/browser-engine/vanillatd.html
           test -s build/browser-engine/vanillatd.js
           test -s build/browser-engine/vanillatd.wasm
+          # Verify we generated the custom deferred-start launcher.
+          grep -q 'id="game-canvas"' build/browser-engine/vanillatd.html
+          grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
       - name: Upload engine HTML/JS/WASM artifacts
         uses: actions/upload-artifact@v4
         with:

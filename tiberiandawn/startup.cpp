@@ -39,6 +39,11 @@
 #include "common/paths.h"
 #include "common/utfargs.h"
 #include "settings.h"
+#include <string.h>
+
+#ifdef __EMSCRIPTEN__
+int Browser_Probe();
+#endif
 
 bool Read_Private_Config_Struct(FileClass& file, NewConfigType* config);
 void Print_Error_End_Exit(char* string);
@@ -200,6 +205,13 @@ int DLL_Startup(const char* command_line_in)
 
 int main(int argc, char** argv)
 {
+#ifdef __EMSCRIPTEN__
+    // Diagnostic entry point, inside the actual VanillaTD executable.
+    // Bypasses asset-dependent gameplay and registers a cooperative SDL loop.
+    if (argc > 1 && strcmp(argv[1], "--browser-probe") == 0) {
+        return Browser_Probe();
+    }
+#endif
     UtfArgs args(argc, argv);
     CCDebugString("C&C95 - Starting up.\n");
 
@@ -208,7 +220,7 @@ int main(int argc, char** argv)
         printf("Zuwenig Hauptspeicher verf?gbar.\n");
 #else
 #ifdef FRENCH
-        printf("M‚moire vive (RAM) insuffisante.\n");
+        printf("MÂ‚moire vive (RAM) insuffisante.\n");
 #else
         printf("Insufficient RAM available.\n");
 #endif
