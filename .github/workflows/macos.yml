@@ -3,11 +3,16 @@ name: macos
 on:
   pull_request:
   push:
+    branches: [vanilla]
+  workflow_dispatch:
 
 jobs:
   vanilla-macos:
-    runs-on: macos-14
+    # macOS 14 runner image is retiring; use supported Apple Silicon image.
+    runs-on: macos-15
+    timeout-minutes: 35
     strategy:
+      max-parallel: 2
       matrix:
         preset: [release, internal, testing, nonet]
 
@@ -22,49 +27,20 @@ jobs:
       id: gitinfo
       run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Setting up Cache-Key
-      run: echo "DEP_CACHE_KEY=$(curl 'https://ports.macports.org/api/v1/ports/dylibbundler/?format=json' | grep -ioE '("version":).[^,]*')-$(curl 'https://ports.macports.org/api/v1/ports/libsdl2/?format=json' | grep -ioE '("version":).[^,]*')-$(curl 'https://ports.macports.org/api/v1/ports/openal-soft/?format=json' | grep -ioE '("version":).[^,]*')" >> $GITHUB_ENV
-
-    - name: Printing Cache-Key
-      run: echo $DEP_CACHE_KEY
-
-    - name: Restore cache
-      id: dep-cache
-      uses: actions/cache@v4
-      env:
-        cache-name: cache-dependencies
-      with:
-        path: ~/macports
-        key: ${{ env.DEP_CACHE_KEY }}
-    
-    - name: Install homebrew deps
+    # Use prebuilt Homebrew arm64 dependencies instead of rebuilding a
+    # universal MacPorts toolchain for every preset/matrix runner.
+    - name: Install native Apple Silicon dependencies
       run: |
-        brew install imagemagick dylibbundler
-    
-    - if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
-      name: Install macport dependencies
-      run: |
-        wget -q https://github.com/macports/macports-base/releases/download/v2.10.5/MacPorts-2.10.5-14-Sonoma.pkg
-        sudo installer -pkg ./MacPorts-2.10.5-14-Sonoma.pkg -target /
-        export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
-        sudo port selfupdate -N
-        sudo port install libsdl2 +universal -N
-        sudo port install openal-soft +universal -N
-        mkdir ~/macports
-        sudo cp -R /opt/local ~/macports
-        sudo chown -R $USER:staff ~/macports
-
-    - if: ${{ steps.dep-cache.outputs.cache-hit == 'true' }}
-      name: Restore macport dependencies from cache
-      run: |
-        sudo cp -R ~/macports/local /opt/local
+        brew install sdl2-compat imagemagick dylibbundler
+        echo "CMAKE_PREFIX_PATH=$(brew --prefix)" >> "$GITHUB_ENV"
+        pkg-config --modversion sdl2
+        test -d /System/Library/Frameworks/OpenAL.framework
 
     - name: Build Vanilla Conquer
       env:
-        CMAKE_OSX_ARCHITECTURES: "arm64;x86_64"
+        CMAKE_OSX_ARCHITECTURES: "arm64"
         VC_CXX_FLAGS: "-w;-Wwrite-strings;-Werror=write-strings"
       run: |
-        export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
         cmake --workflow --preset ${{ matrix.preset }}
 
     - name: Create archives
@@ -77,22 +53,22 @@ jobs:
         dylibbundler --create-dir --bundle-deps --overwrite-files --dest-dir ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app/Contents/libs --fix-file build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app/Contents/MacOS/vanillatd
         dylibbundler --create-dir --bundle-deps --overwrite-files --dest-dir ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app/Contents/libs --fix-file build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app/Contents/MacOS/vanillara
         mkdir artifact
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-universal2-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-universal2-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.dSYM ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.dSYM
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.dSYM ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.dSYM
 
     - name: Add internal tools to archive
       if: ${{ matrix.preset == 'internal' }}
       run: |
         dsymutil build/${{ matrix.preset }}/RelWithDebInfo/vanillamix -o build/${{ matrix.preset }}/RelWithDebInfo/vanillamix.dSYM
         strip -Sx build/${{ matrix.preset }}/RelWithDebInfo/vanillamix
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-universal2--${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-universal2--${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix.dSYM
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64--${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64--${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix.dSYM
     
     - name: Upload artifact
       if: ${{ matrix.preset != 'testing' &&  matrix.preset != 'nonet' }}
       uses: actions/upload-artifact@v4
       with:
-        name: vanilla-conquer-${{ matrix.preset }}-macos-clang-universal2
+        name: vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64
         path: artifact
         
     - name: Upload development release
