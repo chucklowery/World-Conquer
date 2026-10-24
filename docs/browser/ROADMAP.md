@@ -17,8 +17,8 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 
 ## P1: Compile real VanillaTD engine to WebAssembly
 
-- [ ] Extend top-level and tiberiandawn CMake conditionals under EMSCRIPTEN.
-- [ ] Enable Emscripten SDL2 port; disable Red Alert, network, remaster and OpenAL.
+- [x] Add initial EMSCRIPTEN-gated SDL2/CMake configuration and CI compile spike (pending engine compilation verification).
+- [x] Configure Emscripten SDL2 port and disable Red Alert, networking, remaster and OpenAL for initial browser build.
 - [ ] Audit unsupported POSIX/platform calls and missing link symbols.
 - [ ] Add portable browser path/file and timing behavior.
 - [ ] Produce engine HTML/JS/WASM output and initialize without missing imports.
