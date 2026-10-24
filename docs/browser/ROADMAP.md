@@ -7,9 +7,11 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 - [x] Identify working fork and upstream branch.
 - [x] Add documented project structure and independent SDL2 smoke-test source.
 - [ ] Record upstream commit and validate native VanillaTD build on Linux/WSL2.
-- [ ] Pin and verify an Emscripten SDK version in CI.
-- [ ] Build HTML/JS/WASM from browser/smoke in CI.
+- [x] Pin and verify an Emscripten SDK version in CI (3.1.68, successful smoke build).
+- [x] Build HTML/JS/WASM from browser/smoke in CI; artifact published.
 - [ ] Validate mouse, keyboard and animation in desktop Chrome/Edge; link CI run.
+
+**Verified CI evidence:** [Browser SDL2 smoke workflow #40127079631](https://github.com/chucklowery/World-Conquer/actions/runs/40127079631) succeeded for commit cf00fcbd6144f5b822f498b2e9894e93b10f7bfc. It installed Emscripten 3.1.68, compiled the smoke test, and uploaded artifact browser-sdl2-smoke. Manual browser interaction and native VanillaTD runtime validation remain outstanding.
 
 **Exit gate P0:** actual native build and independent browser SDL2 smoke test both verified. Smoke artifact is NOT the game.
 

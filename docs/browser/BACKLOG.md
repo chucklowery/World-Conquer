@@ -1,6 +1,6 @@
 # Browser Port Backlog
 
-This is a planning index. Actual GitHub issue numbers should be linked here after creation.
+This is a planning index. **GitHub Issues are currently disabled for this fork** (the API returned 410 on 2026-10-24). The seven issue specifications below remain version-controlled. Enable Issues under GitHub repository Settings > General > Features > Issues, then create the corresponding BROW-001 to BROW-007 tickets and link them here.
 
 ## BROW-001: Native baseline
 Build VanillaTD with existing CMake options on Linux/WSL2, run with legally obtained compatible assets, record commit, command, result and log. No game data committed.

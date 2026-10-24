@@ -19,4 +19,4 @@ Open http://localhost:8080/index.html.
 - Browser Network panel shows successful JS/WASM fetches; no runtime errors.
 - GitHub Actions publishes index.html, index.js and index.wasm as one downloadable artifact.
 
-The dist/ folder is ignored. As of initial addition the Emscripten build and browser playtest still need CI/local verification.
+The dist/ folder is ignored. The first [GitHub Actions build](https://github.com/chucklowery/World-Conquer/actions/runs/40127079631) succeeded using Emscripten 3.1.68 and published the browser-sdl2-smoke artifact. Manual Chrome/Edge animation and input checks remain outstanding. This does not verify the actual game engine.
