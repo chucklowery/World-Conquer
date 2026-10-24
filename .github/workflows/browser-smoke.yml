@@ -1,0 +1,34 @@
+name: Browser SDL2 smoke build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'browser/smoke/**'
+      - '.github/workflows/browser-smoke.yml'
+  pull_request:
+    paths:
+      - 'browser/smoke/**'
+      - '.github/workflows/browser-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v15
+        with:
+          version: '3.1.68'
+      - run: em++ --version
+      - name: Compile independent SDL2 smoke
+        run: bash browser/smoke/build.sh
+      - name: Upload HTML JS WASM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-sdl2-smoke
+          path: browser/smoke/dist/
+          if-no-files-found: error
