@@ -1,0 +1,65 @@
+name: Browser VanillaTD engine compile
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'CMakeLists.txt'
+      - 'tiberiandawn/**'
+      - 'common/**'
+      - 'cmake/**'
+      - '.github/workflows/browser-engine.yml'
+  pull_request:
+    paths:
+      - 'CMakeLists.txt'
+      - 'tiberiandawn/**'
+      - 'common/**'
+      - 'cmake/**'
+      - '.github/workflows/browser-engine.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  wasm-vanillatd:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Ninja
+        run: sudo apt-get update -qq && sudo apt-get install -y ninja-build
+      - name: Install Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v15
+        with:
+          version: '3.1.68'
+      - name: Toolchain versions
+        run: |
+          em++ --version
+          cmake --version
+          ninja --version
+      - name: Configure browser engine target
+        run: |
+          emcmake cmake -S . -B build/browser-engine -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF \
+            -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
+            -DNETWORKING=OFF -DOPENAL=OFF -DSDL2=ON \
+            -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF
+      - name: Compile actual VanillaTD engine
+        run: cmake --build build/browser-engine --target VanillaTD --parallel 2
+      - name: Verify compiled WebAssembly bundle
+        run: |
+          test -s build/browser-engine/vanillatd.html
+          test -s build/browser-engine/vanillatd.js
+          test -s build/browser-engine/vanillatd.wasm
+      - name: Upload engine HTML/JS/WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: |
+            build/browser-engine/vanillatd.html
+            build/browser-engine/vanillatd.js
+            build/browser-engine/vanillatd.wasm
+          if-no-files-found: error

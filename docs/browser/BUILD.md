@@ -36,16 +36,24 @@ browser/smoke/dist/index.wasm
 
 Acceptance: rectangle animates; mouse click changes color; keyboard logging visible in developer console; no failed JS/WASM requests. This is NOT the actual VanillaTD engine.
 
-## Proposed real engine WASM build (DOES NOT WORK YET)
+## Experimental VanillaTD Emscripten build (P1 compile spike)
 
-After guarded platform/build changes are implemented:
+The browser build is **not yet a playable game**. It is an opt-in compile/link target intended to reveal platform incompatibilities without disrupting native builds. Requires Emscripten SDK 3.1.68 and Ninja.
 
 ~~~bash
-emcmake cmake -S . -B build/web -G Ninja -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF -DNETWORKING=OFF -DOPENAL=OFF -DSDL2=ON
-cmake --build build/web --target VanillaTD
+# From the project root, after sourcing emsdk_env.sh:
+emcmake cmake -S . -B build/browser-engine -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF \
+  -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
+  -DNETWORKING=OFF -DOPENAL=OFF -DSDL2=ON \
+  -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF
+cmake --build build/browser-engine --target VanillaTD --parallel 2
 ~~~
 
-Emscripten SDL2 linking should use its port instead of native SDL2 lookup. The code also needs native POSIX adaptations and a browser-compatible loop.
+Intended output (only after all compilation/link blockers are resolved): `build/browser-engine/vanillatd.html`, `vanillatd.js`, `vanillatd.wasm`. A linked game is not proof of a browser-friendly event loop or playable mission.
+
+[Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
 
 ## Verify and record
 

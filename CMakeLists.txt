@@ -140,10 +140,17 @@ if(SDL1)
 endif()
 
 if(SDL2)
-    message("Find path is ${CMAKE_FIND_ROOT_PATH}")
-    find_package(SDL2 REQUIRED)
-    list(APPEND VANILLA_LIBS ${SDL2_LIBRARY})
-    include_directories(${SDL2_INCLUDE_DIR})
+    if(EMSCRIPTEN)
+        # Emscripten ships an SDL2 port; never resolve host SDL2 libraries.
+        # The port flag must reach compilation and the final executable link.
+        add_compile_options("--use-port=sdl2")
+        list(APPEND VANILLA_LIBS "--use-port=sdl2")
+    else()
+        message("Find path is ${CMAKE_FIND_ROOT_PATH}")
+        find_package(SDL2 REQUIRED)
+        list(APPEND VANILLA_LIBS ${SDL2_LIBRARY})
+        include_directories(${SDL2_INCLUDE_DIR})
+    endif()
 
     # winuser.h defines VK_ macros but it can be prevented
     if(WIN32)

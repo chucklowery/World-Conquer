@@ -17,11 +17,14 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 
 ## P1: Compile real VanillaTD engine to WebAssembly
 
-- [ ] Extend top-level and tiberiandawn CMake conditionals under EMSCRIPTEN.
-- [ ] Enable Emscripten SDL2 port; disable Red Alert, network, remaster and OpenAL.
-- [ ] Audit unsupported POSIX/platform calls and missing link symbols.
+- [x] Add initial EMSCRIPTEN-gated SDL2/CMake configuration and CI compile spike (pending engine compilation verification).
+- [x] Configure Emscripten SDL2 port and disable Red Alert, networking, remaster and OpenAL for initial browser build.
+- [ ] Audit remaining unsupported POSIX/platform calls and missing link symbols for browser startup (initial `strupr` compatibility issue fixed).
 - [ ] Add portable browser path/file and timing behavior.
-- [ ] Produce engine HTML/JS/WASM output and initialize without missing imports.
+- [x] Produce the actual engine HTML/JS/WASM build artifacts in CI.
+- [ ] Load the engine in a browser and confirm initialization without missing imports or a blocked main thread.
+
+**Verified engine build evidence (2026-10-24):** [GitHub Actions run #40130238668](https://github.com/chucklowery/World-Conquer/actions/runs/40130238668) succeeded on commit `9ed79618969ad9d3a24ab451e6bf54a7b0102d87` with Emscripten 3.1.68. The CI job configured CMake, compiled the real VanillaTD engine, verified nonempty `vanillatd.html`, `vanillatd.js` and `vanillatd.wasm`, and uploaded artifact `vanillatd-engine-wasm`. Browser launch, asset import and game-loop behavior **have not** been validated.
 
 **Exit gate P1:** actual game engine module links, is loaded by the browser and produces logs. Menu not required yet.
 

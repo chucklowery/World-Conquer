@@ -234,6 +234,15 @@ if(BUILD_VANILLATD)
     target_include_directories(VanillaTD PUBLIC ${CMAKE_SOURCE_DIR} .)
     target_link_libraries(VanillaTD commonv ${VANILLA_LIBS} ${STATIC_LIBS})
     set_target_properties(VanillaTD PROPERTIES OUTPUT_NAME vanillatd)
+    if(EMSCRIPTEN)
+        # First build goal: an actual game-engine HTML/JS/WASM bundle.
+        # The original blocking game/menu loops have NOT been adapted yet.
+        set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")
+        target_link_options(VanillaTD PRIVATE
+            "-sALLOW_MEMORY_GROWTH=1"
+            "-sASSERTIONS=1"
+        )
+    endif()
     if(MAP_EDITORTD)
         target_compile_definitions(VanillaTD PUBLIC INTERNAL_VERSION)
     endif()
