@@ -124,7 +124,6 @@ const char* PathsClass::Program_Path()
     // MEMFS paths are mounted by the browser launcher before game main().
     if (ProgramPath.empty()) {
         ProgramPath = "/game";
-        
     }
     return ProgramPath.c_str();
 #else
@@ -191,7 +190,6 @@ const char* PathsClass::Data_Path()
     // MEMFS paths are mounted by the browser launcher before game main().
     if (DataPath.empty()) {
         DataPath = "/game";
-        
     }
     return DataPath.c_str();
 #else

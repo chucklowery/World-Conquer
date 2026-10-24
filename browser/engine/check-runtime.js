@@ -39,7 +39,7 @@ async function main() {
     await page.locator("#run-probe").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-probe] real VanillaTD module"),
                                undefined, {timeout: 40000});
-    const canvas = page.locator("#game-canvas");
+    const canvas = page.locator("#canvas");
     const before = await canvas.screenshot();
     await page.waitForTimeout(350);
     const after = await canvas.screenshot();
@@ -51,10 +51,15 @@ async function main() {
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-probe] key code="),
                                undefined, {timeout: 15000});
     assert.equal(await page.locator("body").getAttribute("data-mode"), "probe");
+    const runtimeLog = await page.locator("#log").textContent();
+    assert(!runtimeLog.includes("registerOrRemoveHandler"), "SDL2 event listeners failed to bind to #canvas");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: canvas animation, mouse click and keyboard input in the real engine module");
   } catch (err) {
     messages.push("FAIL: " + (err.stack || err));
+    // Print diagnostic log even when the test fails; CI should not require
+    // downloading an artifact just to see the initial browser errors.
+    console.error((await page.locator("#log").textContent().catch(() => "(log unavailable)")).slice(-12000));
     try {await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});} catch (_) {}
     throw err;
   } finally {

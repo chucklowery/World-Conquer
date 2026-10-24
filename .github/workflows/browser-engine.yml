@@ -57,7 +57,7 @@ jobs:
           test -s build/browser-engine/vanillatd.js
           test -s build/browser-engine/vanillatd.wasm
           # Verify we generated the custom deferred-start launcher.
-          grep -q 'id="game-canvas"' build/browser-engine/vanillatd.html
+          grep -q 'id="canvas"' build/browser-engine/vanillatd.html
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
       - name: Install headless browser tooling
         run: |

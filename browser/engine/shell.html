@@ -35,7 +35,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <div class="grid">
 <section class="panel">
 <h2>Engine canvas</h2>
-<canvas id="game-canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
+<!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
+<canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
 <p class="note">No game assets required. Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
 <h2>Runtime log</h2>
@@ -61,7 +62,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const log = document.getElementById("log");
   const probe = document.getElementById("run-probe");
   const game = document.getElementById("run-game");
-  const canvas = document.getElementById("game-canvas");
+  const canvas = document.getElementById("canvas");
   const count = document.getElementById("file-count");
   let ready = false;
   let started = false;
