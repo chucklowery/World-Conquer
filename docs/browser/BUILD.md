@@ -1,6 +1,6 @@
 # Build, Run and Verify
 
-Commands in the first two sections are supported upstream or by the independent smoke-test scaffold. The real-engine WebAssembly build remains future work.
+Native and Emscripten builds have compiled in CI; browser runtime testing and the game loop are still experimental.
 
 ## Native engine baseline (Linux/WSL2)
 
@@ -51,9 +51,27 @@ emcmake cmake -S . -B build/browser-engine -G Ninja \
 cmake --build build/browser-engine --target VanillaTD --parallel 2
 ~~~
 
-Intended output (only after all compilation/link blockers are resolved): `build/browser-engine/vanillatd.html`, `vanillatd.js`, `vanillatd.wasm`. A linked game is not proof of a browser-friendly event loop or playable mission.
+Output (verified in engine CI): `build/browser-engine/vanillatd.html`, `vanillatd.js`, `vanillatd.wasm`. A linked game is not proof of a browser-friendly event loop or playable mission.
 
 [Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
+
+## Browser runtime bootstrap (P2a; experimental)
+
+~~~bash
+# After the engine WebAssembly build above:
+python3 -m http.server 8080 --directory build/browser-engine
+~~~
+
+Open http://localhost:8080/vanillatd.html in desktop Chrome or Edge.
+
+- Wait for the real VanillaTD WASM runtime to show **Runtime ready**; game main() is deferred.
+- Press **Run engine SDL2 probe**. Check the moving rectangle, mouse color change and keyboard input log. This diagnostic callback is in the **actual engine executable**, but it does not initialize Tiberian Dawn game state.
+- Reload to switch modes. Select legally acquired game files or a folder; they are copied to browser-only MEMFS at /game in uppercase names, without uploading.
+- **Launch experimental game** invokes the original synchronous game main() and may freeze the page. Asset loading and interactive menus are not yet verified. Use a disposable tab.
+
+The runtime probe and experimental game are mutually exclusive per page load. Selected data does not persist across refresh. Never put game media into CI, Git or public bug reports.
+
+Capture the browser version, commit, screenshot, console errors and responsive input evidence before marking P2a verified.
 
 ## Verify and record
 

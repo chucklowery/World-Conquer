@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VanillaTD · Browser Runtime Lab</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui,-apple-system,Segoe UI,sans-serif;background:#111925;color:#edf4fa}
+body{max-width:1120px;margin:auto;padding:25px 18px}
+h1{font-size:clamp(1.4rem,3.5vw,2rem);letter-spacing:-.035em;margin:7px 0}
+h2{font-size:1.1rem;margin:3px 0 12px}
+p{color:#b8c8d8;line-height:1.55}
+.eyebrow{font-size:.75rem;color:#69dfb2;text-transform:uppercase;letter-spacing:.15em;font-weight:700}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
+.panel{padding:19px;background:#1b2736;border:1px solid #394d60;border-radius:12px}
+.status{padding:11px 15px;margin:20px 0;border:1px solid #365e64;border-radius:9px;background:#172e37;color:#aff0d6}
+canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
+canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
+button,label.pick{display:inline-block;margin:5px 5px 5px 0;padding:10px 13px;border:1px solid #64848a;border-radius:8px;background:#234452;color:#eefcf8;font:600 .9rem system-ui;cursor:pointer}
+button.primary{background:#237357;border-color:#4dac84}
+button:disabled{opacity:.45;cursor:default}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+.note{font-size:.85rem;color:#b5c7d9}
+.warning{color:#f8c18d}
+#log{box-sizing:border-box;max-height:275px;min-height:155px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#0d1723;border:1px solid #3a4c60;border-radius:7px;padding:12px;font:12px/1.55 ui-monospace,Consolas,monospace;color:#afd7e1}
+#file-count{color:#a8ebcd;font-size:.87rem}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-runtime="loading" data-mode="idle">
+<div class="eyebrow">Engineering preview · WebAssembly</div>
+<h1>VanillaTD Browser Runtime Lab</h1>
+<p>The <strong>actual VanillaTD WebAssembly executable</strong>, not a playable release. Test graphics and input using the diagnostic mode, or stage legally owned game files for experimental startup.</p>
+<div class="status" role="status" aria-live="polite" id="runtime-state">Loading engine runtime…</div>
+<div class="grid">
+<section class="panel">
+<h2>Engine canvas</h2>
+<!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
+<canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
+<button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
+<p class="note">No game assets required. Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
+<h2>Runtime log</h2>
+<pre id="log" aria-live="polite"></pre>
+</section>
+<section class="panel">
+<h2>Experimental game startup</h2>
+<p class="note">Choose compatible game data that you legally own. Files stay in this browser tab's memory and are never sent to a server.</p>
+<label class="pick" for="select-files">Choose files</label>
+<input type="file" id="select-files" multiple>
+<label class="pick" for="select-folder">Choose folder</label>
+<input type="file" id="select-folder" webkitdirectory multiple>
+<p id="file-count" aria-live="polite">No files staged</p>
+<button type="button" id="run-game" disabled>Launch experimental game</button>
+<p class="note warning">This enters the engine's original blocking menu/game loops. The page may freeze or crash. It is not yet a playable browser port; use a disposable tab.</p>
+<p class="note">Files are flattened into <code>/game</code> in an in-memory filesystem with uppercase names. Reloading removes all files.</p>
+</section>
+</div>
+<script>
+(function () {
+  "use strict";
+  const state = document.getElementById("runtime-state");
+  const log = document.getElementById("log");
+  const probe = document.getElementById("run-probe");
+  const game = document.getElementById("run-game");
+  const canvas = document.getElementById("canvas");
+  const count = document.getElementById("file-count");
+  let ready = false;
+  let started = false;
+  let imported = 0;
+  const knownNames = new Set();
+
+  function report(message, isError) {
+    const value = String(message);
+    log.textContent += (isError ? "[error] " : "") + value + "\n";
+    log.scrollTop = log.scrollHeight;
+    (isError ? console.error : console.log)(value);
+  }
+  function status(message, kind) {
+    state.textContent = message;
+    document.body.dataset.runtime = kind;
+  }
+  function controls() {
+    probe.disabled = !ready || started;
+    game.disabled = !ready || started || imported === 0;
+  }
+  function run(args, mode) {
+    if (!ready || started) return;
+    started = true;
+    controls();
+    document.body.dataset.mode = mode;
+    status(mode === "probe" ? "Probe running" : "Starting game (experimental)", "running");
+    canvas.focus();
+    try {
+      Module.callMain(args);
+    } catch (error) {
+      // emscripten_set_main_loop() deliberately unwinds to yield to the browser.
+      if (String(error) !== "unwind") {
+        status("Runtime error; see log", "error");
+        report(error && error.stack ? error.stack : error, true);
+      }
+    }
+  }
+  probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
+  game.addEventListener("click", () => run([], "game"));
+
+  async function stage(list) {
+    if (!ready || started) return;
+    const files = Array.from(list || []);
+    if (!files.length) return;
+    game.disabled = true;
+    status("Importing local files…", "loading");
+    try {
+      const FS = Module.FS;
+      try { FS.mkdir("/game"); } catch (e) { if (!FS.analyzePath("/game").exists) throw e; }
+      try { FS.mkdir("/game/user"); } catch (e) { if (!FS.analyzePath("/game/user").exists) throw e; }
+      for (const file of files) {
+        const name = file.name.toUpperCase();
+        if (!/^[A-Z0-9_.-]+$/.test(name) || name === "." || name === "..") {
+          throw new Error("Unsupported filename: " + file.name);
+        }
+        if (knownNames.has(name)) { report("Skipped duplicate: " + name, true); continue; }
+        FS.writeFile("/game/" + name, new Uint8Array(await file.arrayBuffer()));
+        knownNames.add(name);
+        imported++;
+      }
+      FS.chdir("/game");
+      count.textContent = imported + " local files staged";
+      report("[browser] Staged " + imported + " files at /game; no network upload.");
+      status("Runtime ready; local files staged", "ready");
+    } catch (error) {
+      status("Import error; see log", "error");
+      report(error && error.stack ? error.stack : error, true);
+    }
+    controls();
+  }
+  document.getElementById("select-files").addEventListener("change", e => stage(e.target.files));
+  document.getElementById("select-folder").addEventListener("change", e => stage(e.target.files));
+  window.addEventListener("error", e => report(e.message || "Browser error", true));
+  window.addEventListener("unhandledrejection", e => report(e.reason || "Unhandled rejection", true));
+  window.Module = {
+    canvas,
+    print: (...args) => report(args.join(" ")),
+    printErr: (...args) => report(args.join(" "), true),
+    setStatus: message => { if (!ready) status(message || "Loading engine…", "loading"); },
+    onAbort: reason => { status("Engine aborted", "error"); report(reason, true); },
+    onRuntimeInitialized: () => {
+      ready = true;
+      status("Runtime ready; select a mode", "ready");
+      report("[browser] Real VanillaTD WASM runtime ready; game main() deferred.");
+      controls();
+    }
+  };
+})();
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

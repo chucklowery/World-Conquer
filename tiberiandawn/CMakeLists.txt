@@ -235,10 +235,15 @@ if(BUILD_VANILLATD)
     target_link_libraries(VanillaTD commonv ${VANILLA_LIBS} ${STATIC_LIBS})
     set_target_properties(VanillaTD PROPERTIES OUTPUT_NAME vanillatd)
     if(EMSCRIPTEN)
-        # First build goal: an actual game-engine HTML/JS/WASM bundle.
-        # The original blocking game/menu loops have NOT been adapted yet.
+        # The browser launcher defers main() until the user selects a mode.
+        # Original game/menu loops are NOT browser-cooperative yet.
+        target_sources(VanillaTD PRIVATE ${CMAKE_SOURCE_DIR}/browser/engine/probe.cpp)
         set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")
         target_link_options(VanillaTD PRIVATE
+            "--shell-file" "${CMAKE_SOURCE_DIR}/browser/engine/shell.html"
+            "-sINVOKE_RUN=0"
+            "-sEXPORTED_RUNTIME_METHODS=FS,callMain"
+            "-sFORCE_FILESYSTEM=1"
             "-sALLOW_MEMORY_GROWTH=1"
             "-sASSERTIONS=1"
         )

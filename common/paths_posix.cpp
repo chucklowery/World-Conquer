@@ -120,6 +120,13 @@ namespace
 
 const char* PathsClass::Program_Path()
 {
+#ifdef __EMSCRIPTEN__
+    // MEMFS paths are mounted by the browser launcher before game main().
+    if (ProgramPath.empty()) {
+        ProgramPath = "/game";
+    }
+    return ProgramPath.c_str();
+#else
     if (ProgramPath.empty()) {
         /*
         ** Adapted from https://github.com/gpakosz/whereami
@@ -174,10 +181,18 @@ const char* PathsClass::Program_Path()
     }
 
     return ProgramPath.c_str();
+#endif // __EMSCRIPTEN__
 }
 
 const char* PathsClass::Data_Path()
 {
+#ifdef __EMSCRIPTEN__
+    // MEMFS paths are mounted by the browser launcher before game main().
+    if (DataPath.empty()) {
+        DataPath = "/game";
+    }
+    return DataPath.c_str();
+#else
     if (DataPath.empty()) {
         if (ProgramPath.empty()) {
             // Init the program path first if it hasn't been done already.
@@ -192,10 +207,19 @@ const char* PathsClass::Data_Path()
     }
 
     return DataPath.c_str();
+#endif // __EMSCRIPTEN__
 }
 
 const char* PathsClass::User_Path()
 {
+#ifdef __EMSCRIPTEN__
+    // MEMFS paths are mounted by the browser launcher before game main().
+    if (UserPath.empty()) {
+        UserPath = "/game/user";
+        Create_Directory(UserPath.c_str());
+    }
+    return UserPath.c_str();
+#else
     if (UserPath.empty()) {
 #ifdef __APPLE__
         UserPath = User_Home() + "/Library/Application Support/Vanilla-Conquer";
@@ -211,6 +235,7 @@ const char* PathsClass::User_Path()
     }
 
     return UserPath.c_str();
+#endif // __EMSCRIPTEN__
 }
 
 bool PathsClass::Create_Directory(const char* dirname)
