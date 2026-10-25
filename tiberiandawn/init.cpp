@@ -870,7 +870,13 @@ bool Select_Game(bool fade)
 
             if (selection == SEL_NONE) {
                 //				selection = Main_Menu(0);
+#ifdef __EMSCRIPTEN__
+                std::printf("[browser-game] menu.enter; select New Game, then GDI.\n");
+#endif
                 selection = Main_Menu(ATTRACT_MODE_TIMEOUT);
+#ifdef __EMSCRIPTEN__
+                std::printf("[browser-game] menu.choice=%d\n", selection);
+#endif
             }
             Call_Back();
 
@@ -1395,9 +1401,18 @@ bool Select_Game(bool fade)
 
         Special.IsFromInstall = 0;
         CCDebugString("C&C95 - Starting scenario.\n");
+#ifdef __EMSCRIPTEN__
+        std::printf("[browser-game] scenario.request=%s\n", Scen.ScenarioName);
+#endif
         if (!Start_Scenario(Scen.ScenarioName)) {
+#ifdef __EMSCRIPTEN__
+            std::printf("[browser-game] scenario.failed=%s\n", Scen.ScenarioName);
+#endif
             return (false);
         }
+#ifdef __EMSCRIPTEN__
+        std::printf("[browser-game] scenario.loaded=%s\n", Scen.ScenarioName);
+#endif
         CCDebugString("C&C95 - Scenario started OK.\n");
     }
 

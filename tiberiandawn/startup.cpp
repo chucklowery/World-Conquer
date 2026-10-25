@@ -47,6 +47,7 @@
 #ifdef __EMSCRIPTEN__
 int Browser_Probe();
 int Browser_Cooperative_Probe();
+int Browser_Data_Probe(const char* argv0);
 #endif
 
 bool Read_Private_Config_Struct(FileClass& file, NewConfigType* config);
@@ -218,6 +219,10 @@ int main(int argc, char** argv)
     if (argc > 1 && strcmp(argv[1], "--browser-cooperative-probe") == 0) {
         return Browser_Cooperative_Probe();
     }
+    if (argc > 1 && strcmp(argv[1], "--browser-data-probe") == 0) {
+        return Browser_Data_Probe(argv[0]);
+    }
+    std::printf("[browser-game] game startup entered; initializing paths and SDL2.\n");
 #endif
     UtfArgs args(argc, argv);
     CCDebugString("C&C95 - Starting up.\n");

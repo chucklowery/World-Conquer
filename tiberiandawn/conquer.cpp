@@ -141,9 +141,15 @@ void Main_Game(int argc, char* argv[])
     **	Perform one-time-only initializations
     */
     if (!Init_Game(argc, argv)) {
+#ifdef __EMSCRIPTEN__
+        std::printf("[browser-game] Init_Game failed; inspect asset and engine logs.\n");
+#endif
         return;
     }
 
+#ifdef __EMSCRIPTEN__
+    std::printf("[browser-game] initial resources loaded; entering menu flow.\n");
+#endif
     CCDebugString("C&C95 - Game initialisation complete.\n");
     /*
     **	Game processing loop:
