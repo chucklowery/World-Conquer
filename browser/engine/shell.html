@@ -44,18 +44,21 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <pre id="log" aria-live="polite"></pre>
 </section>
 <section class="panel">
-<h2>Experimental game startup</h2>
+<h2>Game data &amp; first GDI mission</h2>
 <p class="note">Choose compatible game data that you legally own. Files stay in this browser tab's memory and are never sent to a server.</p>
 <label class="pick" for="select-files">Choose files</label>
 <input type="file" id="select-files" multiple>
 <label class="pick" for="select-folder">Choose folder</label>
 <input type="file" id="select-folder" webkitdirectory multiple>
 <p id="file-count" aria-live="polite">No files staged</p>
+<p id="asset-status" class="note" role="status" aria-live="polite">Core game files not verified.</p>
+<button type="button" id="run-asset-probe" disabled>Verify native engine file lookup</button>
 <button type="button" id="run-game" disabled>Launch experimental game</button>
-<p class="note warning">This enters the engine's original blocking menu/game loops. The page may freeze or crash. It is not yet a playable browser port; use a disposable tab.</p>
-<p class="note">Files are flattened into <code>/game</code> in an in-memory filesystem with uppercase names. Reloading removes all files.</p>
+<p class="note warning">First GDI mission test: select <strong>New Game</strong>, choose <strong>GDI</strong>, then watch for <code>[browser-game] scenario</code> in the log. Launch is experimental; missing media or unsupported game data may still fail. Reload to retry.</p>
+<p class="note">Choose an installed game folder and, where available, original <code>gdi</code> CD contents. Root assets go to <code>/game</code>; GDI disc assets to <code>/game/gdi</code>. The original lower-case disc directory is preserved; files are uppercased. Imported data stays local and is cleared on reload.</p>
 </section>
 </div>
+<script src="asset-import.js"></script>
 <script>
 (function () {
   "use strict";
@@ -64,11 +67,15 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const probe = document.getElementById("run-probe");
   const cooperative = document.getElementById("run-cooperative");
   const game = document.getElementById("run-game");
+  const assetProbe = document.getElementById("run-asset-probe");
+  const assetStatus = document.getElementById("asset-status");
   const canvas = document.getElementById("canvas");
   const count = document.getElementById("file-count");
   let ready = false;
   let started = false;
   let imported = 0;
+  let loadingAssets = false;
+  let assetReady = false;
   const knownNames = new Set();
 
   function report(message, isError) {
@@ -84,14 +91,15 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   function controls() {
     probe.disabled = !ready || started;
     cooperative.disabled = !ready || started;
-    game.disabled = !ready || started || imported === 0;
+    game.disabled = !ready || started || loadingAssets || !assetReady;
+    assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
   }
   function run(args, mode) {
     if (!ready || started) return;
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : "Starting game (experimental)"), "running");
+    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : (mode === "assets" ? "Checking engine file search" : "Starting game (experimental)")), "running");
     canvas.focus();
     try {
       Module.callMain(args);
@@ -106,37 +114,38 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
   game.addEventListener("click", () => run([], "game"));
+  assetProbe.addEventListener("click", () => run(["--browser-data-probe"], "assets"));
 
   async function stage(list) {
-    if (!ready || started) return;
+    if (!ready || started || loadingAssets) return;
     const files = Array.from(list || []);
     if (!files.length) return;
-    game.disabled = true;
+    loadingAssets = true;
+    controls();
     status("Importing local files…", "loading");
     try {
-      const FS = Module.FS;
-      try { FS.mkdir("/game"); } catch (e) { if (!FS.analyzePath("/game").exists) throw e; }
-      try { FS.mkdir("/game/user"); } catch (e) { if (!FS.analyzePath("/game/user").exists) throw e; }
-      for (const file of files) {
-        const name = file.name.toUpperCase();
-        if (!/^[A-Z0-9_.-]+$/.test(name) || name === "." || name === "..") {
-          throw new Error("Unsupported filename: " + file.name);
-        }
-        if (knownNames.has(name)) { report("Skipped duplicate: " + name, true); continue; }
-        FS.writeFile("/game/" + name, new Uint8Array(await file.arrayBuffer()));
-        knownNames.add(name);
-        imported++;
-      }
-      FS.chdir("/game");
-      count.textContent = imported + " local files staged";
-      report("[browser] Staged " + imported + " files at /game; no network upload.");
-      status("Runtime ready; local files staged", "ready");
+      const result = await TDAssets.stage(Module.FS, files, knownNames);
+      imported = result.count;
+      assetReady = result.preflight.ready;
+      count.textContent = imported + " files staged, in-browser only";
+      for (const warning of result.warnings) report("[assets] " + warning, true);
+      const missing = result.preflight.missing;
+      assetStatus.textContent = assetReady
+        ? "Core filenames found. Archive contents and the first GDI mission are NOT yet validated."
+        : "Missing: " + missing.join("; ") + ". Supply matching files before launching.";
+      assetStatus.dataset.ready = String(assetReady);
+      report("[assets] " + (assetReady ? "Core filename preflight OK" : "Preflight incomplete") +
+             "; paths: /game and /game/gdi; first GDI mission not yet verified.");
+      status(assetReady ? "Runtime ready; core files staged" : "Runtime ready; more game data needed", "ready");
     } catch (error) {
-      status("Import error; see log", "error");
+      status("Asset import error — see log", "error");
       report(error && error.stack ? error.stack : error, true);
+    } finally {
+      loadingAssets = false;
+      controls();
     }
-    controls();
   }
+
   document.getElementById("select-files").addEventListener("change", e => stage(e.target.files));
   document.getElementById("select-folder").addEventListener("change", e => stage(e.target.files));
   window.addEventListener("error", e => report(e.message || "Browser error", true));

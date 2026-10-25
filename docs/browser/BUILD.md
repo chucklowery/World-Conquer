@@ -81,3 +81,31 @@ Useful references:
 - https://emscripten.org/docs/compiling/Building-Projects.html
 - https://emscripten.org/docs/api_reference/emscripten.h.html
 - https://github.com/TheAssemblyArmada/Vanilla-Conquer
+
+## Actual game data, menu and first GDI mission (P3-P4: experimental)
+
+Use a legally acquired Tiberian Dawn installation and the GDI disc files
+(if supplied in a separate directory). Serve the engine HTML over localhost.
+
+1. Select the installed game folder containing CONQUER.MIX and either
+   CCLOCAL.MIX or LOCAL.MIX. If GENERAL.MIX came from a GDI CD, select
+   a folder containing a gdi/ subdirectory: the importer preserves the
+   native engine's lowercase /game/gdi folder and uppercases filenames.
+2. Wait for Core filenames found. This is only a nonempty-file preflight,
+   not MIX archive parsing, scenario compatibility or content validation.
+3. Click Verify native engine file lookup. This runs the original
+   CCFileClass/CDFileClass path search in the actual compiled engine;
+   it prints CONQUER.MIX, fonts, GENERAL.MIX and optional SCG01EA.INI.
+   Reload and reselect files afterward to launch game mode.
+4. Click Launch experimental game -> New Game -> GDI and watch
+   [browser-game] menu.enter, menu.choice, scenario.request and
+   scenario.loaded in the in-page log. The first GDI scenario normally
+   uses an SCG01... root. Log exactly where startup stops or fails.
+5. Do not upload the files, screenshots exposing licensed game assets,
+   or media archives to CI, Git, issue attachments or public reports.
+
+The automated tests use small synthetic placeholder files ONLY. They
+validate path mapping and native engine file lookup, not functional MIX
+archives, the actual menu or campaign gameplay. If real assets cannot
+be provided privately in a local browser, real-game acceptance stays
+open. The importer caps each file at 512 MiB and each selection at 1 GiB.

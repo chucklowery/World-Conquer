@@ -237,7 +237,10 @@ if(BUILD_VANILLATD)
     if(EMSCRIPTEN)
         # The browser launcher defers main() until the user selects a mode.
         # Game/menu loops use Asyncify suspension at callbacks/frame boundaries.
-        target_sources(VanillaTD PRIVATE ${CMAKE_SOURCE_DIR}/browser/engine/probe.cpp)
+        target_sources(VanillaTD PRIVATE
+            ${CMAKE_SOURCE_DIR}/browser/engine/probe.cpp
+            ${CMAKE_SOURCE_DIR}/browser/engine/data_probe.cpp
+        )
         set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")
         target_link_options(VanillaTD PRIVATE
             "--shell-file" "${CMAKE_SOURCE_DIR}/browser/engine/shell.html"

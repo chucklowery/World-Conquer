@@ -42,12 +42,14 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 
 ## P3: Player-provided game-data import
 
-- [ ] Identify and validate a particular compatible set of Tiberian Dawn MIX files.
+- [ ] Validate a legally acquired compatible Tiberian Dawn release and first GDI scenario (no game media available in CI).
 - [x] Add preliminary local file/folder picker, duplicate filename checks and runtime error log; compatible game-data testing is outstanding.
 - [x] Stage locally selected user files into MEMFS before game main() (not yet validated with licensed assets).
-- [ ] Validate path/case semantics; confirm no files are uploaded to a server.
+- [ ] Validate path/case semantics with real licensed files. Synthetic tests cover root/GDI case and path selection; no network uploads are implemented.
 
 **Exit gate P3:** one real campaign mission loads from local user-provided assets.
+
+**P3 instrumentation (asset-free testing):** C++ CCFileClass/CDFileClass probe reports engine-visible filenames. Browser importer preserves gdi/, nod/, covertops/ while validating filenames and missing core data. The real game logs menu entry and requested/loaded scenarios. None of these synthetic tests establish MIX compatibility or a playable mission.
 
 ## P4: First playable GDI mission
 

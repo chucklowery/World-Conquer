@@ -35,6 +35,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 #include "common/ini.h"
 #include "common/paths.h"
 #include "common/utfargs.h"

@@ -56,9 +56,13 @@ jobs:
           test -s build/browser-engine/vanillatd.html
           test -s build/browser-engine/vanillatd.js
           test -s build/browser-engine/vanillatd.wasm
+          test -s browser/engine/asset-import.js
+          cp browser/engine/asset-import.js build/browser-engine/asset-import.js
           # Verify we generated the custom deferred-start launcher.
           grep -q 'id="canvas"' build/browser-engine/vanillatd.html
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
+      - name: Verify asset loader with synthetic data
+        run: node browser/engine/test-asset-import.js
       - name: Install headless browser tooling
         run: |
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
@@ -82,4 +86,5 @@ jobs:
             build/browser-engine/vanillatd.html
             build/browser-engine/vanillatd.js
             build/browser-engine/vanillatd.wasm
+            build/browser-engine/asset-import.js
           if-no-files-found: error
