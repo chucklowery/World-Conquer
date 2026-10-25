@@ -242,6 +242,10 @@ if(BUILD_VANILLATD)
         target_link_options(VanillaTD PRIVATE
             "--shell-file" "${CMAKE_SOURCE_DIR}/browser/engine/shell.html"
             "-sINVOKE_RUN=0"
+            # Asyncify allows existing nested menu/game loops to yield to the
+            # browser event loop without rewriting all C++ state machines yet.
+            "-sASYNCIFY=1"
+            "-sASYNCIFY_STACK_SIZE=262144"
             "-sEXPORTED_RUNTIME_METHODS=FS,callMain"
             "-sFORCE_FILESYSTEM=1"
             "-sALLOW_MEMORY_GROWTH=1"

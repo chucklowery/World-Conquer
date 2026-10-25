@@ -38,7 +38,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
 <canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
-<p class="note">No game assets required. Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
+<button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
+<p class="note">No game assets required. Select either probe (reload to switch modes). Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
 <h2>Runtime log</h2>
 <pre id="log" aria-live="polite"></pre>
 </section>
@@ -61,6 +62,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const state = document.getElementById("runtime-state");
   const log = document.getElementById("log");
   const probe = document.getElementById("run-probe");
+  const cooperative = document.getElementById("run-cooperative");
   const game = document.getElementById("run-game");
   const canvas = document.getElementById("canvas");
   const count = document.getElementById("file-count");
@@ -81,6 +83,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   }
   function controls() {
     probe.disabled = !ready || started;
+    cooperative.disabled = !ready || started;
     game.disabled = !ready || started || imported === 0;
   }
   function run(args, mode) {
@@ -88,7 +91,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    status(mode === "probe" ? "Probe running" : "Starting game (experimental)", "running");
+    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : "Starting game (experimental)"), "running");
     canvas.focus();
     try {
       Module.callMain(args);
@@ -101,6 +104,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     }
   }
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
+  cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
   game.addEventListener("click", () => run([], "game"));
 
   async function stage(list) {

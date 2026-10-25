@@ -33,8 +33,8 @@ STATUS: Planning. Only check milestones after test evidence is recorded.
 **P2a — browser runtime bootstrap:** The custom launcher waits for the actual VanillaTD WebAssembly runtime before starting main(). A `--browser-probe` mode, compiled **into the game executable**, creates an SDL2 canvas, animates a rectangle, and reports keyboard/mouse input with a cooperative Emscripten frame callback. This proves the runtime path only; it is not the in-game menu or mission loop. Manual browser test still required.
 
 - [x] Locate initial blocking paths: startup main() > Main_Game() > Select_Game() and Main_Loop(); full dialog audit remains.
-- [ ] Record main-loop strategy (callback state machine versus temporary Asyncify/worker compatibility) in an ADR.
-- [ ] Make browser event loop responsive without blocking.
+- [x] Record transitional Asyncify cooperative execution strategy in ADR-0002 (verify in browser CI).
+- [ ] Verify browser-yielded synchronous game/menu loops against player-provided assets; asset-free cooperative-loop CI test added.
 - [ ] Verify SDL2 canvas, mouse, keyboard, focus and palette.
 - [ ] Measure tick consistency, memory growth and frame time.
 

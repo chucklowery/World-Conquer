@@ -8,6 +8,9 @@
 #endif
 
 #include "mssleep.h"
+#ifdef __EMSCRIPTEN__
+#include "browser/engine/cooperative.h"
+#endif
 
 extern WWMouseClass* WWMouse;
 
@@ -17,6 +20,11 @@ void Video_Render_Frame();
 
 void Frame_Limiter(FrameLimitFlags flags)
 {
+#ifdef __EMSCRIPTEN__
+    // Every native-style menu/game frame must release the browser event loop,
+    // even when FPS limiting is disabled in the player's settings.
+    Browser_Cooperative_Yield();
+#endif
     static auto frame_start = std::chrono::steady_clock::now();
 #ifdef NEW_VIDEO_BUILD
     static auto render_avg = 0;

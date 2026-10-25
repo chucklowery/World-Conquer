@@ -6,7 +6,9 @@
 #ifndef MSSLEEP_H
 #define MSSLEEP_H
 
-#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 #include <winbase.h>
 #elif defined(_WIN32)
 #include <synchapi.h>
@@ -25,7 +27,10 @@
  */
 static inline void us_sleep(unsigned us)
 {
-#ifdef _WIN32
+#ifdef __EMSCRIPTEN__
+    // nanosleep on a WASM main thread would block rendering and input.
+    emscripten_sleep((us + 999) / 1000);
+#elif defined(_WIN32)
     Sleep((us + 999) / 1000);
 #else
     struct timespec ts;
@@ -40,7 +45,9 @@ static inline void us_sleep(unsigned us)
  */
 static inline void ms_sleep(unsigned ms)
 {
-#ifdef _WIN32
+#ifdef __EMSCRIPTEN__
+    emscripten_sleep(ms);
+#elif defined(_WIN32)
     Sleep(ms);
 #else
     struct timespec ts;

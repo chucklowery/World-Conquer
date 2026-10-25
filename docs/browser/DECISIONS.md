@@ -31,3 +31,37 @@ Higher initial port effort in exchange for faithful gameplay and maintainable cr
 - Persistent storage strategy and eventual audio support.
 
 Follow-on ADRs: main-loop architecture; asset import/storage; audio/video.
+
+
+## ADR-0002: Asyncify as transitional cooperative execution for original loops
+**Status:** Proposed for runtime milestone P2b (2026-10-24); verify with headless Chromium and native CI.
+
+### Context
+Original VanillaTD main() invokes Main_Game(), which calls Select_Game() and
+Main_Menu(); both use nested synchronous loops. Scenario processing calls
+Main_Loop() in a for(;;) loop, and dialog/fade paths spin on Call_Back() or
+Frame_Limiter(). These loops freeze browser rendering/input if left unchanged.
+
+### Decision
+Use Emscripten Asyncify in the browser build ONLY. Its emscripten_sleep(0)
+operation suspends the current C++ call stack and resumes it on a future JS
+turn, retaining existing gameplay, menu and dialog code. Insert yield points:
+- In Call_Back(), covering menus, transitions and dialog maintenance.
+- In Frame_Limiter(), covering full gameplay frames and most modal dialogs.
+- In portable ms_sleep/us_sleep implementations on Emscripten, replacing
+  browser-main-thread-blocking nanosleep with emscripten_sleep.
+Native builds take none of these paths and retain their original threading.
+
+Add a separate real-engine test mode \`--browser-cooperative-probe\`: a
+synchronous C++ while loop rendering SDL2 frames, where Asyncify suspends and
+resumes the loop as browser JS timers and input handlers continue to execute.
+CI tests responsive browser heartbeat, animation and input without EA assets.
+
+### Tradeoffs, remaining gaps
+Asyncify increases WASM size, CPU cost and memory usage, and cannot make long
+single C++ operations interruptible until the next suspension point. Some
+code paths that neither call Call_Back, Frame_Limiter nor sleep may still
+block. Movie playback and initialization can be asset dependent; they require
+further audits and real game-data integration tests. User game media must
+never be committed or uploaded. A future explicit state machine may remove
+Asyncify once all menu/dialog transitions are modeled.
