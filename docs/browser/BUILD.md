@@ -66,7 +66,7 @@ Open http://localhost:8080/vanillatd.html in desktop Chrome or Edge.
 
 - Wait for the real VanillaTD WASM runtime to show **Runtime ready**; game main() is deferred.
 - Press **Run engine SDL2 probe**. Check the moving rectangle, mouse color change and keyboard input log. This diagnostic callback is in the **actual engine executable**, but it does not initialize Tiberian Dawn game state.
-- Reload to switch modes. Select legally acquired game files or a folder; they are copied to browser-only MEMFS at /game in uppercase names, without uploading.
+- Reload and select **Test cooperative C++ loop** to verify Asyncify with a synchronous C++ while loop, SDL2 animation/input and a responsive JavaScript timer in CI. Reload again to switch modes. Select legally acquired game files or a folder; they are copied to browser-only MEMFS at /game in uppercase names, without uploading.
 - **Launch experimental game** invokes the original synchronous game main() and may freeze the page. Asset loading and interactive menus are not yet verified. Use a disposable tab.
 
 The runtime probe and experimental game are mutually exclusive per page load. Selected data does not persist across refresh. Never put game media into CI, Git or public bug reports.

@@ -64,6 +64,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "common/framelimit.h"
+#ifdef __EMSCRIPTEN__
+#include "../browser/engine/cooperative.h"
+#endif
 #include "common/paths.h"
 #include "common/vqatask.h"
 #include "common/vqaloader.h"
@@ -1313,6 +1316,11 @@ void Call_Back(void)
             }
         }
     }
+#endif
+#ifdef __EMSCRIPTEN__
+    // Menus, fading and dialogs often spin through Call_Back(); release
+    // the JS main thread so browser input/events can be delivered.
+    Browser_Cooperative_Yield();
 #endif
 }
 

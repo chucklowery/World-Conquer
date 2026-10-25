@@ -236,12 +236,16 @@ if(BUILD_VANILLATD)
     set_target_properties(VanillaTD PROPERTIES OUTPUT_NAME vanillatd)
     if(EMSCRIPTEN)
         # The browser launcher defers main() until the user selects a mode.
-        # Original game/menu loops are NOT browser-cooperative yet.
+        # Game/menu loops use Asyncify suspension at callbacks/frame boundaries.
         target_sources(VanillaTD PRIVATE ${CMAKE_SOURCE_DIR}/browser/engine/probe.cpp)
         set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")
         target_link_options(VanillaTD PRIVATE
             "--shell-file" "${CMAKE_SOURCE_DIR}/browser/engine/shell.html"
             "-sINVOKE_RUN=0"
+            # Asyncify allows existing nested menu/game loops to yield to the
+            # browser event loop without rewriting all C++ state machines yet.
+            "-sASYNCIFY=1"
+            "-sASYNCIFY_STACK_SIZE=262144"
             "-sEXPORTED_RUNTIME_METHODS=FS,callMain"
             "-sFORCE_FILESYSTEM=1"
             "-sALLOW_MEMORY_GROWTH=1"

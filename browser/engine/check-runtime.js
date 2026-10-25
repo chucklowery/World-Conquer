@@ -55,6 +55,35 @@ async function main() {
     assert(!runtimeLog.includes("registerOrRemoveHandler"), "SDL2 event listeners failed to bind to #canvas");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: canvas animation, mouse click and keyboard input in the real engine module");
+    // A second browser session tests an ordinary synchronous C++ while loop
+    // suspended with Asyncify, rather than emscripten_set_main_loop().
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    await page.evaluate(() => {
+      window.__heartbeat = 0;
+      window.__heartbeatInterval = setInterval(() => { window.__heartbeat++; }, 40);
+    });
+    await page.locator("#run-cooperative").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-cooperative] synchronous loop started"),
+                               undefined, {timeout: 40000});
+    const heartbeatBefore = await page.evaluate(() => window.__heartbeat);
+    const coopBefore = await canvas.screenshot();
+    await page.waitForTimeout(400);
+    const heartbeatAfter = await page.evaluate(() => window.__heartbeat);
+    const coopAfter = await canvas.screenshot();
+    assert(heartbeatAfter > heartbeatBefore + 1,
+           "JavaScript heartbeat stopped while synchronous C++ loop was active");
+    assert(!coopBefore.equals(coopAfter), "Cooperative C++ loop canvas stopped animating");
+    await canvas.click({position: {x: 200, y: 180}});
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-cooperative] mouse button="),
+                               undefined, {timeout: 15000});
+    await page.keyboard.press("b");
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-cooperative] key code="),
+                               undefined, {timeout: 15000});
+    assert.equal(await page.locator("body").getAttribute("data-mode"), "cooperative");
+    await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
+    messages.push("PASS: synchronous C++ loop yielded to JavaScript heartbeat and SDL2 mouse/keyboard input");
+
   } catch (err) {
     messages.push("FAIL: " + (err.stack || err));
     // Print diagnostic log even when the test fails; CI should not require

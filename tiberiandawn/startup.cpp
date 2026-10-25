@@ -43,6 +43,7 @@
 
 #ifdef __EMSCRIPTEN__
 int Browser_Probe();
+int Browser_Cooperative_Probe();
 #endif
 
 bool Read_Private_Config_Struct(FileClass& file, NewConfigType* config);
@@ -210,6 +211,9 @@ int main(int argc, char** argv)
     // Bypasses asset-dependent gameplay and registers a cooperative SDL loop.
     if (argc > 1 && strcmp(argv[1], "--browser-probe") == 0) {
         return Browser_Probe();
+    }
+    if (argc > 1 && strcmp(argv[1], "--browser-cooperative-probe") == 0) {
+        return Browser_Cooperative_Probe();
     }
 #endif
     UtfArgs args(argc, argv);
