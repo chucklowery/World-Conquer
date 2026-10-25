@@ -83,6 +83,33 @@ async function main() {
     assert.equal(await page.locator("body").getAttribute("data-mode"), "cooperative");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: synchronous C++ loop yielded to JavaScript heartbeat and SDL2 mouse/keyboard input");
+    // Synthetic stand-ins exercise MEMFS and the real C++ file search,
+    // but are NOT game assets and cannot prove archive/mission validity.
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    assert.equal(await page.locator("#run-game").isDisabled(), true);
+    await page.locator("#select-files").setInputFiles([
+      {name:"CONQUER.MIX", mimeType:"application/octet-stream", buffer:Buffer.from([1,2,3,4])},
+      {name:"CCLOCAL.MIX", mimeType:"application/octet-stream", buffer:Buffer.from([1,2,3,4])},
+      {name:"GENERAL.MIX", mimeType:"application/octet-stream", buffer:Buffer.from([1,2,3,4])}
+    ]);
+    await page.waitForFunction(() => document.querySelector("#asset-status").dataset.ready === "true",
+                               undefined, {timeout: 20000});
+    assert.equal(await page.locator("#run-game").isEnabled(), true);
+    assert.equal(await page.evaluate(() => Module.FS.analyzePath("/game/CONQUER.MIX").exists), true);
+    assert.equal(await page.evaluate(() => Module.FS.analyzePath("/game/GENERAL.MIX").exists), true);
+    await page.locator("#run-asset-probe").click();
+    await page.waitForFunction(() => {
+      const text = document.getElementById("log").textContent;
+      return text.includes("[browser-assets] CONQUER.MIX=1") &&
+             text.includes("[browser-assets] LOCAL-or-CCLOCAL.MIX=1") &&
+             text.includes("[browser-assets] GENERAL.MIX=1");
+    }, undefined, {timeout: 25000});
+    const assetLog = await page.locator("#log").textContent();
+    assert(assetLog.includes("path lookup only"), "Engine must distinguish path check from asset integrity");
+    await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
+    messages.push("PASS: synthetic file staging resolved through real engine CCFileClass search");
+
 
   } catch (err) {
     messages.push("FAIL: " + (err.stack || err));
