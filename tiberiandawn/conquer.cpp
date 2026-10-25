@@ -65,7 +65,7 @@
 #include <string.h>
 #include "common/framelimit.h"
 #ifdef __EMSCRIPTEN__
-#include "browser/engine/cooperative.h"
+#include "../browser/engine/cooperative.h"
 #endif
 #include "common/paths.h"
 #include "common/vqatask.h"

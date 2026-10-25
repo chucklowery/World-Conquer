@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
-#include "browser/engine/cooperative.h"
+#include "cooperative.h"
 
 namespace {
 SDL_Window* window = nullptr;

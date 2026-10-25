@@ -9,7 +9,7 @@
 
 #include "mssleep.h"
 #ifdef __EMSCRIPTEN__
-#include "browser/engine/cooperative.h"
+#include "../browser/engine/cooperative.h"
 #endif
 
 extern WWMouseClass* WWMouse;
