@@ -25,18 +25,19 @@ static unsigned dword(const std::vector<uint8_t>& bytes, size_t offset)
 
 int main(int argc, char** argv)
 {
-    if (argc != 7)
+    if (argc != 8)
         return 1;
 
     const std::vector<FrameContract> contracts = {
         {532, {0, 16, 64, 192, 418, 531}}, // E1 infantry choreography
         {64, {0, 31, 32, 63}},             // MTNK body and turret
         {64, {0, 31, 32, 63}},             // ORCA normal and high-speed facings
-        {1, {0}},                          // FACT base (construction separate)
+        {24, {0, 3, 4, 5, 23}},            // FACT idle and active banks
         {2, {0, 1}},                       // T01 normal and damaged
-        {1, {0}}                           // ART-EXP1 dynamic effect length
+        {1, {0}},                          // ART-EXP1 dynamic effect length
+        {24, {0, 12, 23}}                  // FACTMAKE construction progress
     };
-    for (int i = 0; i < 6; ++i) {
+    for (size_t i = 0; i < contracts.size(); ++i) {
         std::ifstream file(argv[i + 1], std::ios::binary);
         if (!file)
             return 2;

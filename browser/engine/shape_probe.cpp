@@ -176,7 +176,7 @@ int Browser_Wireframe_Probe(const char* argv0)
         std::fprintf(stderr, "[browser-wireframes] engine palette lookup failed\n"); return 20;
     }
     const char* filenames[] = {"E1.SHP", "MTNK.SHP", "ORCA.SHP", "FACT.SHP", "T01.SHP", "ART-EXP1.SHP"};
-    const int actionFrames[] = {64, 32, 32, 0, 1, 0}; // C++-audited action probes; see contracts.json.
+    const int actionFrames[] = {64, 32, 32, 5, 1, 0}; // C++-audited action probes; see contracts.json.
     constexpr int cell = 96, columns = 3, rows = 2;
     constexpr int screenWidth = columns * cell, screenHeight = rows * cell;
     std::vector<uint8_t> indexed(screenWidth * screenHeight, 1);

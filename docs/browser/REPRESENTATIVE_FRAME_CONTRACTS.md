@@ -7,7 +7,7 @@ These are source-audited rendering rules for the [representative roster](../../g
 | [WF-0185](#wf-0185) | `E1.SHP` | 532 | 532 | frame-index-audited |
 | [WF-0289](#wf-0289) | `MTNK.SHP` | 64 | 192 | frame-index-audited |
 | [WF-0004](#wf-0004) | `ORCA.SHP` | 64 | 80 | frame-index-audited |
-| [WF-0013](#wf-0013) | `FACT.SHP` | 1 | 128 | partial |
+| [WF-0013](#wf-0013) | `FACT.SHP` | 24 | 128 | partial |
 | [WF-0256](#wf-0256) | `T01.SHP` | 2 | 32 | partial |
 | [WF-0072](#wf-0072) | `ART-EXP1.SHP` | 1 | 128 | partial |
 
@@ -114,27 +114,29 @@ These are source-audited rendering rules for the [representative roster](../../g
 
 ## WF-0013
 
-**Engine enum:** `STRUCT_CONST` · **Canvas:** 48×48 (provisional) · **Diagnostic frame probes:** 0. **Browser action frame:** 0.
+**Engine enum:** `STRUCT_CONST` · **Canvas:** 48×48 (provisional) · **Diagnostic frame probes:** 0, 3, 4, 5, 23. **Browser action frame:** 5.
 
 **Source evidence:**
 
 - [`tiberiandawn/bdata.cpp:534`](../../tiberiandawn/bdata.cpp#L534) — `ClassConst(STRUCT_CONST`
 - [`tiberiandawn/building.cpp:513`](../../tiberiandawn/building.cpp#L513) — `shapefile = Class->Get_Buildup_Data();`
 - [`tiberiandawn/bdata.cpp:3839`](../../tiberiandawn/bdata.cpp#L3839) — `sprintf(buffer, "%sMAKE", building.IniName);`
+- [`tiberiandawn/bdata.cpp:3792`](../../tiberiandawn/bdata.cpp#L3792) — `{STRUCT_CONST, BSTATE_ACTIVE, 4, 20, 3}`
 
 **Frame indexing rules:**
 
 | Action | Start | Frames/action | Facing stride | Last frame |
 |---|---:|---:|---:|---:|
-| `normal building state` | 0 | dynamic | — | dynamic/unused |
+| `FACT idle` | 0 | 4 | — | 3 |
+| `FACT active` | 4 | 20 | — | 23 |
+| `FACTMAKE construction/deconstruction (separate SHP)` | 0 | dynamic | — | dynamic/unused |
 
 **Separate dependencies:** `FACTMAKE.SHP`.
 
 **Still required before final art sign-off:**
 
-- [ ] Inventory BState frame starts, frame counts and rates
-- [ ] Author separate FACTMAKE construction/deconstruction SHP
-- [ ] Verify 3×2 foundation occupancy and bib/selection offsets
+- [ ] Validate FACTMAKE's provisional 24-frame build/debuild choreography and native stage rate
+- [ ] Verify 3×2 foundation occupancy, rotation, dimensions and bib/selection offsets
 
 ## WF-0256
 

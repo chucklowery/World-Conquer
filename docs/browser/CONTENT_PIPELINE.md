@@ -5,8 +5,11 @@ It emits native tactical SHP and 6-bit PAL files, and the WebAssembly
 diagnostic now resolves and draws the generated shapes using the real engine.
 The [295-slot wireframe catalog](WIREFRAME_REPLACEMENT_CATALOG.md) tracks
 the placeholder art and final-art requirements. **It is not yet a playable
-resource pack**: full class-specific state sequences, overlays, terrain
+resource pack**: complete class-specific final art, overlays, terrain
 templates, UI, music, sound and missions remain to be implemented.
+The [representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md)
+links 23 state-specific previews, art replacement requirements and the
+separate `FACTMAKE.SHP` construction resource.
 
 ## Build
 
@@ -17,6 +20,7 @@ node tools/content/test-build.js
 node browser/engine/test-original-asset.js
 node tools/content/test-wireframes.js
 node tools/content/test-representative-contracts.js
+node tools/content/test-representative-animation.js
 node browser/engine/test-wireframe-asset.js
 node tools/content/build.js game/content/manifest.json build/world-conquer-content
 node tools/content/wireframes.js build build/world-conquer-roster --representative
@@ -103,7 +107,11 @@ frame** and draws a base/action pair for each of the six visual categories.
 This exercises infantry firing, tank turret, Orca high-speed and damaged tree
 frames through `CC_Draw_Shape()`.
 
-This is frame-index compatibility, not final artwork quality. The construction
-yard still needs `FACTMAKE.SHP`; the artillery effect derives its duration
-from the SHP frame count, and terrain needs theater-aware art and occupancy
-checks.
+This is frame-index compatibility, not final artwork quality. The generated
+roster additionally packages and verifies a **24-frame provisional
+`FACTMAKE.SHP`** for construction/deconstruction. Infantry walk, fire, prone,
+death and salute poses; separate tank turret layers; Orca flight modes; yard
+production; tree damage; and explosion stages now have distinctive procedural
+art with [individual SVG previews](REPRESENTATIVE_ANIMATION_MILESTONE.md).
+The artillery effect derives its duration from the SHP frame count, and
+terrain still needs theater-aware art and occupancy checks.

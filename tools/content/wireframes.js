@@ -10,6 +10,7 @@ const crypto = require("node:crypto");
 const {encodeTacticalShape, decodeTacticalShape} = require("./encode-shape");
 const {encodePalette} = require("./encode-palette");
 const {importFrames} = require("./png-to-frames");
+const {representativePixels, factory, statePreviewSpecs} = require("./representative-animation");
 
 const root = path.resolve(__dirname, "../..");
 const outputRoot = path.join(root, "game/content/wireframes");
@@ -86,6 +87,8 @@ function inventory() {
 
 function hash(text) { return crypto.createHash("sha256").update(text).digest(); }
 function paint(item, frame = 0) {
+  const representative = representativePixels(item, frame);
+  if (representative) return representative;
   const {width: w, height: h, category} = item;
   const cells = new Uint8Array(w * h);
   const seed = hash(item.engineEnum)[0];
@@ -131,8 +134,8 @@ function paint(item, frame = 0) {
   for (let i=0;i<3;i++) rect(2+i*4,2,2,2,(seed+i)%5+2);
   return [...cells];
 }
-function renderSvg(item) {
-  const pixels = paint(item, 0), w=item.width, h=item.height;
+function renderSvg(item, frame = 0, overridePixels = null) {
+  const pixels = overridePixels || paint(item, frame), w=item.width, h=item.height;
   const labelWidth=160, previewHeight=Math.max(h,48), fullWidth=w+labelWidth;
   const lines = [];
   for (let y=0;y<h;y++) for(let x=0;x<w;) {
@@ -140,7 +143,9 @@ function renderSvg(item) {
     let run=1; while(x+run<w&&pixels[y*w+x+run]===c)run++;
     lines.push(`<rect x="${x}" y="${y}" width="${run}" height="1" fill="${paletteColors[c]}"/>`);x+=run;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fullWidth} ${previewHeight}" width="${fullWidth*3}" height="${previewHeight*3}" shape-rendering="crispEdges" role="img" aria-label="${item.id} ${item.category} ${item.engineEnum} original wireframe"><rect width="${fullWidth}" height="${previewHeight}" fill="#101c25"/><rect width="${w}" height="${h}" fill="#172a36"/><rect x="0.5" y="0.5" width="${w-1}" height="${h-1}" fill="none" stroke="#4e97c8" stroke-dasharray="2 2" stroke-width="0.5"/>${lines.join("")}<line x1="${w+5}" y1="0" x2="${w+5}" y2="${previewHeight}" stroke="#277e68" stroke-width="0.5"/><g font-family="monospace" fill="#a1e7d3"><text x="${w+10}" y="10" font-size="7">${item.id} / ${item.category.toUpperCase()}</text><text x="${w+10}" y="21" font-size="6.5" fill="#f4e6bd">${item.engineEnum}</text><text x="${w+10}" y="31" font-size="6">${item.engineFilename}</text><text x="${w+10}" y="41" font-size="5.5" fill="#4e97c8">${w}x${h} / ${item.provisionalFrameCount} frames</text></g></svg>\n`;
+  const frameLabel=frame||overridePixels?`frame ${frame}`:`${item.provisionalFrameCount} frames`;
+  const accessibility=frame||overridePixels?` frame ${frame}`:"";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fullWidth} ${previewHeight}" width="${fullWidth*3}" height="${previewHeight*3}" shape-rendering="crispEdges" role="img" aria-label="${item.id} ${item.category} ${item.engineEnum} original wireframe${accessibility}"><rect width="${fullWidth}" height="${previewHeight}" fill="#101c25"/><rect width="${w}" height="${h}" fill="#172a36"/><rect x="0.5" y="0.5" width="${w-1}" height="${h-1}" fill="none" stroke="#4e97c8" stroke-dasharray="2 2" stroke-width="0.5"/>${lines.join("")}<line x1="${w+5}" y1="0" x2="${w+5}" y2="${previewHeight}" stroke="#277e68" stroke-width="0.5"/><g font-family="monospace" fill="#a1e7d3"><text x="${w+10}" y="10" font-size="7">${item.id} / ${item.category.toUpperCase()}</text><text x="${w+10}" y="21" font-size="6.5" fill="#f4e6bd">${item.engineEnum}</text><text x="${w+10}" y="31" font-size="6">${item.engineFilename}</text><text x="${w+10}" y="41" font-size="5.5" fill="#4e97c8">${w}x${h} / ${frameLabel}</text></g></svg>\n`;
 }
 function renderDoc(catalog) {
   const categories = [...new Set(catalog.map(a=>a.category))];
@@ -148,6 +153,7 @@ function renderDoc(catalog) {
   const rows = ["# World-Conquer: Original wireframe asset replacement catalog", "",
     "> Generated original placeholder art. No Electronic Arts media is included. `WF-####` identifiers stay stable only while the upstream enumeration and sorting remain unchanged; use `engineEnum` for persistent game mappings.", "",
     `This catalog contains **${catalog.length} independently linked asset slots** derived from Tiberian Dawn C++ class definitions. The preview is the generated placeholder's first frame.`, "",
+    "The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions; it does not change provisional frame contracts for the remaining slots.", "",
     "## Replacement workflow", "",
     "1. Open an individual `WF-####` SVG below. It is a design guide, not a request to redraw copyrighted artwork.",
     "2. Create newly authored **palette-constrained pixel art** using the project-owned palette. Index `0` is transparent. Dimensions and frame counts here are **provisional build contracts** until each class's production frame lookup, footprint and anchor are audited against C++.",
@@ -185,6 +191,14 @@ function generate() {
   const catalog=inventory();
   fs.mkdirSync(path.join(outputRoot,"previews"),{recursive:true});
   for(const a of catalog)fs.writeFileSync(path.join(outputRoot,a.preview),renderSvg(a));
+  fs.mkdirSync(path.join(outputRoot,"states"),{recursive:true});
+  for(const spec of statePreviewSpecs){
+    const original=catalog.find(a=>a.id===spec.id);
+    const asset=spec.supplemental?{...original,engineFilename:"FACTMAKE.SHP",provisionalFrameCount:24}:original;
+    const pixels=spec.supplemental?factory(spec.frame,true,24):null;
+    fs.writeFileSync(path.join(outputRoot,"states",`${spec.id}-${spec.name}.svg`),
+      renderSvg(asset,spec.frame,pixels));
+  }
   fs.writeFileSync(path.join(outputRoot,"catalog.json"),JSON.stringify({schemaVersion:1,generatedFrom:"tiberiandawn/*data.cpp",assets:catalog},null,2)+"\n");
   fs.writeFileSync(docsPath,renderDoc(catalog));
   console.log(`Generated ${catalog.length} wireframe previews and replacement entries`);
@@ -267,12 +281,44 @@ function build(destination, selectedIds) {
       frames:frames.length,width:a.width,height:a.height,bytes:bytes.length,
       sha256:crypto.createHash("sha256").update(bytes).digest("hex")});
   }
+  // The engine loads <building name>MAKE.SHP for construction, independently
+  // from FACT.SHP. A complete representative diagnostic must mount both.
+  const spec=JSON.parse(fs.readFileSync(path.join(outputRoot,"supplemental-resources.json"),"utf8"));
+  if(spec.schemaVersion!==1||spec.id!=="supplemental.fact-buildup"||spec.engineFilename!=="FACTMAKE.SHP"||
+      spec.width!==48||spec.height!==48||spec.frames!==24||spec.supportingFor!=="WF-0013"){
+    throw new Error("Invalid FACTMAKE supplementary resource contract");
+  }
+  if(!only||only.has(spec.supportingFor)){
+    const finalDir=path.join(outputRoot,spec.finalFrameDirectory);
+    let frames,provenance;
+    if(fs.existsSync(finalDir)){
+      provenance=JSON.parse(fs.readFileSync(path.join(finalDir,"ATTRIBUTION.json"),"utf8"));
+      for(const field of ["creator","license","source","revision"]){
+        if(typeof provenance[field]!=="string"||!provenance[field].trim())throw new Error(`FACTMAKE: missing ${field} in attribution`);
+      }
+      frames=importFrames(finalDir,paletteSource).frames;
+      if(frames.length!==spec.frames||frames.some(f=>f.width!==spec.width||f.height!==spec.height)){
+        throw new Error(`FACTMAKE: final art must have exactly ${spec.frames} frames at ${spec.width}x${spec.height}`);
+      }
+    }else{
+      frames=Array.from({length:spec.frames},(_,frame)=>({width:spec.width,height:spec.height,pixels:factory(frame,true,spec.frames)}));
+      provenance={creator:"World-Conquer project",license:"CC0-1.0",source:"procedural buildup animation",revision:"1"};
+    }
+    const bytes=encodeTacticalShape({frames}), relative="building/FACTMAKE.SHP";
+    fs.writeFileSync(path.join(dir,"files",relative),bytes);
+    fs.writeFileSync(path.join(dir,"game-root",spec.engineFilename),bytes);
+    if(decodeTacticalShape(bytes).frames.length!==spec.frames)throw new Error("FACTMAKE decode frame mismatch");
+    entries.push({id:spec.id,supportingFor:spec.supportingFor,engineFilename:spec.engineFilename,
+      target:relative,mountReady:true,sharedFilenameWith:[],status:fs.existsSync(finalDir)?"final-art":"wireframe",
+      provenance,frames:spec.frames,width:spec.width,height:spec.height,bytes:bytes.length,
+      sha256:crypto.createHash("sha256").update(bytes).digest("hex")});
+  }
   fs.writeFileSync(path.join(dir,"manifest.json"),JSON.stringify({schemaVersion:1,gameId:"world-conquer-wireframes",assets:entries},null,2)+"\n");
   if(auditedRoster){
     fs.writeFileSync(path.join(dir,"roster.json"),JSON.stringify({schemaVersion:1,assets:auditedRoster.roster},null,2)+"\n");
     fs.writeFileSync(path.join(dir,"contracts.json"),JSON.stringify(auditedRoster.contracts,null,2)+"\n");
   }
-  console.log(`Built ${entries.length-1} tactical shape resources${only?" (selected smoke-test roster)":" (excluding design-only overlays)"}`);
+  console.log(`Built ${entries.length-1} tactical shape resources${only?" (selected smoke-test roster plus buildup)":" (excluding design-only overlays)"}`);
 }
 if(require.main===module){
   try{if(process.argv[2]==="generate")generate();

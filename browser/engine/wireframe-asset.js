@@ -1,5 +1,5 @@
-/* Verify and stage the six original-art tactical wireframes for the native
- * browser engine diagnostic. This is not a full stand-alone game asset mount.
+/* Verify and stage six original-art tactical wireframes and the construction
+ * yard's separate buildup SHP. This is not a full stand-alone asset mount.
  */
 (function (root, factory) {
   const api = factory();
@@ -48,7 +48,10 @@
       requests.push({id: expected.id, target: `${expected.category}/${expected.id}.SHP`,
         filename: expected.engineFilename, maxBytes: 4 * 1024 * 1024, expected});
     }
+    requests.push({id: "supplemental.fact-buildup", target: "building/FACTMAKE.SHP",
+      filename: "FACTMAKE.SHP", maxBytes: 4 * 1024 * 1024, supplemental: true});
     if (roles.size !== categories.size || manifest.assets.some(a => !a || typeof a !== "object") ||
+        manifest.assets.length !== requests.length ||
         new Set(manifest.assets.map(a => a.id)).size !== manifest.assets.length ||
         contracts.assets.some(a => !a || typeof a !== "object") ||
         new Set(contracts.assets.map(a => a.id)).size !== contracts.assets.length) {
@@ -71,6 +74,13 @@
           !Number.isSafeInteger(asset.width) || asset.width < 1 || asset.width > 64 ||
           !Number.isSafeInteger(asset.height) || asset.height < 1 || asset.height > 64)) {
         throw new Error(`Unverified or colliding wireframe resource ${request.id}`);
+      }
+      if (request.supplemental && (asset.supportingFor !== "WF-0013" ||
+          asset.engineFilename !== "FACTMAKE.SHP" || asset.mountReady !== true ||
+          !Array.isArray(asset.sharedFilenameWith) || asset.sharedFilenameWith.length ||
+          asset.frames !== 24 || asset.width !== 48 || asset.height !== 48 ||
+          !contracts.assets.some(c => c.id === "WF-0013" && c.dependencies.includes("FACTMAKE.SHP")))) {
+        throw new Error("Invalid FACTMAKE supplementary resource contract");
       }
       if (request.expected) {
         const contract = contracts.assets.find(c => c.id === request.id);

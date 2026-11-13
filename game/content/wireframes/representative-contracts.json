@@ -428,10 +428,14 @@
         48
       ],
       "confidence": "partial",
-      "minimumFrames": 1,
-      "diagnosticActionFrame": 0,
+      "minimumFrames": 24,
+      "diagnosticActionFrame": 5,
       "probes": [
-        0
+        0,
+        3,
+        4,
+        5,
+        23
       ],
       "renderSources": [
         {
@@ -448,11 +452,28 @@
           "source": "tiberiandawn/bdata.cpp",
           "line": 3839,
           "evidence": "sprintf(buffer, \"%sMAKE\", building.IniName);"
+        },
+        {
+          "source": "tiberiandawn/bdata.cpp",
+          "line": 3792,
+          "evidence": "{STRUCT_CONST, BSTATE_ACTIVE, 4, 20, 3}"
         }
       ],
       "stateRules": [
         {
-          "action": "normal building state",
+          "action": "FACT idle",
+          "start": 0,
+          "count": 4,
+          "lastFrame": 3
+        },
+        {
+          "action": "FACT active",
+          "start": 4,
+          "count": 20,
+          "lastFrame": 23
+        },
+        {
+          "action": "FACTMAKE construction/deconstruction (separate SHP)",
           "start": 0,
           "count": null,
           "lastFrame": null
@@ -462,9 +483,8 @@
         "FACTMAKE.SHP"
       ],
       "remaining": [
-        "Inventory BState frame starts, frame counts and rates",
-        "Author separate FACTMAKE construction/deconstruction SHP",
-        "Verify 3×2 foundation occupancy and bib/selection offsets"
+        "Validate FACTMAKE's provisional 24-frame build/debuild choreography and native stage rate",
+        "Verify 3×2 foundation occupancy, rotation, dimensions and bib/selection offsets"
       ]
     },
     {

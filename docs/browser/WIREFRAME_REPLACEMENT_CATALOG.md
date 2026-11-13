@@ -4,6 +4,8 @@
 
 This catalog contains **295 independently linked asset slots** derived from Tiberian Dawn C++ class definitions. The preview is the generated placeholder's first frame.
 
+The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions; it does not change provisional frame contracts for the remaining slots.
+
 ## Replacement workflow
 
 1. Open an individual `WF-####` SVG below. It is a design guide, not a request to redraw copyrighted artwork.

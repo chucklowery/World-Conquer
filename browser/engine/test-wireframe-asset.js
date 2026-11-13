@@ -28,6 +28,11 @@ function fixture() {
       sharedFilenameWith:[],mountReady:true,frames:contracts.assets.find(c=>c.id===a.id).placeholderFrames,width:32,height:32,
       bytes:bytes.length,sha256:hash(bytes)});
   }
+  const buildup=Buffer.from([82,84,83,70,65,67,84,77,65,75,69]);
+  blobs.set("building/FACTMAKE.SHP",buildup);
+  assets.push({id:"supplemental.fact-buildup",supportingFor:"WF-0013",engineFilename:"FACTMAKE.SHP",
+    target:"building/FACTMAKE.SHP",sharedFilenameWith:[],mountReady:true,
+    frames:24,width:48,height:48,bytes:buildup.length,sha256:hash(buildup)});
   return {manifest:{schemaVersion:1,gameId:"world-conquer-wireframes",assets},blobs,contracts};
 }
 function memoryFs(existing = []) {
@@ -50,11 +55,12 @@ function fixtureFetcher(data, customRoster=roster) {
 async function main() {
   const data=fixture(), vfs=memoryFs();
   const result=await load(vfs,"wireframes/manifest.json",fixtureFetcher(data),digest);
-  assert.deepEqual({count:result.count,shapes:result.shapes},{count:7,shapes:6});
+  assert.deepEqual({count:result.count,shapes:result.shapes},{count:8,shapes:7});
   assert.deepEqual(vfs.files.get("/game/WIREFRAME.PAL"),data.blobs.get("WIREFRAME.PAL"));
   for(const entry of roster.assets){
     assert.deepEqual(vfs.files.get("/game/"+entry.engineFilename),data.blobs.get(`${entry.category}/${entry.id}.SHP`));
   }
+  assert.deepEqual(vfs.files.get("/game/FACTMAKE.SHP"),data.blobs.get("building/FACTMAKE.SHP"));
   await assert.rejects(load(vfs,"wireframes/manifest.json",fixtureFetcher(data),digest),/already staged/);
   await assert.rejects(load(memoryFs(),"/outside/manifest.json",fixtureFetcher(data),digest),/Invalid wireframe manifest URL/);
 
@@ -75,6 +81,15 @@ async function main() {
   await assert.rejects(load(clean3,"wireframes/manifest.json",fixtureFetcher(incomplete),digest),/Invalid frame contract/);
   assert.equal(clean3.files.size,0);
 
+  const absent=fixture(), clean4=memoryFs();
+  absent.manifest.assets=absent.manifest.assets.filter(a=>a.id!=="supplemental.fact-buildup");
+  await assert.rejects(load(clean4,"wireframes/manifest.json",fixtureFetcher(absent),digest),/Incomplete roster/);
+  assert.equal(clean4.files.size,0);
+  const badBuild=fixture(), clean5=memoryFs();
+  badBuild.manifest.assets.find(a=>a.id==="supplemental.fact-buildup").frames=1;
+  await assert.rejects(load(clean5,"wireframes/manifest.json",fixtureFetcher(badBuild),digest),/Invalid FACTMAKE/);
+  assert.equal(clean5.files.size,0);
+
   const duplicate={schemaVersion:1,assets:roster.assets.map(a=>({...a}))};
   duplicate.assets[2].engineFilename=duplicate.assets[0].engineFilename;
   await assert.rejects(load(memoryFs(),"wireframes/manifest.json",fixtureFetcher(fixture(),duplicate),digest),/duplicate wireframe roster/);
@@ -92,7 +107,7 @@ async function main() {
     const realBlobs=new Map(manifest.assets.map(a=>[a.target,fs.readFileSync(path.join(base,"files",a.target))]));
     const realFs=memoryFs();
     const real=await load(realFs,"wireframes/manifest.json",fixtureFetcher({manifest,blobs:realBlobs,contracts:packContracts},packRoster),digest);
-    assert.equal(real.count,7);
+    assert.equal(real.count,8);
     for(const expected of packRoster.assets){
       const bytes=realFs.files.get("/game/"+expected.engineFilename);
       assert(bytes.length>22);
@@ -105,6 +120,11 @@ async function main() {
       const contract=packContracts.assets.find(a=>a.id===expected.id);
       for(const frame of contract.probes)assert(decoded.frames[frame].pixels.some(pixel=>pixel>1));
     }
+    const buildup=decodeTacticalShape(realFs.files.get("/game/FACTMAKE.SHP"));
+    assert.equal(buildup.frames.length,24);
+    assert.equal(buildup.frames[0].width,48);
+    assert.notDeepEqual(buildup.frames[0].pixels,buildup.frames[12].pixels);
+    assert.notDeepEqual(buildup.frames[12].pixels,buildup.frames[23].pixels);
   }
   console.log("PASS: six-class roster, manifest integrity, MEMFS staging, collisions, duplicates and atomic failure");
 }
