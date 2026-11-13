@@ -44,16 +44,19 @@ unsigned dword(const std::vector<uint8_t>& b, size_t p)
 
 // Bound the literal-only LCW stream before calling the original engine's
 // Build_Frame(), whose decoder assumes an internally valid asset.
-bool ValidateTactical(const std::vector<uint8_t>& bytes, int& w, int& h)
+bool ValidateTactical(const std::vector<uint8_t>& bytes, int& w, int& h, int frameIndex = 0)
 {
-    if (bytes.size() < 23 || word(bytes, 0) != 1) return false;
+    if (bytes.size() < 23) return false;
+    const unsigned frames = word(bytes, 0);
+    const size_t tableEnd = 14 + static_cast<size_t>(frames) * 8;
+    if (!frames || frameIndex < 0 || static_cast<unsigned>(frameIndex) >= frames || tableEnd > bytes.size()) return false;
     w = word(bytes, 6);
     h = word(bytes, 8);
     if (!w || !h || static_cast<size_t>(w) * h > 65535) return false;
-    const uint32_t keyframe = dword(bytes, 14);
+    const uint32_t keyframe = dword(bytes, 14 + static_cast<size_t>(frameIndex) * 8);
     if ((keyframe >> 24) != 0x80) return false;
     size_t pos = keyframe & 0xFFFFFF;
-    if (pos < 22 || pos >= bytes.size()) return false;
+    if (pos < tableEnd || pos >= bytes.size()) return false;
     size_t decoded = 0;
     const size_t total = static_cast<size_t>(w) * h;
     while (decoded < total) {
@@ -173,7 +176,8 @@ int Browser_Wireframe_Probe(const char* argv0)
         std::fprintf(stderr, "[browser-wireframes] engine palette lookup failed\n"); return 20;
     }
     const char* filenames[] = {"E1.SHP", "MTNK.SHP", "ORCA.SHP", "FACT.SHP", "T01.SHP", "ART-EXP1.SHP"};
-    constexpr int cell = 64, columns = 3, rows = 2;
+    const int actionFrames[] = {64, 32, 32, 0, 1, 0}; // C++-audited action probes; see contracts.json.
+    constexpr int cell = 96, columns = 3, rows = 2;
     constexpr int screenWidth = columns * cell, screenHeight = rows * cell;
     std::vector<uint8_t> indexed(screenWidth * screenHeight, 1);
     GraphicBufferClass backing(screenWidth, screenHeight, indexed.data(), indexed.size());
@@ -195,25 +199,32 @@ int Browser_Wireframe_Probe(const char* argv0)
         std::vector<uint8_t> bytes;
         int width = 0, height = 0;
         if (!ReadEngineFile(filenames[i], bytes) || !ValidateTactical(bytes, width, height) ||
-            width > cell || height > cell) {
+            !ValidateTactical(bytes, width, height, actionFrames[i]) ||
+            width > cell / 2 || height > cell) {
             std::fprintf(stderr, "[browser-wireframes] invalid/missing shape %s\n", filenames[i]);
             failed = 21; break;
         }
-        const int x = (i % columns) * cell + cell / 2;
+        const int x = (i % columns) * cell + cell / 4;
         const int y = (i / columns) * cell + cell / 2;
         CC_Draw_Shape(bytes.data(), 0, x, y, WINDOW_TACTICAL, SHAPE_NORMAL);
-        int drawn = 0;
+        CC_Draw_Shape(bytes.data(), actionFrames[i], x + cell / 2, y, WINDOW_TACTICAL, SHAPE_NORMAL);
+        int baseDrawn = 0, actionDrawn = 0;
         for (int py = (i / columns) * cell; py < ((i / columns) + 1) * cell; ++py) {
             for (int px = (i % columns) * cell; px < ((i % columns) + 1) * cell; ++px) {
-                drawn += indexed[py * screenWidth + px] != 1;
+                if (px < (i % columns) * cell + cell / 2) {
+                    baseDrawn += indexed[py * screenWidth + px] != 1;
+                } else {
+                    actionDrawn += indexed[py * screenWidth + px] != 1;
+                }
             }
         }
-        if (!drawn) {
-            std::fprintf(stderr, "[browser-wireframes] empty engine render %s\n", filenames[i]);
+        if (!baseDrawn || !actionDrawn) {
+            std::fprintf(stderr, "[browser-wireframes] empty engine render %s base=%d action=%d\n",
+                         filenames[i], baseDrawn, actionDrawn);
             failed = 22; break;
         }
-        std::printf("[browser-wireframes] CC_Draw_Shape %s %dx%d non-background=%d\n",
-                    filenames[i], width, height, drawn);
+        std::printf("[browser-wireframes] CC_Draw_Shape %s %dx%d base=%d state-frame=%d pixels=%d\n",
+                    filenames[i], width, height, baseDrawn, actionFrames[i], actionDrawn);
     }
     Set_Shape_Buffer(nullptr, 0);
     LogicPage = previousPage;
@@ -224,6 +235,6 @@ int Browser_Wireframe_Probe(const char* argv0)
     if (failed) return failed;
     std::printf("[browser-wireframes] rendered 6 original placeholder shapes via native engine\n");
     return StartShapePreview(indexed, pal, screenWidth, screenHeight,
-                             "World-Conquer wireframe integration roster", {72, 8, 576, 384});
+                             "World-Conquer wireframe states (base + action)", {72, 8, 576, 384});
 }
 #endif

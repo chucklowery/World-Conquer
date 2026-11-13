@@ -16,6 +16,7 @@ Requires Node.js 18+; no external npm dependencies.
 node tools/content/test-build.js
 node browser/engine/test-original-asset.js
 node tools/content/test-wireframes.js
+node tools/content/test-representative-contracts.js
 node browser/engine/test-wireframe-asset.js
 node tools/content/build.js game/content/manifest.json build/world-conquer-content
 node tools/content/wireframes.js build build/world-conquer-roster --representative
@@ -86,3 +87,23 @@ per entry. Do not import copyrighted C&C game media into this directory.
 
 The existing `browser/engine/asset-import.js` remains the experimental
 player-file importer and is not replaced by this build tool.
+
+## Representative class frame audit
+
+The [six-slot source audit](REPRESENTATIVE_FRAME_CONTRACTS.md) derives infantry
+`MiniGunnerDos` action/facing offsets directly from the C++ engine and records
+observed shape-index formulas for the medium tank, Orca, construction yard,
+tree and artillery explosion. The generated `contracts.json` accompanies the
+representative pack and is validated by the browser loader before any MEMFS
+write. The native `test-wireframe-shapes.cpp` test uses the actual engine
+`LCW_Uncompress()` to decode representative normal and action frames.
+
+The browser C++ diagnostic validates tactical files with **more than one
+frame** and draws a base/action pair for each of the six visual categories.
+This exercises infantry firing, tank turret, Orca high-speed and damaged tree
+frames through `CC_Draw_Shape()`.
+
+This is frame-index compatibility, not final artwork quality. The construction
+yard still needs `FACTMAKE.SHP`; the artillery effect derives its duration
+from the SHP frame count, and terrain needs theater-aware art and occupancy
+checks.

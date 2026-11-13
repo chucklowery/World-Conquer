@@ -76,13 +76,23 @@ jobs:
         run: |
           node tools/content/test-build.js
           node tools/content/test-wireframes.js
+          node tools/content/test-representative-contracts.js
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           node tools/content/wireframes.js build build/browser-engine/wireframes --representative
           node browser/engine/test-wireframe-asset.js build/browser-engine/wireframes
           test -s build/browser-engine/content/manifest.json
           test -s build/browser-engine/wireframes/roster.json
+          test -s build/browser-engine/wireframes/contracts.json
           g++ -std=c++11 -Icommon tests/test-original-shape.cpp common/lcw.cpp -o build/browser-engine/test-original-shape
           build/browser-engine/test-original-shape build/browser-engine/content/files/units/SCOUT.SHP
+          g++ -std=c++11 -Icommon tests/test-wireframe-shapes.cpp common/lcw.cpp -o build/browser-engine/test-wireframe-shapes
+          build/browser-engine/test-wireframe-shapes \
+            build/browser-engine/wireframes/files/infantry/WF-0185.SHP \
+            build/browser-engine/wireframes/files/vehicle/WF-0289.SHP \
+            build/browser-engine/wireframes/files/aircraft/WF-0004.SHP \
+            build/browser-engine/wireframes/files/building/WF-0013.SHP \
+            build/browser-engine/wireframes/files/terrain/WF-0256.SHP \
+            build/browser-engine/wireframes/files/effect/WF-0072.SHP
       - name: Install headless browser tooling
         run: |
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1

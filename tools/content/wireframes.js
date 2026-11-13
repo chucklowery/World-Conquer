@@ -144,6 +144,7 @@ function renderSvg(item) {
 }
 function renderDoc(catalog) {
   const categories = [...new Set(catalog.map(a=>a.category))];
+  const audited = new Set(JSON.parse(fs.readFileSync(path.join(outputRoot,"representative-roster.json"),"utf8")).assets.map(a=>a.id));
   const rows = ["# World-Conquer: Original wireframe asset replacement catalog", "",
     "> Generated original placeholder art. No Electronic Arts media is included. `WF-####` identifiers stay stable only while the upstream enumeration and sorting remain unchanged; use `engineEnum` for persistent game mappings.", "",
     `This catalog contains **${catalog.length} independently linked asset slots** derived from Tiberian Dawn C++ class definitions. The preview is the generated placeholder's first frame.`, "",
@@ -170,7 +171,7 @@ function renderDoc(catalog) {
     rows.push(`## ${category[0].toUpperCase()+category.slice(1)} (${items.length})`, "", requirements[category], "");
     for(const a of items){
       const pathToSvg = `../../game/content/wireframes/${a.preview}`;
-      rows.push(`- [ ] **${a.id} — ${a.role}** · [View placeholder](${pathToSvg}) · engine slot \`${a.engineEnum}\` ([\`${a.source}:${a.sourceLine}\`](../../${a.source}#L${a.sourceLine}), \`${a.engineSymbol}\`).`,
+      rows.push(`- [ ] **${a.id} — ${a.role}** · [View placeholder](${pathToSvg})${audited.has(a.id)?` · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#${a.id.toLowerCase()})`:""} · engine slot \`${a.engineEnum}\` ([\`${a.source}:${a.sourceLine}\`](../../${a.source}#L${a.sourceLine}), \`${a.engineSymbol}\`).`,
         `  - **Engine target:** \`${a.engineFilename}\`. **Placeholder contract (provisional):** ${a.width}×${a.height} indexed pixels, ${a.provisionalFrameCount} generated frames (${a.frameCountFromDoTable ? `minimum calculated from ${a.doTable}` : "provisional allocation; verify exact frame use"}); format \`${a.format}\`.`,
         `  - **Final art input:** \`game/content/wireframes/${a.finalFrameDirectory}/0000.png\` through \`${String(a.provisionalFrameCount-1).padStart(4,"0")}.png\` (ordered RGBA PNGs), plus \`ATTRIBUTION.json\` documenting creator/license/source/revision.`,
         `  - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match ${category} state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.${a.sharedFilenameWith.length?` **Shared engine filename:** coordinate replacement with ${a.sharedFilenameWith.join(", ")}.`:""}`,
@@ -210,6 +211,16 @@ function build(destination, selectedIds) {
   const only=selectedIds===undefined?null:new Set(selectedIds);
   if(only&&(only.size!==selectedIds.length||only.size===0||[...only].some(id=>!catalog.some(a=>a.id===id&&a.status!=="design-only")))){
     throw new Error("Invalid or duplicate selected asset ID");
+  }
+  let auditedRoster=null;
+  if(only){
+    const roster=representativeRoster();
+    if(roster.length===only.size&&roster.every(a=>only.has(a.id))){
+      const computed=require("./representative-contracts").buildContracts();
+      const stored=JSON.parse(fs.readFileSync(path.join(outputRoot,"representative-contracts.json"),"utf8"));
+      if(JSON.stringify(computed)!==JSON.stringify(stored))throw new Error("Representative frame contracts are stale; regenerate and review them");
+      auditedRoster={roster,contracts:computed};
+    }
   }
   const entries=[];
   fs.mkdirSync(path.join(dir,"files"),{recursive:true});
@@ -257,11 +268,9 @@ function build(destination, selectedIds) {
       sha256:crypto.createHash("sha256").update(bytes).digest("hex")});
   }
   fs.writeFileSync(path.join(dir,"manifest.json"),JSON.stringify({schemaVersion:1,gameId:"world-conquer-wireframes",assets:entries},null,2)+"\n");
-  if(only){
-    const roster=representativeRoster();
-    if(roster.length===only.size&&roster.every(a=>only.has(a.id))){
-      fs.writeFileSync(path.join(dir,"roster.json"),JSON.stringify({schemaVersion:1,assets:roster},null,2)+"\n");
-    }
+  if(auditedRoster){
+    fs.writeFileSync(path.join(dir,"roster.json"),JSON.stringify({schemaVersion:1,assets:auditedRoster.roster},null,2)+"\n");
+    fs.writeFileSync(path.join(dir,"contracts.json"),JSON.stringify(auditedRoster.contracts,null,2)+"\n");
   }
   console.log(`Built ${entries.length-1} tactical shape resources${only?" (selected smoke-test roster)":" (excluding design-only overlays)"}`);
 }

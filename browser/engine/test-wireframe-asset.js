@@ -6,9 +6,11 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const {load} = require("./wireframe-asset");
 const {representativeRoster} = require("../../tools/content/wireframes");
+const {buildContracts} = require("../../tools/content/representative-contracts");
 const {decodeTacticalShape} = require("../../tools/content/encode-shape");
 
 const roster = {schemaVersion:1, assets:representativeRoster()};
+const contracts = buildContracts();
 const digest = async buffer => crypto.createHash("sha256").update(Buffer.from(buffer)).digest("hex");
 const hash = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 
@@ -23,10 +25,10 @@ function fixture() {
     const target = `${a.category}/${a.id}.SHP`;
     blobs.set(target, bytes);
     assets.push({id:a.id,engineEnum:a.engineEnum,engineFilename:a.engineFilename,target,
-      sharedFilenameWith:[],mountReady:true,frames:16,width:32,height:32,
+      sharedFilenameWith:[],mountReady:true,frames:contracts.assets.find(c=>c.id===a.id).placeholderFrames,width:32,height:32,
       bytes:bytes.length,sha256:hash(bytes)});
   }
-  return {manifest:{schemaVersion:1,gameId:"world-conquer-wireframes",assets},blobs};
+  return {manifest:{schemaVersion:1,gameId:"world-conquer-wireframes",assets},blobs,contracts};
 }
 function memoryFs(existing = []) {
   const files = new Map(existing.map(n=>[n,Buffer.from([1])]));
@@ -39,6 +41,7 @@ function fixtureFetcher(data, customRoster=roster) {
   return async url => {
     if (url === "wireframes/manifest.json") return {ok:true,json:async()=>data.manifest};
     if (url === "wireframes/roster.json") return {ok:true,json:async()=>customRoster};
+    if (url === "wireframes/contracts.json") return {ok:true,json:async()=>data.contracts};
     const target=url.slice("wireframes/files/".length);
     const bytes=data.blobs.get(target);
     return bytes?{ok:true,arrayBuffer:async()=>Uint8Array.from(bytes).buffer}:{ok:false,status:404};
@@ -66,6 +69,12 @@ async function main() {
   await assert.rejects(load(clean2,"wireframes/manifest.json",fixtureFetcher(colliding),digest),/Unverified or colliding/);
   assert.equal(clean2.files.size,0);
 
+  const incomplete=fixture(), clean3=memoryFs();
+  incomplete.contracts=JSON.parse(JSON.stringify(incomplete.contracts));
+  incomplete.contracts.assets[0].probes=[9999];
+  await assert.rejects(load(clean3,"wireframes/manifest.json",fixtureFetcher(incomplete),digest),/Invalid frame contract/);
+  assert.equal(clean3.files.size,0);
+
   const duplicate={schemaVersion:1,assets:roster.assets.map(a=>({...a}))};
   duplicate.assets[2].engineFilename=duplicate.assets[0].engineFilename;
   await assert.rejects(load(memoryFs(),"wireframes/manifest.json",fixtureFetcher(fixture(),duplicate),digest),/duplicate wireframe roster/);
@@ -79,9 +88,10 @@ async function main() {
     const base=path.resolve(process.argv[2]);
     const manifest=JSON.parse(fs.readFileSync(path.join(base,"manifest.json"),"utf8"));
     const packRoster=JSON.parse(fs.readFileSync(path.join(base,"roster.json"),"utf8"));
+    const packContracts=JSON.parse(fs.readFileSync(path.join(base,"contracts.json"),"utf8"));
     const realBlobs=new Map(manifest.assets.map(a=>[a.target,fs.readFileSync(path.join(base,"files",a.target))]));
     const realFs=memoryFs();
-    const real=await load(realFs,"wireframes/manifest.json",fixtureFetcher({manifest,blobs:realBlobs},packRoster),digest);
+    const real=await load(realFs,"wireframes/manifest.json",fixtureFetcher({manifest,blobs:realBlobs,contracts:packContracts},packRoster),digest);
     assert.equal(real.count,7);
     for(const expected of packRoster.assets){
       const bytes=realFs.files.get("/game/"+expected.engineFilename);
@@ -92,6 +102,8 @@ async function main() {
       assert.equal(decoded.frames[0].width,metadata.width);
       assert.equal(decoded.frames[0].height,metadata.height);
       assert(decoded.frames[0].pixels.some(pixel=>pixel>1));
+      const contract=packContracts.assets.find(a=>a.id===expected.id);
+      for(const frame of contract.probes)assert(decoded.frames[frame].pixels.some(pixel=>pixel>1));
     }
   }
   console.log("PASS: six-class roster, manifest integrity, MEMFS staging, collisions, duplicates and atomic failure");

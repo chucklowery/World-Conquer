@@ -28,11 +28,13 @@
       if (!response.ok) throw new Error(`Wireframe metadata HTTP ${response.status}`);
       return response.json();
     }
-    const [manifest, roster] = await Promise.all([readJson(manifestUrl), readJson(prefix + "roster.json")]);
+    const [manifest, roster, contracts] = await Promise.all([
+      readJson(manifestUrl), readJson(prefix + "roster.json"), readJson(prefix + "contracts.json")]);
     if (manifest.schemaVersion !== 1 || manifest.gameId !== "world-conquer-wireframes" ||
         !Array.isArray(manifest.assets) || roster.schemaVersion !== 1 ||
-        !Array.isArray(roster.assets) || roster.assets.length !== 6) {
-      throw new Error("Invalid wireframe pack manifest/roster");
+        !Array.isArray(roster.assets) || roster.assets.length !== 6 ||
+        contracts.schemaVersion !== 1 || !Array.isArray(contracts.assets) || contracts.assets.length !== 6) {
+      throw new Error("Invalid wireframe pack manifest/roster/contracts");
     }
     const ids = new Set(), filenames = new Set(), roles = new Set();
     const requests = [{id: "palette.wireframe", target: "WIREFRAME.PAL", filename: "WIREFRAME.PAL", maxBytes: 768}];
@@ -47,8 +49,10 @@
         filename: expected.engineFilename, maxBytes: 4 * 1024 * 1024, expected});
     }
     if (roles.size !== categories.size || manifest.assets.some(a => !a || typeof a !== "object") ||
-        new Set(manifest.assets.map(a => a.id)).size !== manifest.assets.length) {
-      throw new Error("Incomplete roster or duplicate manifest IDs");
+        new Set(manifest.assets.map(a => a.id)).size !== manifest.assets.length ||
+        contracts.assets.some(a => !a || typeof a !== "object") ||
+        new Set(contracts.assets.map(a => a.id)).size !== contracts.assets.length) {
+      throw new Error("Incomplete roster or duplicate manifest/contract IDs");
     }
     const staged = [];
     for (const request of requests) {
@@ -67,6 +71,18 @@
           !Number.isSafeInteger(asset.width) || asset.width < 1 || asset.width > 64 ||
           !Number.isSafeInteger(asset.height) || asset.height < 1 || asset.height > 64)) {
         throw new Error(`Unverified or colliding wireframe resource ${request.id}`);
+      }
+      if (request.expected) {
+        const contract = contracts.assets.find(c => c.id === request.id);
+        if (!contract || contract.engineEnum !== asset.engineEnum || contract.category !== request.expected.category ||
+            contract.engineFilename !== request.filename || contract.placeholderFrames !== asset.frames ||
+            !Number.isSafeInteger(contract.minimumFrames) || contract.minimumFrames < 1 ||
+            contract.minimumFrames > asset.frames || !Array.isArray(contract.probes) || !contract.probes.length ||
+            contract.probes.some(frame => !Number.isSafeInteger(frame) || frame < 0 || frame >= asset.frames) ||
+            !Number.isSafeInteger(contract.diagnosticActionFrame) ||
+            !contract.probes.includes(contract.diagnosticActionFrame)) {
+          throw new Error(`Invalid frame contract for ${request.id}`);
+        }
       }
       if (fs.analyzePath(destination).exists) throw new Error(`Asset already staged: ${destination}`);
       const response = await get(prefix + "files/" + request.target);

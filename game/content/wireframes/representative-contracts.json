@@ -1,0 +1,577 @@
+{
+  "schemaVersion": 1,
+  "meaning": "C++-observed index requirements; final art layouts still need review",
+  "assets": [
+    {
+      "id": "WF-0185",
+      "engineEnum": "INFANTRY_E1",
+      "engineFilename": "E1.SHP",
+      "category": "infantry",
+      "placeholderFrames": 532,
+      "placeholderCanvas": [
+        24,
+        24
+      ],
+      "confidence": "frame-index-audited",
+      "minimumFrames": 532,
+      "diagnosticActionFrame": 64,
+      "probes": [
+        0,
+        16,
+        64,
+        192,
+        418,
+        531
+      ],
+      "renderSources": [
+        {
+          "source": "tiberiandawn/idata.cpp",
+          "line": 63,
+          "evidence": "int MiniGunnerDos[DO_COUNT][3]"
+        },
+        {
+          "source": "tiberiandawn/infantry.cpp",
+          "line": 629,
+          "evidence": "shapenum += facenum * Class->DoControls[doit].Jump;"
+        }
+      ],
+      "stateRules": [
+        {
+          "action": "DO_STAND_READY",
+          "start": 0,
+          "count": 1,
+          "facingStride": 1,
+          "facings": 8,
+          "lastFrame": 7
+        },
+        {
+          "action": "DO_STAND_GUARD",
+          "start": 8,
+          "count": 1,
+          "facingStride": 1,
+          "facings": 8,
+          "lastFrame": 15
+        },
+        {
+          "action": "DO_PRONE",
+          "start": 192,
+          "count": 1,
+          "facingStride": 8,
+          "facings": 8,
+          "lastFrame": 248
+        },
+        {
+          "action": "DO_WALK",
+          "start": 16,
+          "count": 6,
+          "facingStride": 6,
+          "facings": 8,
+          "lastFrame": 63
+        },
+        {
+          "action": "DO_FIRE_WEAPON",
+          "start": 64,
+          "count": 8,
+          "facingStride": 8,
+          "facings": 8,
+          "lastFrame": 127
+        },
+        {
+          "action": "DO_LIE_DOWN",
+          "start": 128,
+          "count": 2,
+          "facingStride": 2,
+          "facings": 8,
+          "lastFrame": 143
+        },
+        {
+          "action": "DO_CRAWL",
+          "start": 144,
+          "count": 4,
+          "facingStride": 4,
+          "facings": 8,
+          "lastFrame": 175
+        },
+        {
+          "action": "DO_GET_UP",
+          "start": 176,
+          "count": 2,
+          "facingStride": 2,
+          "facings": 8,
+          "lastFrame": 191
+        },
+        {
+          "action": "DO_FIRE_PRONE",
+          "start": 192,
+          "count": 6,
+          "facingStride": 8,
+          "facings": 8,
+          "lastFrame": 253
+        },
+        {
+          "action": "DO_IDLE1",
+          "start": 256,
+          "count": 16,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 271
+        },
+        {
+          "action": "DO_IDLE2",
+          "start": 272,
+          "count": 16,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 287
+        },
+        {
+          "action": "DO_ON_GUARD",
+          "start": 288,
+          "count": 13,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 300
+        },
+        {
+          "action": "DO_FIGHT_READY",
+          "start": 292,
+          "count": 10,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 301
+        },
+        {
+          "action": "DO_PUNCH",
+          "start": 301,
+          "count": 2,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 302
+        },
+        {
+          "action": "DO_KICK",
+          "start": 303,
+          "count": 6,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 308
+        },
+        {
+          "action": "DO_PUNCH_HIT1",
+          "start": 309,
+          "count": 2,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 310
+        },
+        {
+          "action": "DO_PUNCH_HIT2",
+          "start": 311,
+          "count": 4,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 314
+        },
+        {
+          "action": "DO_PUNCH_DEATH",
+          "start": 315,
+          "count": 5,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 319
+        },
+        {
+          "action": "DO_KICK_HIT1",
+          "start": 319,
+          "count": 2,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 320
+        },
+        {
+          "action": "DO_KICK_HIT2",
+          "start": 321,
+          "count": 4,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 324
+        },
+        {
+          "action": "DO_KICK_DEATH",
+          "start": 325,
+          "count": 5,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 329
+        },
+        {
+          "action": "DO_READY_WEAPON",
+          "start": 330,
+          "count": 5,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 334
+        },
+        {
+          "action": "DO_GUN_DEATH",
+          "start": 382,
+          "count": 8,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 389
+        },
+        {
+          "action": "DO_EXPLOSION_DEATH",
+          "start": 398,
+          "count": 8,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 405
+        },
+        {
+          "action": "DO_EXPLOSION2_DEATH",
+          "start": 398,
+          "count": 8,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 405
+        },
+        {
+          "action": "DO_GRENADE_DEATH",
+          "start": 406,
+          "count": 12,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 417
+        },
+        {
+          "action": "DO_FIRE_DEATH",
+          "start": 418,
+          "count": 18,
+          "facingStride": 0,
+          "facings": 1,
+          "lastFrame": 435
+        },
+        {
+          "action": "DO_GESTURE1",
+          "start": 436,
+          "count": 3,
+          "facingStride": 3,
+          "facings": 8,
+          "lastFrame": 459
+        },
+        {
+          "action": "DO_SALUTE1",
+          "start": 460,
+          "count": 3,
+          "facingStride": 3,
+          "facings": 8,
+          "lastFrame": 483
+        },
+        {
+          "action": "DO_GESTURE2",
+          "start": 484,
+          "count": 3,
+          "facingStride": 3,
+          "facings": 8,
+          "lastFrame": 507
+        },
+        {
+          "action": "DO_SALUTE2",
+          "start": 508,
+          "count": 3,
+          "facingStride": 3,
+          "facings": 8,
+          "lastFrame": 531
+        },
+        {
+          "action": "DO_PULL_GUN",
+          "start": 0,
+          "count": 1,
+          "facingStride": 1,
+          "facings": 8,
+          "lastFrame": 7
+        },
+        {
+          "action": "DO_PLEAD",
+          "start": 0,
+          "count": 1,
+          "facingStride": 1,
+          "facings": 8,
+          "lastFrame": 7
+        },
+        {
+          "action": "DO_PLEAD_DEATH",
+          "start": 0,
+          "count": 1,
+          "facingStride": 1,
+          "facings": 8,
+          "lastFrame": 7
+        }
+      ],
+      "dependencies": [],
+      "remaining": [
+        "Create real animation art for all enabled DO actions and eight-facing sequences",
+        "Verify body pivot, muzzle/impact offsets and shadow in gameplay"
+      ]
+    },
+    {
+      "id": "WF-0289",
+      "engineEnum": "UNIT_MTANK",
+      "engineFilename": "MTNK.SHP",
+      "category": "vehicle",
+      "placeholderFrames": 192,
+      "placeholderCanvas": [
+        32,
+        32
+      ],
+      "confidence": "frame-index-audited",
+      "minimumFrames": 64,
+      "diagnosticActionFrame": 32,
+      "probes": [
+        0,
+        31,
+        32,
+        63
+      ],
+      "renderSources": [
+        {
+          "source": "tiberiandawn/udata.cpp",
+          "line": 264,
+          "evidence": "static UnitTypeClass const UnitMTank(UNIT_MTANK"
+        },
+        {
+          "source": "tiberiandawn/unit.cpp",
+          "line": 2214,
+          "evidence": "shapenum = TechnoClass::BodyShape[tfacing] + 32;"
+        }
+      ],
+      "stateRules": [
+        {
+          "action": "body 32 headings",
+          "start": 0,
+          "count": 32,
+          "lastFrame": 31
+        },
+        {
+          "action": "turret 32 headings",
+          "start": 32,
+          "count": 32,
+          "lastFrame": 63
+        }
+      ],
+      "dependencies": [],
+      "remaining": [
+        "Make body and turret distinct compositing layers in the shared SHP",
+        "Verify turret pivot, recoil, damage and remap pixels"
+      ]
+    },
+    {
+      "id": "WF-0004",
+      "engineEnum": "AIRCRAFT_ORCA",
+      "engineFilename": "ORCA.SHP",
+      "category": "aircraft",
+      "placeholderFrames": 80,
+      "placeholderCanvas": [
+        32,
+        32
+      ],
+      "confidence": "frame-index-audited",
+      "minimumFrames": 64,
+      "diagnosticActionFrame": 32,
+      "probes": [
+        0,
+        31,
+        32,
+        63
+      ],
+      "renderSources": [
+        {
+          "source": "tiberiandawn/aadata.cpp",
+          "line": 178,
+          "evidence": "OrcaHeli(AIRCRAFT_ORCA"
+        },
+        {
+          "source": "tiberiandawn/aircraft.cpp",
+          "line": 358,
+          "evidence": "if (*this == AIRCRAFT_ORCA && Get_Speed() >= MPH_MEDIUM_FAST)"
+        }
+      ],
+      "stateRules": [
+        {
+          "action": "normal 32 headings",
+          "start": 0,
+          "count": 32,
+          "lastFrame": 31
+        },
+        {
+          "action": "high-speed 32 headings",
+          "start": 32,
+          "count": 32,
+          "lastFrame": 63
+        }
+      ],
+      "dependencies": [],
+      "remaining": [
+        "Verify conditional door-state frame selection and aircraft shadow",
+        "Check altitude, orientation, muzzle and rotors at native tactical scale"
+      ]
+    },
+    {
+      "id": "WF-0013",
+      "engineEnum": "STRUCT_CONST",
+      "engineFilename": "FACT.SHP",
+      "category": "building",
+      "placeholderFrames": 128,
+      "placeholderCanvas": [
+        48,
+        48
+      ],
+      "confidence": "partial",
+      "minimumFrames": 1,
+      "diagnosticActionFrame": 0,
+      "probes": [
+        0
+      ],
+      "renderSources": [
+        {
+          "source": "tiberiandawn/bdata.cpp",
+          "line": 534,
+          "evidence": "ClassConst(STRUCT_CONST"
+        },
+        {
+          "source": "tiberiandawn/building.cpp",
+          "line": 513,
+          "evidence": "shapefile = Class->Get_Buildup_Data();"
+        },
+        {
+          "source": "tiberiandawn/bdata.cpp",
+          "line": 3839,
+          "evidence": "sprintf(buffer, \"%sMAKE\", building.IniName);"
+        }
+      ],
+      "stateRules": [
+        {
+          "action": "normal building state",
+          "start": 0,
+          "count": null,
+          "lastFrame": null
+        }
+      ],
+      "dependencies": [
+        "FACTMAKE.SHP"
+      ],
+      "remaining": [
+        "Inventory BState frame starts, frame counts and rates",
+        "Author separate FACTMAKE construction/deconstruction SHP",
+        "Verify 3×2 foundation occupancy and bib/selection offsets"
+      ]
+    },
+    {
+      "id": "WF-0256",
+      "engineEnum": "TERRAIN_TREE1",
+      "engineFilename": "T01.SHP",
+      "category": "terrain",
+      "placeholderFrames": 32,
+      "placeholderCanvas": [
+        32,
+        32
+      ],
+      "confidence": "partial",
+      "minimumFrames": 2,
+      "diagnosticActionFrame": 1,
+      "probes": [
+        0,
+        1
+      ],
+      "renderSources": [
+        {
+          "source": "tiberiandawn/tdata.cpp",
+          "line": 77,
+          "evidence": "Tree1Class(TERRAIN_TREE1"
+        },
+        {
+          "source": "tiberiandawn/terrain.cpp",
+          "line": 365,
+          "evidence": "if (IsCrumbling || Class->IsTransformable)"
+        },
+        {
+          "source": "tiberiandawn/terrain.cpp",
+          "line": 368,
+          "evidence": "if (Strength < 2)"
+        }
+      ],
+      "stateRules": [
+        {
+          "action": "normal",
+          "start": 0,
+          "count": 1,
+          "lastFrame": 0
+        },
+        {
+          "action": "near-destruction",
+          "start": 1,
+          "count": 1,
+          "lastFrame": 1
+        },
+        {
+          "action": "crumbling stage",
+          "start": null,
+          "count": null,
+          "lastFrame": null
+        }
+      ],
+      "dependencies": [
+        "theater palette and SHP variant"
+      ],
+      "remaining": [
+        "Map all crumbling frames and stage rate",
+        "Verify winter/temperate variants and cell footprint and base offset"
+      ]
+    },
+    {
+      "id": "WF-0072",
+      "engineEnum": "ANIM_ART_EXP1",
+      "engineFilename": "ART-EXP1.SHP",
+      "category": "effect",
+      "placeholderFrames": 128,
+      "placeholderCanvas": [
+        32,
+        32
+      ],
+      "confidence": "partial",
+      "minimumFrames": 1,
+      "diagnosticActionFrame": 0,
+      "probes": [
+        0
+      ],
+      "renderSources": [
+        {
+          "source": "tiberiandawn/adata.cpp",
+          "line": 956,
+          "evidence": "ArtExp1(ANIM_ART_EXP1"
+        },
+        {
+          "source": "tiberiandawn/anim.cpp",
+          "line": 237,
+          "evidence": "int shapenum = Class->Start + Fetch_Stage();"
+        }
+      ],
+      "stateRules": [
+        {
+          "action": "animation start + dynamic stage",
+          "start": 0,
+          "count": null,
+          "lastFrame": null
+        }
+      ],
+      "dependencies": [
+        "VOC_XPLOSML2 sound asset"
+      ],
+      "remaining": [
+        "ArtExp1 declares Stages=-1 so runtime derives count from SHP; choose authored effect length intentionally",
+        "Verify frame rate, one-shot disposal, crater and sound timing"
+      ]
+    }
+  ]
+}

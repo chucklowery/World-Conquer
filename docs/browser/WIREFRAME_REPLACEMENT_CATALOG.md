@@ -52,7 +52,7 @@ Some engine classes share the same resource filename (for example a building and
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match aircraft state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
   - **Acceptance:** Confirm exact engine-consumed frame offsets and dimensions against the linked constructor and class render path; test 1× readability, every referenced heading/stage, damage states, remaps, offsets, shadow/selection alignment and native/browser parity. Status: **generated-tactical-placeholder**.
 
-- [ ] **WF-0004 — orca** · [View placeholder](../../game/content/wireframes/previews/WF-0004.svg) · engine slot `AIRCRAFT_ORCA` ([`tiberiandawn/aadata.cpp:178`](../../tiberiandawn/aadata.cpp#L178), `OrcaHeli`).
+- [ ] **WF-0004 — orca** · [View placeholder](../../game/content/wireframes/previews/WF-0004.svg) · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#wf-0004) · engine slot `AIRCRAFT_ORCA` ([`tiberiandawn/aadata.cpp:178`](../../tiberiandawn/aadata.cpp#L178), `OrcaHeli`).
   - **Engine target:** `ORCA.SHP`. **Placeholder contract (provisional):** 32×32 indexed pixels, 80 generated frames (provisional allocation; verify exact frame use); format `tactical-keyframe`.
   - **Final art input:** `game/content/wireframes/final/WF-0004/0000.png` through `0079.png` (ordered RGBA PNGs), plus `ATTRIBUTION.json` documenting creator/license/source/revision.
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match aircraft state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
@@ -110,7 +110,7 @@ Base, production/active, damage, destruction and potentially turret/directional 
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match building state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics. **Shared engine filename:** coordinate replacement with WF-0194.
   - **Acceptance:** Confirm exact engine-consumed frame offsets and dimensions against the linked constructor and class render path; test 1× readability, every referenced heading/stage, damage states, remaps, offsets, shadow/selection alignment and native/browser parity. Status: **generated-tactical-placeholder**.
 
-- [ ] **WF-0013 — const** · [View placeholder](../../game/content/wireframes/previews/WF-0013.svg) · engine slot `STRUCT_CONST` ([`tiberiandawn/bdata.cpp:534`](../../tiberiandawn/bdata.cpp#L534), `ClassConst`).
+- [ ] **WF-0013 — const** · [View placeholder](../../game/content/wireframes/previews/WF-0013.svg) · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#wf-0013) · engine slot `STRUCT_CONST` ([`tiberiandawn/bdata.cpp:534`](../../tiberiandawn/bdata.cpp#L534), `ClassConst`).
   - **Engine target:** `FACT.SHP`. **Placeholder contract (provisional):** 48×48 indexed pixels, 128 generated frames (provisional allocation; verify exact frame use); format `tactical-keyframe`.
   - **Final art input:** `game/content/wireframes/final/WF-0013/0000.png` through `0127.png` (ordered RGBA PNGs), plus `ATTRIBUTION.json` documenting creator/license/source/revision.
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match building state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
@@ -468,7 +468,7 @@ Base, production/active, damage, destruction and potentially turret/directional 
 
 Timing, frame-start, frame-count, looping and transparency vary by animation type. Follow the AnimTypeClass sequence before finalizing; generated frames are visual stand-ins.
 
-- [ ] **WF-0072 — art exp1** · [View placeholder](../../game/content/wireframes/previews/WF-0072.svg) · engine slot `ANIM_ART_EXP1` ([`tiberiandawn/adata.cpp:956`](../../tiberiandawn/adata.cpp#L956), `ArtExp1`).
+- [ ] **WF-0072 — art exp1** · [View placeholder](../../game/content/wireframes/previews/WF-0072.svg) · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#wf-0072) · engine slot `ANIM_ART_EXP1` ([`tiberiandawn/adata.cpp:956`](../../tiberiandawn/adata.cpp#L956), `ArtExp1`).
   - **Engine target:** `ART-EXP1.SHP`. **Placeholder contract (provisional):** 32×32 indexed pixels, 128 generated frames (provisional allocation; verify exact frame use); format `tactical-keyframe`.
   - **Final art input:** `game/content/wireframes/final/WF-0072/0000.png` through `0127.png` (ordered RGBA PNGs), plus `ATTRIBUTION.json` documenting creator/license/source/revision.
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match effect state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
@@ -1150,7 +1150,7 @@ Animation frames must follow that class's DO control table (stand, eight-facing 
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match infantry state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
   - **Acceptance:** Confirm exact engine-consumed frame offsets and dimensions against the linked constructor and class render path; test 1× readability, every referenced heading/stage, damage states, remaps, offsets, shadow/selection alignment and native/browser parity. Status: **generated-tactical-placeholder**.
 
-- [ ] **WF-0185 — e1** · [View placeholder](../../game/content/wireframes/previews/WF-0185.svg) · engine slot `INFANTRY_E1` ([`tiberiandawn/idata.cpp:100`](../../tiberiandawn/idata.cpp#L100), `E1`).
+- [ ] **WF-0185 — e1** · [View placeholder](../../game/content/wireframes/previews/WF-0185.svg) · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#wf-0185) · engine slot `INFANTRY_E1` ([`tiberiandawn/idata.cpp:100`](../../tiberiandawn/idata.cpp#L100), `E1`).
   - **Engine target:** `E1.SHP`. **Placeholder contract (provisional):** 24×24 indexed pixels, 532 generated frames (minimum calculated from MiniGunnerDos); format `tactical-keyframe`.
   - **Final art input:** `game/content/wireframes/final/WF-0185/0000.png` through `0531.png` (ordered RGBA PNGs), plus `ATTRIBUTION.json` documenting creator/license/source/revision.
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match infantry state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
@@ -1588,7 +1588,7 @@ Theater-dependent vegetation/rock silhouette, tile footprint, collision/selectio
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match terrain state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
   - **Acceptance:** Confirm exact engine-consumed frame offsets and dimensions against the linked constructor and class render path; test 1× readability, every referenced heading/stage, damage states, remaps, offsets, shadow/selection alignment and native/browser parity. Status: **generated-tactical-placeholder**.
 
-- [ ] **WF-0256 — tree1** · [View placeholder](../../game/content/wireframes/previews/WF-0256.svg) · engine slot `TERRAIN_TREE1` ([`tiberiandawn/tdata.cpp:77`](../../tiberiandawn/tdata.cpp#L77), `Tree1Class`).
+- [ ] **WF-0256 — tree1** · [View placeholder](../../game/content/wireframes/previews/WF-0256.svg) · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#wf-0256) · engine slot `TERRAIN_TREE1` ([`tiberiandawn/tdata.cpp:77`](../../tiberiandawn/tdata.cpp#L77), `Tree1Class`).
   - **Engine target:** `T01.SHP`. **Placeholder contract (provisional):** 32×32 indexed pixels, 32 generated frames (provisional allocation; verify exact frame use); format `tactical-keyframe`.
   - **Final art input:** `game/content/wireframes/final/WF-0256/0000.png` through `0031.png` (ordered RGBA PNGs), plus `ATTRIBUTION.json` documenting creator/license/source/revision.
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match terrain state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
@@ -1790,7 +1790,7 @@ Theater-dependent vegetation/rock silhouette, tile footprint, collision/selectio
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match vehicle state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
   - **Acceptance:** Confirm exact engine-consumed frame offsets and dimensions against the linked constructor and class render path; test 1× readability, every referenced heading/stage, damage states, remaps, offsets, shadow/selection alignment and native/browser parity. Status: **generated-tactical-placeholder**.
 
-- [ ] **WF-0289 — mtank** · [View placeholder](../../game/content/wireframes/previews/WF-0289.svg) · engine slot `UNIT_MTANK` ([`tiberiandawn/udata.cpp:264`](../../tiberiandawn/udata.cpp#L264), `UnitMTank`).
+- [ ] **WF-0289 — mtank** · [View placeholder](../../game/content/wireframes/previews/WF-0289.svg) · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#wf-0289) · engine slot `UNIT_MTANK` ([`tiberiandawn/udata.cpp:264`](../../tiberiandawn/udata.cpp#L264), `UnitMTank`).
   - **Engine target:** `MTNK.SHP`. **Placeholder contract (provisional):** 32×32 indexed pixels, 192 generated frames (provisional allocation; verify exact frame use); format `tactical-keyframe`.
   - **Final art input:** `game/content/wireframes/final/WF-0289/0000.png` through `0191.png` (ordered RGBA PNGs), plus `ATTRIBUTION.json` documenting creator/license/source/revision.
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match vehicle state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
