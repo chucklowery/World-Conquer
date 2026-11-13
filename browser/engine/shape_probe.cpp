@@ -1,5 +1,5 @@
-// Project-owned indexed SHP sample diagnostic, compiled into the real engine.
-// This deliberately does not claim full gameplay renderer integration.
+// Project-owned tactical SHP diagnostic, compiled into the real engine.
+// Uses the game's own CC_Draw_Shape(), not a separate sprite blitter.
 #ifdef __EMSCRIPTEN__
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
@@ -9,6 +9,7 @@
 #include "common/keyframe.h"
 #include "common/paths.h"
 #include "common/ccfile.h"
+#include "tiberiandawn/function.h"
 
 namespace {
 SDL_Window* shapeWindow = nullptr;
@@ -93,11 +94,37 @@ int Browser_Shape_Probe(const char* argv0)
     if (!ValidateTactical(bytes, width, height)) {
         std::fprintf(stderr, "[browser-shape] invalid tactical keyframe sprite\n"); return 5;
     }
+    // Render to a small offscreen indexed GraphicBufferClass, using exactly
+    // the same CC_Draw_Shape entry point as game units. Restore global draw
+    // state immediately; probe UI uses the resulting pixel buffer only.
+    const int screenSize = 64;
+    std::vector<uint8_t> indexed(screenSize * screenSize, 1);
+    GraphicBufferClass backing(screenSize, screenSize, indexed.data(), indexed.size());
+    GraphicViewPortClass* previousPage = LogicPage;
+    const int oldX = WindowList[WINDOW_TACTICAL][WINDOWX];
+    const int oldY = WindowList[WINDOW_TACTICAL][WINDOWY];
+    const int oldWidth = WindowList[WINDOW_TACTICAL][WINDOWWIDTH];
+    const int oldHeight = WindowList[WINDOW_TACTICAL][WINDOWHEIGHT];
+    WindowList[WINDOW_TACTICAL][WINDOWX] = 0;
+    WindowList[WINDOW_TACTICAL][WINDOWY] = 0;
+    WindowList[WINDOW_TACTICAL][WINDOWWIDTH] = screenSize;
+    WindowList[WINDOW_TACTICAL][WINDOWHEIGHT] = screenSize;
+    LogicPage = &backing;
+    std::vector<uint8_t> shapeScratch(131072);
+    Set_Shape_Buffer(shapeScratch.data(), shapeScratch.size());
     UseBigShapeBuffer = false;
-    std::vector<uint8_t> indexed(static_cast<size_t>(width) * height);
-    if (!Build_Frame(bytes.data(), 0, indexed.data()) ||
-        Get_Build_Frame_Width(bytes.data()) != width ||
-        Get_Build_Frame_Height(bytes.data()) != height) return 11;
+    CC_Draw_Shape(bytes.data(), 0, 28, 28, WINDOW_TACTICAL, SHAPE_NORMAL);
+    Set_Shape_Buffer(nullptr, 0);
+    LogicPage = previousPage;
+    WindowList[WINDOW_TACTICAL][WINDOWX] = oldX;
+    WindowList[WINDOW_TACTICAL][WINDOWY] = oldY;
+    WindowList[WINDOW_TACTICAL][WINDOWWIDTH] = oldWidth;
+    WindowList[WINDOW_TACTICAL][WINDOWHEIGHT] = oldHeight;
+    if (indexed[28 * screenSize + 28] != 1 || // transparent pixel retains background
+        indexed[28 * screenSize + 31] != 3 || indexed[31 * screenSize + 31] != 7) {
+        std::fprintf(stderr, "[browser-shape] tactical draw pixel verification failed\n");
+        return 11;
+    }
     std::vector<uint32_t> rgba;
     rgba.reserve(indexed.size());
     for (uint8_t color : indexed) {
@@ -115,11 +142,11 @@ int Browser_Shape_Probe(const char* argv0)
     if (!shapeRenderer) shapeRenderer = SDL_CreateRenderer(shapeWindow, -1, SDL_RENDERER_SOFTWARE);
     if (!shapeRenderer) return 8;
     shapeTexture = SDL_CreateTexture(shapeRenderer, SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STATIC, width, height);
+        SDL_TEXTUREACCESS_STATIC, screenSize, screenSize);
     if (!shapeTexture) return 9;
     SDL_SetTextureBlendMode(shapeTexture, SDL_BLENDMODE_BLEND);
-    if (SDL_UpdateTexture(shapeTexture, nullptr, rgba.data(), width * sizeof(uint32_t)) != 0) return 10;
-    std::printf("[browser-shape] CCFileClass loaded original palette and tactical SHP; engine Build_Frame decoded %dx%d\n", width, height);
+    if (SDL_UpdateTexture(shapeTexture, nullptr, rgba.data(), screenSize * sizeof(uint32_t)) != 0) return 10;
+    std::printf("[browser-shape] CC_Draw_Shape rendered original tactical SHP via engine buffer: %dx%d\n", width, height);
     emscripten_set_main_loop(ShapeFrame, 0, 1);
     return 0;
 }

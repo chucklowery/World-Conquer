@@ -64,13 +64,12 @@ per entry. Do not import copyrighted C&C game media into this directory.
    formats supported by the original engine (or implement a browser-only
    engine reader). Verify animated directions and palette correctness.
 3. Map original game definitions and filenames to project-owned identifiers.
-4. Expand the current `--browser-shape-probe`: it loads hashed sample SHP and
-   PAL files into MEMFS, resolves them using `CCFileClass`, and decodes
-   with the engine's actual `Build_Frame()` routine,
-   then renders an SDL2 texture. This diagnostic is **not yet** the engine's
-   `CC_Draw_Shape()` tactical drawing path. The
-   headless browser CI verifies nonblank rendering; a real engine gameplay
-   resource load is the next acceptance gate.
+4. The `--browser-shape-probe` now loads hashed sample SHP and PAL files into
+   MEMFS, resolves them using `CCFileClass`, and draws with the actual
+   `CC_Draw_Shape()` tactical function into a small offscreen indexed buffer.
+   The probe checks expected color indexes and transparency, then presents
+   the result through SDL2. Chromium CI must still confirm this works in
+   WebAssembly. A real game mission remains the next acceptance gate.
 5. Add a test that loads an entirely original resource pack and completes
    one mission; only then enable bundled-game startup.
 6. Publish the validated pack alongside the HTML/JS/WASM bundle, with

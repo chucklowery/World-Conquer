@@ -41,7 +41,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
 <button type="button" id="run-shape" disabled>Render original SHP sample</button>
 <p class="note">No game assets required. Select either probe (reload to switch modes). Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
-<p class="note">The original SHP diagnostic loads a project-owned sprite from <code>content/</code> and draws it using SDL2. This does not enter the game or verify its tactical shape renderer.</p>
+<p class="note">The original SHP diagnostic loads project-owned sprite and palette files from <code>content/</code>. It draws the sprite through the game's own tactical <code>CC_Draw_Shape()</code> into an offscreen buffer and presents that buffer with SDL2. It does not initialize a mission.</p>
 <h2>Runtime log</h2>
 <pre id="log" aria-live="polite"></pre>
 </section>
