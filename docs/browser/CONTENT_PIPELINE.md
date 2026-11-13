@@ -15,6 +15,8 @@ Requires Node.js 18+; no external npm dependencies.
 node tools/content/test-build.js
 node browser/engine/test-original-asset.js
 node tools/content/build.js game/content/manifest.json build/world-conquer-content
+g++ -std=c++11 -Icommon tests/test-original-shape.cpp common/lcw.cpp -o build/test-original-shape
+build/test-original-shape build/world-conquer-content/files/units/SCOUT.SHP
 ```
 
 The destination must not exist. Delete or choose a different *specific build
@@ -24,15 +26,24 @@ holding the original bytes. Asset entries are sorted by ID, producing a
 stable index across builds. No timestamps, absolute paths or network requests
 enter the manifest.
 
-The sample `unit.placeholder-scout` entry demonstrates the `indexed-shape`
+The sample `unit.placeholder-scout` entry demonstrates the `tactical-shape`
 transform, turning an indexed frame JSON file into `files/units/SCOUT.SHP`.
 The optional `transform` property defaults to `copy`; source hashes are
 recorded separately from hashes of produced files. Index 0 is transparency.
-The converter emits a little-endian shape-block frame table and uncompressed
-zero-run image data based on `common/shape.h`, `common/getshape.cpp`, and
-`common/wwmouse.cpp`. This is **format-level validation only**. The old engine
-uses a global palette and may expect specific dimensions, frame ordering,
-additional data, filenames, or embedded archives.
+The tactical converter emits a `KeyFrameHeaderType` with 8-byte per-frame
+offset entries and literal-only LCW data, based on `common/keyframe.cpp` and
+`common/lcw.cpp`. This is the format read by `Build_Frame()` and used by the
+unit/infantry `CC_Draw_Shape()` path. The older `indexed-shape` transform is
+still available for the distinct cursor-style shape-block format, but **must
+not be used for normal tactical unit sprites**. The game still expects a
+palette, meaningful dimensions/frame ordering, resource naming, and archives.
+
+The `palette6` transform converts a JSON array of `#RRGGBB` colors into a
+256-entry `.PAL` (768 bytes, 6-bit RGB). Omitted palette entries are black and
+entry 0 must be black for transparent shape pixels. The sample is generated
+as `files/palettes/SCOUT.PAL`. `test-original-shape.cpp` decodes the sample
+with the actual engine `LCW_Uncompress()` implementation; the browser test
+additionally exercises `CCFileClass` lookup and `Build_Frame()`.
 
 ## Source manifest
 
@@ -53,9 +64,11 @@ per entry. Do not import copyrighted C&C game media into this directory.
    formats supported by the original engine (or implement a browser-only
    engine reader). Verify animated directions and palette correctness.
 3. Map original game definitions and filenames to project-owned identifiers.
-4. Expand the current `--browser-shape-probe`: it loads a hashed sample SHP
-   into MEMFS, checks its indexed frame in C++, then renders an SDL2 texture.
-   This diagnostic is **not** the engine's tactical drawing path. The
+4. Expand the current `--browser-shape-probe`: it loads hashed sample SHP and
+   PAL files into MEMFS, resolves them using `CCFileClass`, and decodes
+   with the engine's actual `Build_Frame()` routine,
+   then renders an SDL2 texture. This diagnostic is **not yet** the engine's
+   `CC_Draw_Shape()` tactical drawing path. The
    headless browser CI verifies nonblank rendering; a real engine gameplay
    resource load is the next acceptance gate.
 5. Add a test that loads an entirely original resource pack and completes

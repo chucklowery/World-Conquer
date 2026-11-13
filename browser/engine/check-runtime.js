@@ -90,7 +90,7 @@ async function main() {
     await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
     const emptyCanvas = await page.locator("#canvas").screenshot();
     await page.locator("#run-shape").click();
-    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-shape] original indexed SHP decoded and uploaded to SDL2 texture"),
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-shape] CCFileClass loaded original palette and tactical SHP; engine Build_Frame decoded"),
                                undefined, {timeout: 40000});
     await page.waitForTimeout(250);
     const renderedCanvas = await page.locator("#canvas").screenshot();

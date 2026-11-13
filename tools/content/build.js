@@ -6,9 +6,10 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const {encodeShape} = require("./encode-shape");
+const {encodeShape, encodeTacticalShape} = require("./encode-shape");
+const {encodePalette} = require("./encode-palette");
 
-const TYPES = new Set(["sprite", "terrain", "ui", "audio", "music", "map", "rules", "other"]);
+const TYPES = new Set(["sprite", "terrain", "ui", "audio", "music", "map", "rules", "palette", "other"]);
 const ID = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/;
 const SHA = /^[a-f0-9]{64}$/;
 
@@ -36,7 +37,7 @@ function readManifest(filename) {
     }
     seen.add(entry.id);
     if (!TYPES.has(entry.type)) throw new Error(`Unknown asset type for ${entry.id}`);
-    if (entry.transform !== undefined && entry.transform !== "indexed-shape") {
+    if (entry.transform !== undefined && !["indexed-shape", "tactical-shape", "palette6"].includes(entry.transform)) {
       throw new Error(`Unknown asset transform for ${entry.id}`);
     }
     safeRelative(entry.source, `source for ${entry.id}`);
@@ -74,7 +75,11 @@ function build(manifestFile, outputDir) {
       throw new Error(`SHA-256 mismatch for ${asset.id}`);
     }
     const bytes = asset.transform === "indexed-shape"
-      ? encodeShape(JSON.parse(sourceBytes.toString("utf8"))) : sourceBytes;
+      ? encodeShape(JSON.parse(sourceBytes.toString("utf8")))
+      : asset.transform === "tactical-shape"
+        ? encodeTacticalShape(JSON.parse(sourceBytes.toString("utf8")))
+        : asset.transform === "palette6"
+          ? encodePalette(JSON.parse(sourceBytes.toString("utf8"))) : sourceBytes;
     const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
     files.push({id: asset.id, type: asset.type, target: asset.target,
       creator: asset.creator, license: asset.license, transform: asset.transform || "copy",

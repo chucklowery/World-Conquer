@@ -124,7 +124,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     controls();
     try {
       const result = await WCContent.load(Module.FS, "content/manifest.json");
-      report("[browser-shape] verified bundled " + result.id + " (" + result.bytes + " bytes)");
+      report("[browser-shape] verified " + result.count + " bundled original assets (" + result.bytes + " bytes)");
       loadingAssets = false;
       run(["--browser-shape-probe"], "shape");
     } catch (error) {

@@ -6,7 +6,8 @@ const os = require("node:os");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const {build, readManifest, safeRelative} = require("./build");
-const {encodeShape, decodeShape} = require("./encode-shape");
+const {encodeShape, decodeShape, encodeTacticalShape, decodeTacticalShape} = require("./encode-shape");
+const {encodePalette} = require("./encode-palette");
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "world-conquer-content-"));
 try {
@@ -52,6 +53,19 @@ try {
   assert.throws(() => decodeShape(shape.subarray(0, 5)), /Invalid shape block/);
   const longZeros = {frames: [{width: 20, height: 20, pixels: Array(400).fill(0)}]};
   assert.deepEqual(decodeShape(encodeShape(longZeros)), longZeros);
+  const tacticalFrames = {frames: [{width: 2, height: 2, pixels: [1, 0, 2, 3]},
+    {width: 2, height: 2, pixels: [0, 0, 4, 5]}]};
+  assert.deepEqual(decodeTacticalShape(encodeTacticalShape(tacticalFrames)), tacticalFrames);
+  const tactical = encodeTacticalShape(longZeros);
+  assert.deepEqual(decodeTacticalShape(tactical), longZeros);
+  assert.equal(tactical.readUInt16LE(6), 20);
+  assert.equal(tactical.readUInt32LE(14) >>> 24, 0x80);
+  assert.throws(() => encodeTacticalShape({frames: [{width: 4, height: 4, pixels: Array(16).fill(2)},
+    {width: 8, height: 2, pixels: Array(16).fill(2)}]}), /identical dimensions/);
+  const palette = encodePalette({colors: ["#000000", "#ffffff", "#ff0000"]});
+  assert.equal(palette.length, 768);
+  assert.deepEqual([...palette.subarray(0, 9)], [0, 0, 0, 63, 63, 63, 63, 0, 0]);
+  assert.throws(() => encodePalette({colors: ["#ffffff"]}), /transparent/);
   console.log("PASS: deterministic packaging, provenance, hashes, duplicate and path validation");
 } finally {
   fs.rmSync(temp, {recursive: true, force: true});

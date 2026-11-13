@@ -75,6 +75,8 @@ jobs:
           node tools/content/test-build.js
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           test -s build/browser-engine/content/manifest.json
+          g++ -std=c++11 -Icommon tests/test-original-shape.cpp common/lcw.cpp -o build/browser-engine/test-original-shape
+          build/browser-engine/test-original-shape build/browser-engine/content/files/units/SCOUT.SHP
       - name: Install headless browser tooling
         run: |
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1

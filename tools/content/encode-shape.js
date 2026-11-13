@@ -87,6 +87,88 @@ function decodeShape(block) {
   return {frames};
 }
 
+// Tactical sprites follow common/keyframe.cpp, not common/getshape.cpp.
+// Each 8-byte frame-table entry points at an LCW-encoded full keyframe.
+// Literal-only LCW is intentionally simple, deterministic and valid for
+// prototyping. A delta/compression optimizer can be added later.
+function encodeLcwLiteral(pixels) {
+  const parts = [];
+  for (let i = 0; i < pixels.length; i += 63) {
+    const chunk = pixels.slice(i, i + 63);
+    parts.push(Buffer.from([0x80 | chunk.length, ...chunk]));
+  }
+  parts.push(Buffer.from([0x80]));
+  return Buffer.concat(parts);
+}
+
+function validateTactical(input) {
+  if (!input || !Array.isArray(input.frames) || !input.frames.length || input.frames.length > 65535) {
+    throw new Error("frames must contain 1..65535 indexed images");
+  }
+  const {width, height} = input.frames[0];
+  if (!Number.isInteger(width) || width < 1 || width > 255 ||
+      !Number.isInteger(height) || height < 1 || height > 255 || width * height > 65535) {
+    throw new Error("Unsupported tactical frame dimensions");
+  }
+  for (const [i, frame] of input.frames.entries()) {
+    if (frame.width !== width || frame.height !== height || !Array.isArray(frame.pixels) ||
+        frame.pixels.length !== width * height || !frame.pixels.every(p => Number.isInteger(p) && p >= 0 && p <= 255)) {
+      throw new Error(`Invalid tactical frame ${i}: all frames must have identical dimensions`);
+    }
+  }
+  return {width, height};
+}
+
+function encodeTacticalShape(input) {
+  const {width, height} = validateTactical(input);
+  const table = Buffer.alloc(14 + input.frames.length * 8);
+  table.writeUInt16LE(input.frames.length, 0);
+  table.writeUInt16LE(width, 6);
+  table.writeUInt16LE(height, 8);
+  table.writeUInt16LE(width * height, 10);
+  const chunks = [table];
+  let offset = table.length;
+  for (const [i, frame] of input.frames.entries()) {
+    if (offset > 0xFFFFFF) throw new Error("Tactical shape exceeds 24-bit offset range");
+    table.writeUInt32LE((0x80000000 | offset) >>> 0, 14 + i * 8);
+    const compressed = encodeLcwLiteral(frame.pixels);
+    chunks.push(compressed);
+    offset += compressed.length;
+  }
+  return Buffer.concat(chunks);
+}
+
+function decodeTacticalShape(block) {
+  if (!Buffer.isBuffer(block) || block.length < 22) throw new Error("Invalid tactical shape");
+  const count = block.readUInt16LE(0);
+  const width = block.readUInt16LE(6);
+  const height = block.readUInt16LE(8);
+  const tableEnd = 14 + count * 8;
+  if (!count || !width || !height || width * height > 65535 || tableEnd > block.length) {
+    throw new Error("Invalid tactical shape header");
+  }
+  const frames = [];
+  for (let i = 0; i < count; i++) {
+    const entry = block.readUInt32LE(14 + i * 8);
+    if ((entry >>> 24) !== 0x80) throw new Error("Only full tactical keyframes are supported");
+    let cursor = entry & 0xFFFFFF;
+    if (cursor < tableEnd || cursor >= block.length) throw new Error("Invalid tactical frame offset");
+    const pixels = [];
+    while (pixels.length < width * height) {
+      if (cursor >= block.length) throw new Error("Truncated tactical frame");
+      const op = block[cursor++];
+      if (op === 0x80 || (op & 0xC0) !== 0x80) throw new Error("Unsupported LCW command");
+      const amount = op & 0x3F;
+      if (!amount || cursor + amount > block.length || pixels.length + amount > width * height) {
+        throw new Error("Invalid LCW literal length");
+      }
+      for (let j = 0; j < amount; j++) pixels.push(block[cursor++]);
+    }
+    frames.push({width, height, pixels});
+  }
+  return {frames};
+}
+
 if (require.main === module) {
   try {
     if (process.argv.length !== 4) throw new Error("Usage: node tools/content/encode-shape.js <indexed-frames.json> <new-file.shp>");
@@ -94,4 +176,4 @@ if (require.main === module) {
     console.log(`Created indexed shape block: ${process.argv[3]}`);
   } catch (err) {console.error(err.message); process.exitCode = 1;}
 }
-module.exports = {encodeShape, decodeShape};
+module.exports = {encodeShape, decodeShape, encodeTacticalShape, decodeTacticalShape};
