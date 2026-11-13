@@ -73,6 +73,7 @@ jobs:
       - name: Verify original content pipeline
         run: |
           node tools/content/test-build.js
+          node tools/content/test-wireframes.js
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           test -s build/browser-engine/content/manifest.json
           g++ -std=c++11 -Icommon tests/test-original-shape.cpp common/lcw.cpp -o build/browser-engine/test-original-shape

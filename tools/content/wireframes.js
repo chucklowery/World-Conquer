@@ -1,0 +1,248 @@
+#!/usr/bin/env node
+"use strict";
+
+// Generate project-authored, license-clean wireframes for every type slot
+// declared in the Tiberian Dawn engine. The catalog and SVGs are checked in;
+// generated .SHP files belong in ignored build outputs.
+const fs = require("node:fs");
+const path = require("node:path");
+const crypto = require("node:crypto");
+const {encodeTacticalShape, decodeTacticalShape} = require("./encode-shape");
+const {encodePalette} = require("./encode-palette");
+const {importFrames} = require("./png-to-frames");
+
+const root = path.resolve(__dirname, "../..");
+const outputRoot = path.join(root, "game/content/wireframes");
+const docsPath = path.join(root, "docs/browser/WIREFRAME_REPLACEMENT_CATALOG.md");
+const configs = [
+  {category: "vehicle", file: "udata.cpp", className: "UnitTypeClass", prefix: "UNIT_", size: 32, frames: 192},
+  {category: "infantry", file: "idata.cpp", className: "InfantryTypeClass", prefix: "INFANTRY_", size: 24, frames: 640},
+  {category: "aircraft", file: "aadata.cpp", className: "AircraftTypeClass", prefix: "AIRCRAFT_", size: 32, frames: 80},
+  {category: "building", file: "bdata.cpp", className: "BuildingTypeClass", prefix: "STRUCT_", size: 48, frames: 128},
+  {category: "terrain", file: "tdata.cpp", className: "TerrainTypeClass", prefix: "TERRAIN_", size: 32, frames: 32},
+  {category: "projectile", file: "bbdata.cpp", className: "BulletTypeClass", prefix: "BULLET_", size: 16, frames: 32},
+  {category: "overlay", file: "odata.cpp", className: "OverlayTypeClass", prefix: "OVERLAY_", size: 24, frames: 16},
+  {category: "effect", file: "adata.cpp", className: "AnimTypeClass", prefix: "ANIM_", size: 32, frames: 128}
+];
+const requirements = {
+  vehicle: "32 heading frames (0–31); turret or radar layers from frame 32 when applicable; ammo, movement, door and damage variations depend on class flags. For this placeholder the first 32 are directional; later frames are repeatable stand-ins.",
+  infantry: "Animation frames must follow that class's DO control table (stand, eight-facing walk/fire, prone, death and optional gestures). The recorded frame count is derived from the DoControls table when possible; stand-ins are not choreographed.",
+  aircraft: "32 body headings; additional flight, rotor, door and movement states per aircraft class. Keep the center point and shadow distinct and preserve transparent index 0.",
+  building: "Base, production/active, damage, destruction and potentially turret/directional frames. Building footprints and anchors must match the map occupancy definition; the placeholder animation is schematic.",
+  terrain: "Theater-dependent vegetation/rock silhouette, tile footprint, collision/selection footprint, burning/damage stages where applicable. Preserve ground contact and transparent pixels.",
+  projectile: "Heading, flight, hit, explosion or intentionally invisible states per weapon code. Validate visibility requirements before replacing; not every bullet requires a drawn sprite.",
+  overlay: "Road, wall, resource, decal or crate cells with neighbor-join and damage variants. These use the theater icon/overlay system: SVG preview is a design reference, not yet a verified tactical SHP replacement.",
+  effect: "Timing, frame-start, frame-count, looping and transparency vary by animation type. Follow the AnimTypeClass sequence before finalizing; generated frames are visual stand-ins."
+};
+const paletteColors = ["#000000", "#172a36", "#277e68", "#45cba2", "#4e97c8", "#a1e7d3", "#d7a45b", "#f4e6bd"];
+function cleanSource(s) { return s.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, match => match.replace(/[^\n]/g, " ")); }
+function infantryMinimum(source, block) {
+  const name = block.match(/&([A-Za-z0-9_]+)\[0\]\[0\]/)?.[1];
+  if (!name) return {frames: 640, table: null, audited: false};
+  const tables = new RegExp(`int\\s+${name}\\[DO_COUNT\\]\\[3\\]\\s*=\\s*\\{([\\s\\S]*?)\\};`);
+  const body = source.match(tables)?.[1];
+  if (!body) return {frames: 640, table: name, audited: false};
+  const nums = (body.match(/-?\d+/g) || []).map(Number);
+  if (nums.length % 3 !== 0) return {frames: 640, table: name, audited: false};
+  let max = 1;
+  for (let i = 0; i < nums.length; i += 3) {
+    max = Math.max(max, nums[i] + nums[i + 1] + nums[i + 2] * 7);
+  }
+  return {frames: max, table: name, audited: true};
+}
+function inventory() {
+  const result = [];
+  for (const config of configs) {
+    const cpp = `tiberiandawn/${config.file}`;
+    const source = cleanSource(fs.readFileSync(path.join(root, cpp), "utf8"));
+    const pattern = new RegExp(`(?:static\\s+)?${config.className}\\s+const\\s+(\\w+)\\s*\\(\\s*(${config.prefix}[A-Z0-9_]+)\\s*,([\\s\\S]*?)\\);`, "g");
+    for (const match of source.matchAll(pattern)) {
+      const engineSymbol = match[1], engineEnum = match[2], args = match[3];
+      const sourceLine = source.slice(0, match.index).split("\n").length;
+      const artName = args.match(/"([A-Za-z0-9_-]+)"/)?.[1]?.toUpperCase() || engineEnum.slice(config.prefix.length);
+      const kind = engineEnum.slice(config.prefix.length).toLowerCase();
+      const info = config.category === "infantry" ? infantryMinimum(source, args) : null;
+      const width = config.size, height = config.size;
+      const frames = info ? Math.max(1, info.frames) : config.frames;
+      const previewOnly = config.category === "overlay";
+      result.push({category: config.category, engineEnum, engineSymbol,
+        source: cpp, sourceLine, artName, engineFilename: `${artName}.SHP`,
+        role: kind.replace(/_/g, " "), width, height,
+        provisionalFrameCount: frames, doTable: info?.table || null,
+        frameCountFromDoTable: info?.audited || false,
+        format: previewOnly ? "theater-overlay-unverified" : "tactical-keyframe",
+        status: previewOnly ? "design-only" : "generated-tactical-placeholder"});
+    }
+  }
+  result.sort((a, b) => a.category.localeCompare(b.category, "en") || a.engineEnum.localeCompare(b.engineEnum, "en"));
+  const catalog=result.map((item, i) => ({id: `WF-${String(i + 1).padStart(4, "0")}`, ...item,
+    preview: `previews/WF-${String(i + 1).padStart(4, "0")}.svg`,
+    finalFrameDirectory: `final/WF-${String(i + 1).padStart(4, "0")}`}));
+  const byFilename=new Map();
+  for(const a of catalog)byFilename.set(a.engineFilename,[...(byFilename.get(a.engineFilename)||[]),a]);
+  for(const a of catalog)a.sharedFilenameWith=byFilename.get(a.engineFilename).filter(b=>b.id!==a.id).map(b=>b.id);
+  return catalog;
+}
+
+function hash(text) { return crypto.createHash("sha256").update(text).digest(); }
+function paint(item, frame = 0) {
+  const {width: w, height: h, category} = item;
+  const cells = new Uint8Array(w * h);
+  const seed = hash(item.engineEnum)[0];
+  const plot = (x, y, c) => {x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < w && y < h) cells[y * w + x] = c;};
+  const rect = (x, y, sw, sh, c) => {for (let iy = y; iy < y + sh; iy++) for (let ix = x; ix < x + sw; ix++) plot(ix, iy, c);};
+  const line = (x0, y0, x1, y1, c) => {const n = Math.max(1, Math.ceil(Math.hypot(x1-x0,y1-y0))); for (let s=0;s<=n;s++) plot(x0+(x1-x0)*s/n,y0+(y1-y0)*s/n,c);};
+  const circle = (cx, cy, r, c, fill = false) => {for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {const d=x*x+y*y; if (fill ? d <= r*r : d <= r*r && d >= (r-1.5)*(r-1.5)) plot(cx+x,cy+y,c);}};
+  const mid = Math.floor(w/2), phase = frame % 8;
+  if (category === "vehicle") {
+    rect(mid-8, 7, 16, h-14, 2); rect(mid-6, 9, 12, h-18, 3);
+    rect(mid-10, 9, 2, h-18, 5); rect(mid+8, 9, 2, h-18, 5);
+    circle(mid, Math.floor(h/2), 5, 6, true);
+    const angle = (frame % 32) * Math.PI/16;
+    line(mid, h/2, mid+Math.round(10*Math.sin(angle)), h/2-Math.round(10*Math.cos(angle)), 7);
+  } else if (category === "infantry") {
+    circle(mid, 6, 3, 6, true); rect(mid-2, 10, 5, 7, 3);
+    line(mid-2, 13, mid-7+phase%3, 16, 5); line(mid+2, 13, mid+7-phase%3, 16, 5);
+    line(mid-1, 16, mid-5+(phase%2), h-4, 7); line(mid+1, 16, mid+5-(phase%2), h-4, 7);
+  } else if (category === "aircraft") {
+    line(mid, 3, mid-5, h-5, 3); line(mid, 3, mid+5, h-5, 3);
+    line(mid-5, h-5, mid, h-8, 5); line(mid+5, h-5, mid, h-8, 5);
+    line(3, mid+2, w-4, mid+2, 6); rect(mid-2, 10, 5, 15, 4);
+    circle(mid, mid, 6+(phase%2), 7);
+  } else if (category === "building") {
+    rect(7, 12, w-14, h-20, 2); rect(10, 15, w-20, h-26, 3);
+    rect(13+(seed%5), 17, 9, 7, 5); rect(w-22, 17, 10, 7, 5);
+    for (let x=10;x<w-10;x+=8) line(x,h-12,x+3,h-12,7);
+    if (frame > Math.floor(item.provisionalFrameCount/2)) line(10,12,w-12,h-10,6);
+  } else if (category === "terrain") {
+    rect(mid-2,h-14,5,11,6); circle(mid, mid-3, 10+seed%4, 3, true);
+    circle(mid-3,mid-8,5,5); circle(mid+5,mid-1,5,7);
+  } else if (category === "projectile") {
+    line(3,h-4,w-5,4,7); line(w-9,4,w-5,4,6); line(w-5,4,w-5,8,6);
+    circle(4,h-5,2+(phase%2),5);
+  } else if (category === "overlay") {
+    rect(3,mid-3,w-6,7,3); rect(mid-3,3,7,h-6,3);
+    for(let y=5;y<h-4;y+=7) line(4,y,w-5,y,7);
+  } else {
+    circle(mid,mid,6+(phase%4),6);
+    for(let a=0;a<8;a++){const angle=a*Math.PI/4+phase/16; line(mid+Math.cos(angle)*5,mid+Math.sin(angle)*5,mid+Math.cos(angle)*13,mid+Math.sin(angle)*13,7);}
+  }
+  // Distinctive notches keep variants identifiable even with the same archetype.
+  for (let i=0;i<3;i++) rect(2+i*4,2,2,2,(seed+i)%5+2);
+  return [...cells];
+}
+function renderSvg(item) {
+  const pixels = paint(item, 0), w=item.width, h=item.height;
+  const labelWidth=160, previewHeight=Math.max(h,48), fullWidth=w+labelWidth;
+  const lines = [];
+  for (let y=0;y<h;y++) for(let x=0;x<w;) {
+    const c=pixels[y*w+x]; if(!c){x++;continue;}
+    let run=1; while(x+run<w&&pixels[y*w+x+run]===c)run++;
+    lines.push(`<rect x="${x}" y="${y}" width="${run}" height="1" fill="${paletteColors[c]}"/>`);x+=run;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fullWidth} ${previewHeight}" width="${fullWidth*3}" height="${previewHeight*3}" shape-rendering="crispEdges" role="img" aria-label="${item.id} ${item.category} ${item.engineEnum} original wireframe"><rect width="${fullWidth}" height="${previewHeight}" fill="#101c25"/><rect width="${w}" height="${h}" fill="#172a36"/><rect x="0.5" y="0.5" width="${w-1}" height="${h-1}" fill="none" stroke="#4e97c8" stroke-dasharray="2 2" stroke-width="0.5"/>${lines.join("")}<line x1="${w+5}" y1="0" x2="${w+5}" y2="${previewHeight}" stroke="#277e68" stroke-width="0.5"/><g font-family="monospace" fill="#a1e7d3"><text x="${w+10}" y="10" font-size="7">${item.id} / ${item.category.toUpperCase()}</text><text x="${w+10}" y="21" font-size="6.5" fill="#f4e6bd">${item.engineEnum}</text><text x="${w+10}" y="31" font-size="6">${item.engineFilename}</text><text x="${w+10}" y="41" font-size="5.5" fill="#4e97c8">${w}x${h} / ${item.provisionalFrameCount} frames</text></g></svg>\n`;
+}
+function renderDoc(catalog) {
+  const categories = [...new Set(catalog.map(a=>a.category))];
+  const rows = ["# World-Conquer: Original wireframe asset replacement catalog", "",
+    "> Generated original placeholder art. No Electronic Arts media is included. `WF-####` identifiers stay stable only while the upstream enumeration and sorting remain unchanged; use `engineEnum` for persistent game mappings.", "",
+    `This catalog contains **${catalog.length} independently linked asset slots** derived from Tiberian Dawn C++ class definitions. The preview is the generated placeholder's first frame.`, "",
+    "## Replacement workflow", "",
+    "1. Open an individual `WF-####` SVG below. It is a design guide, not a request to redraw copyrighted artwork.",
+    "2. Create newly authored **palette-constrained pixel art** using the project-owned palette. Index `0` is transparent. Dimensions and frame counts here are **provisional build contracts** until each class's production frame lookup, footprint and anchor are audited against C++.",
+    "3. Export one numbered 8-bit RGB/RGBA PNG per frame, starting `0000.png`, using exact palette colors. Use consistent dimensions, transparent alpha for index 0, no interpolation and no semitransparent pixels.",
+    "4. Add `ATTRIBUTION.json` to that folder with `creator`, `license`, `source`, and `revision` (all nonempty strings). Run `node tools/content/wireframes.js build <new-output-dir>`. The builder automatically uses final PNGs instead of wireframes; it validates frame dimensions/count, palette colors and provenance.",
+    "5. Verify generated SHA-256 and native LCW decode; then test actual class state sequences (facings, combat, movement, damage, construction, death) in Chromium and a native build.",
+    "6. For terrain overlays, theater icons and other special formats, complete the format adapter before treating the art as runtime-compatible. `design-only` items are not yet game-ready.", "",
+    "## Shared technical contract", "",
+    "| Field | Requirement |", "|---|---|",
+    "| Palette | 256 entries × RGB6, 768-byte `.PAL`; index 0 transparent; project-owned color definitions |",
+    "| Tactical SHP | `KeyFrameHeaderType`, little-endian 8-byte frame table, LCW full-keyframes initially |",
+    "| Canvas | The recorded width/height are generated-placeholder dimensions, **not verified original-game dimensions**. Fix dimensions and camera pivots after reviewing actual sprite lookup, weapon muzzle offsets and theater footprint. No resampling between states |",
+    "| Facing | 32 heading directions for vehicles/aircraft; infantry uses its `DoControls`; buildings/terrain/effects follow state-specific offsets |",
+    "| Replacements | New artwork and provenance, collision/hitbox and remap tests, frame timing, silhouette legibility at 1× |",
+    "| Runtime | A generated SHP that parses is **not** enough: verify class-specific lookup and frame selections, including damage and special states |",
+    "| Build outputs | `node tools/content/wireframes.js build <new-output-dir>`; output is generated, never committed as source media |",
+    "| Per-slot audit gate | Before marking final: determine exact frame offsets and order, frame timing, selection bounds, rendered offset, image dimensions, turret/door/rotor layers, shadows, remap range, theater variation and native/browser parity from engine use sites. Record verified changes in the catalog generator |", ""];
+  rows.push("### Engine filename conflicts", "", "Some engine classes share the same resource filename (for example a building and an overlay). The build emits an individual categorized SHP for each item but copies **only unambiguous filenames** into `game-root/`. Shared-filename items must be reconciled into one final resource and tested against every referencing class; do not blindly overwrite one with another.", "");
+  for (const category of categories) {
+    const items=catalog.filter(a=>a.category===category);
+    rows.push(`## ${category[0].toUpperCase()+category.slice(1)} (${items.length})`, "", requirements[category], "");
+    for(const a of items){
+      const pathToSvg = `../../game/content/wireframes/${a.preview}`;
+      rows.push(`- [ ] **${a.id} — ${a.role}** · [View placeholder](${pathToSvg}) · engine slot \`${a.engineEnum}\` ([\`${a.source}:${a.sourceLine}\`](../../${a.source}#L${a.sourceLine}), \`${a.engineSymbol}\`).`,
+        `  - **Engine target:** \`${a.engineFilename}\`. **Placeholder contract (provisional):** ${a.width}×${a.height} indexed pixels, ${a.provisionalFrameCount} generated frames (${a.frameCountFromDoTable ? `minimum calculated from ${a.doTable}` : "provisional allocation; verify exact frame use"}); format \`${a.format}\`.`,
+        `  - **Final art input:** \`game/content/wireframes/${a.finalFrameDirectory}/0000.png\` through \`${String(a.provisionalFrameCount-1).padStart(4,"0")}.png\` (ordered RGBA PNGs), plus \`ATTRIBUTION.json\` documenting creator/license/source/revision.`,
+        `  - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match ${category} state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.${a.sharedFilenameWith.length?` **Shared engine filename:** coordinate replacement with ${a.sharedFilenameWith.join(", ")}.`:""}`,
+        `  - **Acceptance:** Confirm exact engine-consumed frame offsets and dimensions against the linked constructor and class render path; test 1× readability, every referenced heading/stage, damage states, remaps, offsets, shadow/selection alignment and native/browser parity. Status: **${a.status}**.`, "");
+    }
+  }
+  rows.push("## Separate global dependencies still required", "", "These class entries do not enumerate menus, all tile templates, fonts, complete theater icon sets, missions, UI skin, music, voice lines, audio, particles, or hardcoded special assets (such as `MOUSE.SHP`, `WAKE.SHP`, and `SHADOW.SHP`). Those require distinct manifests and integration work before a wholly standalone game can boot.", "");
+  return rows.join("\n");
+}
+function generate() {
+  const catalog=inventory();
+  fs.mkdirSync(path.join(outputRoot,"previews"),{recursive:true});
+  for(const a of catalog)fs.writeFileSync(path.join(outputRoot,a.preview),renderSvg(a));
+  fs.writeFileSync(path.join(outputRoot,"catalog.json"),JSON.stringify({schemaVersion:1,generatedFrom:"tiberiandawn/*data.cpp",assets:catalog},null,2)+"\n");
+  fs.writeFileSync(docsPath,renderDoc(catalog));
+  console.log(`Generated ${catalog.length} wireframe previews and replacement entries`);
+}
+function build(destination) {
+  const dir=path.resolve(destination);
+  if(fs.existsSync(dir))throw new Error(`Output already exists: ${dir}`);
+  const catalog=JSON.parse(fs.readFileSync(path.join(outputRoot,"catalog.json"),"utf8")).assets;
+  const entries=[];
+  fs.mkdirSync(path.join(dir,"files"),{recursive:true});
+  fs.mkdirSync(path.join(dir,"game-root"),{recursive:true});
+  const sourcePal=JSON.parse(fs.readFileSync(path.join(root,"game/content/source/placeholder.palette.json"),"utf8"));
+  const paletteSource=path.join(root,"game/content/source/placeholder.palette.json");
+  const palette=encodePalette(sourcePal);
+  fs.writeFileSync(path.join(dir,"files/WIREFRAME.PAL"),palette);
+  fs.writeFileSync(path.join(dir,"game-root/WIREFRAME.PAL"),palette);
+  entries.push({id:"palette.wireframe",target:"WIREFRAME.PAL",bytes:palette.length,sha256:crypto.createHash("sha256").update(palette).digest("hex")});
+  for(const a of catalog){
+    const finalDir=path.join(outputRoot,a.finalFrameDirectory);
+    if(a.status==="design-only"){
+      if(fs.existsSync(finalDir))throw new Error(`${a.id} requires a non-SHP format adapter before final art can be packaged`);
+      continue;
+    }
+    let frames, provenance;
+    if(fs.existsSync(finalDir)){
+      provenance=JSON.parse(fs.readFileSync(path.join(finalDir,"ATTRIBUTION.json"),"utf8"));
+      for(const field of ["creator","license","source","revision"]){
+        if(typeof provenance[field]!=="string"||!provenance[field].trim())throw new Error(`${a.id}: missing ${field} in attribution`);
+      }
+      frames=importFrames(finalDir,paletteSource).frames;
+      if(frames.length!==a.provisionalFrameCount || frames.some(f=>f.width!==a.width||f.height!==a.height)){
+        throw new Error(`${a.id}: final art must have exactly ${a.provisionalFrameCount} frames at ${a.width}x${a.height}`);
+      }
+    }else{
+      frames=[];
+      for(let i=0;i<a.provisionalFrameCount;i++)frames.push({width:a.width,height:a.height,pixels:paint(a,i)});
+      provenance={creator:"World-Conquer project",license:"CC0-1.0",source:"procedural wireframe",revision:"1"};
+    }
+    const bytes=encodeTacticalShape({frames});
+    const relative=`${a.category}/${a.id}.SHP`;
+    const file=path.join(dir,"files",relative);
+    fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,bytes);
+    if(a.sharedFilenameWith.length===0)fs.writeFileSync(path.join(dir,"game-root",a.engineFilename),bytes);
+    // A basic decoder sanity check is cheap and catches package corruption.
+    const decoded=decodeTacticalShape(bytes);
+    if(decoded.frames.length!==frames.length)throw new Error(`Frame mismatch for ${a.id}`);
+    entries.push({id:a.id,engineEnum:a.engineEnum,engineFilename:a.engineFilename,target:relative,
+      mountReady:a.sharedFilenameWith.length===0,sharedFilenameWith:a.sharedFilenameWith,
+      status:fs.existsSync(finalDir)?"final-art":"wireframe",provenance,
+      frames:frames.length,width:a.width,height:a.height,bytes:bytes.length,
+      sha256:crypto.createHash("sha256").update(bytes).digest("hex")});
+  }
+  fs.writeFileSync(path.join(dir,"manifest.json"),JSON.stringify({schemaVersion:1,gameId:"world-conquer-wireframes",assets:entries},null,2)+"\n");
+  console.log(`Built ${entries.length-1} tactical shape placeholders, excluding design-only overlays`);
+}
+if(require.main===module){
+  try{if(process.argv[2]==="generate")generate();
+    else if(process.argv[2]==="build"&&process.argv[3])build(process.argv[3]);
+    else throw new Error("Usage: node tools/content/wireframes.js generate | build <new-output-directory>");
+  }catch(err){console.error(err.stack||err);process.exitCode=1;}
+}
+module.exports={inventory,paint,renderSvg,generate,build};
