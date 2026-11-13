@@ -8,6 +8,7 @@
 #include <vector>
 #include "common/keyframe.h"
 #include "common/paths.h"
+#include "common/cdfile.h"
 #include "common/ccfile.h"
 #include "tiberiandawn/function.h"
 
@@ -115,6 +116,7 @@ int StartShapePreview(const std::vector<uint8_t>& indexed, const std::vector<uin
 int Browser_Shape_Probe(const char* argv0)
 {
     Paths.Init("vanillatd", "CONQUER.INI", "CONQUER.MIX", argv0);
+    CDFileClass::Refresh_Search_Drives();
     std::vector<uint8_t> bytes, pal;
     if (!ReadEngineFile("SCOUT.SHP", bytes) || !ReadEngineFile("SCOUT.PAL", pal, 768)) {
         std::fprintf(stderr, "[browser-shape] engine CCFileClass lookup failed\n"); return 1;
@@ -165,6 +167,7 @@ int Browser_Shape_Probe(const char* argv0)
 int Browser_Wireframe_Probe(const char* argv0)
 {
     Paths.Init("vanillatd", "CONQUER.INI", "CONQUER.MIX", argv0);
+    CDFileClass::Refresh_Search_Drives();
     std::vector<uint8_t> pal;
     if (!ReadEngineFile("WIREFRAME.PAL", pal, 768)) {
         std::fprintf(stderr, "[browser-wireframes] engine palette lookup failed\n"); return 20;
