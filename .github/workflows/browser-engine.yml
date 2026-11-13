@@ -7,6 +7,8 @@ on:
       - 'CMakeLists.txt'
       - 'tiberiandawn/**'
       - 'browser/engine/**'
+      - 'game/content/**'
+      - 'tools/content/**'
       - 'common/**'
       - 'cmake/**'
       - '.github/workflows/browser-engine.yml'
@@ -15,6 +17,8 @@ on:
       - 'CMakeLists.txt'
       - 'tiberiandawn/**'
       - 'browser/engine/**'
+      - 'game/content/**'
+      - 'tools/content/**'
       - 'common/**'
       - 'cmake/**'
       - '.github/workflows/browser-engine.yml'
@@ -63,6 +67,11 @@ jobs:
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
       - name: Verify asset loader with synthetic data
         run: node browser/engine/test-asset-import.js
+      - name: Verify original content pipeline
+        run: |
+          node tools/content/test-build.js
+          node tools/content/build.js game/content/manifest.json build/world-conquer-content
+          test -s build/world-conquer-content/manifest.json
       - name: Install headless browser tooling
         run: |
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1

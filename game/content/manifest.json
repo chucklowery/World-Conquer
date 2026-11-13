@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "gameId": "world-conquer",
+  "assets": [
+    {
+      "id": "ui.placeholder-command",
+      "type": "ui",
+      "source": "source/placeholder-command.svg",
+      "target": "ui/placeholder-command.svg",
+      "creator": "World-Conquer project",
+      "license": "CC0-1.0"
+    }
+  ]
+}
