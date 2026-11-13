@@ -30,11 +30,11 @@ int main(int argc, char** argv)
 
     const std::vector<FrameContract> contracts = {
         {532, {0, 16, 64, 192, 418, 531}}, // E1 infantry choreography
-        {64, {0, 31, 32, 63}},          // MTNK body and turret
-        {64, {0, 31, 32, 63}},          // ORCA normal and high-speed facings
-        {1, {0}},                       // FACT base (construction separate)
-        {2, {0, 1}},                    // T01 normal and damaged
-        {1, {0}}                        // ART-EXP1 dynamic effect length
+        {64, {0, 31, 32, 63}},             // MTNK body and turret
+        {64, {0, 31, 32, 63}},             // ORCA normal and high-speed facings
+        {1, {0}},                          // FACT base (construction separate)
+        {2, {0, 1}},                       // T01 normal and damaged
+        {1, {0}}                           // ART-EXP1 dynamic effect length
     };
     for (int i = 0; i < 6; ++i) {
         std::ifstream file(argv[i + 1], std::ios::binary);
@@ -72,7 +72,9 @@ int main(int argc, char** argv)
                 return 9;
         }
         std::printf("PASS: engine LCW decoded %zu state frames from %s (%u total)\n",
-                    contracts[i].probes.size(), argv[i + 1], count);
+                    contracts[i].probes.size(),
+                    argv[i + 1],
+                    count);
     }
     return 0;
 }
