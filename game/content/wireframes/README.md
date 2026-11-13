@@ -1,6 +1,8 @@
-# Original wireframe asset kit
+# Original first-pass art and wireframe replacement kit
 
-This folder is a **license-clean, generated placeholder kit** for the Tiberian Dawn class slots identified in `tiberiandawn/*data.cpp`. All placeholder graphics are procedural project artwork; no original game art is bundled.
+This folder is a **license-clean, generated first-pass art kit** for the Tiberian Dawn class slots identified in `tiberiandawn/*data.cpp`. All placeholder graphics are procedural project artwork; no original game art is bundled.
+
+Browse the [eight category contact sheets](../../../docs/browser/ART_FIRST_PASS.md) or use the machine-readable [`first-pass-manifest.json`](first-pass-manifest.json) to find one of **295 unique concepts**. Most class slots use recognizable original schematic silhouettes with distinct review markers; six audited representatives have richer animation and 23 state previews. This is not final approved artwork.
 
 Start with [the complete, individually checked replacement catalog](../../../docs/browser/WIREFRAME_REPLACEMENT_CATALOG.md) or [the machine-readable slot catalog](catalog.json). Every `WF-####` has a [linked SVG preview](previews/WF-0001.svg), an engine enum, original source-code location, resource filename, current placeholder dimensions and frame count, replacement file location, and acceptance criteria.
 
@@ -11,6 +13,7 @@ From the repository root:
 ```sh
 node tools/content/wireframes.js generate
 node tools/content/test-wireframes.js
+node tools/content/test-first-pass-art.js
 node tools/content/wireframes.js build build/world-conquer-wireframes
 ```
 
@@ -20,7 +23,7 @@ The six representative classes now also have a [C++-anchored frame contract](../
 
 The last command writes a generated `manifest.json`, `files/<category>/WF-####.SHP` tactical keyframe files, `files/WIREFRAME.PAL`, and `game-root/` with non-conflicting engine filenames. Choose a **new output directory** for each build; it intentionally refuses to overwrite an existing one. Generated binary outputs are ignored by git. The `game-root/` folder is a staging input for a future complete asset-mount implementation, **not a playable standalone game**.
 
-Current coverage is 295 engine-defined slots: 265 compiled tactical SHP stand-ins and 30 overlay design references. Neither the provisional frame layouts nor every declared `SHP` resource binding has been validated against the full engine. Some enum slots share an engine filename; both retain independent wireframe specs, but the builder excludes colliding filenames from `game-root/` until resolved. See each catalog entry's `sharedFilenameWith` property.
+Current coverage is 295 engine-defined slots: 265 compiled tactical SHP stand-ins, 30 overlay design references, plus the separately generated `FACTMAKE.SHP` buildup asset. Neither the provisional frame layouts nor every declared `SHP` resource binding has been validated against the full engine. Some enum slots share an engine filename; both retain independent wireframe specs, but the builder excludes colliding filenames from `game-root/` until resolved. See each catalog entry's `sharedFilenameWith` property.
 
 ## Replace one placeholder with final art
 

@@ -109,12 +109,15 @@ async function main() {
     const renderedRoster = await page.locator("#canvas").screenshot();
     assert(!blankRoster.equals(renderedRoster), "Six-class wireframe roster did not render to canvas");
     const rosterLog = await page.locator("#log").textContent();
-    for(const [filename, stateFrame] of [["E1.SHP",64], ["MTNK.SHP",32], ["ORCA.SHP",32],
-                                         ["FACT.SHP",0], ["T01.SHP",1], ["ART-EXP1.SHP",0]]){
+    const expectedContracts=JSON.parse(fs.readFileSync(path.join(root,"wireframes/contracts.json"),"utf8"));
+    for(const {engineFilename:filename, diagnosticActionFrame:stateFrame} of expectedContracts.assets){
       const line=rosterLog.split("\n").find(entry=>entry.includes("[browser-wireframes] CC_Draw_Shape " + filename + " "));
       assert(line && line.includes("state-frame=" + stateFrame + " pixels="), filename + " action frame was not drawn by engine");
       assert(await page.evaluate(filename => Module.FS.analyzePath("/game/" + filename).exists, filename), filename + " missing from MEMFS");
     }
+    assert(rosterLog.includes("verified and staged 7 shapes and palette"), "Separate buildup SHP was not staged");
+    assert(await page.evaluate(() => Module.FS.analyzePath("/game/FACTMAKE.SHP").exists),
+           "FACTMAKE.SHP missing from MEMFS");
     assert.equal(await page.locator("body").getAttribute("data-mode"), "wireframes");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: manifest-verified six-class base and action frames rendered by actual VanillaTD CC_Draw_Shape");

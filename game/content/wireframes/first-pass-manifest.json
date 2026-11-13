@@ -1,0 +1,5028 @@
+{
+  "schemaVersion": 1,
+  "status": "original procedural first-pass; not final approved artwork",
+  "rights": "project-owned CC0-1.0 procedural generation",
+  "total": 295,
+  "packable": 265,
+  "designOnly": 30,
+  "supplemental": [
+    "FACTMAKE.SHP"
+  ],
+  "assets": [
+    {
+      "id": "WF-0001",
+      "engineEnum": "AIRCRAFT_A10",
+      "category": "aircraft",
+      "engineFilename": "A10.SHP",
+      "archetype": "fixed-wing",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0001.svg",
+      "sheet": "sheets/aircraft.svg",
+      "provisionalFrames": 80,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "4f11ef95e5f033cde0fd9efb2ce0c5412380bffd5397ff5df2e18691cb3bdaa6"
+    },
+    {
+      "id": "WF-0002",
+      "engineEnum": "AIRCRAFT_CARGO",
+      "category": "aircraft",
+      "engineFilename": "C17.SHP",
+      "archetype": "transport",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0002.svg",
+      "sheet": "sheets/aircraft.svg",
+      "provisionalFrames": 80,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "7a0d222824e39a7ce21c4c53bb1d2b56f1d0c852cf9634d7448894213434488a"
+    },
+    {
+      "id": "WF-0003",
+      "engineEnum": "AIRCRAFT_HELICOPTER",
+      "category": "aircraft",
+      "engineFilename": "HELI.SHP",
+      "archetype": "rotorcraft",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0003.svg",
+      "sheet": "sheets/aircraft.svg",
+      "provisionalFrames": 80,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "73c9e2498efc1ef6138b139ade255aa1f480a440d0fef13a77484e81d7857f77"
+    },
+    {
+      "id": "WF-0004",
+      "engineEnum": "AIRCRAFT_ORCA",
+      "category": "aircraft",
+      "engineFilename": "ORCA.SHP",
+      "archetype": "rotorcraft",
+      "coverage": "source-audited-state-preview",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0004.svg",
+      "sheet": "sheets/aircraft.svg",
+      "provisionalFrames": 80,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "c8429881efa144384ee9474a6d2ef365fdd409bce50199d3a9f4a69de9355cad"
+    },
+    {
+      "id": "WF-0005",
+      "engineEnum": "AIRCRAFT_TRANSPORT",
+      "category": "aircraft",
+      "engineFilename": "TRAN.SHP",
+      "archetype": "transport",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0005.svg",
+      "sheet": "sheets/aircraft.svg",
+      "provisionalFrames": 80,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "05b95b937df8c3ad6fa2cfb43e6c3e7f3c0ba6a2378882923a85b923c801c136"
+    },
+    {
+      "id": "WF-0006",
+      "engineEnum": "STRUCT_ADVANCED_POWER",
+      "category": "building",
+      "engineFilename": "NUK2.SHP",
+      "archetype": "power",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0006.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "57375fa3ab8feba818117399186e11e8b6aa309a785fb8d4c138cb8ee85ad886"
+    },
+    {
+      "id": "WF-0007",
+      "engineEnum": "STRUCT_AIRSTRIP",
+      "category": "building",
+      "engineFilename": "AFLD.SHP",
+      "archetype": "airfield",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0007.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "6ed36ee25f93b7ed274b482c3f50f17c18462cdeb9e99c65155272a1aa865992"
+    },
+    {
+      "id": "WF-0008",
+      "engineEnum": "STRUCT_ATOWER",
+      "category": "building",
+      "engineFilename": "ATWR.SHP",
+      "archetype": "defense",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0008.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "74851a19ef52939a7ca96a4c1f46a5921776ed137f02db77baa3a0b2a58fbc5a"
+    },
+    {
+      "id": "WF-0009",
+      "engineEnum": "STRUCT_BARBWIRE_WALL",
+      "category": "building",
+      "engineFilename": "BARB.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0009.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "64abb5d6c436c96967a90a86f7a9a1577a792a883267b776401ff07955211b95"
+    },
+    {
+      "id": "WF-0010",
+      "engineEnum": "STRUCT_BARRACKS",
+      "category": "building",
+      "engineFilename": "PYLE.SHP",
+      "archetype": "service",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0010.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "f543f403d31e571e484f824eeb88558275859879376723317812cc8fc879332c"
+    },
+    {
+      "id": "WF-0011",
+      "engineEnum": "STRUCT_BIO_LAB",
+      "category": "building",
+      "engineFilename": "BIO.SHP",
+      "archetype": "service",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0011.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "b62f1780cfa5423a4fa1a3ed4793563e681d3a0380f469676a7a78cbb9585226"
+    },
+    {
+      "id": "WF-0012",
+      "engineEnum": "STRUCT_BRICK_WALL",
+      "category": "building",
+      "engineFilename": "BRIK.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0012.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "50c86272273f2ac5855781b55b354be56683e9b63724fe97497f4b2b0c905903"
+    },
+    {
+      "id": "WF-0013",
+      "engineEnum": "STRUCT_CONST",
+      "category": "building",
+      "engineFilename": "FACT.SHP",
+      "archetype": "service",
+      "coverage": "source-audited-state-preview",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0013.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "72c73a1a2e8c676d9eaed2af7781066a4730cfaabab41c3fa2e4283721a7c181"
+    },
+    {
+      "id": "WF-0014",
+      "engineEnum": "STRUCT_CYCLONE_WALL",
+      "category": "building",
+      "engineFilename": "CYCL.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0014.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "6d8c42ec0f1aeaa115686d33a84de878397fd84fe601f87169f808f40c5eb4aa"
+    },
+    {
+      "id": "WF-0015",
+      "engineEnum": "STRUCT_EYE",
+      "category": "building",
+      "engineFilename": "EYE.SHP",
+      "archetype": "defense",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0015.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "5a95d6467ea87b98012f8d2f5d55d60529e0b6e7bbd3ca82290488644b80dc25"
+    },
+    {
+      "id": "WF-0016",
+      "engineEnum": "STRUCT_GTOWER",
+      "category": "building",
+      "engineFilename": "GTWR.SHP",
+      "archetype": "defense",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0016.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "9383b5b78c22291d3460da5b6a2186bdcad2a6a85000ab6f3d20cc2be90b06fd"
+    },
+    {
+      "id": "WF-0017",
+      "engineEnum": "STRUCT_HAND",
+      "category": "building",
+      "engineFilename": "HAND.SHP",
+      "archetype": "service",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0017.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "ff2de3a0bc9268a6454af06b49a1e1059b24aeefe3ca15b6c62e64f03ef5c9b9"
+    },
+    {
+      "id": "WF-0018",
+      "engineEnum": "STRUCT_HELIPAD",
+      "category": "building",
+      "engineFilename": "HPAD.SHP",
+      "archetype": "airfield",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0018.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "37929ca2a5851cf3428ed35beb0d280e870d3606cecd25231bd0d7cc5ba5620f"
+    },
+    {
+      "id": "WF-0019",
+      "engineEnum": "STRUCT_HOSPITAL",
+      "category": "building",
+      "engineFilename": "HOSP.SHP",
+      "archetype": "service",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0019.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "2adb9231c9e534a0c6d4141710e94f33302a126ba6dce210bdc489d77ba362bc"
+    },
+    {
+      "id": "WF-0020",
+      "engineEnum": "STRUCT_MISSION",
+      "category": "building",
+      "engineFilename": "MISS.SHP",
+      "archetype": "service",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0020.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "d066edc1ede9da2521ab7ae02d5be338d30c44e42352e24b0f7f4e161ad19d96"
+    },
+    {
+      "id": "WF-0021",
+      "engineEnum": "STRUCT_OBELISK",
+      "category": "building",
+      "engineFilename": "OBLI.SHP",
+      "archetype": "defense",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0021.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "74a6598166d1c738d2971fc1513af018783aeace8ff78d224970722dbe3b5eb6"
+    },
+    {
+      "id": "WF-0022",
+      "engineEnum": "STRUCT_POWER",
+      "category": "building",
+      "engineFilename": "NUKE.SHP",
+      "archetype": "power",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0022.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "b0088d8ab5519301ab1909b76165357ccabebf7ebe34e31157bcfe22e3179094"
+    },
+    {
+      "id": "WF-0023",
+      "engineEnum": "STRUCT_PUMP",
+      "category": "building",
+      "engineFilename": "V19.SHP",
+      "archetype": "industrial",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0023.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "67a8bef1409ce6d9bbf63820d17c29aa085b5abd918079169522e509d70d0dfe"
+    },
+    {
+      "id": "WF-0024",
+      "engineEnum": "STRUCT_RADAR",
+      "category": "building",
+      "engineFilename": "HQ.SHP",
+      "archetype": "service",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0024.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "48a73115604205efe55eede746bbf85af520d30e0c015d0aa8e5050ba148619e"
+    },
+    {
+      "id": "WF-0025",
+      "engineEnum": "STRUCT_REFINERY",
+      "category": "building",
+      "engineFilename": "PROC.SHP",
+      "archetype": "industrial",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0025.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "7ffc032de368040538739be22abb057df413a13dda190cb6d0dc6af1c1d5845c"
+    },
+    {
+      "id": "WF-0026",
+      "engineEnum": "STRUCT_REPAIR",
+      "category": "building",
+      "engineFilename": "FIX.SHP",
+      "archetype": "service",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0026.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "40daff07fb15c3cbb9df088a36e28f55143f0a797aa1597f968389c8b7e6a976"
+    },
+    {
+      "id": "WF-0027",
+      "engineEnum": "STRUCT_ROAD",
+      "category": "building",
+      "engineFilename": "ROAD.SHP",
+      "archetype": "road",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0027.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "d42d8817fe8a330ab42ba364ef54da52872fd09ac5bfedc58510a88b26aa9a80"
+    },
+    {
+      "id": "WF-0028",
+      "engineEnum": "STRUCT_SAM",
+      "category": "building",
+      "engineFilename": "SAM.SHP",
+      "archetype": "defense",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0028.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "40f92fb1dd1595273d440dfa292524cc6af91423b9f9a413b0a444f94761162d"
+    },
+    {
+      "id": "WF-0029",
+      "engineEnum": "STRUCT_SANDBAG_WALL",
+      "category": "building",
+      "engineFilename": "SBAG.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0029.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "da1c6a3ea14ab6fa59151edb3c151bda99166cd3b427d1d3293324e5259fb30f"
+    },
+    {
+      "id": "WF-0030",
+      "engineEnum": "STRUCT_STORAGE",
+      "category": "building",
+      "engineFilename": "SILO.SHP",
+      "archetype": "industrial",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0030.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "b9148765ee855143b34cd60b2a5bb16b76f7351dd97420c2458b2ae741bec1f2"
+    },
+    {
+      "id": "WF-0031",
+      "engineEnum": "STRUCT_TANKER",
+      "category": "building",
+      "engineFilename": "ARCO.SHP",
+      "archetype": "industrial",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0031.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "876f0050ddf36da84ef46b94da53ed61bc2e151182c4b3a6de2d6614c1582e42"
+    },
+    {
+      "id": "WF-0032",
+      "engineEnum": "STRUCT_TEMPLE",
+      "category": "building",
+      "engineFilename": "TMPL.SHP",
+      "archetype": "defense",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0032.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "8ca3975aed6a9f27e2df9da280ec09b1f73d4c03d52c8f1377579e548dbcd9c8"
+    },
+    {
+      "id": "WF-0033",
+      "engineEnum": "STRUCT_TURRET",
+      "category": "building",
+      "engineFilename": "GUN.SHP",
+      "archetype": "defense",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0033.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "de8d4e16e4705ece93f5c9e72f854adf39a9c45f62a57e34cef72b6313eda14b"
+    },
+    {
+      "id": "WF-0034",
+      "engineEnum": "STRUCT_V01",
+      "category": "building",
+      "engineFilename": "V01.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0034.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "7e16c3799089cdff425c67c376edfc88933dd2d016a6d86b913c167606884487"
+    },
+    {
+      "id": "WF-0035",
+      "engineEnum": "STRUCT_V02",
+      "category": "building",
+      "engineFilename": "V02.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0035.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "9895f215a9a8e40f510ff716e099bf908fa31a2c28d0c8751f320a4db6c36674"
+    },
+    {
+      "id": "WF-0036",
+      "engineEnum": "STRUCT_V03",
+      "category": "building",
+      "engineFilename": "V03.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0036.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "234211c33d4a7ebcc675874bbbeeed39e76dcf921b4cdd61842c346a3ffa8a22"
+    },
+    {
+      "id": "WF-0037",
+      "engineEnum": "STRUCT_V04",
+      "category": "building",
+      "engineFilename": "V04.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0037.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "5eb27e17ecfc966ee9d6d59a6ad9d8e81304725776b1b1fbf0c756a51f57e838"
+    },
+    {
+      "id": "WF-0038",
+      "engineEnum": "STRUCT_V05",
+      "category": "building",
+      "engineFilename": "V05.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0038.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "8fa87cdbe84658e8525425e84b547ec5cc01fbcc6de69e6b3a5887381faeab71"
+    },
+    {
+      "id": "WF-0039",
+      "engineEnum": "STRUCT_V06",
+      "category": "building",
+      "engineFilename": "V06.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0039.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "4319bac7fac6141121375725cfee00456127899cfcf881ed10dc2314ae9b02a5"
+    },
+    {
+      "id": "WF-0040",
+      "engineEnum": "STRUCT_V07",
+      "category": "building",
+      "engineFilename": "V07.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0040.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "e2032275973d4754bbe4057573d687702a0db2a96d316b55395a785b980f99c7"
+    },
+    {
+      "id": "WF-0041",
+      "engineEnum": "STRUCT_V08",
+      "category": "building",
+      "engineFilename": "V08.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0041.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "baba82ae603d16db73e5688538641be2ab989b9f9b0e33f384889b203ec2ee3e"
+    },
+    {
+      "id": "WF-0042",
+      "engineEnum": "STRUCT_V09",
+      "category": "building",
+      "engineFilename": "V09.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0042.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "131f277739595391acda55f92efe7431f4dba05cc2463de6ce066edd92861110"
+    },
+    {
+      "id": "WF-0043",
+      "engineEnum": "STRUCT_V10",
+      "category": "building",
+      "engineFilename": "V10.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0043.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "4ad0d5922616905f20127133a5836d35dd68fda0b001d27631dad503dc13ed8b"
+    },
+    {
+      "id": "WF-0044",
+      "engineEnum": "STRUCT_V11",
+      "category": "building",
+      "engineFilename": "V11.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0044.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "c14aadb354413cea637bcd310e70f94e15c6cf900c77b79df4d53b466ad51120"
+    },
+    {
+      "id": "WF-0045",
+      "engineEnum": "STRUCT_V12",
+      "category": "building",
+      "engineFilename": "V12.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0045.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "006cfe5d8164cd5f18b871f7f983e559c42c8a5755b8ffdb937d709a5f0f5875"
+    },
+    {
+      "id": "WF-0046",
+      "engineEnum": "STRUCT_V13",
+      "category": "building",
+      "engineFilename": "V13.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0046.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "f81d92d0bcc23cca98589304646b40a72ffd1ae7edc5bfba8a239a6b68b0fd3e"
+    },
+    {
+      "id": "WF-0047",
+      "engineEnum": "STRUCT_V14",
+      "category": "building",
+      "engineFilename": "V14.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0047.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "a384e67800fe3c9677bb352ead52c54602c0210b12f3fa59f077ec79ca537621"
+    },
+    {
+      "id": "WF-0048",
+      "engineEnum": "STRUCT_V15",
+      "category": "building",
+      "engineFilename": "V15.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0048.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "c9a079eb1cb5d26c23b77ef74b241bb4f8b69da1ebb6c5d65347bfc09d99c43a"
+    },
+    {
+      "id": "WF-0049",
+      "engineEnum": "STRUCT_V16",
+      "category": "building",
+      "engineFilename": "V16.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0049.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "cd0f98724cdcdca9b353b503b85d39b5332cd9779e53d9c6ad135c18d82744bf"
+    },
+    {
+      "id": "WF-0050",
+      "engineEnum": "STRUCT_V17",
+      "category": "building",
+      "engineFilename": "V17.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0050.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "cb408b07a420f4427549683ce7fdaee52ece0818a2b4b21b6f17aa024350bf68"
+    },
+    {
+      "id": "WF-0051",
+      "engineEnum": "STRUCT_V18",
+      "category": "building",
+      "engineFilename": "V18.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0051.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "d3a90e752b04b39ad9234b8c30a609f21aec70630c8aa8fde6172378d519675a"
+    },
+    {
+      "id": "WF-0052",
+      "engineEnum": "STRUCT_V20",
+      "category": "building",
+      "engineFilename": "V20.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0052.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "aa717374b5a6b4e29d02dc2963f8f7efcbdfb404124e0d86a1464bddfca53f3c"
+    },
+    {
+      "id": "WF-0053",
+      "engineEnum": "STRUCT_V21",
+      "category": "building",
+      "engineFilename": "V21.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0053.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "71475546fc04413ad17c8064579c3f3554d6a6f1a5f7394cc3e74d70110d5d1d"
+    },
+    {
+      "id": "WF-0054",
+      "engineEnum": "STRUCT_V22",
+      "category": "building",
+      "engineFilename": "V22.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0054.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "6a4bf54a406304e710e550f7a05ec3b9dad9f9acf977e73580ff76d232adb855"
+    },
+    {
+      "id": "WF-0055",
+      "engineEnum": "STRUCT_V23",
+      "category": "building",
+      "engineFilename": "V23.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0055.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "40b4032db11bc676167b42493141320b1e0a1a540c424811fa026fa42a9f1712"
+    },
+    {
+      "id": "WF-0056",
+      "engineEnum": "STRUCT_V24",
+      "category": "building",
+      "engineFilename": "V24.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0056.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "23cd44f5ba601606fd229fd6d329f7814aa7483587cc764585accfd3d0af8ebe"
+    },
+    {
+      "id": "WF-0057",
+      "engineEnum": "STRUCT_V25",
+      "category": "building",
+      "engineFilename": "V25.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0057.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "9cd819e8b5738f0130250bc86f5a5888ccd046917bbaca4472708a7c89961751"
+    },
+    {
+      "id": "WF-0058",
+      "engineEnum": "STRUCT_V26",
+      "category": "building",
+      "engineFilename": "V26.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0058.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "d75d03e60f521c6f4861abf5e8c2b7d76b672ce61014b386bad69cc4f4e86ad3"
+    },
+    {
+      "id": "WF-0059",
+      "engineEnum": "STRUCT_V27",
+      "category": "building",
+      "engineFilename": "V27.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0059.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "54daaed0fb33ac35699cb8156af9f795326b0c255fd2dff4c74ab0a370d5b043"
+    },
+    {
+      "id": "WF-0060",
+      "engineEnum": "STRUCT_V28",
+      "category": "building",
+      "engineFilename": "V28.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0060.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "5f4ff553640eccca627b6ee30b1b2d31583dcb0e10104867c686e9106caab722"
+    },
+    {
+      "id": "WF-0061",
+      "engineEnum": "STRUCT_V29",
+      "category": "building",
+      "engineFilename": "V29.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0061.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "7051f8af2352d95ec7b8b84e676391e8c59c264349448daf82900fc774536310"
+    },
+    {
+      "id": "WF-0062",
+      "engineEnum": "STRUCT_V30",
+      "category": "building",
+      "engineFilename": "V30.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0062.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "c126cb37575b1409ef77580a1240ef84f145be82966ceb5988e895a90c3fc39f"
+    },
+    {
+      "id": "WF-0063",
+      "engineEnum": "STRUCT_V31",
+      "category": "building",
+      "engineFilename": "V31.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0063.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "910fb5202debf8a359b621faa3bcb587cf1674f99d51479bd6beb32326dd4188"
+    },
+    {
+      "id": "WF-0064",
+      "engineEnum": "STRUCT_V32",
+      "category": "building",
+      "engineFilename": "V32.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0064.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "d4dbc84d34fe087be21a76fee8fa74049179ffe364706c21f7d34db2e879979e"
+    },
+    {
+      "id": "WF-0065",
+      "engineEnum": "STRUCT_V33",
+      "category": "building",
+      "engineFilename": "V33.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0065.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "3d03cffe686bd326008fba58b73263d84460079a5d3a7f68ba805c6d8dd9f697"
+    },
+    {
+      "id": "WF-0066",
+      "engineEnum": "STRUCT_V34",
+      "category": "building",
+      "engineFilename": "V34.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0066.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "6488de2803b8f38cfef4846a2e14176d3a93692b7abb8778ea3a0a84253ce85d"
+    },
+    {
+      "id": "WF-0067",
+      "engineEnum": "STRUCT_V35",
+      "category": "building",
+      "engineFilename": "V35.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0067.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "a5de9dcb02fc7cb810e6550dbd525d405e147c7c0c400ff674a4088a6dee3226"
+    },
+    {
+      "id": "WF-0068",
+      "engineEnum": "STRUCT_V36",
+      "category": "building",
+      "engineFilename": "V36.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0068.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "8006082383e9fb840ed85f91f17c8e51f818cd2077b1e2c14b4b270788f89bde"
+    },
+    {
+      "id": "WF-0069",
+      "engineEnum": "STRUCT_V37",
+      "category": "building",
+      "engineFilename": "V37.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0069.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "6fcb7ba39d5ed5b9c8aa221ae18ab7caf8582f38cbef0c5b0b9d7e5cd5c09ff4"
+    },
+    {
+      "id": "WF-0070",
+      "engineEnum": "STRUCT_WEAP",
+      "category": "building",
+      "engineFilename": "WEAP.SHP",
+      "archetype": "industrial",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0070.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "21d414df7d4e6f2116d2cb55023bddc9cbe142e128fb4341ecec5f29520a5a73"
+    },
+    {
+      "id": "WF-0071",
+      "engineEnum": "STRUCT_WOOD_WALL",
+      "category": "building",
+      "engineFilename": "WOOD.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0071.svg",
+      "sheet": "sheets/building.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        48,
+        48
+      ],
+      "firstFrameSha256": "8bb20c6db63589ad5c9a9b9181e1e09f36ec81fb2b2239ed4ea030cbd51a0193"
+    },
+    {
+      "id": "WF-0072",
+      "engineEnum": "ANIM_ART_EXP1",
+      "category": "effect",
+      "engineFilename": "ART-EXP1.SHP",
+      "archetype": "explosion",
+      "coverage": "source-audited-state-preview",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0072.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "0111b64fa6bb2e17d80778e14e42c1429e4701ef8eb2ba77a603bdecd7eb7715"
+    },
+    {
+      "id": "WF-0073",
+      "engineEnum": "ANIM_ATOM_BLAST",
+      "category": "effect",
+      "engineFilename": "ATOMSFX.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0073.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "cef304b57ae75e701c81dd63155de197db12a39dd3085cb4304547cd0c17b344"
+    },
+    {
+      "id": "WF-0074",
+      "engineEnum": "ANIM_ATOM_DOOR",
+      "category": "effect",
+      "engineFilename": "ATOMDOOR.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0074.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b062b6178e770dd97c509382c9862ae298e093390d8dfda1ae339875fb9cb411"
+    },
+    {
+      "id": "WF-0075",
+      "engineEnum": "ANIM_BEACON",
+      "category": "effect",
+      "engineFilename": "MOVEFLSH.SHP",
+      "archetype": "signal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0075.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f425e48c3a1a59ae09a53a7f4fda995001abd3f806c68233f3f43b0c448a2451"
+    },
+    {
+      "id": "WF-0076",
+      "engineEnum": "ANIM_BEACON_VIRTUAL",
+      "category": "effect",
+      "engineFilename": "BEACON.SHP",
+      "archetype": "signal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0076.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f2bef8d6989659d34e2f11e8cc1a492723f1c8319d7871e69dac35337f129ba7"
+    },
+    {
+      "id": "WF-0077",
+      "engineEnum": "ANIM_BURN_BIG",
+      "category": "effect",
+      "engineFilename": "BURN-L.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0077.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "69ece1f5eb220965bd1b31c7bdd34717f4216ebd5c648ba6f81491a243f68781"
+    },
+    {
+      "id": "WF-0078",
+      "engineEnum": "ANIM_BURN_MED",
+      "category": "effect",
+      "engineFilename": "BURN-M.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0078.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a4234002147f3f4a753ba44efc0f4724df2762b52d06568f08e68ce3fe8a9e5d"
+    },
+    {
+      "id": "WF-0079",
+      "engineEnum": "ANIM_BURN_SMALL",
+      "category": "effect",
+      "engineFilename": "BURN-S.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0079.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b6bb2e39e61f1265ea2460816d8b2bd1b55bebfdb7b6243e1a71d594ba807c01"
+    },
+    {
+      "id": "WF-0080",
+      "engineEnum": "ANIM_CHEM_BALL",
+      "category": "effect",
+      "engineFilename": "CHEMBALL.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0080.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "09478de4baa85faa05011eac7d81aec08170c6f31853da239ad071e24cef2cc1"
+    },
+    {
+      "id": "WF-0081",
+      "engineEnum": "ANIM_CHEM_E",
+      "category": "effect",
+      "engineFilename": "CHEM-E.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0081.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "e91521a8c5b4b615987ca4885e5f9c52720fc0a010c87b6d880d55260b3aa616"
+    },
+    {
+      "id": "WF-0082",
+      "engineEnum": "ANIM_CHEM_N",
+      "category": "effect",
+      "engineFilename": "CHEM-N.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0082.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "5798c1580d4ea49404630d16bec01ea05637a654f2d9e605d0a8eb1a4b92cc90"
+    },
+    {
+      "id": "WF-0083",
+      "engineEnum": "ANIM_CHEM_NE",
+      "category": "effect",
+      "engineFilename": "CHEM-NE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0083.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "972b4d3ec4fba4f5d10ad0f11fb0fda183313c974e6b7dde8fc021d8513e90e7"
+    },
+    {
+      "id": "WF-0084",
+      "engineEnum": "ANIM_CHEM_NW",
+      "category": "effect",
+      "engineFilename": "CHEM-NW.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0084.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "8460f294ff27c24763b474edb3e8fcc3528ff12e128eb8988d51588dba89178d"
+    },
+    {
+      "id": "WF-0085",
+      "engineEnum": "ANIM_CHEM_S",
+      "category": "effect",
+      "engineFilename": "CHEM-S.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0085.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a509dd7359a0e347482de8bf80589bf030a95042ce81c4213d4437633cb2ae13"
+    },
+    {
+      "id": "WF-0086",
+      "engineEnum": "ANIM_CHEM_SE",
+      "category": "effect",
+      "engineFilename": "CHEM-SE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0086.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "7ec597964c2d7f311c52d032006c0a6018ba133d2aff367e99188fe020374db5"
+    },
+    {
+      "id": "WF-0087",
+      "engineEnum": "ANIM_CHEM_SW",
+      "category": "effect",
+      "engineFilename": "CHEM-SW.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0087.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "90df8e5ca70987abf0dbe2ad087659ba96773e7fff4efd5b8c304ae8d0d31828"
+    },
+    {
+      "id": "WF-0088",
+      "engineEnum": "ANIM_CHEM_W",
+      "category": "effect",
+      "engineFilename": "CHEM-W.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0088.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "ddd292d5be330b1e496f77693594a9eabc0d3202e3d42f3351a10a38a3f2b218"
+    },
+    {
+      "id": "WF-0089",
+      "engineEnum": "ANIM_CRATE_DEVIATOR",
+      "category": "effect",
+      "engineFilename": "DEVIATOR.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0089.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "dcc888478f7ef5c980de90ede4c6d78305a506ca141a4b0ce4d4c58f87e17ef1"
+    },
+    {
+      "id": "WF-0090",
+      "engineEnum": "ANIM_CRATE_DOLLAR",
+      "category": "effect",
+      "engineFilename": "DOLLAR.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0090.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "8e8f14fbae606b17c955947114e1189217248a8c811a6d6e8e6362f54b745c8a"
+    },
+    {
+      "id": "WF-0091",
+      "engineEnum": "ANIM_CRATE_EARTH",
+      "category": "effect",
+      "engineFilename": "EARTH.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0091.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f9bc20fed9fdfc3539bbccbbfff82b45b59bd40611b8c1667506c26c3000921c"
+    },
+    {
+      "id": "WF-0092",
+      "engineEnum": "ANIM_CRATE_EMPULSE",
+      "category": "effect",
+      "engineFilename": "EMPULSE.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0092.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "db740414ccd13326a69e7e9da453673774e7339e5f85750bfdf95cf2b403c2ee"
+    },
+    {
+      "id": "WF-0093",
+      "engineEnum": "ANIM_CRATE_INVUN",
+      "category": "effect",
+      "engineFilename": "INVUN.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0093.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f032804c445cd461ed0111ea1f44c860f80600da4c9a2376437ebbf2e6bf9b51"
+    },
+    {
+      "id": "WF-0094",
+      "engineEnum": "ANIM_CRATE_MINE",
+      "category": "effect",
+      "engineFilename": "MINE.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0094.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "09909e539b6349087c9d8c98826b8f517a630ab2ef89cb2f85e0b888079eb580"
+    },
+    {
+      "id": "WF-0095",
+      "engineEnum": "ANIM_CRATE_MISSILE",
+      "category": "effect",
+      "engineFilename": "MISSILE2.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0095.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b7bfb732cb1fab5334d2294ac234528ac938e222b49a67e76eb61afff4824bb4"
+    },
+    {
+      "id": "WF-0096",
+      "engineEnum": "ANIM_CRATE_RAPID",
+      "category": "effect",
+      "engineFilename": "RAPID.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0096.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "fa986bfcecf41464924777ff325202f85af443dd9404fbeb9067cda1300f642b"
+    },
+    {
+      "id": "WF-0097",
+      "engineEnum": "ANIM_CRATE_STEALTH",
+      "category": "effect",
+      "engineFilename": "STEALTH2.SHP",
+      "archetype": "crate-glow",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0097.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "c774c40c1fc5064cbd03e34389d6a690bdaf6ace3d586f8f241ff6cfdf1d897a"
+    },
+    {
+      "id": "WF-0098",
+      "engineEnum": "ANIM_E1_ROT_EXP",
+      "category": "effect",
+      "engineFilename": "E1ROT.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0098.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "1c33765679bf455d4dc028d03b6085e0ae0ceeda02447b28bd34c3f1d255d5e2"
+    },
+    {
+      "id": "WF-0099",
+      "engineEnum": "ANIM_E1_ROT_FIRE",
+      "category": "effect",
+      "engineFilename": "E1ROT.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0099.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a9d1a16fbace8878ef86b355cea3b68b5358a5d0f6973a98e989a6b492f66063"
+    },
+    {
+      "id": "WF-0100",
+      "engineEnum": "ANIM_E1_ROT_GRENADE",
+      "category": "effect",
+      "engineFilename": "E1ROT.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0100.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "1f88265c5cd4a837b695d89a5b2088cf5daee29945f8a3a7dbc9c2c84afd82ab"
+    },
+    {
+      "id": "WF-0101",
+      "engineEnum": "ANIM_E1_ROT_GUN",
+      "category": "effect",
+      "engineFilename": "E1ROT.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0101.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "96befab1f0de57be0cfc1ea737242b6a06bc213d240a9f20c8c7e2ab935b9489"
+    },
+    {
+      "id": "WF-0102",
+      "engineEnum": "ANIM_E2_ROT_EXP",
+      "category": "effect",
+      "engineFilename": "E2ROT.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0102.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "636d8a4c40060071b7f56d9f1685c1f74df4945b897a66e13a4b7f6ce952f335"
+    },
+    {
+      "id": "WF-0103",
+      "engineEnum": "ANIM_E2_ROT_FIRE",
+      "category": "effect",
+      "engineFilename": "E2ROT.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0103.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "85714ddbb0e050ac452689343dc6b107cc4f6d0789d637c891d9ed7ec9c5ab88"
+    },
+    {
+      "id": "WF-0104",
+      "engineEnum": "ANIM_E2_ROT_GRENADE",
+      "category": "effect",
+      "engineFilename": "E2ROT.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0104.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "29c5550c9b33ec8d3f29c52141fe37fa4c98d84ce9e1e2302b2ac534bb4f977c"
+    },
+    {
+      "id": "WF-0105",
+      "engineEnum": "ANIM_E2_ROT_GUN",
+      "category": "effect",
+      "engineFilename": "E2ROT.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0105.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "6ff20ef2c66ab94f67eaa6ce3350c8e50bb0ba0c31a14a9b112654e64e06a964"
+    },
+    {
+      "id": "WF-0106",
+      "engineEnum": "ANIM_E3_ROT_EXP",
+      "category": "effect",
+      "engineFilename": "E3ROT.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0106.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "55147b64ae173ab25dc95a5105daf7755b5a896b9959ffb6cece151f110e3792"
+    },
+    {
+      "id": "WF-0107",
+      "engineEnum": "ANIM_E3_ROT_FIRE",
+      "category": "effect",
+      "engineFilename": "E3ROT.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0107.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "e67e9fa9de3083d198e81b0dd162d9943f204759d4c595d4189b7ebcf8fc6d6f"
+    },
+    {
+      "id": "WF-0108",
+      "engineEnum": "ANIM_E3_ROT_GRENADE",
+      "category": "effect",
+      "engineFilename": "E3ROT.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0108.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "326606e4161ef4c9b348982f1460b08f35735b545b2ba7345b6fc2def4f0b385"
+    },
+    {
+      "id": "WF-0109",
+      "engineEnum": "ANIM_E3_ROT_GUN",
+      "category": "effect",
+      "engineFilename": "E3ROT.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0109.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "c4e6b4c86ace1f77e8c75a65639cab0a4a1dfdecc70cd8224e614cf4a3148b3a"
+    },
+    {
+      "id": "WF-0110",
+      "engineEnum": "ANIM_E4_ROT_EXP",
+      "category": "effect",
+      "engineFilename": "E4ROT.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0110.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "d3d6123087b707d344a30e4b80cf4d79ed7f41d79ce6f2e160b7fcbd86d2317c"
+    },
+    {
+      "id": "WF-0111",
+      "engineEnum": "ANIM_E4_ROT_FIRE",
+      "category": "effect",
+      "engineFilename": "E4ROT.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0111.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "abff2cac407fae4ef669f35e8df96d6b69c0f7667f2884e9abc99b14a42240c4"
+    },
+    {
+      "id": "WF-0112",
+      "engineEnum": "ANIM_E4_ROT_GRENADE",
+      "category": "effect",
+      "engineFilename": "E4ROT.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0112.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "01721983255e1f12110f417ef3bab1056fa5b520691a15e88a68ebcbbc13607e"
+    },
+    {
+      "id": "WF-0113",
+      "engineEnum": "ANIM_E4_ROT_GUN",
+      "category": "effect",
+      "engineFilename": "E4ROT.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0113.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "15b04e02041845097db700428ca238f0fec595f19aac1f4c86c70dc0a3b19df8"
+    },
+    {
+      "id": "WF-0114",
+      "engineEnum": "ANIM_FBALL1",
+      "category": "effect",
+      "engineFilename": "FBALL1.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0114.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "8e6f49de3ec48881624621344c7b9126ae3ea986b001d7a2aa9c88a7329265cf"
+    },
+    {
+      "id": "WF-0115",
+      "engineEnum": "ANIM_FIRE_MED",
+      "category": "effect",
+      "engineFilename": "FIRE2.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0115.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "97a586f8dde6def375a373c38d0086e9c8d63026886c4d1532c84a9693678ca7"
+    },
+    {
+      "id": "WF-0116",
+      "engineEnum": "ANIM_FIRE_MED_VIRTUAL",
+      "category": "effect",
+      "engineFilename": "FIRE2.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0116.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b2623061778f7eb784915c78b7229cc4c5ce8848901bc2db3bb5035fa97571e3"
+    },
+    {
+      "id": "WF-0117",
+      "engineEnum": "ANIM_FIRE_MED2",
+      "category": "effect",
+      "engineFilename": "FIRE1.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0117.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "30d64b96e9a163b72983563c9fca1360381b25ec7c57bc4c26b2d542c7be63ff"
+    },
+    {
+      "id": "WF-0118",
+      "engineEnum": "ANIM_FIRE_MED2_VIRTUAL",
+      "category": "effect",
+      "engineFilename": "FIRE1.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0118.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "1cf9170fa91512a1b150b2fea163818d3881f7aab7d83e8640966258faba3d75"
+    },
+    {
+      "id": "WF-0119",
+      "engineEnum": "ANIM_FIRE_SMALL",
+      "category": "effect",
+      "engineFilename": "FIRE3.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0119.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "895c6ca5443f1c2a9a99508c4bb4721812e97ddb158d42e0b794f26bddbd6941"
+    },
+    {
+      "id": "WF-0120",
+      "engineEnum": "ANIM_FIRE_SMALL_VIRTUAL",
+      "category": "effect",
+      "engineFilename": "FIRE3.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0120.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a5768b3a676efdf44707f2cbde740dfb5bc305b4577379532bd09c0f62aff0c7"
+    },
+    {
+      "id": "WF-0121",
+      "engineEnum": "ANIM_FIRE_TINY",
+      "category": "effect",
+      "engineFilename": "FIRE4.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0121.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "955e458e6615b7848d50a746d50c834b9c629222760e67c71e1270f3554937d8"
+    },
+    {
+      "id": "WF-0122",
+      "engineEnum": "ANIM_FIRE_TINY_VIRTUAL",
+      "category": "effect",
+      "engineFilename": "FIRE4.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0122.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "3a7a2dc1d676d06ac58819adf829715275c04a2b05e973c8dd2325dfe0979c3b"
+    },
+    {
+      "id": "WF-0123",
+      "engineEnum": "ANIM_FLAG",
+      "category": "effect",
+      "engineFilename": "FLAGFLY.SHP",
+      "archetype": "signal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0123.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "87df4434955d7948e665c6222ebffa69e43835da3d6a4d25ab9472e09bbab53e"
+    },
+    {
+      "id": "WF-0124",
+      "engineEnum": "ANIM_FLAME_E",
+      "category": "effect",
+      "engineFilename": "FLAME-E.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0124.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "3c42ac6a6d0b3d355593ae3ae3f3c48e9333e85c405c82cae920968c089714c4"
+    },
+    {
+      "id": "WF-0125",
+      "engineEnum": "ANIM_FLAME_N",
+      "category": "effect",
+      "engineFilename": "FLAME-N.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0125.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "cd0a2f6d42c68527a784cecfcd5a0bafeac36adff2fecd0c844994864e1a1a40"
+    },
+    {
+      "id": "WF-0126",
+      "engineEnum": "ANIM_FLAME_NE",
+      "category": "effect",
+      "engineFilename": "FLAME-NE.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0126.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "0816795cbe2587149de94e3a1cb428a670fb7e7cefbb8b78608c88bba96cacff"
+    },
+    {
+      "id": "WF-0127",
+      "engineEnum": "ANIM_FLAME_NW",
+      "category": "effect",
+      "engineFilename": "FLAME-NW.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0127.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "9ca9b4760a9ae28c00892ac17356f2c9fa71b35aa9aca28db6da3b4302682478"
+    },
+    {
+      "id": "WF-0128",
+      "engineEnum": "ANIM_FLAME_S",
+      "category": "effect",
+      "engineFilename": "FLAME-S.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0128.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "2035d92d52c83a8b01dd2bcb80b14747288db3e07949a15fbd0f7386e29d952b"
+    },
+    {
+      "id": "WF-0129",
+      "engineEnum": "ANIM_FLAME_SE",
+      "category": "effect",
+      "engineFilename": "FLAME-SE.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0129.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "5dd004cbaedadae16fe5a88bd960d1a7f942810c719f726e15c513569c71db58"
+    },
+    {
+      "id": "WF-0130",
+      "engineEnum": "ANIM_FLAME_SW",
+      "category": "effect",
+      "engineFilename": "FLAME-SW.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0130.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "ca9b0d35fb1aa71721b3ff60a180234a111dc1ec8ec3cf64ef6e554ccf4bdf58"
+    },
+    {
+      "id": "WF-0131",
+      "engineEnum": "ANIM_FLAME_W",
+      "category": "effect",
+      "engineFilename": "FLAME-W.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0131.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "0176ee37b51404d0c7863e63889994d39b247fca09ab5b7c90e8fd60a5cda279"
+    },
+    {
+      "id": "WF-0132",
+      "engineEnum": "ANIM_FRAG1",
+      "category": "effect",
+      "engineFilename": "FRAG1.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0132.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "631e723f877b54cfeb4194f90851db05c8cb3582a06ba383dcad75f4f9d27e40"
+    },
+    {
+      "id": "WF-0133",
+      "engineEnum": "ANIM_FRAG2",
+      "category": "effect",
+      "engineFilename": "FRAG3.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0133.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "05e4338f160d8e42d465ed5cb98be8f20eb71d193d9f60cddcde93e81f8ec494"
+    },
+    {
+      "id": "WF-0134",
+      "engineEnum": "ANIM_GRENADE",
+      "category": "effect",
+      "engineFilename": "VEH-HIT2.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0134.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "1a4c06e98423de5221425b8a8a42272d813bf79f93a4e7ca46cbcd38098936b3"
+    },
+    {
+      "id": "WF-0135",
+      "engineEnum": "ANIM_GUN_E",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0135.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "746a986d8a7ad9a3ddcbda578a622fe0acb6bd75bf0bab6b3a24ccff10e4a8b1"
+    },
+    {
+      "id": "WF-0136",
+      "engineEnum": "ANIM_GUN_N",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0136.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "28066c2d2f1103a186445123483c86aaafa70ea23677ffbb2ee0592b34d76052"
+    },
+    {
+      "id": "WF-0137",
+      "engineEnum": "ANIM_GUN_NE",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0137.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "228fc5d6d8a809feaeaa374c84cd8d5d936ad5f32ac7494b3c8678c7b818f25d"
+    },
+    {
+      "id": "WF-0138",
+      "engineEnum": "ANIM_GUN_NW",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0138.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "366eaa5055ef1760bcec12d7e01fe6ca7500999423f8cfe0045ef7ebc5577185"
+    },
+    {
+      "id": "WF-0139",
+      "engineEnum": "ANIM_GUN_S",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0139.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "77f3663d370fef430e3516f05c33a78f01144ab21b673a132dab298763e9975f"
+    },
+    {
+      "id": "WF-0140",
+      "engineEnum": "ANIM_GUN_SE",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0140.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "e52845776cc6f7901277032d8b8b45ce022cc798a48fd7d0c94484b41d64d06e"
+    },
+    {
+      "id": "WF-0141",
+      "engineEnum": "ANIM_GUN_SW",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0141.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "7fd383524e96846621626f09476b7af8d8105cb6ee271db169ba3160d2803a97"
+    },
+    {
+      "id": "WF-0142",
+      "engineEnum": "ANIM_GUN_W",
+      "category": "effect",
+      "engineFilename": "MINIGUN.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0142.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "9fe2c3fb38984cb36c0373c7e13d975b6e8b54403e843e912021cdeebc7a380f"
+    },
+    {
+      "id": "WF-0143",
+      "engineEnum": "ANIM_ION_CANNON",
+      "category": "effect",
+      "engineFilename": "IONSFX.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0143.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "5e3ac1e8864faabc3aaeebc4bc654234a383fd0993d7f3f16b689a492d1267f7"
+    },
+    {
+      "id": "WF-0144",
+      "engineEnum": "ANIM_LZ_SMOKE",
+      "category": "effect",
+      "engineFilename": "SMOKLAND.SHP",
+      "archetype": "smoke",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0144.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "142a66e0dabdb5adc9c910286f053baeadeaed1f3eae7e849d619be826abb0c8"
+    },
+    {
+      "id": "WF-0145",
+      "engineEnum": "ANIM_MOVE_FLASH",
+      "category": "effect",
+      "engineFilename": "MOVEFLSH.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0145.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "9ea7779b550816a3b449eec67c06147b2b3a53a58f6d9c6aba6f0e632981c4e5"
+    },
+    {
+      "id": "WF-0146",
+      "engineEnum": "ANIM_MUZZLE_FLASH",
+      "category": "effect",
+      "engineFilename": "GUNFIRE.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0146.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "d8f6bca5a1e9112d8b5af4208e8883755c54a2472fc36984b65001936b388b04"
+    },
+    {
+      "id": "WF-0147",
+      "engineEnum": "ANIM_NAPALM1",
+      "category": "effect",
+      "engineFilename": "NAPALM1.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0147.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "aaec26d6213ed9e8bb9b5d4dfc1e68d2231483cbd0fa859c171d73f9323a503d"
+    },
+    {
+      "id": "WF-0148",
+      "engineEnum": "ANIM_NAPALM2",
+      "category": "effect",
+      "engineFilename": "NAPALM2.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0148.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "59b6d6714e655964c713ce9d274aea58da12996a6ac5318a7bb29216d382edd5"
+    },
+    {
+      "id": "WF-0149",
+      "engineEnum": "ANIM_NAPALM3",
+      "category": "effect",
+      "engineFilename": "NAPALM3.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0149.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "4c1a7fcf55a673ae7d2cabe525f4ac78ca2b9378d30a1e24ee7320fca0242352"
+    },
+    {
+      "id": "WF-0150",
+      "engineEnum": "ANIM_OILFIELD_BURN",
+      "category": "effect",
+      "engineFilename": "FLMSPT.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0150.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "2985e64e07aa570e2a3b6d4f5bd27e149959d8942e70d5dacfaa87b8e239b679"
+    },
+    {
+      "id": "WF-0151",
+      "engineEnum": "ANIM_ON_FIRE_BIG",
+      "category": "effect",
+      "engineFilename": "BURN-L.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0151.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "70f4c015b0f138ff1b8f0dcc812922194ade36010f089ba10bbef90ff28b65ab"
+    },
+    {
+      "id": "WF-0152",
+      "engineEnum": "ANIM_ON_FIRE_MED",
+      "category": "effect",
+      "engineFilename": "BURN-M.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0152.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "eca6205666b9100729d6d6454dfbfad78cf8f7ec920d64e7242db02ad08a147d"
+    },
+    {
+      "id": "WF-0153",
+      "engineEnum": "ANIM_ON_FIRE_SMALL",
+      "category": "effect",
+      "engineFilename": "BURN-S.SHP",
+      "archetype": "fire",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0153.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "567be6a68c280b176b553a3f9a3629412460cf7a693896bbbd214cbced803f99"
+    },
+    {
+      "id": "WF-0154",
+      "engineEnum": "ANIM_PIFF",
+      "category": "effect",
+      "engineFilename": "PIFF.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0154.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "8374c06f85850eadac473d21c2134a10a948543ce96e20a97c43ed1dc3def9b1"
+    },
+    {
+      "id": "WF-0155",
+      "engineEnum": "ANIM_PIFFPIFF",
+      "category": "effect",
+      "engineFilename": "PIFFPIFF.SHP",
+      "archetype": "flash",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0155.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "ae59fe80127afed3f1116738c949f31497103913b56f4b9be48de32b6fb64679"
+    },
+    {
+      "id": "WF-0156",
+      "engineEnum": "ANIM_RAPT_DIE",
+      "category": "effect",
+      "engineFilename": "RAPT.SHP",
+      "archetype": "creature-fall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0156.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a24f5e304b6cc411d5d5c981a63e554c865d369e047839dd035201745fa5af60"
+    },
+    {
+      "id": "WF-0157",
+      "engineEnum": "ANIM_SAM_E",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0157.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "92466866edcac0f7b71f3e11c6d7a5a8dfc59a118e0bc7f40c14458171afed84"
+    },
+    {
+      "id": "WF-0158",
+      "engineEnum": "ANIM_SAM_N",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0158.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "34471fccdc752e838d02bab5b7b40566cf363f7b10e9b7f5c46e3a05590d519e"
+    },
+    {
+      "id": "WF-0159",
+      "engineEnum": "ANIM_SAM_NE",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0159.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f6e623e1b8d5a9cfce0608ead251e430b62f4170cdda258de00523d3078e7537"
+    },
+    {
+      "id": "WF-0160",
+      "engineEnum": "ANIM_SAM_NW",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0160.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "6495cd64f88f738060b826b111677d5ba5d4433614ca0692c8b2fd2d624c0332"
+    },
+    {
+      "id": "WF-0161",
+      "engineEnum": "ANIM_SAM_S",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0161.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "c82141fbf3b32f1e84eeea0d7c47e2d7502448cf9a126dba81dbd793c0ee02c1"
+    },
+    {
+      "id": "WF-0162",
+      "engineEnum": "ANIM_SAM_SE",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0162.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f8d27ca85f44dbc563188f53f8cc1ae753bf8175a59c2f8bbcbb3d5c9932812c"
+    },
+    {
+      "id": "WF-0163",
+      "engineEnum": "ANIM_SAM_SW",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0163.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "ebf39731e396aaf03e2f360fb11e5ee6c128ae6a6f32ed1712bd01fa17e558b7"
+    },
+    {
+      "id": "WF-0164",
+      "engineEnum": "ANIM_SAM_W",
+      "category": "effect",
+      "engineFilename": "SAMFIRE.SHP",
+      "archetype": "projectile-impact",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0164.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "476b55641ea68add37839d168ea25455d2552e75b53174e581aad9733528e498"
+    },
+    {
+      "id": "WF-0165",
+      "engineEnum": "ANIM_SMOKE_M",
+      "category": "effect",
+      "engineFilename": "SMOKE_M.SHP",
+      "archetype": "smoke",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0165.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "5aa4866aa2f25a3648bb599632a3b0167dcba14c642d397d8b7c79ca02b08836"
+    },
+    {
+      "id": "WF-0166",
+      "engineEnum": "ANIM_SMOKE_PUFF",
+      "category": "effect",
+      "engineFilename": "SMOKEY.SHP",
+      "archetype": "smoke",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0166.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a0b00935d17e8bbd0a7c712e8769ddcec1b22a3b70c06f24e0b91fe18fbc182f"
+    },
+    {
+      "id": "WF-0167",
+      "engineEnum": "ANIM_STEG_DIE",
+      "category": "effect",
+      "engineFilename": "STEG.SHP",
+      "archetype": "creature-fall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0167.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "5e34185ec54f932bd024060193e878a82b1ddd5e8545c53e1a1e7de20053ec60"
+    },
+    {
+      "id": "WF-0168",
+      "engineEnum": "ANIM_TREX_DIE",
+      "category": "effect",
+      "engineFilename": "TREX.SHP",
+      "archetype": "creature-fall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0168.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "0793b92e47119496b247b2ff28fe0c302dcee076e99a048dad151689683ca08b"
+    },
+    {
+      "id": "WF-0169",
+      "engineEnum": "ANIM_TRIC_DIE",
+      "category": "effect",
+      "engineFilename": "TRIC.SHP",
+      "archetype": "creature-fall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0169.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "fb77e34652392084575e9c41488079ae5006ec7bbc7315154a8c71e499926ac4"
+    },
+    {
+      "id": "WF-0170",
+      "engineEnum": "ANIM_VEH_HIT1",
+      "category": "effect",
+      "engineFilename": "VEH-HIT1.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0170.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "20cf5792f8f8cf9018050bff69ae07a0ca7e8a26669364c85558468d1dac5530"
+    },
+    {
+      "id": "WF-0171",
+      "engineEnum": "ANIM_VEH_HIT2",
+      "category": "effect",
+      "engineFilename": "VEH-HIT2.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0171.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b6f0e5d5b71be272f7bbd88f2e17e9804d82bda837f0ceab2f2dffaa8aff7b8d"
+    },
+    {
+      "id": "WF-0172",
+      "engineEnum": "ANIM_VEH_HIT3",
+      "category": "effect",
+      "engineFilename": "VEH-HIT3.SHP",
+      "archetype": "explosion",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0172.svg",
+      "sheet": "sheets/effect.svg",
+      "provisionalFrames": 128,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "30e530ea5e80c3274bc071ae71d97ef97bf0a4fcfceec7b253d2740d6d38e861"
+    },
+    {
+      "id": "WF-0173",
+      "engineEnum": "INFANTRY_C1",
+      "category": "infantry",
+      "engineFilename": "C1.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0173.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "0ff224972f9aa74a7729bd7490b8905cdc62e6ed16ac2f3b9aaec4aaf3e40ba5"
+    },
+    {
+      "id": "WF-0174",
+      "engineEnum": "INFANTRY_C10",
+      "category": "infantry",
+      "engineFilename": "C10.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0174.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "76fecc1aa75989def1afc92af60012695be3ffae1161548a8d2eb42aeeafada9"
+    },
+    {
+      "id": "WF-0175",
+      "engineEnum": "INFANTRY_C2",
+      "category": "infantry",
+      "engineFilename": "C2.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0175.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "ee38236630a93b74cdc6cc4c2b49919fe27732b798d028dfe4fdc6ec0bb9118f"
+    },
+    {
+      "id": "WF-0176",
+      "engineEnum": "INFANTRY_C3",
+      "category": "infantry",
+      "engineFilename": "C3.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0176.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "cc286abd2cb3f0572a833b745a7bf0d72ba2828ce7e8e5109acaa0dcd7eb1739"
+    },
+    {
+      "id": "WF-0177",
+      "engineEnum": "INFANTRY_C4",
+      "category": "infantry",
+      "engineFilename": "C4.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0177.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "a54d7a7ebc879c1bcf814dc73c643de2cbc847220ab2bad200e360077bccde79"
+    },
+    {
+      "id": "WF-0178",
+      "engineEnum": "INFANTRY_C5",
+      "category": "infantry",
+      "engineFilename": "C5.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0178.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "5ea98a7148dc548ee690cc7b7b148b25635c0d3cec164c8630cc564a44e3b509"
+    },
+    {
+      "id": "WF-0179",
+      "engineEnum": "INFANTRY_C6",
+      "category": "infantry",
+      "engineFilename": "C6.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0179.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "0570322847f62626e7ceaf51dd20e2697f6262b57b9998d0fa05b83374613ebc"
+    },
+    {
+      "id": "WF-0180",
+      "engineEnum": "INFANTRY_C7",
+      "category": "infantry",
+      "engineFilename": "C7.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0180.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "dda4f883671f7951841365955345001fb8448d40d1a47e82defe7c66d75c4c73"
+    },
+    {
+      "id": "WF-0181",
+      "engineEnum": "INFANTRY_C8",
+      "category": "infantry",
+      "engineFilename": "C8.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0181.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "0c2cc01798c9a008995e0ef36ea96e8cbcce003b1ef3c7d9af33cc913d9f73d7"
+    },
+    {
+      "id": "WF-0182",
+      "engineEnum": "INFANTRY_C9",
+      "category": "infantry",
+      "engineFilename": "C9.SHP",
+      "archetype": "civilian",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0182.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "88f6a068e165d9e30a4308e271d5c2011185d271d3772ca09f7fa00fc085eb6f"
+    },
+    {
+      "id": "WF-0183",
+      "engineEnum": "INFANTRY_CHAN",
+      "category": "infantry",
+      "engineFilename": "CHAN.SHP",
+      "archetype": "engineer",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0183.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 258,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "70cbd23dfa6562f1f1d773307fa8f90c753d40506f1e52e326265979989bc90a"
+    },
+    {
+      "id": "WF-0184",
+      "engineEnum": "INFANTRY_DELPHI",
+      "category": "infantry",
+      "engineFilename": "DELPHI.SHP",
+      "archetype": "commando",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0184.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 375,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "518f7165728110829437ca19476ab44133531eb5368bbeadb438d0f21a63bc41"
+    },
+    {
+      "id": "WF-0185",
+      "engineEnum": "INFANTRY_E1",
+      "category": "infantry",
+      "engineFilename": "E1.SHP",
+      "archetype": "trooper",
+      "coverage": "source-audited-state-preview",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0185.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 532,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "f044d79d355b540ce532cc84fe059f5d0bec5758bbdf690e792e8c123a666bb0"
+    },
+    {
+      "id": "WF-0186",
+      "engineEnum": "INFANTRY_E2",
+      "category": "infantry",
+      "engineFilename": "E2.SHP",
+      "archetype": "trooper",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0186.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 660,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "8374c8ffdcb1ba08700f9f9a874b785c23cabd76c2ebb70926ff96b16938ba71"
+    },
+    {
+      "id": "WF-0187",
+      "engineEnum": "INFANTRY_E3",
+      "category": "infantry",
+      "engineFilename": "E3.SHP",
+      "archetype": "trooper",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0187.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 548,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "e8177ff192a780eef05dde5911bf9eb1c95a386a9481dd287f850bb68bc741d1"
+    },
+    {
+      "id": "WF-0188",
+      "engineEnum": "INFANTRY_E4",
+      "category": "infantry",
+      "engineFilename": "E4.SHP",
+      "archetype": "trooper",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0188.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 660,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "53acdfad74f92dff1eb8841250b2f2420784c730dfab2a927d8f9a5a4420729e"
+    },
+    {
+      "id": "WF-0189",
+      "engineEnum": "INFANTRY_E5",
+      "category": "infantry",
+      "engineFilename": "E5.SHP",
+      "archetype": "trooper",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0189.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 660,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "555cb6959a1c79476f213682a225b601404c9918b392674d958dcf08dea899db"
+    },
+    {
+      "id": "WF-0190",
+      "engineEnum": "INFANTRY_E7",
+      "category": "infantry",
+      "engineFilename": "E6.SHP",
+      "archetype": "trooper",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0190.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 248,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "c0d74516c39dbaea930875166492e5c5d3c5baeb365412a74d42d4656b794452"
+    },
+    {
+      "id": "WF-0191",
+      "engineEnum": "INFANTRY_MOEBIUS",
+      "category": "infantry",
+      "engineFilename": "MOEBIUS.SHP",
+      "archetype": "engineer",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0191.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 258,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "b870382108c8c798d488b446b4c41702c4c6ad1ea9ec071298468f45993a8186"
+    },
+    {
+      "id": "WF-0192",
+      "engineEnum": "INFANTRY_RAMBO",
+      "category": "infantry",
+      "engineFilename": "RMBO.SHP",
+      "archetype": "commando",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0192.svg",
+      "sheet": "sheets/infantry.svg",
+      "provisionalFrames": 468,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "6f4d69729780e25231abe0ce7ef40438b3eae4f8d6b52c03215ea2395279e5ab"
+    },
+    {
+      "id": "WF-0193",
+      "engineEnum": "OVERLAY_BARBWIRE_WALL",
+      "category": "overlay",
+      "engineFilename": "BARB.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0193.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "bd935375645e64943e38837f84f3548cadb6f10ee35fd69fe6465dfe44319724"
+    },
+    {
+      "id": "WF-0194",
+      "engineEnum": "OVERLAY_BRICK_WALL",
+      "category": "overlay",
+      "engineFilename": "BRIK.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0194.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "8354d0913624bb43cb39fad49e0e6bca05d78ed7aee3a752bc86994a950d5720"
+    },
+    {
+      "id": "WF-0195",
+      "engineEnum": "OVERLAY_CONCRETE",
+      "category": "overlay",
+      "engineFilename": "CONC.SHP",
+      "archetype": "road",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0195.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "7c54e4811ca6c97daf32996a840c8dd3a19d454223841eec5d7b6484b55fd361"
+    },
+    {
+      "id": "WF-0196",
+      "engineEnum": "OVERLAY_CYCLONE_WALL",
+      "category": "overlay",
+      "engineFilename": "CYCL.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0196.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "b5540a5e994dfcb98ff4db2483b02eeaa5d491ea43a108ee01202dc83805ef6e"
+    },
+    {
+      "id": "WF-0197",
+      "engineEnum": "OVERLAY_FLAG_SPOT",
+      "category": "overlay",
+      "engineFilename": "FPLS.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0197.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "399173c31a97f30d5021e48af5ebc666090e33716ffd7dc1be4148938840a3f7"
+    },
+    {
+      "id": "WF-0198",
+      "engineEnum": "OVERLAY_ROAD",
+      "category": "overlay",
+      "engineFilename": "ROAD.SHP",
+      "archetype": "road",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0198.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "ed7281a3d511926ce3f9f3913d1634ef114f4bfa3d902eb59520b5ebf18b1edf"
+    },
+    {
+      "id": "WF-0199",
+      "engineEnum": "OVERLAY_SANDBAG_WALL",
+      "category": "overlay",
+      "engineFilename": "SBAG.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0199.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "deca0257c32c834c6c3731d5957ee123b7c2ca0fa687d70d8ce741bf67618f7b"
+    },
+    {
+      "id": "WF-0200",
+      "engineEnum": "OVERLAY_SQUISH",
+      "category": "overlay",
+      "engineFilename": "SQUISH.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0200.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "973064076a1aca36b806f3e20cbdc52afd89902cb970aafa0b7b396c9f9385f3"
+    },
+    {
+      "id": "WF-0201",
+      "engineEnum": "OVERLAY_STEEL_CRATE",
+      "category": "overlay",
+      "engineFilename": "SCRATE.SHP",
+      "archetype": "crate",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0201.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "ae5051b19cf494897b304ab5454fa894fede3ae76dae05e16626b85513f2583f"
+    },
+    {
+      "id": "WF-0202",
+      "engineEnum": "OVERLAY_TIBERIUM1",
+      "category": "overlay",
+      "engineFilename": "TI1.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0202.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "68f3bb826eec306183877cf967cfed88581cf5ffe0837178721fbb48647937f4"
+    },
+    {
+      "id": "WF-0203",
+      "engineEnum": "OVERLAY_TIBERIUM10",
+      "category": "overlay",
+      "engineFilename": "TI10.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0203.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "53efb30ec09a4cef330edd7cbf56a783a143d80cdce2feb7f486d22972dae01c"
+    },
+    {
+      "id": "WF-0204",
+      "engineEnum": "OVERLAY_TIBERIUM11",
+      "category": "overlay",
+      "engineFilename": "TI11.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0204.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "a032fd532a5c1bf10b5a55b54a6ec0d2e08e3d1c1bc9cc67cbfaae3da736c0eb"
+    },
+    {
+      "id": "WF-0205",
+      "engineEnum": "OVERLAY_TIBERIUM12",
+      "category": "overlay",
+      "engineFilename": "TI12.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0205.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "910009f57365c94dba42801aa3c082720df4884e4cf0919450b2e6375e1ee3db"
+    },
+    {
+      "id": "WF-0206",
+      "engineEnum": "OVERLAY_TIBERIUM2",
+      "category": "overlay",
+      "engineFilename": "TI2.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0206.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "9f502d4bbda9c6693b065070b0191c56c38cff3747352cd71e9da98725019e4e"
+    },
+    {
+      "id": "WF-0207",
+      "engineEnum": "OVERLAY_TIBERIUM3",
+      "category": "overlay",
+      "engineFilename": "TI3.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0207.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "165276b3c711c839ad261e3ee87a4dbc006ac6955d1cd01af0200b8a16e36565"
+    },
+    {
+      "id": "WF-0208",
+      "engineEnum": "OVERLAY_TIBERIUM4",
+      "category": "overlay",
+      "engineFilename": "TI4.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0208.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "5512eb6af5daf4b9be461849f5a3806983474e05eca1cdabd00d6e1e6f09adf2"
+    },
+    {
+      "id": "WF-0209",
+      "engineEnum": "OVERLAY_TIBERIUM5",
+      "category": "overlay",
+      "engineFilename": "TI5.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0209.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "63a7d0476fbdd28d46ee035d0582ba73ea050ea7e95bcc4f870e5489b4fec9ec"
+    },
+    {
+      "id": "WF-0210",
+      "engineEnum": "OVERLAY_TIBERIUM6",
+      "category": "overlay",
+      "engineFilename": "TI6.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0210.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "26d504ff98d9ee2be3ad835a1019f5e710bf464822bbfeaa15df05c7e3dde46d"
+    },
+    {
+      "id": "WF-0211",
+      "engineEnum": "OVERLAY_TIBERIUM7",
+      "category": "overlay",
+      "engineFilename": "TI7.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0211.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "0bc1810b194e5f887f2b2bdc074115f83996af010fc51be7bd3800da3bdbe6ea"
+    },
+    {
+      "id": "WF-0212",
+      "engineEnum": "OVERLAY_TIBERIUM8",
+      "category": "overlay",
+      "engineFilename": "TI8.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0212.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "0adc5cd02fa8760245dcf1d611d1be25272a88d2f6f3129276f0b6188daf4ad7"
+    },
+    {
+      "id": "WF-0213",
+      "engineEnum": "OVERLAY_TIBERIUM9",
+      "category": "overlay",
+      "engineFilename": "TI9.SHP",
+      "archetype": "resource",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0213.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "894050bb82fc6e759b0e0c14da2e0072dab225c70df477ca8d488920caf816f8"
+    },
+    {
+      "id": "WF-0214",
+      "engineEnum": "OVERLAY_V12",
+      "category": "overlay",
+      "engineFilename": "V12.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0214.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "a99f958a60408be91ab73284b4ec54ad9bf73d64a1b353c3371f6f077fd1f2f8"
+    },
+    {
+      "id": "WF-0215",
+      "engineEnum": "OVERLAY_V13",
+      "category": "overlay",
+      "engineFilename": "V13.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0215.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "5eba226e3d16f08137b1b48c76dbc78b44826de4912c50b5a18e56bbcc4dfe4e"
+    },
+    {
+      "id": "WF-0216",
+      "engineEnum": "OVERLAY_V14",
+      "category": "overlay",
+      "engineFilename": "V14.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0216.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "d497100d403a7af715db97e36dc6eb31eaf0d3a43860e62bf0300607433debc3"
+    },
+    {
+      "id": "WF-0217",
+      "engineEnum": "OVERLAY_V15",
+      "category": "overlay",
+      "engineFilename": "V15.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0217.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "b09dbe7fb059e40bfc27d78123d8a5c66e94cc976406c5756b84a0eaf4e8873c"
+    },
+    {
+      "id": "WF-0218",
+      "engineEnum": "OVERLAY_V16",
+      "category": "overlay",
+      "engineFilename": "V16.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0218.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "795fbf7275407a60106dc80b54758fba5126effde13fee46aac0e4e24ba4d2ee"
+    },
+    {
+      "id": "WF-0219",
+      "engineEnum": "OVERLAY_V17",
+      "category": "overlay",
+      "engineFilename": "V17.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0219.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "2f8a4dd20f983b445dd479f7bde2405d1d06ad3e89343e9550b9f42fb3f90fd4"
+    },
+    {
+      "id": "WF-0220",
+      "engineEnum": "OVERLAY_V18",
+      "category": "overlay",
+      "engineFilename": "V18.SHP",
+      "archetype": "decal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0220.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "f0d3292b77fa2e30bdd98d513f59334fe78f42a40e2c79f059a0997a0243f366"
+    },
+    {
+      "id": "WF-0221",
+      "engineEnum": "OVERLAY_WOOD_CRATE",
+      "category": "overlay",
+      "engineFilename": "WCRATE.SHP",
+      "archetype": "crate",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0221.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "ef122de94ea022a8bf37b09c41e772ded686a6a26df3db834cfdea4871c1b27d"
+    },
+    {
+      "id": "WF-0222",
+      "engineEnum": "OVERLAY_WOOD_WALL",
+      "category": "overlay",
+      "engineFilename": "WOOD.SHP",
+      "archetype": "wall",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "design-only",
+      "preview": "previews/WF-0222.svg",
+      "sheet": "sheets/overlay.svg",
+      "provisionalFrames": 16,
+      "canvas": [
+        24,
+        24
+      ],
+      "firstFrameSha256": "ff4691f6c2385fcd572450d55bd2efd8028e9ff8e67b1de59b3adc374812c83f"
+    },
+    {
+      "id": "WF-0223",
+      "engineEnum": "BULLET_APDS",
+      "category": "projectile",
+      "engineFilename": "120MM.SHP",
+      "archetype": "ballistic",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0223.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "077709b0b83f864865bb0c41687ec5640732bd441689ccae4888cc049d8b3381"
+    },
+    {
+      "id": "WF-0224",
+      "engineEnum": "BULLET_BULLET",
+      "category": "projectile",
+      "engineFilename": "50CAL.SHP",
+      "archetype": "ballistic",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0224.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "dd0ef107f33742e4366d6c9a98e34d64bd50747f4ddd5e6b526d49b009760190"
+    },
+    {
+      "id": "WF-0225",
+      "engineEnum": "BULLET_CHEMSPRAY",
+      "category": "projectile",
+      "engineFilename": "FLAME.SHP",
+      "archetype": "energy",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0225.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "720bb10af46d9b9b10cd83ef2f79d3b86aab4baea96c283c028173fd482ecc64"
+    },
+    {
+      "id": "WF-0226",
+      "engineEnum": "BULLET_FLAME",
+      "category": "projectile",
+      "engineFilename": "FLAME.SHP",
+      "archetype": "flame",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0226.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "fb7a5848418b4fb3c36ee247131df894fa3f4dbf714600bb31519eda79dbf620"
+    },
+    {
+      "id": "WF-0227",
+      "engineEnum": "BULLET_GRENADE",
+      "category": "projectile",
+      "engineFilename": "BOMB.SHP",
+      "archetype": "ballistic",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0227.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "2b290d5f6ac2020315cb9b73d83169397854736400b3f7db450bcd6cdaac6390"
+    },
+    {
+      "id": "WF-0228",
+      "engineEnum": "BULLET_HE",
+      "category": "projectile",
+      "engineFilename": "120MM.SHP",
+      "archetype": "ballistic",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0228.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "b215ec04855123f324519692eaf522b26795f28479ad23fcf17720dc779ddac0"
+    },
+    {
+      "id": "WF-0229",
+      "engineEnum": "BULLET_HEADBUTT",
+      "category": "projectile",
+      "engineFilename": "GORE.SHP",
+      "archetype": "melee",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0229.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "23cea56195af79b9d662b90437d0e98109b50381c79142af630ecd6ed8f80339"
+    },
+    {
+      "id": "WF-0230",
+      "engineEnum": "BULLET_HONEST_JOHN",
+      "category": "projectile",
+      "engineFilename": "MISSILE.SHP",
+      "archetype": "rocket",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0230.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "48318fd11a47fdf207579a35165a340a9e1a6a82e3cdb9e092a44a296b2acbbb"
+    },
+    {
+      "id": "WF-0231",
+      "engineEnum": "BULLET_LASER",
+      "category": "projectile",
+      "engineFilename": "LASER.SHP",
+      "archetype": "energy",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0231.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "7e4e704dd659e844c888b8f1354e9c35323d286951143d63a49693d79940d612"
+    },
+    {
+      "id": "WF-0232",
+      "engineEnum": "BULLET_NAPALM",
+      "category": "projectile",
+      "engineFilename": "BOMBLET.SHP",
+      "archetype": "flame",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0232.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "0056c346b63959e9507a581960079052c979ed0fa3a0f83726e01a205438171a"
+    },
+    {
+      "id": "WF-0233",
+      "engineEnum": "BULLET_NUKE_DOWN",
+      "category": "projectile",
+      "engineFilename": "ATOMICDN.SHP",
+      "archetype": "rocket",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0233.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "91abb59d18b39ea475ec15729cadef3da95eb2801bb7ca00eaf5a01761a576e6"
+    },
+    {
+      "id": "WF-0234",
+      "engineEnum": "BULLET_NUKE_UP",
+      "category": "projectile",
+      "engineFilename": "ATOMICUP.SHP",
+      "archetype": "rocket",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0234.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "dcbba63a0beced9dd9d7ab1e5a4d5e1a13872562e2cf5046e41cfb1e6b444261"
+    },
+    {
+      "id": "WF-0235",
+      "engineEnum": "BULLET_SAM",
+      "category": "projectile",
+      "engineFilename": "MISSILE.SHP",
+      "archetype": "rocket",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0235.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "812c51373b9ce68d78af3d100312dfaaa8bf49bb667f648cb32606a301c013fb"
+    },
+    {
+      "id": "WF-0236",
+      "engineEnum": "BULLET_SNIPER",
+      "category": "projectile",
+      "engineFilename": "50CAL.SHP",
+      "archetype": "ballistic",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0236.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "4b1856e6e086ba8fd9819e4311f6ba023111537b57180e739158a23adc7d2be8"
+    },
+    {
+      "id": "WF-0237",
+      "engineEnum": "BULLET_SPREADFIRE",
+      "category": "projectile",
+      "engineFilename": "50CAL.SHP",
+      "archetype": "ballistic",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0237.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "0c9cc0ba8ed01410c1f47028a964b3ddb6dfcb20cf80ae5265ff19fb4269c649"
+    },
+    {
+      "id": "WF-0238",
+      "engineEnum": "BULLET_SSM",
+      "category": "projectile",
+      "engineFilename": "DRAGON.SHP",
+      "archetype": "rocket",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0238.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "845ce500d1b8f5434413181231c73a96d3959e911dc69498a46d13fe6e4876a8"
+    },
+    {
+      "id": "WF-0239",
+      "engineEnum": "BULLET_SSM2",
+      "category": "projectile",
+      "engineFilename": "DRAGON.SHP",
+      "archetype": "rocket",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0239.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "349233ea902f65e072205f3e668de933f44aa8cc87b9c4102c8620f0d6c8599a"
+    },
+    {
+      "id": "WF-0240",
+      "engineEnum": "BULLET_TOW",
+      "category": "projectile",
+      "engineFilename": "DRAGON.SHP",
+      "archetype": "rocket",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0240.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "d97c138669854c03a98c7b75d7262b3861067a6cae2d223c46569d7747d731b6"
+    },
+    {
+      "id": "WF-0241",
+      "engineEnum": "BULLET_TREXBITE",
+      "category": "projectile",
+      "engineFilename": "CHEW.SHP",
+      "archetype": "melee",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0241.svg",
+      "sheet": "sheets/projectile.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        16,
+        16
+      ],
+      "firstFrameSha256": "5572f6ec7effeb693592f8adb3780b43b3369f880bc4e7a073b3620e5815940f"
+    },
+    {
+      "id": "WF-0242",
+      "engineEnum": "TERRAIN_BLOSSOMTREE1",
+      "category": "terrain",
+      "engineFilename": "SPLIT2.SHP",
+      "archetype": "crystal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0242.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "6ca0b9cb3b257e2b7faf97333a7d650d60908c98ae398dce91e999398bb01644"
+    },
+    {
+      "id": "WF-0243",
+      "engineEnum": "TERRAIN_BLOSSOMTREE2",
+      "category": "terrain",
+      "engineFilename": "SPLIT3.SHP",
+      "archetype": "crystal",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0243.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "c131eb5c59d8ac65e106667c0b5c95ef8848a643c69ff61566b05b832fd5ede9"
+    },
+    {
+      "id": "WF-0244",
+      "engineEnum": "TERRAIN_CLUMP1",
+      "category": "terrain",
+      "engineFilename": "TC01.SHP",
+      "archetype": "scrub",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0244.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "57f9c9f414d774316ff6abb6de5366aeb1aa3de922cdced5e89dfc268cdbc13f"
+    },
+    {
+      "id": "WF-0245",
+      "engineEnum": "TERRAIN_CLUMP2",
+      "category": "terrain",
+      "engineFilename": "TC02.SHP",
+      "archetype": "scrub",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0245.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b1084fa945ab4f3d17cea16caa2058ed5913da45139548ddf6c40c43dd68d482"
+    },
+    {
+      "id": "WF-0246",
+      "engineEnum": "TERRAIN_CLUMP3",
+      "category": "terrain",
+      "engineFilename": "TC03.SHP",
+      "archetype": "scrub",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0246.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "d610ee05a0e116bcaaae2a8a9fa37221a9ebccb8d8e09dd338eaeca59a458fc9"
+    },
+    {
+      "id": "WF-0247",
+      "engineEnum": "TERRAIN_CLUMP4",
+      "category": "terrain",
+      "engineFilename": "TC04.SHP",
+      "archetype": "scrub",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0247.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "1b623b003c9b6ecd63ff8d7230d0d40b33e4fa40f9a14c34f7fd3ee64c760a84"
+    },
+    {
+      "id": "WF-0248",
+      "engineEnum": "TERRAIN_CLUMP5",
+      "category": "terrain",
+      "engineFilename": "TC05.SHP",
+      "archetype": "scrub",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0248.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "ab99a50ce2748a7319203feb14e7842842c8240b912cd8fcc3195270038d4d61"
+    },
+    {
+      "id": "WF-0249",
+      "engineEnum": "TERRAIN_ROCK1",
+      "category": "terrain",
+      "engineFilename": "ROCK1.SHP",
+      "archetype": "rock",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0249.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "12446c9f58114b43e9f6b1fdb4e72e02b5ad204f8215e4be2d2c8c7e83d745bc"
+    },
+    {
+      "id": "WF-0250",
+      "engineEnum": "TERRAIN_ROCK2",
+      "category": "terrain",
+      "engineFilename": "ROCK2.SHP",
+      "archetype": "rock",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0250.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "cbe2ce53d89713ec5d54c7fb837269640893da98f50ff54a985d9d940db8f755"
+    },
+    {
+      "id": "WF-0251",
+      "engineEnum": "TERRAIN_ROCK3",
+      "category": "terrain",
+      "engineFilename": "ROCK3.SHP",
+      "archetype": "rock",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0251.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "8b815f5168eb23631274368ce65b184b974df4180474d3a742707c75bae07f46"
+    },
+    {
+      "id": "WF-0252",
+      "engineEnum": "TERRAIN_ROCK4",
+      "category": "terrain",
+      "engineFilename": "ROCK4.SHP",
+      "archetype": "rock",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0252.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "8cce0074143aedc962a80beb3a1935e2f1be8c67e57e861750aba79fa3bb7aa2"
+    },
+    {
+      "id": "WF-0253",
+      "engineEnum": "TERRAIN_ROCK5",
+      "category": "terrain",
+      "engineFilename": "ROCK5.SHP",
+      "archetype": "rock",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0253.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "414cbc880b4e5ca8bb4a3dd771e668620103d1a4ec104e7afb02e6d5fa246353"
+    },
+    {
+      "id": "WF-0254",
+      "engineEnum": "TERRAIN_ROCK6",
+      "category": "terrain",
+      "engineFilename": "ROCK6.SHP",
+      "archetype": "rock",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0254.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "7d6d9426bf46ed564653684ceb341bf65f6c4faf213fb9d87e9bf07640535c15"
+    },
+    {
+      "id": "WF-0255",
+      "engineEnum": "TERRAIN_ROCK7",
+      "category": "terrain",
+      "engineFilename": "ROCK7.SHP",
+      "archetype": "rock",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0255.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "da4d8cb8b61f60c879d42e12370a325d840f93d5a29bd89b74ba695804018f3d"
+    },
+    {
+      "id": "WF-0256",
+      "engineEnum": "TERRAIN_TREE1",
+      "category": "terrain",
+      "engineFilename": "T01.SHP",
+      "archetype": "tree",
+      "coverage": "source-audited-state-preview",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0256.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "41ebbfdda7b163721414a6316e296e774f0b6c9c62389d085c213efe8d78787d"
+    },
+    {
+      "id": "WF-0257",
+      "engineEnum": "TERRAIN_TREE10",
+      "category": "terrain",
+      "engineFilename": "T10.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0257.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a304b2ddea64bb90e0a9528c61c48099bd08b38f323f94bb2df5c2217d36e152"
+    },
+    {
+      "id": "WF-0258",
+      "engineEnum": "TERRAIN_TREE11",
+      "category": "terrain",
+      "engineFilename": "T11.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0258.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "422129451f7e94c280d265928084f8caacd2edb355b5d85949f45c07cb8b20c3"
+    },
+    {
+      "id": "WF-0259",
+      "engineEnum": "TERRAIN_TREE12",
+      "category": "terrain",
+      "engineFilename": "T12.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0259.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b7836d2d92c15ce4d6c13afab88b7763548587c28c7c724756a53b1151ccd2aa"
+    },
+    {
+      "id": "WF-0260",
+      "engineEnum": "TERRAIN_TREE13",
+      "category": "terrain",
+      "engineFilename": "T13.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0260.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "ab515da14ad214ee7a8501472dfa301f3724fd1624de0d2cd0079bd18c56dd40"
+    },
+    {
+      "id": "WF-0261",
+      "engineEnum": "TERRAIN_TREE14",
+      "category": "terrain",
+      "engineFilename": "T14.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0261.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "a2dd623c843fa8eb85322c111c797ae085c01341cd265da7d8bf374ea396dad5"
+    },
+    {
+      "id": "WF-0262",
+      "engineEnum": "TERRAIN_TREE15",
+      "category": "terrain",
+      "engineFilename": "T15.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0262.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f2a57b58425585038a9ceae0918dfd06e6148bb430520e3ac770a2efb3884210"
+    },
+    {
+      "id": "WF-0263",
+      "engineEnum": "TERRAIN_TREE16",
+      "category": "terrain",
+      "engineFilename": "T16.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0263.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "3d9129ee435f8ec4c2e8066436a365b7d4669f3afce3a4d95cbe992d64f496f8"
+    },
+    {
+      "id": "WF-0264",
+      "engineEnum": "TERRAIN_TREE17",
+      "category": "terrain",
+      "engineFilename": "T17.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0264.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "4c1e84b24cfac795445908e61c1e970396f4f72e2312442bf1417fc6c51ba51f"
+    },
+    {
+      "id": "WF-0265",
+      "engineEnum": "TERRAIN_TREE18",
+      "category": "terrain",
+      "engineFilename": "T18.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0265.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b6bd966427b5581fc79f4b6779864ba13224c8758544948d4e9261cb1a334569"
+    },
+    {
+      "id": "WF-0266",
+      "engineEnum": "TERRAIN_TREE2",
+      "category": "terrain",
+      "engineFilename": "T02.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0266.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "566cdde56b9663aec526e428c2aec40d7dc144e64b6ad655b7be24e301ef5d36"
+    },
+    {
+      "id": "WF-0267",
+      "engineEnum": "TERRAIN_TREE3",
+      "category": "terrain",
+      "engineFilename": "T03.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0267.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "8f5c18ffc0606e3e1610a8dd68c666083bcd5c9b158828aa7df206b8aa617f36"
+    },
+    {
+      "id": "WF-0268",
+      "engineEnum": "TERRAIN_TREE4",
+      "category": "terrain",
+      "engineFilename": "T04.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0268.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "3c77cb39152d7143b405b29b36e11414ad75dc166bc5cb6b454acefbd0224f92"
+    },
+    {
+      "id": "WF-0269",
+      "engineEnum": "TERRAIN_TREE5",
+      "category": "terrain",
+      "engineFilename": "T05.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0269.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "ad97143f3bb7575e98299a80fbdc5bb287dfe5a43f908971e77b931c295758d2"
+    },
+    {
+      "id": "WF-0270",
+      "engineEnum": "TERRAIN_TREE6",
+      "category": "terrain",
+      "engineFilename": "T06.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0270.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "4a00d4987fa679dcd3f9e83fd0dfe43629ba6ef1e06130e0aeab7f09c7b2850b"
+    },
+    {
+      "id": "WF-0271",
+      "engineEnum": "TERRAIN_TREE7",
+      "category": "terrain",
+      "engineFilename": "T07.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0271.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "c550b35189b8c0c54b49e87ab38efb83e45e0648e0da9fded3c127411f9c62fa"
+    },
+    {
+      "id": "WF-0272",
+      "engineEnum": "TERRAIN_TREE8",
+      "category": "terrain",
+      "engineFilename": "T08.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0272.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "01a08064fcb67b3e2e84f96c79215592a5c6c68727168bf48e1c2ce515c915af"
+    },
+    {
+      "id": "WF-0273",
+      "engineEnum": "TERRAIN_TREE9",
+      "category": "terrain",
+      "engineFilename": "T09.SHP",
+      "archetype": "tree",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0273.svg",
+      "sheet": "sheets/terrain.svg",
+      "provisionalFrames": 32,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "1dfddf6bf87e52e2ea3d076917747f62eee638ed160fc5e62eab90a7e122d78c"
+    },
+    {
+      "id": "WF-0274",
+      "engineEnum": "UNIT_APC",
+      "category": "vehicle",
+      "engineFilename": "APC.SHP",
+      "archetype": "support",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0274.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "7866803c95c33d8143c14a5e675a94d87e8761674cd3744d4a7e67b6cdf79897"
+    },
+    {
+      "id": "WF-0275",
+      "engineEnum": "UNIT_ARTY",
+      "category": "vehicle",
+      "engineFilename": "ARTY.SHP",
+      "archetype": "armor",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0275.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "73ba1af209f9e5dd196efe8c6751aa7acd917e206f0a16d137f4c7fa18ff82c8"
+    },
+    {
+      "id": "WF-0276",
+      "engineEnum": "UNIT_BIKE",
+      "category": "vehicle",
+      "engineFilename": "BIKE.SHP",
+      "archetype": "light-wheeled",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0276.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "d97659577bea454100e6720aa455864049405a9ccfc24e19316e107a013f3e3c"
+    },
+    {
+      "id": "WF-0277",
+      "engineEnum": "UNIT_BUGGY",
+      "category": "vehicle",
+      "engineFilename": "BGGY.SHP",
+      "archetype": "light-wheeled",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0277.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "5dc2c504d1b7d55e783ba29232902061d3949e36e3923d015056ca68040c2f80"
+    },
+    {
+      "id": "WF-0278",
+      "engineEnum": "UNIT_FTANK",
+      "category": "vehicle",
+      "engineFilename": "FTNK.SHP",
+      "archetype": "armor",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0278.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "380c38d21edaf3d5b71aeb2320facc8e115b46f428bd5e949044ff881691a022"
+    },
+    {
+      "id": "WF-0279",
+      "engineEnum": "UNIT_GUNBOAT",
+      "category": "vehicle",
+      "engineFilename": "BOAT.SHP",
+      "archetype": "naval",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0279.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "52e8fb1d6002cedb00791b7cc2d99b877f69dc8ecac484426b535fc575881183"
+    },
+    {
+      "id": "WF-0280",
+      "engineEnum": "UNIT_HARVESTER",
+      "category": "vehicle",
+      "engineFilename": "HARV.SHP",
+      "archetype": "harvester",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0280.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "15fb5dccdcbf78b02db1bcce7c2c165904690edb33e1cb8e367ef3fd2119ba58"
+    },
+    {
+      "id": "WF-0281",
+      "engineEnum": "UNIT_HOVER",
+      "category": "vehicle",
+      "engineFilename": "LST.SHP",
+      "archetype": "hover",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0281.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "f460b915f2f00aa8bd9f857e0046f1b2c080973b9320c57cb93a7178df5afb53"
+    },
+    {
+      "id": "WF-0282",
+      "engineEnum": "UNIT_HTANK",
+      "category": "vehicle",
+      "engineFilename": "HTNK.SHP",
+      "archetype": "armor",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0282.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "45aa2fad4526f984d0c43cb58e004014665e05320c221442f0fa586919db2927"
+    },
+    {
+      "id": "WF-0283",
+      "engineEnum": "UNIT_JEEP",
+      "category": "vehicle",
+      "engineFilename": "JEEP.SHP",
+      "archetype": "light-wheeled",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0283.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "3dc85d840e708404310cd068a1353df4170cb9b06675eaf90fd9ebe21ebaed17"
+    },
+    {
+      "id": "WF-0284",
+      "engineEnum": "UNIT_LTANK",
+      "category": "vehicle",
+      "engineFilename": "LTNK.SHP",
+      "archetype": "armor",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0284.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "4979f33aafbb247bc2766aaa890142a1c84985fcbb10aa069c0283a96dc905e7"
+    },
+    {
+      "id": "WF-0285",
+      "engineEnum": "UNIT_MCV",
+      "category": "vehicle",
+      "engineFilename": "MCV.SHP",
+      "archetype": "support",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0285.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "7fd6701154f12e78e5254ad2b9f588f54b78d2d5bec8409383acc7e599941fca"
+    },
+    {
+      "id": "WF-0286",
+      "engineEnum": "UNIT_MHQ",
+      "category": "vehicle",
+      "engineFilename": "MHQ.SHP",
+      "archetype": "support",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0286.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "4896a1b7f4fe228498c25585248c88d78084bf87032c396c1a6d859d9c54a968"
+    },
+    {
+      "id": "WF-0287",
+      "engineEnum": "UNIT_MLRS",
+      "category": "vehicle",
+      "engineFilename": "MSAM.SHP",
+      "archetype": "armor",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0287.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "44fb30e86e443f49075e5fa9e003d8f9487655fb83865a0f9925e6133929efe6"
+    },
+    {
+      "id": "WF-0288",
+      "engineEnum": "UNIT_MSAM",
+      "category": "vehicle",
+      "engineFilename": "MLRS.SHP",
+      "archetype": "armor",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0288.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "cda0edc1ded5be53803a6bca83daf571e555f12b52aa32627a428fa3e1e45677"
+    },
+    {
+      "id": "WF-0289",
+      "engineEnum": "UNIT_MTANK",
+      "category": "vehicle",
+      "engineFilename": "MTNK.SHP",
+      "archetype": "armor",
+      "coverage": "source-audited-state-preview",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0289.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "9337074375a7569b65519c0290a097ed843f9215f033fc1ee59b80a1c1f01e64"
+    },
+    {
+      "id": "WF-0290",
+      "engineEnum": "UNIT_RAPT",
+      "category": "vehicle",
+      "engineFilename": "RAPT.SHP",
+      "archetype": "creature",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0290.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "0ea04ccb692693955b8b4a7ed41196e4cafcb08c5c83d977cd836e1d84eaeb7f"
+    },
+    {
+      "id": "WF-0291",
+      "engineEnum": "UNIT_STANK",
+      "category": "vehicle",
+      "engineFilename": "STNK.SHP",
+      "archetype": "armor",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0291.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "569dc0e766c0579045a429118c7294a7dc4c4bd21a54b8b6f92f6143c478c75a"
+    },
+    {
+      "id": "WF-0292",
+      "engineEnum": "UNIT_STEG",
+      "category": "vehicle",
+      "engineFilename": "STEG.SHP",
+      "archetype": "creature",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0292.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "caa745a7546230a9819fd2bdc44378c67781baebfe78666e3b66bbe4c44319b8"
+    },
+    {
+      "id": "WF-0293",
+      "engineEnum": "UNIT_TREX",
+      "category": "vehicle",
+      "engineFilename": "TREX.SHP",
+      "archetype": "creature",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0293.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "9db89291de650ff6e0908e4f4a7d23db5de0eac388ef1061d178298980f79101"
+    },
+    {
+      "id": "WF-0294",
+      "engineEnum": "UNIT_TRIC",
+      "category": "vehicle",
+      "engineFilename": "TRIC.SHP",
+      "archetype": "creature",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0294.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "6774dbec6644cf6589b8512aebb681190c3b8f6379e4bacee79b96ea00725dfb"
+    },
+    {
+      "id": "WF-0295",
+      "engineEnum": "UNIT_VICE",
+      "category": "vehicle",
+      "engineFilename": "VICE.SHP",
+      "archetype": "creature",
+      "coverage": "schematic-first-pass",
+      "runtimeStatus": "generated-tactical-placeholder",
+      "preview": "previews/WF-0295.svg",
+      "sheet": "sheets/vehicle.svg",
+      "provisionalFrames": 192,
+      "canvas": [
+        32,
+        32
+      ],
+      "firstFrameSha256": "b6bcad7902a33cd9f4e2aecec0db0f23c9c54c6b4f6d044c6267f1d3c9a51625"
+    }
+  ]
+}

@@ -10,6 +10,9 @@ templates, UI, music, sound and missions remain to be implemented.
 The [representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md)
 links 23 state-specific previews, art replacement requirements and the
 separate `FACTMAKE.SHP` construction resource.
+The [complete first-pass art gallery](ART_FIRST_PASS.md) groups all 295
+engine-class concepts into eight browsable category sheets; this remains
+provisional concept art rather than approved game production assets.
 
 ## Build
 
@@ -21,6 +24,7 @@ node browser/engine/test-original-asset.js
 node tools/content/test-wireframes.js
 node tools/content/test-representative-contracts.js
 node tools/content/test-representative-animation.js
+node tools/content/test-first-pass-art.js
 node browser/engine/test-wireframe-asset.js
 node tools/content/build.js game/content/manifest.json build/world-conquer-content
 node tools/content/wireframes.js build build/world-conquer-roster --representative

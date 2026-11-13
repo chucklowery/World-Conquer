@@ -11,6 +11,7 @@ const {encodeTacticalShape, decodeTacticalShape} = require("./encode-shape");
 const {encodePalette} = require("./encode-palette");
 const {importFrames} = require("./png-to-frames");
 const {representativePixels, factory, statePreviewSpecs} = require("./representative-animation");
+const {draw: drawFirstPass, archetype: artArchetype} = require("./first-pass-art");
 
 const root = path.resolve(__dirname, "../..");
 const outputRoot = path.join(root, "game/content/wireframes");
@@ -85,54 +86,10 @@ function inventory() {
   return catalog;
 }
 
-function hash(text) { return crypto.createHash("sha256").update(text).digest(); }
 function paint(item, frame = 0) {
   const representative = representativePixels(item, frame);
   if (representative) return representative;
-  const {width: w, height: h, category} = item;
-  const cells = new Uint8Array(w * h);
-  const seed = hash(item.engineEnum)[0];
-  const plot = (x, y, c) => {x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < w && y < h) cells[y * w + x] = c;};
-  const rect = (x, y, sw, sh, c) => {for (let iy = y; iy < y + sh; iy++) for (let ix = x; ix < x + sw; ix++) plot(ix, iy, c);};
-  const line = (x0, y0, x1, y1, c) => {const n = Math.max(1, Math.ceil(Math.hypot(x1-x0,y1-y0))); for (let s=0;s<=n;s++) plot(x0+(x1-x0)*s/n,y0+(y1-y0)*s/n,c);};
-  const circle = (cx, cy, r, c, fill = false) => {for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {const d=x*x+y*y; if (fill ? d <= r*r : d <= r*r && d >= (r-1.5)*(r-1.5)) plot(cx+x,cy+y,c);}};
-  const mid = Math.floor(w/2), phase = frame % 8;
-  if (category === "vehicle") {
-    rect(mid-8, 7, 16, h-14, 2); rect(mid-6, 9, 12, h-18, 3);
-    rect(mid-10, 9, 2, h-18, 5); rect(mid+8, 9, 2, h-18, 5);
-    circle(mid, Math.floor(h/2), 5, 6, true);
-    const angle = (frame % 32) * Math.PI/16;
-    line(mid, h/2, mid+Math.round(10*Math.sin(angle)), h/2-Math.round(10*Math.cos(angle)), 7);
-  } else if (category === "infantry") {
-    circle(mid, 6, 3, 6, true); rect(mid-2, 10, 5, 7, 3);
-    line(mid-2, 13, mid-7+phase%3, 16, 5); line(mid+2, 13, mid+7-phase%3, 16, 5);
-    line(mid-1, 16, mid-5+(phase%2), h-4, 7); line(mid+1, 16, mid+5-(phase%2), h-4, 7);
-  } else if (category === "aircraft") {
-    line(mid, 3, mid-5, h-5, 3); line(mid, 3, mid+5, h-5, 3);
-    line(mid-5, h-5, mid, h-8, 5); line(mid+5, h-5, mid, h-8, 5);
-    line(3, mid+2, w-4, mid+2, 6); rect(mid-2, 10, 5, 15, 4);
-    circle(mid, mid, 6+(phase%2), 7);
-  } else if (category === "building") {
-    rect(7, 12, w-14, h-20, 2); rect(10, 15, w-20, h-26, 3);
-    rect(13+(seed%5), 17, 9, 7, 5); rect(w-22, 17, 10, 7, 5);
-    for (let x=10;x<w-10;x+=8) line(x,h-12,x+3,h-12,7);
-    if (frame > Math.floor(item.provisionalFrameCount/2)) line(10,12,w-12,h-10,6);
-  } else if (category === "terrain") {
-    rect(mid-2,h-14,5,11,6); circle(mid, mid-3, 10+seed%4, 3, true);
-    circle(mid-3,mid-8,5,5); circle(mid+5,mid-1,5,7);
-  } else if (category === "projectile") {
-    line(3,h-4,w-5,4,7); line(w-9,4,w-5,4,6); line(w-5,4,w-5,8,6);
-    circle(4,h-5,2+(phase%2),5);
-  } else if (category === "overlay") {
-    rect(3,mid-3,w-6,7,3); rect(mid-3,3,7,h-6,3);
-    for(let y=5;y<h-4;y+=7) line(4,y,w-5,y,7);
-  } else {
-    circle(mid,mid,6+(phase%4),6);
-    for(let a=0;a<8;a++){const angle=a*Math.PI/4+phase/16; line(mid+Math.cos(angle)*5,mid+Math.sin(angle)*5,mid+Math.cos(angle)*13,mid+Math.sin(angle)*13,7);}
-  }
-  // Distinctive notches keep variants identifiable even with the same archetype.
-  for (let i=0;i<3;i++) rect(2+i*4,2,2,2,(seed+i)%5+2);
-  return [...cells];
+  return drawFirstPass(item,frame);
 }
 function renderSvg(item, frame = 0, overridePixels = null) {
   const pixels = overridePixels || paint(item, frame), w=item.width, h=item.height;
@@ -153,7 +110,7 @@ function renderDoc(catalog) {
   const rows = ["# World-Conquer: Original wireframe asset replacement catalog", "",
     "> Generated original placeholder art. No Electronic Arts media is included. `WF-####` identifiers stay stable only while the upstream enumeration and sorting remain unchanged; use `engineEnum` for persistent game mappings.", "",
     `This catalog contains **${catalog.length} independently linked asset slots** derived from Tiberian Dawn C++ class definitions. The preview is the generated placeholder's first frame.`, "",
-    "The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions; it does not change provisional frame contracts for the remaining slots.", "",
+    "The [original first-pass art gallery](ART_FIRST_PASS.md) groups all 295 slots into browsable category sheets and identifies remaining visual dependencies. The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions.", "",
     "## Replacement workflow", "",
     "1. Open an individual `WF-####` SVG below. It is a design guide, not a request to redraw copyrighted artwork.",
     "2. Create newly authored **palette-constrained pixel art** using the project-owned palette. Index `0` is transparent. Dimensions and frame counts here are **provisional build contracts** until each class's production frame lookup, footprint and anchor are audited against C++.",
@@ -187,6 +144,46 @@ function renderDoc(catalog) {
   rows.push("## Separate global dependencies still required", "", "These class entries do not enumerate menus, all tile templates, fonts, complete theater icon sets, missions, UI skin, music, voice lines, audio, particles, or hardcoded special assets (such as `MOUSE.SHP`, `WAKE.SHP`, and `SHADOW.SHP`). Those require distinct manifests and integration work before a wholly standalone game can boot.", "");
   return rows.join("\n");
 }
+function renderSheet(category,assets) {
+  const columns=8, tileW=126, tileH=87, rows=Math.ceil(assets.length/columns),
+    width=columns*tileW, height=rows*tileH+28;
+  const elements=[`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="World-Conquer ${category} first-pass art gallery" shape-rendering="crispEdges">`,
+    `<rect width="${width}" height="${height}" fill="#101c25"/>`,
+    `<text x="10" y="19" font-family="monospace" fill="#f4e6bd" font-size="14">${category.toUpperCase()} — ${assets.length} PROJECT-OWNED CONCEPTS</text>`];
+  for(const [index,a] of assets.entries()){
+    const ox=(index%columns)*tileW,oy=Math.floor(index/columns)*tileH+28,
+      scale=48/Math.max(a.width,a.height),pixels=paint(a);
+    elements.push(`<rect x="${ox+2}" y="${oy+2}" width="${tileW-4}" height="${tileH-4}" fill="#172a36" stroke="#277e68" stroke-width="0.5"/>`,
+      `<g transform="translate(${ox+9} ${oy+7}) scale(${scale})">`);
+    for(let y=0;y<a.height;y++)for(let x=0;x<a.width;){
+      const c=pixels[y*a.width+x];if(!c){x++;continue;}
+      let n=1;while(x+n<a.width&&pixels[y*a.width+x+n]===c)n++;
+      elements.push(`<rect x="${x}" y="${y}" width="${n}" height="1" fill="${paletteColors[c]}"/>`);x+=n;
+    }
+    elements.push(`</g><g font-family="monospace" font-size="9" fill="#a1e7d3"><text x="${ox+9}" y="${oy+67}">${a.id}</text><text x="${ox+9}" y="${oy+78}" fill="#f4e6bd">${a.engineEnum.split("_").slice(1).join("_").slice(0,18)}</text></g>`);
+  }
+  elements.push("</svg>\n");return elements.join("");
+}
+function generateFirstPass(catalog) {
+  const sheets=path.join(outputRoot,"sheets");fs.mkdirSync(sheets,{recursive:true});
+  const groups=[...new Set(catalog.map(a=>a.category))];
+  for(const category of groups){
+    const entries=catalog.filter(a=>a.category===category);
+    fs.writeFileSync(path.join(sheets,`${category}.svg`),renderSheet(category,entries));
+  }
+  const roster=new Set(JSON.parse(fs.readFileSync(path.join(outputRoot,"representative-roster.json"),"utf8")).assets.map(a=>a.id));
+  const assets=catalog.map(a=>({id:a.id,engineEnum:a.engineEnum,category:a.category,
+    engineFilename:a.engineFilename,archetype:artArchetype(a),
+    coverage:roster.has(a.id)?"source-audited-state-preview":"schematic-first-pass",
+    runtimeStatus:a.status,preview:a.preview,sheet:`sheets/${a.category}.svg`,
+    provisionalFrames:a.provisionalFrameCount,canvas:[a.width,a.height],
+    firstFrameSha256:crypto.createHash("sha256").update(Buffer.from(paint(a))).digest("hex")}));
+  fs.writeFileSync(path.join(outputRoot,"first-pass-manifest.json"),JSON.stringify({schemaVersion:1,
+    status:"original procedural first-pass; not final approved artwork",rights:"project-owned CC0-1.0 procedural generation",
+    total:catalog.length,packable:catalog.filter(a=>a.status!=="design-only").length,
+    designOnly:catalog.filter(a=>a.status==="design-only").length,
+    supplemental:["FACTMAKE.SHP"],assets},null,2)+"\n");
+}
 function generate() {
   const catalog=inventory();
   fs.mkdirSync(path.join(outputRoot,"previews"),{recursive:true});
@@ -200,8 +197,9 @@ function generate() {
       renderSvg(asset,spec.frame,pixels));
   }
   fs.writeFileSync(path.join(outputRoot,"catalog.json"),JSON.stringify({schemaVersion:1,generatedFrom:"tiberiandawn/*data.cpp",assets:catalog},null,2)+"\n");
+  generateFirstPass(catalog);
   fs.writeFileSync(docsPath,renderDoc(catalog));
-  console.log(`Generated ${catalog.length} wireframe previews and replacement entries`);
+  console.log(`Generated ${catalog.length} first-pass concept previews, 8 contact sheets and replacement entries`);
 }
 function representativeRoster() {
   const roster=JSON.parse(fs.readFileSync(path.join(outputRoot,"representative-roster.json"),"utf8"));
