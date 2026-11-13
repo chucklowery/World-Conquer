@@ -6,6 +6,7 @@ const os = require("node:os");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const {build, readManifest, safeRelative} = require("./build");
+const {encodeShape, decodeShape} = require("./encode-shape");
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "world-conquer-content-"));
 try {
@@ -41,6 +42,16 @@ try {
   manifest.assets[0].license = "";
   write();
   assert.throws(() => readManifest(manifestPath), /provenance/);
+  const pixels = [0, 0, 5, 7, 0, 0, 0, 2];
+  const frames = {frames: [{width: 4, height: 2, pixels}, {width: 2, height: 2, pixels: [1, 0, 2, 3]}]};
+  const shape = encodeShape(frames);
+  assert.deepEqual(decodeShape(shape), frames);
+  assert.equal(shape.readUInt16LE(0), 2);
+  assert.equal(shape.readUInt32LE(2), 8); // frame offsets are relative to byte 2
+  assert.throws(() => encodeShape({frames: [{width: 2, height: 2, pixels: [1, 2]}]}), /Invalid indexed/);
+  assert.throws(() => decodeShape(shape.subarray(0, 5)), /Invalid shape block/);
+  const longZeros = {frames: [{width: 20, height: 20, pixels: Array(400).fill(0)}]};
+  assert.deepEqual(decodeShape(encodeShape(longZeros)), longZeros);
   console.log("PASS: deterministic packaging, provenance, hashes, duplicate and path validation");
 } finally {
   fs.rmSync(temp, {recursive: true, force: true});

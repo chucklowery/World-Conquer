@@ -1,10 +1,11 @@
 # Original content pipeline (initial implementation)
 
 This is the first reproducible packaging layer for a new World-Conquer game.
-It **does not yet create game-ready SHP, PAL, MIX, or mission files**, and the
-placeholder SVG is **not loaded by VanillaTD**. Do not describe the output as
-a playable resource pack. A compatibility adapter and actual gameplay test
-are required before original assets replace the legacy data files.
+It can now produce an **experimental indexed SHP shape block**, but does not
+yet produce game-ready PAL, MIX, or mission files. Neither the placeholder
+SVG nor the sample SHP is integrated with VanillaTD's game definitions.
+Do not describe the output as a playable resource pack. Actual in-engine
+rendering and a compatibility adapter are still required.
 
 ## Build
 
@@ -21,6 +22,16 @@ byte sizes, SHA-256 checksums, creator and license provenance, plus `files/`
 holding the original bytes. Asset entries are sorted by ID, producing a
 stable index across builds. No timestamps, absolute paths or network requests
 enter the manifest.
+
+The sample `unit.placeholder-scout` entry demonstrates the `indexed-shape`
+transform, turning an indexed frame JSON file into `files/units/SCOUT.SHP`.
+The optional `transform` property defaults to `copy`; source hashes are
+recorded separately from hashes of produced files. Index 0 is transparency.
+The converter emits a little-endian shape-block frame table and uncompressed
+zero-run image data based on `common/shape.h`, `common/getshape.cpp`, and
+`common/wwmouse.cpp`. This is **format-level validation only**. The old engine
+uses a global palette and may expect specific dimensions, frame ordering,
+additional data, filenames, or embedded archives.
 
 ## Source manifest
 

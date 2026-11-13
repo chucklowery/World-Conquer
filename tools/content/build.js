@@ -6,6 +6,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const {encodeShape} = require("./encode-shape");
 
 const TYPES = new Set(["sprite", "terrain", "ui", "audio", "music", "map", "rules", "other"]);
 const ID = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/;
@@ -35,6 +36,9 @@ function readManifest(filename) {
     }
     seen.add(entry.id);
     if (!TYPES.has(entry.type)) throw new Error(`Unknown asset type for ${entry.id}`);
+    if (entry.transform !== undefined && entry.transform !== "indexed-shape") {
+      throw new Error(`Unknown asset transform for ${entry.id}`);
+    }
     safeRelative(entry.source, `source for ${entry.id}`);
     safeRelative(entry.target, `target for ${entry.id}`);
     if (typeof entry.license !== "string" || !entry.license.trim() ||
@@ -63,14 +67,18 @@ function build(manifestFile, outputDir) {
     if (!real.startsWith(sourceRoot + path.sep) || !fs.statSync(real).isFile()) {
       throw new Error(`Asset source escapes manifest directory: ${asset.source}`);
     }
-    const bytes = fs.readFileSync(real);
-    if (!bytes.length) throw new Error(`Empty asset: ${asset.id}`);
-    const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
-    if (asset.sha256 !== undefined && (!SHA.test(asset.sha256) || asset.sha256 !== sha256)) {
+    const sourceBytes = fs.readFileSync(real);
+    if (!sourceBytes.length) throw new Error(`Empty asset: ${asset.id}`);
+    const sourceSha256 = crypto.createHash("sha256").update(sourceBytes).digest("hex");
+    if (asset.sha256 !== undefined && (!SHA.test(asset.sha256) || asset.sha256 !== sourceSha256)) {
       throw new Error(`SHA-256 mismatch for ${asset.id}`);
     }
+    const bytes = asset.transform === "indexed-shape"
+      ? encodeShape(JSON.parse(sourceBytes.toString("utf8"))) : sourceBytes;
+    const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
     files.push({id: asset.id, type: asset.type, target: asset.target,
-      creator: asset.creator, license: asset.license, bytes: bytes.length, sha256, data: bytes});
+      creator: asset.creator, license: asset.license, transform: asset.transform || "copy",
+      sourceSha256, bytes: bytes.length, sha256, data: bytes});
   }
   // Validate everything before creating output. Copy to a fresh directory only:
   // never silently overwrite a release or leave stale assets behind.

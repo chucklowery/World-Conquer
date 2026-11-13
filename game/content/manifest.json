@@ -9,6 +9,15 @@
       "target": "ui/placeholder-command.svg",
       "creator": "World-Conquer project",
       "license": "CC0-1.0"
+    },
+    {
+      "id": "unit.placeholder-scout",
+      "type": "sprite",
+      "source": "source/placeholder-scout.frames.json",
+      "target": "units/SCOUT.SHP",
+      "transform": "indexed-shape",
+      "creator": "World-Conquer project",
+      "license": "CC0-1.0"
     }
   ]
 }
