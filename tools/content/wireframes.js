@@ -188,10 +188,29 @@ function generate() {
   fs.writeFileSync(docsPath,renderDoc(catalog));
   console.log(`Generated ${catalog.length} wireframe previews and replacement entries`);
 }
-function build(destination) {
+function representativeRoster() {
+  const roster=JSON.parse(fs.readFileSync(path.join(outputRoot,"representative-roster.json"),"utf8"));
+  if(roster.schemaVersion!==1||!Array.isArray(roster.assets)||roster.assets.length!==6)throw new Error("Invalid representative roster");
+  const catalog=inventory();
+  const ids=new Set();
+  for(const expected of roster.assets){
+    const found=catalog.find(a=>a.id===expected.id);
+    if(!found||ids.has(expected.id)||found.status==="design-only"||found.sharedFilenameWith.length||
+        ["category","engineEnum","engineFilename"].some(field=>found[field]!==expected[field])){
+      throw new Error(`Invalid or conflicting representative entry ${expected.id}`);
+    }
+    ids.add(expected.id);
+  }
+  return roster.assets;
+}
+function build(destination, selectedIds) {
   const dir=path.resolve(destination);
   if(fs.existsSync(dir))throw new Error(`Output already exists: ${dir}`);
   const catalog=JSON.parse(fs.readFileSync(path.join(outputRoot,"catalog.json"),"utf8")).assets;
+  const only=selectedIds===undefined?null:new Set(selectedIds);
+  if(only&&(only.size!==selectedIds.length||only.size===0||[...only].some(id=>!catalog.some(a=>a.id===id&&a.status!=="design-only")))){
+    throw new Error("Invalid or duplicate selected asset ID");
+  }
   const entries=[];
   fs.mkdirSync(path.join(dir,"files"),{recursive:true});
   fs.mkdirSync(path.join(dir,"game-root"),{recursive:true});
@@ -202,6 +221,7 @@ function build(destination) {
   fs.writeFileSync(path.join(dir,"game-root/WIREFRAME.PAL"),palette);
   entries.push({id:"palette.wireframe",target:"WIREFRAME.PAL",bytes:palette.length,sha256:crypto.createHash("sha256").update(palette).digest("hex")});
   for(const a of catalog){
+    if(only&&!only.has(a.id))continue;
     const finalDir=path.join(outputRoot,a.finalFrameDirectory);
     if(a.status==="design-only"){
       if(fs.existsSync(finalDir))throw new Error(`${a.id} requires a non-SHP format adapter before final art can be packaged`);
@@ -237,12 +257,19 @@ function build(destination) {
       sha256:crypto.createHash("sha256").update(bytes).digest("hex")});
   }
   fs.writeFileSync(path.join(dir,"manifest.json"),JSON.stringify({schemaVersion:1,gameId:"world-conquer-wireframes",assets:entries},null,2)+"\n");
-  console.log(`Built ${entries.length-1} tactical shape placeholders, excluding design-only overlays`);
+  if(only){
+    const roster=representativeRoster();
+    if(roster.length===only.size&&roster.every(a=>only.has(a.id))){
+      fs.writeFileSync(path.join(dir,"roster.json"),JSON.stringify({schemaVersion:1,assets:roster},null,2)+"\n");
+    }
+  }
+  console.log(`Built ${entries.length-1} tactical shape resources${only?" (selected smoke-test roster)":" (excluding design-only overlays)"}`);
 }
 if(require.main===module){
   try{if(process.argv[2]==="generate")generate();
-    else if(process.argv[2]==="build"&&process.argv[3])build(process.argv[3]);
-    else throw new Error("Usage: node tools/content/wireframes.js generate | build <new-output-directory>");
+    else if(process.argv[2]==="build"&&process.argv[3]&&(process.argv.length===4||process.argv.length===5&&process.argv[4]==="--representative")){
+      build(process.argv[3],process.argv[4]==="--representative"?representativeRoster().map(a=>a.id):undefined);
+    }else throw new Error("Usage: node tools/content/wireframes.js generate | build <new-output-directory> [--representative]");
   }catch(err){console.error(err.stack||err);process.exitCode=1;}
 }
-module.exports={inventory,paint,renderSvg,generate,build};
+module.exports={inventory,paint,renderSvg,generate,build,representativeRoster};

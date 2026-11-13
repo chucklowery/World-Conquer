@@ -40,8 +40,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
 <button type="button" id="run-shape" disabled>Render original SHP sample</button>
+<button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
 <p class="note">No game assets required. Select either probe (reload to switch modes). Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
 <p class="note">The original SHP diagnostic loads project-owned sprite and palette files from <code>content/</code>. It draws the sprite through the game's own tactical <code>CC_Draw_Shape()</code> into an offscreen buffer and presents that buffer with SDL2. It does not initialize a mission.</p>
+<p class="note">The wireframe roster diagnostic separately loads six verified, original-art placeholder SHPs from <code>wireframes/</code>, stages them in memory, then checks real C++ resource lookup and <code>CC_Draw_Shape()</code> for infantry, vehicle, aircraft, building, terrain and effect. Their final game-state frame layouts are not yet validated.</p>
 <h2>Runtime log</h2>
 <pre id="log" aria-live="polite"></pre>
 </section>
@@ -62,6 +64,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 </div>
 <script src="asset-import.js"></script>
 <script src="original-asset.js"></script>
+<script src="wireframe-asset.js"></script>
 <script>
 (function () {
   "use strict";
@@ -70,6 +73,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const probe = document.getElementById("run-probe");
   const cooperative = document.getElementById("run-cooperative");
   const shape = document.getElementById("run-shape");
+  const wireframes = document.getElementById("run-wireframes");
   const game = document.getElementById("run-game");
   const assetProbe = document.getElementById("run-asset-probe");
   const assetStatus = document.getElementById("asset-status");
@@ -96,6 +100,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     probe.disabled = !ready || started;
     cooperative.disabled = !ready || started;
     shape.disabled = !ready || started || loadingAssets;
+    wireframes.disabled = !ready || started || loadingAssets;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
   }
@@ -104,7 +109,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : (mode === "assets" ? "Checking engine file search" : "Starting game (experimental)")), "running");
+    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : (mode === "assets" ? "Checking engine file search" : (mode === "shape" ? "Rendering original sprite" : (mode === "wireframes" ? "Rendering wireframe roster" : "Starting game (experimental)")))), "running");
     canvas.focus();
     try {
       Module.callMain(args);
@@ -130,6 +135,21 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     } catch (error) {
       loadingAssets = false;
       report("[browser-shape] " + error.message, true);
+      controls();
+    }
+  });
+  wireframes.addEventListener("click", async () => {
+    if (!ready || started || loadingAssets) return;
+    loadingAssets = true;
+    controls();
+    try {
+      const result = await WCWireframes.load(Module.FS, "wireframes/manifest.json");
+      report("[browser-wireframes] verified and staged " + result.shapes + " shapes and palette (" + result.bytes + " bytes)");
+      loadingAssets = false;
+      run(["--browser-wireframe-probe"], "wireframes");
+    } catch (error) {
+      loadingAssets = false;
+      report("[browser-wireframes] " + error.message, true);
       controls();
     }
   });

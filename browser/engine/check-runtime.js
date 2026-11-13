@@ -97,6 +97,25 @@ async function main() {
     assert(!emptyCanvas.equals(renderedCanvas), "Original shape was not rendered to canvas");
     assert.equal(await page.locator("body").getAttribute("data-mode"), "shape");
     messages.push("PASS: original sample SHP loaded with integrity check and rendered by engine SDL2 diagnostic");
+    // Six project-owned wireframes loaded by manifest/roster, SHA-256 verified,
+    // resolved by CCFileClass and actually drawn with CC_Draw_Shape.
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    const blankRoster = await page.locator("#canvas").screenshot();
+    await page.locator("#run-wireframes").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-wireframes] rendered 6 original placeholder shapes via native engine"),
+                               undefined, {timeout: 40000});
+    await page.waitForTimeout(250);
+    const renderedRoster = await page.locator("#canvas").screenshot();
+    assert(!blankRoster.equals(renderedRoster), "Six-class wireframe roster did not render to canvas");
+    const rosterLog = await page.locator("#log").textContent();
+    for(const filename of ["E1.SHP", "MTNK.SHP", "ORCA.SHP", "FACT.SHP", "T01.SHP", "ART-EXP1.SHP"]){
+      assert(rosterLog.includes("[browser-wireframes] CC_Draw_Shape " + filename + " "), filename + " was not drawn by engine");
+      assert(await page.evaluate(filename => Module.FS.analyzePath("/game/" + filename).exists, filename), filename + " missing from MEMFS");
+    }
+    assert.equal(await page.locator("body").getAttribute("data-mode"), "wireframes");
+    await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
+    messages.push("PASS: manifest-verified six-class wireframe pack rendered by actual VanillaTD CC_Draw_Shape");
     // Synthetic stand-ins exercise MEMFS and the real C++ file search,
     // but are NOT game assets and cannot prove archive/mission validity.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

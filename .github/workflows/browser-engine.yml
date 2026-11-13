@@ -63,6 +63,7 @@ jobs:
           test -s browser/engine/asset-import.js
           cp browser/engine/asset-import.js build/browser-engine/asset-import.js
           cp browser/engine/original-asset.js build/browser-engine/original-asset.js
+          cp browser/engine/wireframe-asset.js build/browser-engine/wireframe-asset.js
           # Verify we generated the custom deferred-start launcher.
           grep -q 'id="canvas"' build/browser-engine/vanillatd.html
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
@@ -70,12 +71,16 @@ jobs:
         run: |
           node browser/engine/test-asset-import.js
           node browser/engine/test-original-asset.js
+          node browser/engine/test-wireframe-asset.js
       - name: Verify original content pipeline
         run: |
           node tools/content/test-build.js
           node tools/content/test-wireframes.js
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
+          node tools/content/wireframes.js build build/browser-engine/wireframes --representative
+          node browser/engine/test-wireframe-asset.js build/browser-engine/wireframes
           test -s build/browser-engine/content/manifest.json
+          test -s build/browser-engine/wireframes/roster.json
           g++ -std=c++11 -Icommon tests/test-original-shape.cpp common/lcw.cpp -o build/browser-engine/test-original-shape
           build/browser-engine/test-original-shape build/browser-engine/content/files/units/SCOUT.SHP
       - name: Install headless browser tooling
@@ -103,5 +108,7 @@ jobs:
             build/browser-engine/vanillatd.wasm
             build/browser-engine/asset-import.js
             build/browser-engine/original-asset.js
+            build/browser-engine/wireframe-asset.js
             build/browser-engine/content/**
+            build/browser-engine/wireframes/**
           if-no-files-found: error

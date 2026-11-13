@@ -15,6 +15,7 @@ namespace {
 SDL_Window* shapeWindow = nullptr;
 SDL_Renderer* shapeRenderer = nullptr;
 SDL_Texture* shapeTexture = nullptr;
+SDL_Rect shapeDestination = {232, 72, 256, 256};
 
 bool ReadEngineFile(const char* filename, std::vector<uint8_t>& bytes, int expected = 0)
 {
@@ -77,9 +78,37 @@ void ShapeFrame()
     }
     SDL_SetRenderDrawColor(shapeRenderer, 17, 26, 37, 255);
     SDL_RenderClear(shapeRenderer);
-    SDL_Rect dst = {232, 72, 256, 256};
-    SDL_RenderCopy(shapeRenderer, shapeTexture, nullptr, &dst);
+    SDL_RenderCopy(shapeRenderer, shapeTexture, nullptr, &shapeDestination);
     SDL_RenderPresent(shapeRenderer);
+}
+
+int StartShapePreview(const std::vector<uint8_t>& indexed, const std::vector<uint8_t>& pal,
+                      int width, int height, const char* title, SDL_Rect destination)
+{
+    std::vector<uint32_t> rgba;
+    rgba.reserve(indexed.size());
+    for (uint8_t color : indexed) {
+        const unsigned p = color * 3;
+        const uint32_t r = static_cast<uint32_t>(pal[p]) << 2;
+        const uint32_t g = static_cast<uint32_t>(pal[p + 1]) << 2;
+        const uint32_t b = static_cast<uint32_t>(pal[p + 2]) << 2;
+        rgba.push_back(color ? (0xff000000 | (r << 16) | (g << 8) | b) : 0);
+    }
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) return 6;
+    shapeWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                   720, 400, SDL_WINDOW_SHOWN);
+    if (!shapeWindow) return 7;
+    shapeRenderer = SDL_CreateRenderer(shapeWindow, -1, SDL_RENDERER_ACCELERATED);
+    if (!shapeRenderer) shapeRenderer = SDL_CreateRenderer(shapeWindow, -1, SDL_RENDERER_SOFTWARE);
+    if (!shapeRenderer) return 8;
+    shapeTexture = SDL_CreateTexture(shapeRenderer, SDL_PIXELFORMAT_ARGB8888,
+                                     SDL_TEXTUREACCESS_STATIC, width, height);
+    if (!shapeTexture) return 9;
+    SDL_SetTextureBlendMode(shapeTexture, SDL_BLENDMODE_BLEND);
+    if (SDL_UpdateTexture(shapeTexture, nullptr, rgba.data(), width * sizeof(uint32_t)) != 0) return 10;
+    shapeDestination = destination;
+    emscripten_set_main_loop(ShapeFrame, 0, 1);
+    return 0;
 }
 }
 
@@ -125,29 +154,73 @@ int Browser_Shape_Probe(const char* argv0)
         std::fprintf(stderr, "[browser-shape] tactical draw pixel verification failed\n");
         return 11;
     }
-    std::vector<uint32_t> rgba;
-    rgba.reserve(indexed.size());
-    for (uint8_t color : indexed) {
-        const unsigned p = color * 3;
-        const uint32_t r = static_cast<uint32_t>(pal[p]) << 2;
-        const uint32_t g = static_cast<uint32_t>(pal[p + 1]) << 2;
-        const uint32_t b = static_cast<uint32_t>(pal[p + 2]) << 2;
-        rgba.push_back(color ? (0xff000000 | (r << 16) | (g << 8) | b) : 0);
-    }
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) return 6;
-    shapeWindow = SDL_CreateWindow("World-Conquer original sprite probe", SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, 720, 400, SDL_WINDOW_SHOWN);
-    if (!shapeWindow) return 7;
-    shapeRenderer = SDL_CreateRenderer(shapeWindow, -1, SDL_RENDERER_ACCELERATED);
-    if (!shapeRenderer) shapeRenderer = SDL_CreateRenderer(shapeWindow, -1, SDL_RENDERER_SOFTWARE);
-    if (!shapeRenderer) return 8;
-    shapeTexture = SDL_CreateTexture(shapeRenderer, SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STATIC, screenSize, screenSize);
-    if (!shapeTexture) return 9;
-    SDL_SetTextureBlendMode(shapeTexture, SDL_BLENDMODE_BLEND);
-    if (SDL_UpdateTexture(shapeTexture, nullptr, rgba.data(), screenSize * sizeof(uint32_t)) != 0) return 10;
     std::printf("[browser-shape] CC_Draw_Shape rendered original tactical SHP via engine buffer: %dx%d\n", width, height);
-    emscripten_set_main_loop(ShapeFrame, 0, 1);
-    return 0;
+    return StartShapePreview(indexed, pal, screenSize, screenSize,
+                             "World-Conquer original sprite probe", {232, 72, 256, 256});
+}
+
+// A six-class integration gate for the generated wireframe manifest: this
+// exercises the actual engine's loose-file lookup and SHP draw path, without
+// implying that the full animation contracts or standalone missions work.
+int Browser_Wireframe_Probe(const char* argv0)
+{
+    Paths.Init("vanillatd", "CONQUER.INI", "CONQUER.MIX", argv0);
+    std::vector<uint8_t> pal;
+    if (!ReadEngineFile("WIREFRAME.PAL", pal, 768)) {
+        std::fprintf(stderr, "[browser-wireframes] engine palette lookup failed\n"); return 20;
+    }
+    const char* filenames[] = {"E1.SHP", "MTNK.SHP", "ORCA.SHP", "FACT.SHP", "T01.SHP", "ART-EXP1.SHP"};
+    constexpr int cell = 64, columns = 3, rows = 2;
+    constexpr int screenWidth = columns * cell, screenHeight = rows * cell;
+    std::vector<uint8_t> indexed(screenWidth * screenHeight, 1);
+    GraphicBufferClass backing(screenWidth, screenHeight, indexed.data(), indexed.size());
+    GraphicViewPortClass* previousPage = LogicPage;
+    const int oldX = WindowList[WINDOW_TACTICAL][WINDOWX];
+    const int oldY = WindowList[WINDOW_TACTICAL][WINDOWY];
+    const int oldWidth = WindowList[WINDOW_TACTICAL][WINDOWWIDTH];
+    const int oldHeight = WindowList[WINDOW_TACTICAL][WINDOWHEIGHT];
+    WindowList[WINDOW_TACTICAL][WINDOWX] = 0;
+    WindowList[WINDOW_TACTICAL][WINDOWY] = 0;
+    WindowList[WINDOW_TACTICAL][WINDOWWIDTH] = screenWidth;
+    WindowList[WINDOW_TACTICAL][WINDOWHEIGHT] = screenHeight;
+    LogicPage = &backing;
+    std::vector<uint8_t> shapeScratch(131072);
+    Set_Shape_Buffer(shapeScratch.data(), shapeScratch.size());
+    UseBigShapeBuffer = false;
+    int failed = 0;
+    for (int i = 0; i < columns * rows; ++i) {
+        std::vector<uint8_t> bytes;
+        int width = 0, height = 0;
+        if (!ReadEngineFile(filenames[i], bytes) || !ValidateTactical(bytes, width, height) ||
+            width > cell || height > cell) {
+            std::fprintf(stderr, "[browser-wireframes] invalid/missing shape %s\n", filenames[i]);
+            failed = 21; break;
+        }
+        const int x = (i % columns) * cell + cell / 2;
+        const int y = (i / columns) * cell + cell / 2;
+        CC_Draw_Shape(bytes.data(), 0, x, y, WINDOW_TACTICAL, SHAPE_NORMAL);
+        int drawn = 0;
+        for (int py = (i / columns) * cell; py < ((i / columns) + 1) * cell; ++py) {
+            for (int px = (i % columns) * cell; px < ((i % columns) + 1) * cell; ++px) {
+                drawn += indexed[py * screenWidth + px] != 1;
+            }
+        }
+        if (!drawn) {
+            std::fprintf(stderr, "[browser-wireframes] empty engine render %s\n", filenames[i]);
+            failed = 22; break;
+        }
+        std::printf("[browser-wireframes] CC_Draw_Shape %s %dx%d non-background=%d\n",
+                    filenames[i], width, height, drawn);
+    }
+    Set_Shape_Buffer(nullptr, 0);
+    LogicPage = previousPage;
+    WindowList[WINDOW_TACTICAL][WINDOWX] = oldX;
+    WindowList[WINDOW_TACTICAL][WINDOWY] = oldY;
+    WindowList[WINDOW_TACTICAL][WINDOWWIDTH] = oldWidth;
+    WindowList[WINDOW_TACTICAL][WINDOWHEIGHT] = oldHeight;
+    if (failed) return failed;
+    std::printf("[browser-wireframes] rendered 6 original placeholder shapes via native engine\n");
+    return StartShapePreview(indexed, pal, screenWidth, screenHeight,
+                             "World-Conquer wireframe integration roster", {72, 8, 576, 384});
 }
 #endif

@@ -14,6 +14,8 @@ node tools/content/test-wireframes.js
 node tools/content/wireframes.js build build/world-conquer-wireframes
 ```
 
+For a small integration pack representing six different visual classes, run `node tools/content/wireframes.js build build/world-conquer-smoke --representative`. This adds a validated `roster.json` to that output. The browser runtime can import and render that pack with its **Render six wireframe assets** diagnostic; see [the browser runtime instructions](../../../browser/engine/README.md). This validates actual engine file lookup and first-frame tactical drawing, but not all class-specific frame-state contracts.
+
 The last command writes a generated `manifest.json`, `files/<category>/WF-####.SHP` tactical keyframe files, `files/WIREFRAME.PAL`, and `game-root/` with non-conflicting engine filenames. Choose a **new output directory** for each build; it intentionally refuses to overwrite an existing one. Generated binary outputs are ignored by git. The `game-root/` folder is a staging input for a future complete asset-mount implementation, **not a playable standalone game**.
 
 Current coverage is 295 engine-defined slots: 265 compiled tactical SHP stand-ins and 30 overlay design references. Neither the provisional frame layouts nor every declared `SHP` resource binding has been validated against the full engine. Some enum slots share an engine filename; both retain independent wireframe specs, but the builder excludes colliding filenames from `game-root/` until resolved. See each catalog entry's `sharedFilenameWith` property.

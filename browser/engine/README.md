@@ -13,6 +13,21 @@ Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/bro
 
 Files are memory-only and lost on refresh. No copyrighted EA media is included in the project or CI artifacts.
 
+## Original six-class wireframe integration
+
+The **Render six wireframe assets** button tests the project-owned placeholder art using the actual C++ resource lookup and tactical drawing path. It verifies the representative [roster](../../game/content/wireframes/representative-roster.json) and SHA-256 manifest, stages six `.SHP` files and `WIREFRAME.PAL` under `/game` in MEMFS, then launches the native `--browser-wireframe-probe` mode. This draws infantry (`E1`), tank (`MTNK`), aircraft (`ORCA`), construction yard (`FACT`), tree (`T01`) and explosion (`ART-EXP1`) in a 3×2 grid via `CC_Draw_Shape()`.
+
+To create the served pack from repository source:
+
+```sh
+node tools/content/wireframes.js build build/browser-engine/wireframes --representative
+node browser/engine/test-wireframe-asset.js build/browser-engine/wireframes
+```
+
+Run from the repository root and choose a new build output directory (the generator does not overwrite). The browser page also needs `wireframe-asset.js` copied alongside the generated `vanillatd.html`, as done by `.github/workflows/browser-engine.yml`. The workflow builds the six-class pack and exercises the actual WebAssembly rendering in headless Chromium; it tests that all six are drawn and that the canvas changes.
+
+The loader checks every hash and metadata record **before writing any file**. It rejects conflicting engine filenames, missing classes, existing MEMFS files and partial/tampered content. It does not enable full-game launch, pack archives, verify per-state animation offsets or claim that the six assets are ready for production missions.
+
 ## Outstanding
 
 The browser loop, Select_Game(), Main_Game() and dialogs need a cooperative execution design. Asset loading/case behavior requires a real test with legitimately owned data. The probe needs manual Chrome/Edge verification before its runtime acceptance gate can be marked complete.

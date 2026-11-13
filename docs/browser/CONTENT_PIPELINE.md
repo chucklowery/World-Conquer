@@ -1,11 +1,12 @@
-# Original content pipeline (initial implementation)
+# Original content pipeline and tactical wireframe integration
 
-This is the first reproducible packaging layer for a new World-Conquer game.
-It can now produce an **experimental indexed SHP shape block**, but does not
-yet produce game-ready PAL, MIX, or mission files. Neither the placeholder
-SVG nor the sample SHP is integrated with VanillaTD's game definitions.
-Do not describe the output as a playable resource pack. Actual in-engine
-rendering and a compatibility adapter are still required.
+This is the reproducible packaging layer for a new World-Conquer game.
+It emits native tactical SHP and 6-bit PAL files, and the WebAssembly
+diagnostic now resolves and draws the generated shapes using the real engine.
+The [295-slot wireframe catalog](WIREFRAME_REPLACEMENT_CATALOG.md) tracks
+the placeholder art and final-art requirements. **It is not yet a playable
+resource pack**: full class-specific state sequences, overlays, terrain
+templates, UI, music, sound and missions remain to be implemented.
 
 ## Build
 
@@ -14,7 +15,11 @@ Requires Node.js 18+; no external npm dependencies.
 ```sh
 node tools/content/test-build.js
 node browser/engine/test-original-asset.js
+node tools/content/test-wireframes.js
+node browser/engine/test-wireframe-asset.js
 node tools/content/build.js game/content/manifest.json build/world-conquer-content
+node tools/content/wireframes.js build build/world-conquer-roster --representative
+node browser/engine/test-wireframe-asset.js build/world-conquer-roster
 g++ -std=c++11 -Icommon tests/test-original-shape.cpp common/lcw.cpp -o build/test-original-shape
 build/test-original-shape build/world-conquer-content/files/units/SCOUT.SHP
 ```
@@ -64,12 +69,16 @@ per entry. Do not import copyrighted C&C game media into this directory.
    formats supported by the original engine (or implement a browser-only
    engine reader). Verify animated directions and palette correctness.
 3. Map original game definitions and filenames to project-owned identifiers.
-4. The `--browser-shape-probe` now loads hashed sample SHP and PAL files into
-   MEMFS, resolves them using `CCFileClass`, and draws with the actual
-   `CC_Draw_Shape()` tactical function into a small offscreen indexed buffer.
-   The probe checks expected color indexes and transparency, then presents
-   the result through SDL2. Chromium CI must still confirm this works in
-   WebAssembly. A real game mission remains the next acceptance gate.
+4. `--browser-shape-probe` loads the original sample SHP/PAL and uses the
+   actual `CC_Draw_Shape()` tactical function. `--browser-wireframe-probe`
+   extends that path to a SHA-256-verified, six-class package: infantry,
+   tank, aircraft, construction yard, tree, and effect, each resolved through
+   `CCFileClass` and drawn in a native tactical buffer. The browser
+   [loader](../../browser/engine/wireframe-asset.js) fails before writes
+   on malformed metadata, hash errors, duplicate names or existing files.
+   Headless Chromium CI includes the roster and asserts six draw logs and
+   visible canvas output. This does **not** validate production frame-state
+   lookups or a complete mission.
 5. Add a test that loads an entirely original resource pack and completes
    one mission; only then enable bundled-game startup.
 6. Publish the validated pack alongside the HTML/JS/WASM bundle, with
