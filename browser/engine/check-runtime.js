@@ -10,10 +10,11 @@ const {chromium} = require("playwright");
 
 const root = path.resolve(__dirname, "../../build/browser-engine");
 const messages = [];
-const mime = {".html": "text/html", ".js": "text/javascript", ".wasm": "application/wasm"};
+const mime = {".html": "text/html", ".js": "text/javascript", ".wasm": "application/wasm", ".json": "application/json", ".shp": "application/octet-stream"};
 const server = http.createServer((req, res) => {
   const filename = decodeURIComponent((req.url || "/").split("?")[0]);
-  if (!/^\/[a-zA-Z0-9_.-]+$/.test(filename)) {
+  if (!/^\/[a-zA-Z0-9_./-]+$/.test(filename) || filename.split("/").includes("..") ||
+      filename.split("/").includes(".")) {
     res.writeHead(400); res.end("Invalid path"); return;
   }
   const full = path.join(root, filename.substring(1));
@@ -83,6 +84,19 @@ async function main() {
     assert.equal(await page.locator("body").getAttribute("data-mode"), "cooperative");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: synchronous C++ loop yielded to JavaScript heartbeat and SDL2 mouse/keyboard input");
+    // Original project-owned sprite, no EA media: verified HTTP package,
+    // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    const emptyCanvas = await page.locator("#canvas").screenshot();
+    await page.locator("#run-shape").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-shape] original indexed SHP decoded and uploaded to SDL2 texture"),
+                               undefined, {timeout: 40000});
+    await page.waitForTimeout(250);
+    const renderedCanvas = await page.locator("#canvas").screenshot();
+    assert(!emptyCanvas.equals(renderedCanvas), "Original shape was not rendered to canvas");
+    assert.equal(await page.locator("body").getAttribute("data-mode"), "shape");
+    messages.push("PASS: original sample SHP loaded with integrity check and rendered by engine SDL2 diagnostic");
     // Synthetic stand-ins exercise MEMFS and the real C++ file search,
     // but are NOT game assets and cannot prove archive/mission validity.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

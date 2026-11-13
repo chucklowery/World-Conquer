@@ -39,7 +39,9 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
+<button type="button" id="run-shape" disabled>Render original SHP sample</button>
 <p class="note">No game assets required. Select either probe (reload to switch modes). Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
+<p class="note">The original SHP diagnostic loads a project-owned sprite from <code>content/</code> and draws it using SDL2. This does not enter the game or verify its tactical shape renderer.</p>
 <h2>Runtime log</h2>
 <pre id="log" aria-live="polite"></pre>
 </section>
@@ -59,6 +61,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 </section>
 </div>
 <script src="asset-import.js"></script>
+<script src="original-asset.js"></script>
 <script>
 (function () {
   "use strict";
@@ -66,6 +69,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const log = document.getElementById("log");
   const probe = document.getElementById("run-probe");
   const cooperative = document.getElementById("run-cooperative");
+  const shape = document.getElementById("run-shape");
   const game = document.getElementById("run-game");
   const assetProbe = document.getElementById("run-asset-probe");
   const assetStatus = document.getElementById("asset-status");
@@ -91,6 +95,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   function controls() {
     probe.disabled = !ready || started;
     cooperative.disabled = !ready || started;
+    shape.disabled = !ready || started || loadingAssets;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
   }
@@ -113,6 +118,21 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   }
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
+  shape.addEventListener("click", async () => {
+    if (!ready || started || loadingAssets) return;
+    loadingAssets = true;
+    controls();
+    try {
+      const result = await WCContent.load(Module.FS, "content/manifest.json");
+      report("[browser-shape] verified bundled " + result.id + " (" + result.bytes + " bytes)");
+      loadingAssets = false;
+      run(["--browser-shape-probe"], "shape");
+    } catch (error) {
+      loadingAssets = false;
+      report("[browser-shape] " + error.message, true);
+      controls();
+    }
+  });
   game.addEventListener("click", () => run([], "game"));
   assetProbe.addEventListener("click", () => run(["--browser-data-probe"], "assets"));
 

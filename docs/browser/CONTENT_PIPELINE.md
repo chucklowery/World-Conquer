@@ -13,6 +13,7 @@ Requires Node.js 18+; no external npm dependencies.
 
 ```sh
 node tools/content/test-build.js
+node browser/engine/test-original-asset.js
 node tools/content/build.js game/content/manifest.json build/world-conquer-content
 ```
 
@@ -52,9 +53,14 @@ per entry. Do not import copyrighted C&C game media into this directory.
    formats supported by the original engine (or implement a browser-only
    engine reader). Verify animated directions and palette correctness.
 3. Map original game definitions and filenames to project-owned identifiers.
-4. Add a test that loads an entirely original resource pack and completes
+4. Expand the current `--browser-shape-probe`: it loads a hashed sample SHP
+   into MEMFS, checks its indexed frame in C++, then renders an SDL2 texture.
+   This diagnostic is **not** the engine's tactical drawing path. The
+   headless browser CI verifies nonblank rendering; a real engine gameplay
+   resource load is the next acceptance gate.
+5. Add a test that loads an entirely original resource pack and completes
    one mission; only then enable bundled-game startup.
-5. Publish the validated pack alongside the HTML/JS/WASM bundle, with
+6. Publish the validated pack alongside the HTML/JS/WASM bundle, with
    integrity checks and persistent browser cache.
 
 The existing `browser/engine/asset-import.js` remains the experimental
