@@ -7,6 +7,11 @@ This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not t
 For an immediate lightweight launch, open `browser/engine/play.html` directly
 in Chrome or Edge (or serve the folder over HTTP). It does not depend on a
 WebAssembly build. The compiled engine shell also embeds this same prototype.
+The browser CI workflow now produces a small `world-conquer-courier-playable`
+ZIP artifact containing `play.html`, its two JavaScript files, and the verified
+mission data. Extract the ZIP and open `play.html` to play without installing
+the original game or a WebAssembly toolchain. The static build is intentionally
+separate from the larger engine WASM artifact; public hosting is not yet set up.
 
 Click **Start tactical mission** in the browser shell. A deterministic, self-contained
 18×11 mission opens without any third-party data: select either green squad member,

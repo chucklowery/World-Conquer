@@ -47,7 +47,7 @@
   const start=async()=>{
     if(timer)clearInterval(timer);
     let map;
-    try{map=(await WCMissionPack.load("../../game/content/missions")).map;}
+    try{map=(await WCMissionPack.load("missions")).map;}
     catch(_){/* A directly opened file:// copy uses the identical built-in map. */}
     state=WCVerticalSlice.start(map);draw();timer=setInterval(()=>{WCVerticalSlice.tick(state);draw();},200);
   };

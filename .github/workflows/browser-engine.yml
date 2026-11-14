@@ -67,6 +67,7 @@ jobs:
           cp browser/engine/cargo-hd.js build/browser-engine/cargo-hd.js
           cp browser/engine/vertical-slice.js build/browser-engine/vertical-slice.js
           cp browser/engine/mission-pack.js build/browser-engine/mission-pack.js
+          cp browser/engine/play.html build/browser-engine/play.html
           mkdir -p build/browser-engine/missions
           cp game/content/missions/courier-extraction.map game/content/missions/manifest.json build/browser-engine/missions/
           mkdir -p build/browser-engine/cargo-hd
@@ -85,6 +86,7 @@ jobs:
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-native-slice.cpp -o build/browser-engine/test-native-slice
           build/browser-engine/test-native-slice
           test -s browser/engine/play.html
+          test -s build/browser-engine/play.html
       - name: Verify original content pipeline
         run: |
           node tools/content/test-build.js
@@ -126,6 +128,16 @@ jobs:
             build/browser-engine/browser-probe.png
             build/browser-engine/browser-probe.log
           if-no-files-found: ignore
+      - name: Upload standalone original-content mission
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-conquer-courier-playable
+          path: |
+            build/browser-engine/play.html
+            build/browser-engine/vertical-slice.js
+            build/browser-engine/mission-pack.js
+            build/browser-engine/missions/**
+          if-no-files-found: error
       - name: Upload engine HTML/JS/WASM artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -141,6 +153,7 @@ jobs:
             build/browser-engine/vertical-slice.js
             build/browser-engine/mission-pack.js
             build/browser-engine/missions/**
+            build/browser-engine/play.html
             build/browser-engine/cargo-hd/**
             build/browser-engine/content/**
             build/browser-engine/wireframes/**

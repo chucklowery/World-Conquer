@@ -174,9 +174,18 @@ async function main() {
     assert.equal(await page.locator("body").getAttribute("data-mode"), "wireframes");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: manifest-verified six-class base and action frames rendered by actual VanillaTD CC_Draw_Shape");
+    // Direct-launch build uses the same checksum-verified mission pack without WASM.
+    await page.goto("http://127.0.0.1:"+port+"/play.html",{waitUntil:"domcontentloaded",timeout:30000});
+    await page.locator("#start").click();
+    await page.waitForFunction(() => document.getElementById("status").textContent.includes("PLAYING"),
+                               undefined,{timeout:20000});
+    assert((await page.locator("#status").textContent()).includes("Supplies 0/2"));
+    await page.locator("#restart").click();
+    assert((await page.locator("#status").textContent()).includes("Supplies 0/2"));
+    messages.push("PASS: direct-launch static browser mission and restart without WASM or proprietary media");
     // Synthetic stand-ins exercise MEMFS and the real C++ file search,
     // but are NOT game assets and cannot prove archive/mission validity.
-    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.goto("http://127.0.0.1:" + port + "/vanillatd.html", {waitUntil: "domcontentloaded", timeout: 90000});
     await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
     assert.equal(await page.locator("#run-game").isDisabled(), true);
     await page.locator("#select-files").setInputFiles([
