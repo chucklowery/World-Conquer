@@ -132,6 +132,17 @@ async function main() {
                                undefined,{timeout:15000});
     assert.equal(await page.locator("body").getAttribute("data-mode"),"native-slice");
     messages.push("PASS: original-content tactical mission moves and restarts inside real VanillaTD WASM executable");
+    // Separately allocate one real production house and E1 infantry in limbo.
+    // This intentionally avoids Unlimbo/AI while the complete theater lifecycle
+    // is being integrated; do not run on the already-started Courier instance.
+    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
+    await page.locator("#run-unit-probe").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-unit-probe] native house=created infantry=created"),
+                               undefined,{timeout:40000});
+    assert((await page.locator("#log").textContent()).includes("limbo=yes"),
+           "Native infantry diagnostic did not stay safely out of the active game world");
+    messages.push("PASS: original VanillaTD HouseClass and InfantryClass allocated with a native navigation target");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

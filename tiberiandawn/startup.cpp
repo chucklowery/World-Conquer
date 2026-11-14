@@ -51,6 +51,7 @@ int Browser_Data_Probe(const char* argv0);
 int Browser_Shape_Probe(const char* argv0);
 int Browser_Wireframe_Probe(const char* argv0);
 int Browser_Native_Slice(const char* argv0);
+int Browser_Unit_Probe();
 #endif
 
 bool Read_Private_Config_Struct(FileClass& file, NewConfigType* config);
@@ -233,6 +234,9 @@ int main(int argc, char** argv)
     }
     if (argc > 1 && strcmp(argv[1], "--browser-native-slice") == 0) {
         return Browser_Native_Slice(argv[0]);
+    }
+    if (argc > 1 && strcmp(argv[1], "--browser-unit-probe") == 0) {
+        return Browser_Unit_Probe();
     }
     std::printf("[browser-game] game startup entered; initializing paths and SDL2.\n");
 #endif

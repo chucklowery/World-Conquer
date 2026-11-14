@@ -168,6 +168,21 @@ drives gameplay, and no `HouseClass` or `InfantryClass` instances are created.
 This initializes only the terrain-cell storage in a separate browser mode;
 it is not a full theater, visibility, collision, or campaign initialization.
 
+### First native infantry object (separate experimental probe)
+
+The browser launcher offers **Test native infantry allocation (experimental)**.
+The one-shot `--browser-unit-probe` mode initializes the verified Courier
+terrain through `MapClass`, allocates the engine's `Houses` and `Infantry`
+fixed heaps, initializes those collections, creates a `HOUSE_GOOD` house and
+one real `INFANTRY_E1` instance, then assigns a production cell `TARGET`
+through `FootClass::Assign_Destination`. It verifies the unit's owning house
+and stored `NavCom`, without invoking the infantry AI or `Unlimbo()`.
+The probe is isolated from the playable native Courier mode and cannot
+receive movement input or run a campaign. Browser CI checks its success log.
+This is a **limbo object-allocation diagnostic**, not an on-map playable
+`InfantryClass` or a replacement for the remaining theater/visibility
+initialization needed for movement.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.
