@@ -237,4 +237,59 @@ int Browser_Wireframe_Probe(const char* argv0)
     return StartShapePreview(indexed, pal, screenWidth, screenHeight,
                              "World-Conquer wireframe states (base + action)", {72, 8, 576, 384});
 }
+
+// Reuse the real indexed tactical drawing path in the standalone native
+// mission. Returns null for missing/unverified content; no proprietary media.
+SDL_Texture* Browser_Load_Original_Infantry(SDL_Renderer* renderer, const char* argv0)
+{
+    Paths.Init("vanillatd", "CONQUER.INI", "CONQUER.MIX", argv0);
+    CDFileClass::Refresh_Search_Drives();
+    std::vector<uint8_t> shape, pal;
+    int w=0,h=0;
+    if(!ReadEngineFile("E1.SHP",shape)||!ReadEngineFile("WIREFRAME.PAL",pal,768)||
+       !ValidateTactical(shape,w,h,0)||w>48||h>48)return nullptr;
+    constexpr int size=48;
+    std::vector<uint8_t> indexed(size*size,0);
+    GraphicBufferClass backing(size,size,indexed.data(),indexed.size());
+    GraphicViewPortClass* previousPage=LogicPage;
+    const int oldX=WindowList[WINDOW_TACTICAL][WINDOWX];
+    const int oldY=WindowList[WINDOW_TACTICAL][WINDOWY];
+    const int oldWidth=WindowList[WINDOW_TACTICAL][WINDOWWIDTH];
+    const int oldHeight=WindowList[WINDOW_TACTICAL][WINDOWHEIGHT];
+    WindowList[WINDOW_TACTICAL][WINDOWX]=0;
+    WindowList[WINDOW_TACTICAL][WINDOWY]=0;
+    WindowList[WINDOW_TACTICAL][WINDOWWIDTH]=size;
+    WindowList[WINDOW_TACTICAL][WINDOWHEIGHT]=size;
+    LogicPage=&backing;
+    std::vector<uint8_t> scratch(131072);
+    Set_Shape_Buffer(scratch.data(),scratch.size());
+    UseBigShapeBuffer=false;
+    CC_Draw_Shape(shape.data(),0,size/2,size/2,WINDOW_TACTICAL,SHAPE_NORMAL);
+    Set_Shape_Buffer(nullptr,0);
+    LogicPage=previousPage;
+    WindowList[WINDOW_TACTICAL][WINDOWX]=oldX;
+    WindowList[WINDOW_TACTICAL][WINDOWY]=oldY;
+    WindowList[WINDOW_TACTICAL][WINDOWWIDTH]=oldWidth;
+    WindowList[WINDOW_TACTICAL][WINDOWHEIGHT]=oldHeight;
+    std::vector<uint32_t> rgba(size*size,0);
+    int painted=0;
+    for(size_t i=0;i<indexed.size();i++){
+        const unsigned index=indexed[i];
+        if(!index)continue;
+        ++painted;
+        const unsigned p=index*3;
+        rgba[i]=0xff000000u|((static_cast<uint32_t>(pal[p])<<2)<<16)|
+            ((static_cast<uint32_t>(pal[p+1])<<2)<<8)|(static_cast<uint32_t>(pal[p+2])<<2);
+    }
+    if(!painted)return nullptr;
+    SDL_Texture* texture=SDL_CreateTexture(renderer,SDL_PIXELFORMAT_ARGB8888,
+                                          SDL_TEXTUREACCESS_STATIC,size,size);
+    if(!texture)return nullptr;
+    SDL_SetTextureBlendMode(texture,SDL_BLENDMODE_BLEND);
+    if(SDL_UpdateTexture(texture,nullptr,rgba.data(),size*sizeof(uint32_t))!=0){
+        SDL_DestroyTexture(texture);return nullptr;
+    }
+    std::printf("[browser-native-slice] CC_Draw_Shape original infantry texture pixels=%d\n",painted);
+    return texture;
+}
 #endif

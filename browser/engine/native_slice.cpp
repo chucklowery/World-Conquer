@@ -6,11 +6,13 @@
 #include <emscripten/emscripten.h>
 #include <cstdio>
 #include <vector>
+SDL_Texture* Browser_Load_Original_Infantry(SDL_Renderer*,const char*);
 
 namespace {
 SDL_Window* window=nullptr;
 SDL_Renderer* renderer=nullptr;
 SDL_Texture* cargoTexture=nullptr;
+SDL_Texture* infantryTexture=nullptr;
 courier::State mission;
 std::string missionSource;
 Uint32 lastStep=0;
@@ -73,7 +75,11 @@ void frame(){
     }
     for(int i=0;i<4;i++){
         const courier::Unit& u=mission.units[i];if(u.hp<=0)continue;
-        fill(u.p.x*40+7,u.p.y*40+7,26,26,u.enemy?231:99,u.enemy?127:226,u.enemy?120:175);
+        if(infantryTexture){
+            SDL_SetTextureColorMod(infantryTexture,u.enemy?245:155,u.enemy?135:255,u.enemy?140:195);
+            SDL_Rect target={u.p.x*40-4,u.p.y*40-4,48,48};
+            SDL_RenderCopy(renderer,infantryTexture,nullptr,&target);
+        }else fill(u.p.x*40+7,u.p.y*40+7,26,26,u.enemy?231:99,u.enemy?127:226,u.enemy?120:175);
         if(i==mission.selected)outline(u.p.x*40+5,u.p.y*40+5,30,30,255,255,255);
         fill(u.p.x*40+10,u.p.y*40+29,u.hp*3,3,17,37,39);
     }
@@ -85,7 +91,7 @@ void frame(){
 }
 }
 
-int Browser_Native_Slice(){
+int Browser_Native_Slice(const char* argv0){
     if(SDL_Init(SDL_INIT_VIDEO)!=0){std::fprintf(stderr,"[browser-native-slice] SDL_Init failed: %s\n",SDL_GetError());return 1;}
     window=SDL_CreateWindow("Courier Extraction (native C++)",SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED,720,440,SDL_WINDOW_SHOWN);
@@ -93,6 +99,8 @@ int Browser_Native_Slice(){
     renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
     if(!renderer)renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
     if(!renderer)return 3;
+    infantryTexture=Browser_Load_Original_Infantry(renderer,argv0);
+    std::printf("[browser-native-slice] tactical infantry sprite=%s\n",infantryTexture?"loaded":"fallback");
     if(FILE* map=std::fopen("/COURIER.MAP","rb")){
         char buffer[256];const size_t count=std::fread(buffer,1,sizeof(buffer),map);
         const int extra=std::fgetc(map);std::fclose(map);

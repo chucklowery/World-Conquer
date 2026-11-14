@@ -107,6 +107,8 @@ async function main() {
            "Native C++ mission did not consume the verified source-controlled map");
     assert((await page.locator("#log").textContent()).includes("[browser-native-slice] verified HD aircraft texture=loaded"),
            "Verified Courier RGBA texture was not loaded by native C++ renderer");
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] tactical infantry sprite=loaded"),
+           "Original infantry SHP was not resolved and rendered by CC_Draw_Shape");
     const nativeCanvas=page.locator("#canvas");
     const nativeBefore=await nativeCanvas.screenshot();
     await nativeCanvas.click({position:{x:60,y:100}}); // scout at (1,2)

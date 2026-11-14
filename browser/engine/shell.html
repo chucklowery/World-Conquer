@@ -213,6 +213,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     if(!ready||started)return;
     nativeSlice.disabled=true;
     try{
+      const result=await WCWireframes.load(Module.FS,"wireframes/manifest.json");
+      report("[browser-native-slice] staged verified tactical SHP pack ("+result.shapes+" resources)");
+    }catch(error){report("[browser-native-slice] Tactical SHP pack unavailable; using unit markers: "+error.message,true);}
+    try{
       const mission=await WCMissionPack.load();
       Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
       report("[browser-native-slice] staged verified original-content mission map");

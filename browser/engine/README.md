@@ -63,6 +63,19 @@ This is a content-contract stepping stone, **not the final VanillaTD theater
 format**. Native production map cells, unit-class definitions, state machines,
 and scenario ownership have not been replaced or bypassed in the campaign.
 
+### Native tactical sprite integration
+
+The native Courier scenario now also stages the existing source-verified
+six-class wireframe pack. It loads `E1.SHP` and `WIREFRAME.PAL` through the
+game's `CCFileClass` search path, draws the infantry base frame with the actual
+`CC_Draw_Shape()` routine into an indexed `GraphicBufferClass`, and converts
+that verified output into an SDL texture for the two squad members and sentries.
+This connects original engine SHP lookup and tactical drawing to moving units
+in the playable scenario. On missing/invalid resources it retains the prior
+colored markers. Chromium CI asserts the SHP-derived infantry texture loaded.
+The entities still use the isolated Courier simulation, not the original
+`InfantryClass` movement or `MapClass` cells.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.
