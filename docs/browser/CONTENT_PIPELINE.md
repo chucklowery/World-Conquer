@@ -13,6 +13,8 @@ separate `FACTMAKE.SHP` construction resource.
 The [complete first-pass art gallery](ART_FIRST_PASS.md) groups all 295
 engine-class concepts into eight browsable category sheets; this remains
 provisional concept art rather than approved game production assets.
+The [WF-0002 cargo art candidate](WF_0002_CARGO_ART.md) now has 80 individual
+RGBA PNG frames, independent state previews and an authored-draft SHP build.
 
 ## Build
 
@@ -25,6 +27,7 @@ node tools/content/test-wireframes.js
 node tools/content/test-representative-contracts.js
 node tools/content/test-representative-animation.js
 node tools/content/test-first-pass-art.js
+node tools/content/test-cargo-plane-art.js
 node browser/engine/test-wireframe-asset.js
 node tools/content/build.js game/content/manifest.json build/world-conquer-content
 node tools/content/wireframes.js build build/world-conquer-roster --representative

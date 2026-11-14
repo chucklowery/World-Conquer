@@ -4,6 +4,8 @@ This folder is a **license-clean, generated first-pass art kit** for the Tiberia
 
 Browse the [eight category contact sheets](../../../docs/browser/ART_FIRST_PASS.md) or use the machine-readable [`first-pass-manifest.json`](first-pass-manifest.json) to find one of **295 unique concepts**. Most class slots use recognizable original schematic silhouettes with distinct review markers; six audited representatives have richer animation and 23 state previews. This is not final approved artwork.
 
+**First authored art candidate:** [WF-0002 — fictional cargo transport](../../../docs/browser/WF_0002_CARGO_ART.md) now has 80 original 32×32 PNG frames, a ten-pose storyboard and a verified four-stage loading ramp. These files live at `final/WF-0002` with `stage: "draft"`, so the pack reports `authored-draft` until gameplay and art reviews approve them. The generator refuses to overwrite an existing source-art folder.
+
 Start with [the complete, individually checked replacement catalog](../../../docs/browser/WIREFRAME_REPLACEMENT_CATALOG.md) or [the machine-readable slot catalog](catalog.json). Every `WF-####` has a [linked SVG preview](previews/WF-0001.svg), an engine enum, original source-code location, resource filename, current placeholder dimensions and frame count, replacement file location, and acceptance criteria.
 
 ## Rebuild and preview
@@ -14,6 +16,7 @@ From the repository root:
 node tools/content/wireframes.js generate
 node tools/content/test-wireframes.js
 node tools/content/test-first-pass-art.js
+node tools/content/test-cargo-plane-art.js
 node tools/content/wireframes.js build build/world-conquer-wireframes
 ```
 

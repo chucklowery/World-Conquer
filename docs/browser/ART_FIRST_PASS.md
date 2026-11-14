@@ -8,7 +8,7 @@ The [machine-readable first-pass manifest](../../game/content/wireframes/first-p
 
 | Class | Count | Gallery | Generated concepts |
 |---|---:|---|---|
-| Aircraft | 5 | [All aircraft](../../game/content/wireframes/sheets/aircraft.svg) | Fixed-wing, rotorcraft and transports; directional flight framing |
+| Aircraft | 5 | [All aircraft](../../game/content/wireframes/sheets/aircraft.svg) | Fixed-wing, rotorcraft and transports; [WF-0002 now has 80 authored cargo frames](WF_0002_CARGO_ART.md) |
 | Buildings | 66 | [All buildings](../../game/content/wireframes/sheets/building.svg) | Wall, road, defense, airfield, industrial, power, service and civilian structures |
 | Effects | 101 | [All effects](../../game/content/wireframes/sheets/effect.svg) | Explosion, fire, smoke, muzzle flash, signal, impact, crate glow and creature fall |
 | Infantry | 20 | [All infantry](../../game/content/wireframes/sheets/infantry.svg) | Civilian, troop, engineer and specialist silhouettes with schematic movement |
@@ -18,7 +18,7 @@ The [machine-readable first-pass manifest](../../game/content/wireframes/first-p
 | Vehicles | 22 | [All vehicles](../../game/content/wireframes/sheets/vehicle.svg) | Armor, light wheeled, hover, naval, harvesting, creature and support silhouettes |
 | **Total** | **295** | | **295 distinct first-frame image fingerprints** |
 
-The [six representative assets](REPRESENTATIVE_ANIMATION_MILESTONE.md) continue to use more detailed C++-audited state-specific frames, with [23 separate state previews](../../game/content/wireframes/states/) plus the additional `FACTMAKE.SHP` construction resource. The other **289** use recognizable schematic family animations and deliberately small four-pip review identifiers so assets remain distinguishable while final artwork is commissioned.
+The [six representative assets](REPRESENTATIVE_ANIMATION_MILESTONE.md) continue to use more detailed C++-audited state-specific frames, with [23 separate state previews](../../game/content/wireframes/states/) plus the additional `FACTMAKE.SHP` construction resource. [WF-0002 is a separate authored 80-frame cargo draft](WF_0002_CARGO_ART.md). The other **288** use recognizable schematic family animations and deliberately small four-pip review identifiers so assets remain distinguishable while final artwork is commissioned.
 
 ## What is engine-compatible today?
 

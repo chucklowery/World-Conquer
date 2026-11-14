@@ -32,7 +32,7 @@
       "category": "aircraft",
       "engineFilename": "C17.SHP",
       "archetype": "transport",
-      "coverage": "schematic-first-pass",
+      "coverage": "authored-draft-80-frame",
       "runtimeStatus": "generated-tactical-placeholder",
       "preview": "previews/WF-0002.svg",
       "sheet": "sheets/aircraft.svg",
@@ -41,7 +41,7 @@
         32,
         32
       ],
-      "firstFrameSha256": "7a0d222824e39a7ce21c4c53bb1d2b56f1d0c852cf9634d7448894213434488a"
+      "firstFrameSha256": "d3374d764a54cbaf78c2c0c37986962fa548095bcc5be4f9ad3bbfc29d0a8167"
     },
     {
       "id": "WF-0003",

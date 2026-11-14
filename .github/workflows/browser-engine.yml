@@ -79,6 +79,7 @@ jobs:
           node tools/content/test-representative-contracts.js
           node tools/content/test-representative-animation.js
           node tools/content/test-first-pass-art.js
+          node tools/content/test-cargo-plane-art.js
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           node tools/content/wireframes.js build build/browser-engine/wireframes --representative
           node browser/engine/test-wireframe-asset.js build/browser-engine/wireframes

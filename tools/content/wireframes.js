@@ -12,6 +12,7 @@ const {encodePalette} = require("./encode-palette");
 const {importFrames} = require("./png-to-frames");
 const {representativePixels, factory, statePreviewSpecs} = require("./representative-animation");
 const {draw: drawFirstPass, archetype: artArchetype} = require("./first-pass-art");
+const {paintCargo} = require("./cargo-plane-art");
 
 const root = path.resolve(__dirname, "../..");
 const outputRoot = path.join(root, "game/content/wireframes");
@@ -87,6 +88,7 @@ function inventory() {
 }
 
 function paint(item, frame = 0) {
+  if (item.id === "WF-0002") return paintCargo(frame);
   const representative = representativePixels(item, frame);
   if (representative) return representative;
   return drawFirstPass(item,frame);
@@ -110,7 +112,7 @@ function renderDoc(catalog) {
   const rows = ["# World-Conquer: Original wireframe asset replacement catalog", "",
     "> Generated original placeholder art. No Electronic Arts media is included. `WF-####` identifiers stay stable only while the upstream enumeration and sorting remain unchanged; use `engineEnum` for persistent game mappings.", "",
     `This catalog contains **${catalog.length} independently linked asset slots** derived from Tiberian Dawn C++ class definitions. The preview is the generated placeholder's first frame.`, "",
-    "The [original first-pass art gallery](ART_FIRST_PASS.md) groups all 295 slots into browsable category sheets and identifies remaining visual dependencies. The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions.", "",
+    "The [original first-pass art gallery](ART_FIRST_PASS.md) groups all 295 slots into browsable category sheets and identifies remaining visual dependencies. [WF-0002's authored cargo art](WF_0002_CARGO_ART.md) is the first 80-frame draft replacement. The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions.", "",
     "## Replacement workflow", "",
     "1. Open an individual `WF-####` SVG below. It is a design guide, not a request to redraw copyrighted artwork.",
     "2. Create newly authored **palette-constrained pixel art** using the project-owned palette. Index `0` is transparent. Dimensions and frame counts here are **provisional build contracts** until each class's production frame lookup, footprint and anchor are audited against C++.",
@@ -134,7 +136,7 @@ function renderDoc(catalog) {
     rows.push(`## ${category[0].toUpperCase()+category.slice(1)} (${items.length})`, "", requirements[category], "");
     for(const a of items){
       const pathToSvg = `../../game/content/wireframes/${a.preview}`;
-      rows.push(`- [ ] **${a.id} — ${a.role}** · [View placeholder](${pathToSvg})${audited.has(a.id)?` · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#${a.id.toLowerCase()})`:""} · engine slot \`${a.engineEnum}\` ([\`${a.source}:${a.sourceLine}\`](../../${a.source}#L${a.sourceLine}), \`${a.engineSymbol}\`).`,
+      rows.push(`- [ ] **${a.id} — ${a.role}** · [View placeholder](${pathToSvg})${audited.has(a.id)?` · [Source-audited frame contract](REPRESENTATIVE_FRAME_CONTRACTS.md#${a.id.toLowerCase()})`:""}${a.id==="WF-0002"?" · [Authored cargo art draft](WF_0002_CARGO_ART.md)":""} · engine slot \`${a.engineEnum}\` ([\`${a.source}:${a.sourceLine}\`](../../${a.source}#L${a.sourceLine}), \`${a.engineSymbol}\`).`,
         `  - **Engine target:** \`${a.engineFilename}\`. **Placeholder contract (provisional):** ${a.width}×${a.height} indexed pixels, ${a.provisionalFrameCount} generated frames (${a.frameCountFromDoTable ? `minimum calculated from ${a.doTable}` : "provisional allocation; verify exact frame use"}); format \`${a.format}\`.`,
         `  - **Final art input:** \`game/content/wireframes/${a.finalFrameDirectory}/0000.png\` through \`${String(a.provisionalFrameCount-1).padStart(4,"0")}.png\` (ordered RGBA PNGs), plus \`ATTRIBUTION.json\` documenting creator/license/source/revision.`,
         `  - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match ${category} state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.${a.sharedFilenameWith.length?` **Shared engine filename:** coordinate replacement with ${a.sharedFilenameWith.join(", ")}.`:""}`,
@@ -174,7 +176,7 @@ function generateFirstPass(catalog) {
   const roster=new Set(JSON.parse(fs.readFileSync(path.join(outputRoot,"representative-roster.json"),"utf8")).assets.map(a=>a.id));
   const assets=catalog.map(a=>({id:a.id,engineEnum:a.engineEnum,category:a.category,
     engineFilename:a.engineFilename,archetype:artArchetype(a),
-    coverage:roster.has(a.id)?"source-audited-state-preview":"schematic-first-pass",
+    coverage:a.id==="WF-0002"?"authored-draft-80-frame":roster.has(a.id)?"source-audited-state-preview":"schematic-first-pass",
     runtimeStatus:a.status,preview:a.preview,sheet:`sheets/${a.category}.svg`,
     provisionalFrames:a.provisionalFrameCount,canvas:[a.width,a.height],
     firstFrameSha256:crypto.createHash("sha256").update(Buffer.from(paint(a))).digest("hex")}));
@@ -256,6 +258,7 @@ function build(destination, selectedIds) {
       for(const field of ["creator","license","source","revision"]){
         if(typeof provenance[field]!=="string"||!provenance[field].trim())throw new Error(`${a.id}: missing ${field} in attribution`);
       }
+      if(provenance.stage!==undefined&&!["draft","approved"].includes(provenance.stage))throw new Error(`${a.id}: invalid authored art stage`);
       frames=importFrames(finalDir,paletteSource).frames;
       if(frames.length!==a.provisionalFrameCount || frames.some(f=>f.width!==a.width||f.height!==a.height)){
         throw new Error(`${a.id}: final art must have exactly ${a.provisionalFrameCount} frames at ${a.width}x${a.height}`);
@@ -275,7 +278,7 @@ function build(destination, selectedIds) {
     if(decoded.frames.length!==frames.length)throw new Error(`Frame mismatch for ${a.id}`);
     entries.push({id:a.id,engineEnum:a.engineEnum,engineFilename:a.engineFilename,target:relative,
       mountReady:a.sharedFilenameWith.length===0,sharedFilenameWith:a.sharedFilenameWith,
-      status:fs.existsSync(finalDir)?"final-art":"wireframe",provenance,
+      status:fs.existsSync(finalDir)?(provenance.stage==="draft"?"authored-draft":"final-art"):"wireframe",provenance,
       frames:frames.length,width:a.width,height:a.height,bytes:bytes.length,
       sha256:crypto.createHash("sha256").update(bytes).digest("hex")});
   }
@@ -316,7 +319,7 @@ function build(destination, selectedIds) {
     fs.writeFileSync(path.join(dir,"roster.json"),JSON.stringify({schemaVersion:1,assets:auditedRoster.roster},null,2)+"\n");
     fs.writeFileSync(path.join(dir,"contracts.json"),JSON.stringify(auditedRoster.contracts,null,2)+"\n");
   }
-  console.log(`Built ${entries.length-1} tactical shape resources${only?" (selected smoke-test roster plus buildup)":" (excluding design-only overlays)"}`);
+  console.log(`Built ${entries.length-1} tactical shape resources${auditedRoster?" (selected smoke-test roster plus buildup)":only?" (selected subset)":" (excluding design-only overlays)"}`);
 }
 if(require.main===module){
   try{if(process.argv[2]==="generate")generate();

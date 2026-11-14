@@ -4,7 +4,7 @@
 
 This catalog contains **295 independently linked asset slots** derived from Tiberian Dawn C++ class definitions. The preview is the generated placeholder's first frame.
 
-The [original first-pass art gallery](ART_FIRST_PASS.md) groups all 295 slots into browsable category sheets and identifies remaining visual dependencies. The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions.
+The [original first-pass art gallery](ART_FIRST_PASS.md) groups all 295 slots into browsable category sheets and identifies remaining visual dependencies. [WF-0002's authored cargo art](WF_0002_CARGO_ART.md) is the first 80-frame draft replacement. The [state-aware representative animation milestone](REPRESENTATIVE_ANIMATION_MILESTONE.md) adds 23 linked state previews and separate `FACTMAKE.SHP` buildup instructions.
 
 ## Replacement workflow
 
@@ -42,7 +42,7 @@ Some engine classes share the same resource filename (for example a building and
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match aircraft state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
   - **Acceptance:** Confirm exact engine-consumed frame offsets and dimensions against the linked constructor and class render path; test 1× readability, every referenced heading/stage, damage states, remaps, offsets, shadow/selection alignment and native/browser parity. Status: **generated-tactical-placeholder**.
 
-- [ ] **WF-0002 — cargo** · [View placeholder](../../game/content/wireframes/previews/WF-0002.svg) · engine slot `AIRCRAFT_CARGO` ([`tiberiandawn/aadata.cpp:219`](../../tiberiandawn/aadata.cpp#L219), `CargoPlane`).
+- [ ] **WF-0002 — cargo** · [View placeholder](../../game/content/wireframes/previews/WF-0002.svg) · [Authored cargo art draft](WF_0002_CARGO_ART.md) · engine slot `AIRCRAFT_CARGO` ([`tiberiandawn/aadata.cpp:219`](../../tiberiandawn/aadata.cpp#L219), `CargoPlane`).
   - **Engine target:** `C17.SHP`. **Placeholder contract (provisional):** 32×32 indexed pixels, 80 generated frames (provisional allocation; verify exact frame use); format `tactical-keyframe`.
   - **Final art input:** `game/content/wireframes/final/WF-0002/0000.png` through `0079.png` (ordered RGBA PNGs), plus `ATTRIBUTION.json` documenting creator/license/source/revision.
   - **Replace:** Produce unique silhouettes and animations, preserve transparency (palette index 0), match aircraft state rules above, and document rights/source. Do not assume the placeholder animation matches gameplay state semantics.
