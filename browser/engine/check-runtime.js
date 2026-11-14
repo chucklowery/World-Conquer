@@ -159,6 +159,23 @@ async function main() {
     await page.locator("#launch-alpha").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] movement source=InfantryClass::AI"),
                                undefined,{timeout:40000});
+    await page.waitForFunction(() => window.WCRTS && window.WCRTS.latest() && window.WCRTS.latest().tick>=0,
+                               undefined,{timeout:15000});
+    const initialContract=await page.evaluate(()=>{
+      const s=WCRTS.latest();
+      return {version:s.version,tick:s.tick,dimensions:[s.map.width,s.map.height],
+        walls:s.map.terrain.filter(t=>t===1).length,ids:s.entities.map(e=>e.id),
+        owner:s.entities[0].ownerId,team:s.entities[0].teamId,
+        selected:s.selectedEntityId,readonly:Object.isFrozen(s)&&Object.isFrozen(s.entities[0])};
+    });
+    assert.equal(initialContract.version,1);
+    assert.deepEqual(initialContract.dimensions,[18,11]);
+    assert.equal(initialContract.walls,14);
+    assert.deepEqual(initialContract.ids,[1001,1002,2001,2002,3001,3002,4001]);
+    assert.equal(initialContract.owner,1);
+    assert.equal(initialContract.team,1);
+    assert.equal(initialContract.selected,1001);
+    assert.equal(initialContract.readonly,true);
     assert.equal(await page.locator("#tactical-hud").isVisible(),true,"In-game HUD did not open");
     assert.equal(await page.locator("#hud-build-panel").isVisible(),true,"Production sidebar was not visible");
     const layout=await page.evaluate(()=>{
@@ -199,12 +216,40 @@ async function main() {
     assert.equal(await page.locator("#hud-sidebar").isVisible(),true,"Sidebar did not reopen");
     const engineCanvas=page.locator("#canvas");
     const minimapBefore=await page.locator("#hud-minimap").screenshot();
+    // Rejection is an event, with no destination dispatch or gameplay mutation.
+    const beforeInvalid=await page.evaluate(()=>{
+      const s=WCRTS.latest();return {selected:s.selectedEntityId,
+        scout:s.entities.find(e=>e.id===1001)};
+    });
+    await clickNativeTile(engineCanvas,5,2); // authored wall
+    await page.waitForFunction(() => WCRTS.eventHistory().some(e=>e.type==="command"&&e.code==="blocked"),
+                               undefined,{timeout:15000});
+    const afterInvalid=await page.evaluate(()=>{
+      const s=WCRTS.latest();return {selected:s.selectedEntityId,
+        scout:s.entities.find(e=>e.id===1001)};
+    });
+    assert.deepEqual(afterInvalid,beforeInvalid,"Rejected wall order corrupted native infantry/selection");
     await clickNativeTile(engineCanvas,1,2);
     await clickNativeTile(engineCanvas,3,2);
     await page.waitForFunction(() => /\[browser-engine-courier\] live orders=[1-9]\d* nav-cell=\d+/.test(
       document.getElementById("log").textContent),undefined,{timeout:15000});
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] moved unit=0"),
                                undefined,{timeout:45000});
+    await page.waitForFunction(()=>WCRTS.latest().entities.find(e=>e.id===1001).x>1,
+                               undefined,{timeout:15000});
+    const nativeParity=await page.evaluate(()=>{
+      const e=WCRTS.latest().entities.find(u=>u.id===1001);
+      const moves=[...document.getElementById("log").textContent.matchAll(/\[browser-engine-courier\] moved unit=0 x=(\d+) y=(\d+)/g)];
+      const match=moves[moves.length-1];
+      return {snapshot:[e.x,e.y],native:match&&[Number(match[1]),Number(match[2])],
+        selected:WCRTS.latest().selectedEntityId,version:WCRTS.latest().version,
+        tick:WCRTS.latest().tick,uiVersion:document.getElementById("engine-courier-status").dataset.snapshotVersion};
+    });
+    assert.deepEqual(nativeParity.snapshot,nativeParity.native,"HUD snapshot diverged from live InfantryClass position");
+    assert.equal(nativeParity.selected,1001);
+    assert.equal(nativeParity.version,1);
+    assert.equal(nativeParity.uiVersion,"1");
+    assert(nativeParity.tick>0);
     const minimapAfter=await page.locator("#hud-minimap").screenshot();
     assert(!minimapBefore.equals(minimapAfter),"Live minimap did not follow native unit movement");
     await clickNativeTile(engineCanvas,7,2); // first supply crate
@@ -223,6 +268,12 @@ async function main() {
     await page.keyboard.press("r");
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] mission restarted"),
                                undefined,{timeout:15000});
+    await page.waitForFunction(()=>WCRTS.eventHistory().some(e=>e.type==="restart"),
+                               undefined,{timeout:15000});
+    assert.deepEqual(await page.evaluate(()=>{
+      const s=WCRTS.latest(),scout=s.entities.find(e=>e.id===1001);
+      return {selected:s.selectedEntityId,cargo:s.cargo,x:scout.x,y:scout.y};
+    }),{selected:1001,cargo:0,x:1,y:2},"Restart did not republish the canonical initial state");
     assert((await page.locator("#engine-courier-status").textContent()).includes("Cargo 0/2"),
            "Engine-owned mission HUD did not reset after restart");
     assert.equal(await page.locator("#alpha-result").isHidden(),true,
@@ -242,6 +293,7 @@ async function main() {
     assert((await page.locator("#engine-courier-status").textContent()).includes("Sentries"),
            "Tactical Alpha HUD did not report combat state");
     messages.push("PASS: native infantry recovered crates, extracted, restarted, and attacked a pursuing sentry");
+    messages.push("PASS: R00 versioned native snapshots match live infantry and reject wall orders without changing state");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

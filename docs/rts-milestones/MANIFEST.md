@@ -21,7 +21,7 @@ row; never overwrite another worker's status or evidence.
 
 | ID | Milestone / standalone prompt | Must follow | Parallel wave | Status | Evidence / blocker |
 | --- | --- | --- | --- | --- | --- |
-| R00 | [Simulation contracts and runtime bridge](R00-simulation-contracts/PROMPT.md) | — | W0 | planned | — |
+| R00 | [Simulation contracts and runtime bridge](R00-simulation-contracts/PROMPT.md) | — | W0 | in_progress | Branch `feature/r00-simulation-contracts`; contract and native/browser acceptance pending. |
 | R01 | [Camera, selection, and command UX](R01-camera-selection-input/PROMPT.md) | R00 | W1 | planned | — |
 | R02 | [Unit orders and pathfinding](R02-unit-orders-pathfinding/PROMPT.md) | R00 | W1 | planned | — |
 | R03 | [Combat, weapons, and damage](R03-combat-weapons/PROMPT.md) | R00 | W1 | planned | — |

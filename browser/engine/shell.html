@@ -206,6 +206,7 @@ body.hud-active{overflow:hidden}
 <script src="vertical-slice.js"></script>
 <script src="mission-pack.js"></script>
 <script src="tactical-hud.js"></script>
+<script src="simulation-bridge.js"></script>
 <script>
 (function () {
   "use strict";
@@ -392,40 +393,41 @@ body.hud-active{overflow:hidden}
     }else alphaResult.hidden=true;
   }
 
+  // Native C++ publishes the sole gameplay state. The HUD is a read-only
+  // projection; historical runtime log messages remain diagnostics only.
+  WCRTS.subscribe(snapshot=>{
+    if(document.body.dataset.mode!=="engine-courier")return;
+    WCTacticalHUD.applySnapshot(hudModel,snapshot);
+    WCTacticalHUD.draw(hudMinimap,hudModel);
+    const units=snapshot.entities;
+    const hp=id=>units.find(entity=>entity.id===id).hp;
+    alphaStats={cargo:snapshot.cargo,players:[hp(1001),hp(1002)],
+      sentries:[hp(2001),hp(2002)],selected:snapshot.selectedEntityId===1001?0:1,
+      phase:snapshot.phase};
+    engineHud.dataset.snapshotVersion=String(snapshot.version);
+    engineHud.dataset.snapshotTick=String(snapshot.tick);
+    for(const event of snapshot.events){
+      if(event.type==="restart")alphaEvent.textContent="Squad reassembled. Recover both crates and extract.";
+      if(event.type==="pickup")alphaEvent.textContent=`Supply secured: ${snapshot.cargo} of 2 crates. ${snapshot.cargo===2?"Reach the aircraft to extract!":"Keep moving!"}`;
+      if(event.type==="health")alphaEvent.textContent=event.entityId<2000?
+        `${event.entityId===1001?"Scout":"Ranger"} under fire — ${Math.max(0,event.value)} HP remaining!`:
+        (event.value<=0?"Enemy sentry eliminated!":"Sentry hit — keep up the pressure!");
+      if(event.type==="command"&&event.code!=="accepted")
+        alphaEvent.textContent=`Order rejected: ${event.code.replaceAll("_"," ")}.`;
+    }
+    updateAlphaStatus();
+  });
+
   function report(message, isError) {
     const value = String(message);
     log.textContent += (isError ? "[error] " : "") + value + "\n";
     log.scrollTop = log.scrollHeight;
     (isError ? console.error : console.log)(value);
     if(document.body.dataset.mode==="engine-courier"){
-      if(WCTacticalHUD.observe(hudModel,value))WCTacticalHUD.draw(hudMinimap,hudModel);
-      const cargo=value.match(/\[browser-native-slice\] crates=(\d)\/2/);
-      if(cargo){
-        alphaStats.cargo=Number(cargo[1]);
-        alphaEvent.textContent=`Supply secured: ${alphaStats.cargo} of 2 crates. ${alphaStats.cargo===2?"Reach the aircraft to extract!":"Keep moving!"}`;
-      }
-      const selected=value.match(/\[browser-engine-courier\] selected unit=(\d)/) ||
-        value.match(/\[browser-native-slice\] click x=\d+ y=\d+ selected=(\d)/);
-      if(selected)alphaStats.selected=Number(selected[1]);
-      const combat=value.match(/\[browser-engine-courier\] combat unit=(\d) hp=(-?\d+)/);
-      if(combat){
-        const index=Number(combat[1]),hp=Number(combat[2]);
-        if(index<2)alphaStats.players[index]=hp;
-        else if(index<4)alphaStats.sentries[index-2]=hp;
-        alphaEvent.textContent=index<2?`${index===0?"Scout":"Ranger"} under fire — ${Math.max(0,hp)} HP remaining!`:
-          (hp<=0?"Enemy sentry eliminated!":"Sentry hit — keep up the pressure!");
-      }
-      if(value.includes("[browser-engine-courier] attack-order"))alphaEvent.textContent="Attack order issued. Close in on the sentry!";
-      if(value.includes("[browser-engine-courier] cancelled"))alphaEvent.textContent="Orders cancelled. Select a new destination.";
-      if(value.includes("[browser-native-slice] result=victory"))alphaStats.phase="won";
-      if(value.includes("[browser-native-slice] result=defeat"))alphaStats.phase="lost";
-      if(value.includes("[browser-engine-courier] mission restarted")){
-        alphaStats=initialAlphaStats();
-        alphaEvent.textContent="Squad reassembled. Recover both crates and extract.";
-      }
-      if(value.includes("[browser-engine-courier] ERROR"))
+      if(value.includes("[browser-engine-courier] ERROR")){
         alphaStats.phase="error";
-      updateAlphaStatus();
+        updateAlphaStatus();
+      }
     }
   }
   function status(message, kind) {
@@ -498,6 +500,7 @@ body.hud-active{overflow:hidden}
     }
     canvas.style.aspectRatio="18/11";
     if(mode==="engine-courier"){
+      WCRTS.clear();
       activateTacticalHUD();
       engineHud.hidden=false;
       alphaEvent.hidden=false;

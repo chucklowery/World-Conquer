@@ -52,6 +52,33 @@
     if(selected){model.selected=Number(selected[1]);return true;}
     return false;
   }
+  // R00's native mode takes full authoritative snapshots, never log deltas.
+  // The legacy observer above remains for historical standalone diagnostics.
+  function applySnapshot(model,snapshot){
+    if(!snapshot||snapshot.version!==1||snapshot.map.width!==WIDTH||
+       snapshot.map.height!==HEIGHT)throw Error("Unsupported tactical snapshot");
+    const ids=[1001,1002,2001,2002];
+    model.units=ids.map(id=>{
+      const u=snapshot.entities.find(entity=>entity.id===id&&entity.kind==="infantry");
+      if(!u)throw Error("Missing native infantry "+id);
+      return {x:u.x,y:u.y,hp:u.hp};
+    });
+    model.crates=[3001,3002].map(id=>{
+      const e=snapshot.entities.find(entity=>entity.id===id&&entity.kind==="supply");
+      if(!e)throw Error("Missing native supply "+id);
+      return {x:e.x,y:e.y};
+    });
+    model.collected=[3001,3002].map(id=>!snapshot.entities.find(e=>e.id===id).active);
+    const exit=snapshot.entities.find(e=>e.id===4001&&e.kind==="extraction");
+    if(!exit)throw Error("Missing native extraction");
+    model.exit={x:exit.x,y:exit.y};
+    model.blocked=new Set(snapshot.map.terrain.flatMap((tile,i)=>tile===1?[i]:[]));
+    model.selected=ids.indexOf(snapshot.selectedEntityId);
+    if(model.selected<0||model.selected>1)throw Error("Invalid native selection");
+    model.cargo=snapshot.cargo;
+    if(snapshot.events.some(event=>event.type==="restart"))model.inspect=null;
+    return model;
+  }
   function inspect(model,x,y){
     if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>=WIDTH||y<0||y>=HEIGHT)return "Outside map";
     model.inspect={x,y};
@@ -90,5 +117,5 @@
       ctx.strokeRect(model.inspect.x*w+1,model.inspect.y*h+1,w-2,h-2);
     }
   }
-  return {create,reset,observe,inspect,draw};
+  return {create,reset,observe,applySnapshot,inspect,draw};
 });
