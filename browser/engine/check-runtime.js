@@ -144,7 +144,7 @@ async function main() {
     assert(!hdBefore.equals(hdAfter), "HD heading switch did not update the canvas");
     await page.locator("#cargo-ramp").click();
     assert((await page.locator("#cargo-hd-status").textContent()).includes("ramp 1/4"));
-    assert.equal(await page.locator("body").getAttribute("data-mode"), null,
+    assert.equal(await page.locator("body").getAttribute("data-mode"), "idle",
                  "HD preview must not launch the native game or change its mode");
     messages.push("PASS: HD SHA-verified 512x512 directional/ramp canvas rendering independent of native engine");
     // Six project-owned wireframes loaded by manifest/roster, SHA-256 verified,
