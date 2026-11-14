@@ -68,7 +68,7 @@
     background();
     for(const a of manifest.assets){
       const pos=CELL_POS[a.id.slice(4)];if(!pos)continue;
-      let heading=a.kind==="infantry"?2:a.kind==="vehicle"?6:0;
+      let heading=(a.kind==="infantry"||a.kind==="vehicle")?(a.faction==="aster"?2:6):0;
       if(phase===1&&a.kind==="vehicle")heading=(heading+(tick%8))%8;
       drawAsset(a,pos[0]*CELL,pos[1]*CELL,stateFor(a),heading,tick);
     }

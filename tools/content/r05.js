@@ -159,8 +159,10 @@ function rotate(pixels, size, facing) {
   const result = new Array(size*size).fill(0), angle = facing*Math.PI/4,
     sin = Math.sin(angle), cos = Math.cos(angle), center = (size-1)/2;
   for (let y=0;y<size;y++) for (let x=0;x<size;x++) {
+    // In canvas coordinates Y increases downward: clockwise headings need
+    // the inverse clockwise sample transform (N, NE, E, SE, S, SW, W, NW).
     const dx=x-center,dy=y-center,
-      sx=Math.round(center+dx*cos-dy*sin),sy=Math.round(center+dx*sin+dy*cos);
+      sx=Math.round(center+dx*cos+dy*sin),sy=Math.round(center-dx*sin+dy*cos);
     if (sx>=0&&sx<size&&sy>=0&&sy<size) result[y*size+x]=pixels[sy*size+sx];
   }
   return result;

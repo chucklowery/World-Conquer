@@ -77,6 +77,23 @@ function main(){
       assert(!shape.frames[0].pixels.some(p=>rival.includes(p)),`${a.id}: rival team color`);
     }
   }
+  // Facing index 0 is north, then clockwise. Weapon sparks make the
+  // 8-way ordering directly testable, independent of body silhouette.
+  const ranger=manifest.assets.find(a=>a.id==="r05.aster.ranger");
+  const attack=ranger.states.find(s=>s.state==="attack");
+  const points=[];
+  for(let facing=0;facing<8;facing++){
+    const p=decodeTacticalShape(first.files.get(ranger.shape)).frames[attack.start+facing*attack.phases].pixels;
+    const sparks=[];for(let i=0;i<p.length;i++)if(p[i]===20||p[i]===21)sparks.push([i%ranger.size,Math.floor(i/ranger.size)]);
+    assert(sparks.length>=2);
+    points.push([sparks.reduce((n,v)=>n+v[0],0)/sparks.length,sparks.reduce((n,v)=>n+v[1],0)/sparks.length]);
+  }
+  const center=(ranger.size-1)/2;
+  assert(points[0][1]<center-4 && points[2][0]>center+4 && points[4][1]>center+4 && points[6][0]<center-4,
+    `Incorrect clockwise cardinal facings: ${JSON.stringify(points)}`);
+  assert(points[1][0]>center&&points[1][1]<center&&points[3][0]>center&&points[3][1]>center&&
+    points[5][0]<center&&points[5][1]>center&&points[7][0]<center&&points[7][1]<center,
+    `Incorrect diagonal facings: ${JSON.stringify(points)}`);
   const corrupted=readSources();corrupted.assets[0].svg+="<image href='evil'/>";
   assert.throws(()=>compile(corrupted),/Unsafe or unsupported SVG/);
   const wrongTeam=readSources();wrongTeam.assets[0].svg=wrongTeam.assets[0].svg.replace(/#2F9990/g,"#BF6654");
