@@ -22,15 +22,24 @@ int Browser_Unit_Probe(){
     if(!owner){std::puts("[browser-unit-probe] ERROR: house allocation failed");return 3;}
     InfantryClass* scout=new InfantryClass(INFANTRY_E1,HOUSE_GOOD);
     if(!scout){std::puts("[browser-unit-probe] ERROR: infantry allocation failed");return 4;}
+    PlayerPtr=owner;
+    owner->IsHuman=true;
+    GameActive=true;
+    ++ScenarioInit; // bypass full campaign placement constraints during staging
+    const bool placed=scout->Unlimbo(Cell_Coord(static_cast<CELL>(plan.units[0])),DIR_E);
+    --ScenarioInit;
+    if(!placed||Coord_Cell(scout->Coord)!=static_cast<CELL>(plan.units[0])){
+        std::puts("[browser-unit-probe] ERROR: infantry Unlimbo failed");return 6;
+    }
     const TARGET destination=::As_Target(static_cast<CELL>(plan.cells[2*18+4]));
-    // The unit remains in limbo. Calling the base setter is safe here; virtual
-    // InfantryClass movement/Unlimbo needs additional scenario initialization.
+    // Use the base command setter for this placement diagnostic; the full
+    // movement mission will use the virtual InfantryClass movement path.
     scout->FootClass::Assign_Destination(destination);
     if(scout->House!=owner||scout->NavCom!=destination){
         std::puts("[browser-unit-probe] ERROR: infantry command mismatch");return 5;
     }
-    std::printf("[browser-unit-probe] native house=created infantry=created nav-target=%u limbo=yes\n",
-                ::Target_Value(scout->NavCom));
+    std::printf("[browser-unit-probe] native house=created infantry=created nav-target=%u on-map=yes cell=%d\n",
+                ::Target_Value(scout->NavCom),static_cast<int>(Coord_Cell(scout->Coord)));
     // The one-shot module is discarded on page reload. Avoid running global
     // scenario destructors without the remaining production game lifecycle.
     return 0;

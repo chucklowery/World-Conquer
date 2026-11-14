@@ -52,7 +52,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
 <button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
 <button type="button" id="run-unit-probe" disabled>Test native infantry allocation (experimental)</button>
-<p class="note">The infantry diagnostic allocates a production house and one E1 unit in limbo to test engine ownership and destination storage. It does not place or move the unit; reload before switching modes.</p>
+<p class="note">The experimental infantry diagnostic allocates a production house and places one E1 unit onto native map cells. It is a one-shot probe, not the playable mission; reload before switching modes.</p>
 <p class="note">Native mission: click a green squad unit and a tile to move; press R to restart. This gameplay runs inside the compiled VanillaTD WebAssembly executable using original procedural visuals.</p>
 <h3>WF-0002 HD cargo transport (independent preview)</h3>
 <canvas id="cargo-hd-canvas" width="512" height="512" aria-label="High-resolution Courier cargo aircraft preview"></canvas>

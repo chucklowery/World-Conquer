@@ -174,14 +174,15 @@ The browser launcher offers **Test native infantry allocation (experimental)**.
 The one-shot `--browser-unit-probe` mode initializes the verified Courier
 terrain through `MapClass`, allocates the engine's `Houses` and `Infantry`
 fixed heaps, initializes those collections, creates a `HOUSE_GOOD` house and
-one real `INFANTRY_E1` instance, then assigns a production cell `TARGET`
-through `FootClass::Assign_Destination`. It verifies the unit's owning house
-and stored `NavCom`, without invoking the infantry AI or `Unlimbo()`.
+one real `INFANTRY_E1` instance, places it via the actual
+`InfantryClass::Unlimbo()` path, then assigns a production cell `TARGET`
+through `FootClass::Assign_Destination`. It verifies its map cell, owning house
+and stored `NavCom`, without invoking infantry movement AI.
 The probe is isolated from the playable native Courier mode and cannot
 receive movement input or run a campaign. Browser CI checks its success log.
-This is a **limbo object-allocation diagnostic**, not an on-map playable
-`InfantryClass` or a replacement for the remaining theater/visibility
-initialization needed for movement.
+This is an **on-map object-allocation diagnostic**, not a playable
+engine movement loop or a replacement for the remaining theater and
+visibility initialization required by full campaign gameplay.
 
 ## Try it
 

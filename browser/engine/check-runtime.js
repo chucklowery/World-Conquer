@@ -140,9 +140,9 @@ async function main() {
     await page.locator("#run-unit-probe").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-unit-probe] native house=created infantry=created"),
                                undefined,{timeout:40000});
-    assert((await page.locator("#log").textContent()).includes("limbo=yes"),
-           "Native infantry diagnostic did not stay safely out of the active game world");
-    messages.push("PASS: original VanillaTD HouseClass and InfantryClass allocated with a native navigation target");
+    assert((await page.locator("#log").textContent()).includes("on-map=yes"),
+           "Native infantry diagnostic did not place a real infantry on MapClass");
+    messages.push("PASS: original VanillaTD HouseClass and InfantryClass allocated and placed on the real map");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
