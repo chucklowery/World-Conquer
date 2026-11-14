@@ -108,8 +108,9 @@ async function main() {
     const nativeCanvas=page.locator("#canvas");
     const nativeBefore=await nativeCanvas.screenshot();
     await nativeCanvas.click({position:{x:60,y:100}}); // scout at (1,2)
-    await nativeCanvas.click({position:{x:140,y:100}}); // move towards (3,2)
-    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] click x=3 y=2"),
+    await nativeCanvas.click({position:{x:140,y:100}}); // issue a reachable eastward move
+    await page.waitForFunction(() => /\[browser-native-slice\] click x=\d+ y=2 selected=0 route=[1-9]/.test(
+      document.getElementById("log").textContent),
                                undefined,{timeout:15000});
     await page.waitForTimeout(800);
     const nativeAfter=await nativeCanvas.screenshot();
