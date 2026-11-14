@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
+#include <cstring>
 #include <cstdint>
 #include <vector>
 #include "common/keyframe.h"
@@ -240,15 +241,16 @@ int Browser_Wireframe_Probe(const char* argv0)
 
 // Reuse the real indexed tactical drawing path in the standalone native
 // mission. Returns null for missing/unverified content; no proprietary media.
-SDL_Texture* Browser_Load_Original_Infantry(SDL_Renderer* renderer, const char* argv0)
+SDL_Texture* Browser_Load_Original_Shape(SDL_Renderer* renderer, const char* argv0, const char* filename)
 {
+    if(!filename||(std::strcmp(filename,"E1.SHP")!=0&&std::strcmp(filename,"T01.SHP")!=0))return nullptr;
     Paths.Init("vanillatd", "CONQUER.INI", "CONQUER.MIX", argv0);
     CDFileClass::Refresh_Search_Drives();
     std::vector<uint8_t> shape, pal;
     int w=0,h=0;
-    if(!ReadEngineFile("E1.SHP",shape)||!ReadEngineFile("WIREFRAME.PAL",pal,768)||
-       !ValidateTactical(shape,w,h,0)||w>48||h>48)return nullptr;
-    constexpr int size=48;
+    if(!ReadEngineFile(filename,shape)||!ReadEngineFile("WIREFRAME.PAL",pal,768)||
+       !ValidateTactical(shape,w,h,0)||w>64||h>64)return nullptr;
+    constexpr int size=64;
     std::vector<uint8_t> indexed(size*size,0);
     GraphicBufferClass backing(size,size,indexed.data(),indexed.size());
     GraphicViewPortClass* previousPage=LogicPage;
@@ -289,7 +291,7 @@ SDL_Texture* Browser_Load_Original_Infantry(SDL_Renderer* renderer, const char* 
     if(SDL_UpdateTexture(texture,nullptr,rgba.data(),size*sizeof(uint32_t))!=0){
         SDL_DestroyTexture(texture);return nullptr;
     }
-    std::printf("[browser-native-slice] CC_Draw_Shape original infantry texture pixels=%d\n",painted);
+    std::printf("[browser-native-slice] CC_Draw_Shape %s texture pixels=%d\n",filename,painted);
     return texture;
 }
 #endif

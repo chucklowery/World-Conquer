@@ -76,6 +76,14 @@ colored markers. Chromium CI asserts the SHP-derived infantry texture loaded.
 The entities still use the isolated Courier simulation, not the original
 `InfantryClass` movement or `MapClass` cells.
 
+The same bounded tactical drawing adapter now also resolves the original
+`T01.SHP` terrain-object frame and paints the authored mission's blocked cells
+with its source-rendered texture. Its use for scenery is deliberately visual:
+the 18×11 scenario's passability comes from the validated mission grid, not
+from the original theater-template or `MapClass` collision rules. Failure to
+load either SHP leaves the fallback rendering intact. Chromium CI checks
+both sprite classes independently.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.

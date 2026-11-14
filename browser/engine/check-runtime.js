@@ -109,6 +109,8 @@ async function main() {
            "Verified Courier RGBA texture was not loaded by native C++ renderer");
     assert((await page.locator("#log").textContent()).includes("[browser-native-slice] tactical infantry sprite=loaded"),
            "Original infantry SHP was not resolved and rendered by CC_Draw_Shape");
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] tactical terrain sprite=loaded"),
+           "Original terrain SHP was not resolved and rendered by CC_Draw_Shape");
     const nativeCanvas=page.locator("#canvas");
     const nativeBefore=await nativeCanvas.screenshot();
     await nativeCanvas.click({position:{x:60,y:100}}); // scout at (1,2)

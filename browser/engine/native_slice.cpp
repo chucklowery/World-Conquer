@@ -6,13 +6,14 @@
 #include <emscripten/emscripten.h>
 #include <cstdio>
 #include <vector>
-SDL_Texture* Browser_Load_Original_Infantry(SDL_Renderer*,const char*);
+SDL_Texture* Browser_Load_Original_Shape(SDL_Renderer*,const char*,const char*);
 
 namespace {
 SDL_Window* window=nullptr;
 SDL_Renderer* renderer=nullptr;
 SDL_Texture* cargoTexture=nullptr;
 SDL_Texture* infantryTexture=nullptr;
+SDL_Texture* sceneryTexture=nullptr;
 courier::State mission;
 std::string missionSource;
 Uint32 lastStep=0;
@@ -63,7 +64,11 @@ void frame(){
         fill(x*40+1,y*40+1,38,38,
              blocked?74:(x+y)%2?48:52,blocked?85:(x+y)%2?74:82,
              blocked?92:(x+y)%2?67:73);
-        if(blocked)fill(x*40+5,y*40+5,30,4,109,122,119);
+        if(blocked){
+            if(sceneryTexture){SDL_Rect tree={x*40-4,y*40-8,48,48};
+                SDL_RenderCopy(renderer,sceneryTexture,nullptr,&tree);
+            }else fill(x*40+5,y*40+5,30,4,109,122,119);
+        }
     }
     fill((mission.exit.x-1)*40,(mission.exit.y-1)*40,120,80,126,175,187);
     if(cargoTexture){SDL_Rect destination={(mission.exit.x-2)*40,(mission.exit.y-2)*40,160,160};
@@ -99,8 +104,10 @@ int Browser_Native_Slice(const char* argv0){
     renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
     if(!renderer)renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
     if(!renderer)return 3;
-    infantryTexture=Browser_Load_Original_Infantry(renderer,argv0);
+    infantryTexture=Browser_Load_Original_Shape(renderer,argv0,"E1.SHP");
+    sceneryTexture=Browser_Load_Original_Shape(renderer,argv0,"T01.SHP");
     std::printf("[browser-native-slice] tactical infantry sprite=%s\n",infantryTexture?"loaded":"fallback");
+    std::printf("[browser-native-slice] tactical terrain sprite=%s\n",sceneryTexture?"loaded":"fallback");
     if(FILE* map=std::fopen("/COURIER.MAP","rb")){
         char buffer[256];const size_t count=std::fread(buffer,1,sizeof(buffer),map);
         const int extra=std::fgetc(map);std::fclose(map);
