@@ -97,6 +97,28 @@ async function main() {
     assert.equal(await page.locator("body").getAttribute("data-mode"), "cooperative");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: synchronous C++ loop yielded to JavaScript heartbeat and SDL2 mouse/keyboard input");
+    // A real C++ tactical mission, not the independent JavaScript slice.
+    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
+    await page.locator("#run-native-slice").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] C++ tactical mission started"),
+                               undefined,{timeout:40000});
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] verified HD aircraft texture=loaded"),
+           "Verified Courier RGBA texture was not loaded by native C++ renderer");
+    const nativeCanvas=page.locator("#canvas");
+    const nativeBefore=await nativeCanvas.screenshot();
+    await nativeCanvas.click({position:{x:60,y:100}}); // scout at (1,2)
+    await nativeCanvas.click({position:{x:140,y:100}}); // move towards (3,2)
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] click x=3 y=2"),
+                               undefined,{timeout:15000});
+    await page.waitForTimeout(800);
+    const nativeAfter=await nativeCanvas.screenshot();
+    assert(!nativeBefore.equals(nativeAfter),"Native C++ unit did not move");
+    await page.keyboard.press("r");
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] mission restarted"),
+                               undefined,{timeout:15000});
+    assert.equal(await page.locator("body").getAttribute("data-mode"),"native-slice");
+    messages.push("PASS: original-content tactical mission moves and restarts inside real VanillaTD WASM executable");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

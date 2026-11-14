@@ -78,6 +78,8 @@ jobs:
           node browser/engine/test-wireframe-asset.js
           node browser/engine/test-cargo-hd.js
           node browser/engine/test-vertical-slice.js
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-native-slice.cpp -o build/browser-engine/test-native-slice
+          build/browser-engine/test-native-slice
           test -s browser/engine/play.html
       - name: Verify original content pipeline
         run: |

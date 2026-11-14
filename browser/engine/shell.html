@@ -50,6 +50,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
 <button type="button" id="run-shape" disabled>Render original SHP sample</button>
 <button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
+<button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
+<p class="note">Native mission: click a green squad unit and a tile to move; press R to restart. This gameplay runs inside the compiled VanillaTD WebAssembly executable using original procedural visuals.</p>
 <h3>WF-0002 HD cargo transport (independent preview)</h3>
 <canvas id="cargo-hd-canvas" width="512" height="512" aria-label="High-resolution Courier cargo aircraft preview"></canvas>
 <button type="button" id="load-cargo-hd">Load verified HD aircraft</button>
@@ -149,6 +151,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const cooperative = document.getElementById("run-cooperative");
   const shape = document.getElementById("run-shape");
   const wireframes = document.getElementById("run-wireframes");
+  const nativeSlice = document.getElementById("run-native-slice");
   const game = document.getElementById("run-game");
   const assetProbe = document.getElementById("run-asset-probe");
   const assetStatus = document.getElementById("asset-status");
@@ -176,6 +179,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     cooperative.disabled = !ready || started;
     shape.disabled = !ready || started || loadingAssets;
     wireframes.disabled = !ready || started || loadingAssets;
+    nativeSlice.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
   }
@@ -184,7 +188,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : (mode === "assets" ? "Checking engine file search" : (mode === "shape" ? "Rendering original sprite" : (mode === "wireframes" ? "Rendering wireframe roster" : "Starting game (experimental)")))), "running");
+    const names={"native-slice":"Playing native C++ tactical mission",probe:"SDL2 probe running",
+      cooperative:"Cooperative C++ loop running",assets:"Checking engine file search",
+      shape:"Rendering original sprite",wireframes:"Rendering wireframe roster"};
+    status(names[mode]||"Starting game (experimental)","running");
     canvas.focus();
     try {
       Module.callMain(args);
@@ -198,6 +205,24 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   }
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
+  nativeSlice.addEventListener("click", async () => {
+    if(!ready||started)return;
+    nativeSlice.disabled=true;
+    try {
+      if(!hdImages)hdImages=await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
+      const offscreen=document.createElement("canvas");
+      offscreen.width=offscreen.height=512;
+      const ctx=offscreen.getContext("2d",{willReadFrequently:true});
+      ctx.drawImage(hdImages[0],0,0);
+      const rgba=new Uint8Array(ctx.getImageData(0,0,512,512).data);
+      Module.FS.writeFile("/COURIER.RGBA",rgba);
+      report("[browser-native-slice] staged verified 512x512 RGBA cargo texture");
+    } catch(error) {
+      report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
+    }
+    canvas.style.aspectRatio="18/11";
+    run(["--browser-native-slice"],"native-slice");
+  });
   shape.addEventListener("click", async () => {
     if (!ready || started || loadingAssets) return;
     loadingAssets = true;

@@ -22,6 +22,24 @@ simulation and canvas renderer are independent browser JavaScript. It is intende
 to playtest controls, layout, original artwork and the supply-extraction loop
 while the C++ gameplay asset/mission integration is still underway.
 
+### Native WebAssembly gameplay milestone
+
+The compiled VanillaTD launcher also offers **Play mission in native C++ engine**.
+It selects `--browser-native-slice`, a C++11 implementation of the same
+18×11 supply-recovery loop running directly inside the actual game executable
+using SDL2. Click green units and destinations; press **R** to restart. The
+mission core is tested without Emscripten by `test-native-slice.cpp`. Before
+starting, the shell verifies the 36-frame HD pack and stages its north-facing
+aircraft image as raw 512×512 RGBA in MEMFS. The native C++ renderer creates
+an SDL texture and draws it at the extraction zone. If verification or staging
+fails, a schematic extraction marker remains visible. The hosted browser CI
+checks native WASM movement, restart and verified HD texture loading.
+
+This milestone exercises real compiled C++ gameplay and HD drawing, but it
+is intentionally a **separate native scenario** rather than an original
+campaign mission. Integration with the historical unit, theater, save-game,
+and mission systems remains outstanding.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.
