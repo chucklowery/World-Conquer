@@ -4,6 +4,10 @@ This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not t
 
 ## Original-content browser-playable vertical slice
 
+For an immediate lightweight launch, open `browser/engine/play.html` directly
+in Chrome or Edge (or serve the folder over HTTP). It does not depend on a
+WebAssembly build. The compiled engine shell also embeds this same prototype.
+
 Click **Start tactical mission** in the browser shell. A deterministic, self-contained
 18×11 mission opens without any third-party data: select either green squad member,
 click a clear tile to move along a four-way path, retrieve the two amber supply

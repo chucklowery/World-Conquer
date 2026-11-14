@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>World-Conquer — Courier Extraction</title>
+<style>
+  :root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#101b26;color:#edf8f3}
+  body{max-width:1040px;margin:0 auto;padding:16px}
+  h1{margin:6px 0 4px;font-size:clamp(1.5rem,4vw,2.3rem)}
+  p{color:#b9d3cb;line-height:1.5}
+  .eyebrow{font-size:.76rem;color:#7ce6b4;text-transform:uppercase;letter-spacing:.16em;font-weight:700}
+  canvas{display:block;width:100%;aspect-ratio:18/11;background:#172b32;border:1px solid #63867b;border-radius:10px;touch-action:manipulation;cursor:crosshair}
+  .panel{border:1px solid #355447;background:#1b2c34;border-radius:12px;padding:14px;margin:14px 0}
+  button{background:#247b5b;border:1px solid #79c3a0;border-radius:8px;color:white;padding:11px 18px;font-weight:700;cursor:pointer;margin-right:8px}
+  button:focus-visible{outline:3px solid #f4d18a}
+  #status{font-weight:650;color:#d5e8dc;min-height:48px}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;color:#bacfc5;font-size:.9rem}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px}
+</style>
+</head>
+<body>
+<div class="eyebrow">World-Conquer / Original-content vertical slice</div>
+<h1>Courier Extraction</h1>
+<p>Recover both supply crates and reach the waiting cargo aircraft. Select a green squad member and click a destination to move. Avoid or defeat the red sentries.</p>
+<div class="panel">
+  <canvas id="battlefield" width="900" height="550" aria-label="18 by 11 tile tactical battlefield"></canvas>
+  <p id="status" role="status">Select Start Mission to begin.</p>
+  <button id="start">Start Mission</button><button id="restart">Restart</button>
+</div>
+<div class="legend"><span><i class="dot" style="background:#63e2af"></i>Squad</span><span><i class="dot" style="background:#e77f78"></i>Sentries</span><span>🟨 Supply crates</span><span>🛬 Extraction</span></div>
+<p>This independent browser gameplay test contains no proprietary media and requires no original-game archives. It does not run the VanillaTD campaign.</p>
+<script src="vertical-slice.js"></script>
+<script>
+(() => {
+  "use strict";
+  const canvas=document.getElementById("battlefield"),ctx=canvas.getContext("2d");
+  const status=document.getElementById("status");
+  let state=null,timer=null;
+  const draw=()=>{
+    if(!state)return;
+    WCVerticalSlice.render(ctx,state);
+    status.textContent=`${state.message} | Supplies ${state.cargo}/2 | ${state.phase.toUpperCase()}`;
+    if(state.phase!=="playing"&&timer){clearInterval(timer);timer=null;}
+  };
+  const start=()=>{
+    if(timer)clearInterval(timer);
+    state=WCVerticalSlice.start();draw();timer=setInterval(()=>{WCVerticalSlice.tick(state);draw();},200);
+  };
+  document.getElementById("start").addEventListener("click",start);
+  document.getElementById("restart").addEventListener("click",start);
+  canvas.addEventListener("click",event=>{
+    if(!state||state.phase!=="playing")return;
+    const rect=canvas.getBoundingClientRect();
+    const x=Math.floor((event.clientX-rect.left)/rect.width*state.width);
+    const y=Math.floor((event.clientY-rect.top)/rect.height*state.height);
+    WCVerticalSlice.select(state,x,y);draw();
+  });
+})();
+</script>
+</body>
+</html>

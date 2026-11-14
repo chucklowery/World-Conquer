@@ -78,6 +78,7 @@ jobs:
           node browser/engine/test-wireframe-asset.js
           node browser/engine/test-cargo-hd.js
           node browser/engine/test-vertical-slice.js
+          test -s browser/engine/play.html
       - name: Verify original content pipeline
         run: |
           node tools/content/test-build.js
