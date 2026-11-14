@@ -201,6 +201,7 @@ async function main() {
     assert.equal(Math.round(compact.height),480,"Compact HUD must fill the browser viewport");
     assert.equal(Math.round(compact.width),720);
     assert(Math.abs(compact.aspect-18/11)<0.025,"Compact battlefield lost aspect ratio");
+    await page.screenshot({path:path.join(root,"r01-compact.png")});
     await page.setViewportSize({width:1360,height:980});
     await page.waitForFunction(() => !document.getElementById("tactical-hud").classList.contains("sidebar-closed"),
                                undefined,{timeout:15000});
@@ -312,6 +313,7 @@ async function main() {
     const groupMove=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").slice(-2));
     assert.deepEqual(groupMove.map(e=>e.entityId),[1001,1002],"Multi-move missed an R00 actor");
     assert(groupMove.every(e=>e.code==="accepted"),"R00 rejected the group move");
+    await page.screenshot({path:path.join(root,"r01-desktop.png")});
     await page.keyboard.press("r");
     await page.waitForFunction(()=>WCRTS.eventHistory().filter(e=>e.type==="restart").length>=2,
                                undefined,{timeout:15000});

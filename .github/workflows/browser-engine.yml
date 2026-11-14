@@ -151,6 +151,8 @@ jobs:
           path: |
             build/browser-engine/browser-probe.png
             build/browser-engine/browser-probe.log
+            build/browser-engine/r01-desktop.png
+            build/browser-engine/r01-compact.png
           if-no-files-found: ignore
       - name: Upload standalone original-content mission
         uses: actions/upload-artifact@v4

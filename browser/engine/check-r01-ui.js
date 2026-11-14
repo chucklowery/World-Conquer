@@ -12,7 +12,7 @@ async function main(){
     args:["--no-sandbox"]});
   try{
     for(const shape of [{width:1360,height:980},{width:720,height:480}]){
-      const page=await browser.newPage({viewport:shape});
+      const page=await browser.newPage({viewport:shape,hasTouch:true});
       const errors=[];page.on("pageerror",e=>errors.push(e.message));
       await page.setContent(`<!doctype html><html><head><style>
         *{box-sizing:border-box}body{margin:0}#tactical-hud{height:100dvh;width:100vw;display:grid;grid-template-columns:minmax(0,1fr) 280px}
@@ -63,6 +63,15 @@ async function main(){
       await page.mouse.click(unit.x,unit.y);
       await page.keyboard.press("3");
       assert.deepEqual(await page.evaluate(()=>ui.selection.ids),[1001,1002],"Group recall browser shortcut failed");
+      const dragStart=await tile(0,1),dragEnd=await tile(4,5);
+      await page.mouse.move(dragStart.x,dragStart.y);
+      await page.mouse.down();
+      await page.mouse.move(dragEnd.x,dragEnd.y,{steps:8});
+      await page.mouse.up();
+      assert.deepEqual(await page.evaluate(()=>ui.selection.ids),[1001,1002],"Browser drag box missed infantry");
+      await page.touchscreen.tap(unit.x,unit.y);
+      assert.deepEqual(await page.evaluate(()=>ui.selection.ids),[1001],"Touch tap did not select a soldier");
+      await page.keyboard.press("3");
       const oldZoom=await page.evaluate(()=>ui.camera.zoom);
       await page.locator("#hud-zoom-in").click();
       assert((await page.evaluate(()=>ui.camera.zoom))>oldZoom,"Zoom button failed");
@@ -91,7 +100,7 @@ async function main(){
       assert(dimensions.selected.includes("2 selected"),"Visual multi-selection feedback missing");
       assert.deepEqual(errors,[],"Browser page errors");
       await page.close();
-      console.log(`PASS: Chromium ${shape.width}x${shape.height} multi-select, groups, pan/zoom, minimap, native orders`);
+      console.log(`PASS: Chromium ${shape.width}x${shape.height} box/touch selection, groups, pan/zoom, minimap, native orders`);
     }
   }finally{await browser.close();}
 }
