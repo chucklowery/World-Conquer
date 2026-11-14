@@ -69,6 +69,7 @@ jobs:
           cp browser/engine/mission-pack.js build/browser-engine/mission-pack.js
           cp browser/engine/tactical-hud.js build/browser-engine/tactical-hud.js
           cp browser/engine/simulation-bridge.js build/browser-engine/simulation-bridge.js
+          cp browser/engine/rts-camera.js browser/engine/rts-input-ui.js build/browser-engine/
           cp browser/engine/play.html build/browser-engine/play.html
           mkdir -p build/browser-engine/missions
           cp game/content/missions/courier-extraction.map game/content/missions/manifest.json build/browser-engine/missions/
@@ -87,6 +88,7 @@ jobs:
           node browser/engine/test-mission-pack.js
           node browser/engine/test-tactical-hud.js
           node browser/engine/test-simulation-bridge.js
+          node browser/engine/test-rts-camera.js
           node browser/engine/test-package-alpha.js
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-native-slice.cpp -o build/browser-engine/test-native-slice
           build/browser-engine/test-native-slice
@@ -136,7 +138,9 @@ jobs:
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install --with-deps chromium
       - name: Test actual engine in headless Chromium
-        run: node browser/engine/check-runtime.js
+        run: |
+          node browser/engine/check-r01-ui.js
+          node browser/engine/check-runtime.js
       - name: Package Pages-ready native tactical alpha
         run: node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site "$GITHUB_SHA"
       - name: Upload browser probe evidence

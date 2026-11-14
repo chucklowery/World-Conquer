@@ -89,7 +89,7 @@
     if(model.blocked.has(y*WIDTH+x))return "Blocked terrain";
     return "Clear terrain";
   }
-  function draw(canvas,model){
+  function draw(canvas,model,viewport){
     if(!canvas||!model)return;
     const ctx=canvas.getContext("2d");
     if(!ctx)return;
@@ -115,6 +115,14 @@
     if(model.inspect){
       ctx.strokeStyle="#ffe3a6";ctx.lineWidth=2;
       ctx.strokeRect(model.inspect.x*w+1,model.inspect.y*h+1,w-2,h-2);
+    }
+    // R01 camera indicator is presentation-only and uses the native map scale.
+    if(viewport){
+      ctx.fillStyle="#ddffcb20";ctx.strokeStyle="#e7ffd6";ctx.lineWidth=2;
+      const x=viewport.x/40*w,y=viewport.y/40*h;
+      const width=viewport.width/40*w,height=viewport.height/40*h;
+      ctx.fillRect(x,y,width,height);
+      ctx.strokeRect(x+1,y+1,Math.max(0,width-2),Math.max(0,height-2));
     }
   }
   return {create,reset,observe,applySnapshot,inspect,draw};

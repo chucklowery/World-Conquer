@@ -278,6 +278,44 @@ async function main() {
            "Engine-owned mission HUD did not reset after restart");
     assert.equal(await page.locator("#alpha-result").isHidden(),true,
                  "Victory panel did not clear on restart");
+    // R01: the same compiled native mission now accepts two selected actors,
+    // uses browser camera transforms, and routes each command to R00.
+    await clickNativeTile(engineCanvas,1,2);
+    await page.keyboard.down("Shift");
+    await clickNativeTile(engineCanvas,2,3);
+    await page.keyboard.up("Shift");
+    assert((await page.locator("#hud-selection-text").textContent()).includes("2 selected"),
+           "Shift-add did not show both selected infantry");
+    await page.keyboard.press("Shift+3");
+    await clickNativeTile(engineCanvas,1,2);
+    assert((await page.locator("#hud-selection-text").textContent()).includes("1 selected"));
+    await page.keyboard.press("3");
+    assert((await page.locator("#hud-selection-text").textContent()).includes("2 selected"),
+           "Control-group recall did not restore native-identity selection");
+    const zoomBefore=await engineCanvas.boundingBox();
+    await page.locator("#hud-zoom-in").click();
+    const zoomAfter=await engineCanvas.boundingBox();
+    assert(zoomAfter.width>zoomBefore.width,"RTS camera zoom failed");
+    await page.keyboard.press("ArrowRight");
+    const panAfter=await engineCanvas.boundingBox();
+    assert(panAfter.x<zoomAfter.x,"Arrow-key pan did not move the world viewport");
+    const beforeMinimap=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").length);
+    await page.locator("#hud-minimap").click({position:{x:255,y:100}});
+    const afterMinimap=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").length);
+    assert.equal(afterMinimap,beforeMinimap,"Minimap click sent an unwanted native move order");
+    await page.locator("#hud-zoom-out").click();
+    const beforeGroupMove=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").length);
+    const groundBounds=await engineCanvas.boundingBox();
+    await engineCanvas.click({button:"right",position:{x:3.5*groundBounds.width/18,y:2.5*groundBounds.height/11}});
+    await page.waitForFunction(count=>WCRTS.eventHistory().filter(e=>e.type==="command").length>=count+2,
+                               beforeGroupMove,{timeout:15000});
+    const groupMove=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").slice(-2));
+    assert.deepEqual(groupMove.map(e=>e.entityId),[1001,1002],"Multi-move missed an R00 actor");
+    assert(groupMove.every(e=>e.code==="accepted"),"R00 rejected the group move");
+    await page.keyboard.press("r");
+    await page.waitForFunction(()=>WCRTS.eventHistory().filter(e=>e.type==="restart").length>=2,
+                               undefined,{timeout:15000});
+    messages.push("PASS: R01 selected two native infantry, recalled a group, zoomed/panned, recentered minimap, ordered both and restarted");
     await page.keyboard.press("2");
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] selected unit=1"),
                                undefined,{timeout:15000});

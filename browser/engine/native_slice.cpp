@@ -161,7 +161,7 @@ void outline(int x,int y,int w,int h,Uint8 r,Uint8 g,Uint8 b){
 void frame(){
     SDL_Event event;
     while(SDL_PollEvent(&event)){
-        if(event.type==SDL_MOUSEBUTTONDOWN&&event.button.button==SDL_BUTTON_LEFT){
+        if(!engineOwned&&event.type==SDL_MOUSEBUTTONDOWN&&event.button.button==SDL_BUTTON_LEFT){
             int x=event.button.x/40,y=event.button.y/40;
             if(engineOwned)synchronizeLivePositions();
             bool attackOrdered=false;
@@ -206,7 +206,7 @@ void frame(){
                 }
             }
             publishSimulation();
-        }else if(event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
+        }else if(!engineOwned&&event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
             if(engineOwned){
                 if(!restartEngineMission())std::puts("[browser-engine-courier] ERROR: restart failed");
                 continue;
@@ -217,19 +217,6 @@ void frame(){
             mission.orderContext=&footBridge;
             priorCargo=priorPhase=0;
             std::puts("[browser-native-slice] mission restarted");
-        }else if(engineOwned&&mission.phase==0&&event.type==SDL_KEYDOWN&&
-                 (event.key.keysym.sym==SDLK_1||event.key.keysym.sym==SDLK_2)){
-            const int index=event.key.keysym.sym==SDLK_1?0:1;
-            if(mission.units[index].hp>0){
-                command(rts::CommandKind::Select,rts::UNIT_IDS[index]);
-                std::printf("[browser-engine-courier] selected unit=%d\n",index);
-                publishSimulation();
-            }
-        }else if(engineOwned&&mission.phase==0&&event.type==SDL_KEYDOWN&&
-                 event.key.keysym.sym==SDLK_ESCAPE){
-            command(rts::CommandKind::Stop,rts::UNIT_IDS[mission.selected]);
-            std::printf("[browser-engine-courier] cancelled unit=%d\n",mission.selected);
-            publishSimulation();
         }else if(event.type==SDL_QUIT){
             emscripten_cancel_main_loop();return;
         }
@@ -303,6 +290,36 @@ void frame(){
     }
     SDL_RenderPresent(renderer);
 }
+}
+
+// R01 browser controller calls this narrow ABI; validation, ordering and real
+// InfantryClass destination dispatch remain exclusively in the R00 contract.
+// JavaScript passes stable entity IDs from versioned native snapshots.
+extern "C" EMSCRIPTEN_KEEPALIVE int Browser_RTS_Command(int kind,unsigned actor,int x,int y,unsigned target){
+    if(!engineOwned)return static_cast<int>(rts::ResultCode::WrongPhase);
+    if(kind<0||kind>3)return static_cast<int>(rts::ResultCode::BadTarget);
+    synchronizeLivePositions();
+    const rts::ResultCode result=command(static_cast<rts::CommandKind>(kind),actor,{x,y},target);
+    if(result==rts::ResultCode::Accepted){
+        if(kind==0)std::printf("[browser-engine-courier] selected unit=%d\n",mission.selected);
+        if(kind==1){
+            std::printf("[browser-native-slice] click x=%d y=%d selected=%d route=%u\n",x,y,
+                        mission.selected,static_cast<unsigned>(mission.units[mission.selected].route.size()));
+            if(mission.hasNav[mission.selected]&&liveUnits[mission.selected]){
+                std::printf("[browser-engine-courier] live orders=%u nav-cell=%u\n",
+                            footBridge.delivered,::Target_Value(liveUnits[mission.selected]->NavCom));
+            }
+        }
+        if(kind==2)std::printf("[browser-engine-courier] cancelled unit=%d\n",rts::unitIndex(actor));
+        if(kind==3)std::printf("[browser-engine-courier] attack-order unit=%d enemy=%d\n",
+                                rts::unitIndex(actor),rts::unitIndex(target));
+    }
+    publishSimulation();
+    return static_cast<int>(result);
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE int Browser_RTS_Restart(){
+    return restartEngineMission()?1:0;
 }
 
 int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){

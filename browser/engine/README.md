@@ -4,6 +4,14 @@ This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not t
 
 ## Tactical Alpha 0.1 — browser-playable native mission
 
+**R01 input controls:** the tactical HUD now supports fitted camera zoom/pan,
+drag-box selection, Shift-add, local control groups, right-click move/attack,
+and explicit Move/Attack/Stop buttons. Shift+1–9 stores groups, 1–9 recalls
+them, arrows pan, +/- zoom, S stops, C centers, and R restarts. Minimap clicks
+recenter the camera rather than moving infantry. See
+[`docs/browser/R01_INPUT_UX.md`](../../docs/browser/R01_INPUT_UX.md) for the
+desktop/touch guide, keyboard-only limitations, native R00 boundary, and tests.
+
 The default browser shell now leads with **Start Tactical Alpha**. The player
 commands a two-person infantry squad in Operation Courier Extraction: recover
 two guarded crates and bring at least one surviving soldier to the aircraft.
