@@ -21,6 +21,15 @@ not established by exporting the artwork. Gameplay-level validation, art
 approval, and new HD runtime integration remain outstanding; do not advertise
 these images as playable/production-approved game sprites.
 
+The browser diagnostic now has an **independent HD canvas path** implemented in
+`browser/engine/cargo-hd.js`: it loads the 36 PNGs only after validating the
+manifest, each SHA-256, and PNG dimensions, then allows heading/ramp inspection
+with smooth scaling. If a load fails, the native C++/SHP rendering path is not
+modified. Browser CI packages this diagnostic and runs a corruption-rejection
+test. It is **not a gameplay texture-atlas hook**: the original engine still
+selects and renders indexed C17 frames, and an in-game HD backend needs an
+explicit C++ texture/asset-consumer integration before production use.
+
 **Resource:** `C17.SHP` · **Engine enum:** `AIRCRAFT_CARGO` · **Art stage:** `authored-draft` · **Canvas:** 32×32 indexed pixels · **Frames:** 80 · **Provenance:** [ATTRIBUTION.json](../../game/content/wireframes/final/WF-0002/ATTRIBUTION.json).
 
 This is a first fully populated, project-authored replacement candidate for [WF-0002](WIREFRAME_REPLACEMENT_CATALOG.md#wf-0002). The visual design is an original fictional **Courier-class utility transport**: a broad, tapered high wing, twin underslung lift nacelles, central freight spine, distinctive split tail, compact cockpit and a mechanical rear loading ramp. No real C-17 image or proprietary game sprite was copied, traced or used as a generator input.

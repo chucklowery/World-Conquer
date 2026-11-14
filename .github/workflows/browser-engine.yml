@@ -64,6 +64,9 @@ jobs:
           cp browser/engine/asset-import.js build/browser-engine/asset-import.js
           cp browser/engine/original-asset.js build/browser-engine/original-asset.js
           cp browser/engine/wireframe-asset.js build/browser-engine/wireframe-asset.js
+          cp browser/engine/cargo-hd.js build/browser-engine/cargo-hd.js
+          mkdir -p build/browser-engine/cargo-hd
+          cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
           # Verify we generated the custom deferred-start launcher.
           grep -q 'id="canvas"' build/browser-engine/vanillatd.html
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
@@ -72,6 +75,7 @@ jobs:
           node browser/engine/test-asset-import.js
           node browser/engine/test-original-asset.js
           node browser/engine/test-wireframe-asset.js
+          node browser/engine/test-cargo-hd.js
       - name: Verify original content pipeline
         run: |
           node tools/content/test-build.js
@@ -124,6 +128,8 @@ jobs:
             build/browser-engine/asset-import.js
             build/browser-engine/original-asset.js
             build/browser-engine/wireframe-asset.js
+            build/browser-engine/cargo-hd.js
+            build/browser-engine/cargo-hd/**
             build/browser-engine/content/**
             build/browser-engine/wireframes/**
           if-no-files-found: error

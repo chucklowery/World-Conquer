@@ -97,6 +97,21 @@ async function main() {
     assert(!emptyCanvas.equals(renderedCanvas), "Original shape was not rendered to canvas");
     assert.equal(await page.locator("body").getAttribute("data-mode"), "shape");
     messages.push("PASS: original sample SHP loaded with integrity check and rendered by engine SDL2 diagnostic");
+    // HD canvas is deliberately separate from the C++ tactical SHP renderer.
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    await page.locator("#load-cargo-hd").click();
+    await page.waitForFunction(() => document.getElementById("cargo-hd-status").textContent.includes("heading 1/32"),
+                               undefined, {timeout: 60000});
+    const hdBefore = await page.locator("#cargo-hd-canvas").screenshot();
+    await page.locator("#cargo-next").click();
+    const hdAfter = await page.locator("#cargo-hd-canvas").screenshot();
+    assert(!hdBefore.equals(hdAfter), "HD heading switch did not update the canvas");
+    await page.locator("#cargo-ramp").click();
+    assert((await page.locator("#cargo-hd-status").textContent()).includes("ramp 1/4"));
+    assert.equal(await page.locator("body").getAttribute("data-mode"), null,
+                 "HD preview must not launch the native game or change its mode");
+    messages.push("PASS: HD SHA-verified 512x512 directional/ramp canvas rendering independent of native engine");
     // Six project-owned wireframes loaded by manifest/roster, SHA-256 verified,
     // resolved by CCFileClass and actually drawn with CC_Draw_Shape.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

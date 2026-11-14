@@ -16,6 +16,7 @@ p{color:#b8c8d8;line-height:1.55}
 .status{padding:11px 15px;margin:20px 0;border:1px solid #365e64;border-radius:9px;background:#172e37;color:#aff0d6}
 canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
 canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
+#cargo-hd-canvas{width:min(100%,512px);aspect-ratio:1/1}
 button,label.pick{display:inline-block;margin:5px 5px 5px 0;padding:10px 13px;border:1px solid #64848a;border-radius:8px;background:#234452;color:#eefcf8;font:600 .9rem system-ui;cursor:pointer}
 button.primary{background:#237357;border-color:#4dac84}
 button:disabled{opacity:.45;cursor:default}
@@ -41,6 +42,13 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
 <button type="button" id="run-shape" disabled>Render original SHP sample</button>
 <button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
+<h3>WF-0002 HD cargo transport (independent preview)</h3>
+<canvas id="cargo-hd-canvas" width="512" height="512" aria-label="High-resolution Courier cargo aircraft preview"></canvas>
+<button type="button" id="load-cargo-hd">Load verified HD aircraft</button>
+<button type="button" id="cargo-prev" disabled>Previous heading</button>
+<button type="button" id="cargo-next" disabled>Next heading</button>
+<button type="button" id="cargo-ramp" disabled>Cycle ramp stages</button>
+<p id="cargo-hd-status" class="note" role="status">HD preview not loaded; native 32×32 SHP remains the engine fallback.</p>
 <p class="note">No game assets required. Select either probe (reload to switch modes). Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
 <p class="note">The original SHP diagnostic loads project-owned sprite and palette files from <code>content/</code>. It draws the sprite through the game's own tactical <code>CC_Draw_Shape()</code> into an offscreen buffer and presents that buffer with SDL2. It does not initialize a mission.</p>
 <p class="note">The wireframe roster diagnostic separately loads six verified, original-art placeholder SHPs from <code>wireframes/</code>, stages them in memory, then checks real C++ resource lookup and <code>CC_Draw_Shape()</code> for infantry, vehicle, aircraft, building, terrain and effect. Their final game-state frame layouts are not yet validated.</p>
@@ -65,9 +73,37 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <script src="asset-import.js"></script>
 <script src="original-asset.js"></script>
 <script src="wireframe-asset.js"></script>
+<script src="cargo-hd.js"></script>
 <script>
 (function () {
   "use strict";
+  const hdCanvas = document.getElementById("cargo-hd-canvas");
+  const hdStatus = document.getElementById("cargo-hd-status");
+  const hdLoad = document.getElementById("load-cargo-hd");
+  const hdPrev = document.getElementById("cargo-prev");
+  const hdNext = document.getElementById("cargo-next");
+  const hdRamp = document.getElementById("cargo-ramp");
+  let hdImages = null, hdFrame = 0;
+  function paintHD(frame) {
+    hdFrame = frame;
+    WCCargoHD.draw(hdCanvas.getContext("2d"), hdImages, frame);
+    hdStatus.textContent = `Verified 512×512 HD preview — ${frame<32 ? `heading ${frame+1}/32` : `ramp ${frame-31}/4`}; independent of the C++ renderer.`;
+  }
+  hdLoad.addEventListener("click", async () => {
+    hdLoad.disabled = true;
+    hdStatus.textContent = "Verifying all 36 HD image hashes…";
+    try {
+      hdImages = await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
+      hdPrev.disabled = hdNext.disabled = hdRamp.disabled = false;
+      paintHD(0);
+    } catch (error) {
+      hdStatus.textContent = `HD unavailable (${error.message}); native SHP fallback unchanged.`;
+      hdLoad.disabled = false;
+    }
+  });
+  hdPrev.addEventListener("click", () => paintHD((hdFrame+31)%32));
+  hdNext.addEventListener("click", () => paintHD((hdFrame+1)%32));
+  hdRamp.addEventListener("click", () => paintHD(32+(hdFrame<32 ? 0 : (hdFrame-31)%4)));
   const state = document.getElementById("runtime-state");
   const log = document.getElementById("log");
   const probe = document.getElementById("run-probe");
