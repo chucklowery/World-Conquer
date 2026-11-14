@@ -118,6 +118,8 @@ async function main() {
     await page.waitForFunction(() => /\[browser-native-slice\] click x=\d+ y=2 selected=0 route=[1-9]/.test(
       document.getElementById("log").textContent),
                                undefined,{timeout:15000});
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] engine CELL target="),
+           "Native mission did not encode its destination as a VanillaTD cell TARGET");
     await page.waitForTimeout(800);
     const nativeAfter=await nativeCanvas.screenshot();
     assert(!nativeBefore.equals(nativeAfter),"Native C++ unit did not move");

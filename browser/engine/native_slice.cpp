@@ -2,6 +2,7 @@
 // Original geometry, no game archives; deliberately isolated from campaigns.
 #ifdef __EMSCRIPTEN__
 #include "native_slice_core.h"
+#include "courier_engine_target.h"
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
@@ -37,6 +38,15 @@ void frame(){
             courier::click(mission,{x,y});
             std::printf("[browser-native-slice] click x=%d y=%d selected=%d route=%u\n",
                         x,y,mission.selected,static_cast<unsigned>(mission.units[mission.selected].route.size()));
+            if(mission.hasNav[mission.selected]){
+                TARGET destination=TARGET_NONE;
+                if(courier::toEngineTarget(mission.navTargets[mission.selected],destination)){
+                    courier::Point decoded{-1,-1};
+                    if(courier::fromEngineTarget(destination,decoded))
+                        std::printf("[browser-native-slice] engine CELL target=%u x=%d y=%d\n",
+                                    ::Target_Value(destination),decoded.x,decoded.y);
+                }
+            }
         }else if(event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
             mission=courier::State();
             if(!missionSource.empty())courier::loadMap(mission,missionSource);

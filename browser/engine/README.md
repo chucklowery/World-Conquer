@@ -109,6 +109,21 @@ movement commands. GitHub Actions compiles and runs both implementations on
 each browser build. This establishes a regression fixture for future engine
 unit-system work; it is **not** a production replay/save-game format.
 
+### VanillaTD cell-target adapter
+
+The native slice now includes `courier_engine_target.h`, which converts a
+validated Courier tile to a real Tiberian Dawn `CELL` and `TARGET` using the
+engine's `MAP_CELL_W`, `As_Target(CELL)`, `Target_Kind()` and `Target_Value()`.
+It also rejects out-of-range, non-cell, and non-Courier cell targets on decode.
+The browser runtime logs an engine cell target for accepted movement orders,
+and Chromium checks that this production-target encoding path was exercised.
+Host CI compiles a round-trip assertion translation unit against the original
+engine headers; that unit is compile-only because the full `function.h`
+dependency graph has link-time engine-global requirements. The actual runtime
+round trip executes inside the linked VanillaTD WASM build. Courier still
+owns its units and collision rules; this is a typed command translation seam,
+not a call to `FootClass::Assign_Destination` on a live production unit.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.
