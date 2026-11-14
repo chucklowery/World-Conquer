@@ -40,6 +40,24 @@ is intentionally a **separate native scenario** rather than an original
 campaign mission. Integration with the historical unit, theater, save-game,
 and mission systems remains outstanding.
 
+### Shared mission-content integration
+
+`game/content/missions/courier-extraction.map` is the single authored 18×11
+tile grid consumed by the JavaScript and native C++ missions. `.` is passable
+terrain, `#` is an impassable terrain tile, `S`/`R` are squad spawns,
+`A`/`B` are sentries, `1`/`2` are recoverable supplies and `X` is extraction.
+Each marker must occur exactly once. The mission manifest pins the grid's
+SHA-256 digest; `mission-pack.js` validates it before staging `/COURIER.MAP`
+in MEMFS. The native core's `loadMap()` validates all dimensions, symbols and
+marker uniqueness *before* replacing the active state, and reuses the map
+on restart. Browser CI verifies native mission-map loading. The direct-launch
+HTML version falls back to the identical built-in terrain when opened via
+`file://`, where browser fetch restrictions can prevent local file access.
+
+This is a content-contract stepping stone, **not the final VanillaTD theater
+format**. Native production map cells, unit-class definitions, state machines,
+and scenario ownership have not been replaced or bypassed in the campaign.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.

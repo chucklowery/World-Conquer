@@ -1,8 +1,19 @@
 #include "native_slice_core.h"
 #include <cassert>
 #include <cstdio>
+#include <fstream>
+#include <iterator>
 int main(){
+    std::ifstream source("game/content/missions/courier-extraction.map");
+    assert(source.good());
+    const std::string map((std::istreambuf_iterator<char>(source)),std::istreambuf_iterator<char>());
     courier::State s;
+    assert(courier::loadMap(s,map));
+    assert((s.units[0].p==courier::Point{1,2}));
+    assert(!courier::inside(s,{5,2}));
+    const courier::State baseline=s;
+    assert(!courier::loadMap(s,map+"unexpected"));
+    assert(s.units[0].p==baseline.units[0].p);
     assert(s.phase==0&&s.cargo==0&&s.units[0].hp==5);
     assert(!courier::inside({5,2}));
     assert(courier::route(s,0,{5,2}).empty());

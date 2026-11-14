@@ -10,14 +10,33 @@
   const walls=new Set(["5,2","5,3","5,4","5,5","5,6","9,5","10,5","11,5","12,5","12,6","12,7","3,8","4,8","5,8"]);
   const key=(x,y)=>`${x},${y}`;
   const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-  function start(){
-    return {width,height,walls:new Set(walls),selected:0,frame:0,phase:"playing",cargo:0,
+  function parseMap(source){
+    if(typeof source!=="string")throw Error("Mission map must be text");
+    const lines=source.trimEnd().split(/\r?\n/);
+    if(lines.length!==height||lines.some(line=>line.length!==width||/[^.#SRAB12X]/.test(line)))
+      throw Error("Invalid 18x11 mission map");
+    const markers={},obstacles=new Set();
+    for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+      const token=lines[y][x];
+      if(token==="#")obstacles.add(key(x,y));
+      else if(token!=="."){
+        if(markers[token])throw Error(`Duplicate map marker ${token}`);
+        markers[token]={x,y};
+      }
+    }
+    for(const token of "SRAB12X")if(!markers[token])throw Error(`Missing map marker ${token}`);
+    return {walls:obstacles,markers};
+  }
+  function start(mapText){
+    const map=mapText===undefined?null:parseMap(mapText);
+    const at=(token,backup)=>map?map.markers[token]:backup;
+    return {width,height,walls:map?map.walls:new Set(walls),selected:0,frame:0,phase:"playing",cargo:0,
       message:"Recover both supply crates, then reach the Courier extraction zone.",
-      units:[{id:"scout",x:1,y:2,hp:5,team:"player",label:"Scout",path:[]},
-             {id:"ranger",x:2,y:3,hp:6,team:"player",label:"Ranger",path:[]},
-             {id:"guard-a",x:10,y:2,hp:3,team:"enemy",label:"Sentry",path:[]},
-             {id:"guard-b",x:14,y:6,hp:3,team:"enemy",label:"Sentry",path:[]}],
-      crates:[{x:7,y:2,found:false},{x:15,y:4,found:false}],exit:{x:16,y:9}};
+      units:[{id:"scout",...at("S",{x:1,y:2}),hp:5,team:"player",label:"Scout",path:[]},
+             {id:"ranger",...at("R",{x:2,y:3}),hp:6,team:"player",label:"Ranger",path:[]},
+             {id:"guard-a",...at("A",{x:10,y:2}),hp:3,team:"enemy",label:"Sentry",path:[]},
+             {id:"guard-b",...at("B",{x:14,y:6}),hp:3,team:"enemy",label:"Sentry",path:[]}],
+      crates:[{...at("1",{x:7,y:2}),found:false},{...at("2",{x:15,y:4}),found:false}],exit:at("X",{x:16,y:9})};
   }
   function inside(s,x,y){return x>=0&&y>=0&&x<s.width&&y<s.height&&!s.walls.has(key(x,y));}
   function path(s,origin,target,blocked){
@@ -114,5 +133,5 @@
     }
     return tile;
   }
-  return {start,inside,path,select,tick,render};
+  return {start,parseMap,inside,path,select,tick,render};
 });

@@ -12,6 +12,7 @@ SDL_Window* window=nullptr;
 SDL_Renderer* renderer=nullptr;
 SDL_Texture* cargoTexture=nullptr;
 courier::State mission;
+std::string missionSource;
 Uint32 lastStep=0;
 int priorCargo=0,priorPhase=0;
 
@@ -34,7 +35,9 @@ void frame(){
             std::printf("[browser-native-slice] click x=%d y=%d selected=%d route=%u\n",
                         x,y,mission.selected,static_cast<unsigned>(mission.units[mission.selected].route.size()));
         }else if(event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
-            mission=courier::State();priorCargo=priorPhase=0;
+            mission=courier::State();
+            if(!missionSource.empty())courier::loadMap(mission,missionSource);
+            priorCargo=priorPhase=0;
             std::puts("[browser-native-slice] mission restarted");
         }else if(event.type==SDL_QUIT){
             emscripten_cancel_main_loop();return;
@@ -54,7 +57,7 @@ void frame(){
     }
     SDL_SetRenderDrawColor(renderer,16,30,39,255);SDL_RenderClear(renderer);
     for(int y=0;y<11;y++)for(int x=0;x<18;x++){
-        const bool blocked=!courier::inside({x,y});
+        const bool blocked=!courier::inside(mission,{x,y});
         fill(x*40+1,y*40+1,38,38,
              blocked?74:(x+y)%2?48:52,blocked?85:(x+y)%2?74:82,
              blocked?92:(x+y)%2?67:73);
@@ -90,6 +93,17 @@ int Browser_Native_Slice(){
     renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
     if(!renderer)renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
     if(!renderer)return 3;
+    if(FILE* map=std::fopen("/COURIER.MAP","rb")){
+        char buffer[256];const size_t count=std::fread(buffer,1,sizeof(buffer),map);
+        const int extra=std::fgetc(map);std::fclose(map);
+        if(extra==EOF&&count>0){
+            std::string source(buffer,count);
+            if(courier::loadMap(mission,source)){
+                missionSource=source;
+                std::puts("[browser-native-slice] verified external mission map loaded");
+            }else std::puts("[browser-native-slice] invalid external map; using built-in fallback");
+        }
+    }
     // Browser JS writes verified, decoded RGBA bytes to this exact MEMFS path.
     // The fallback marker above is used if the pack is not present/valid.
     if(FILE* input=std::fopen("/COURIER.RGBA","rb")){

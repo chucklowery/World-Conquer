@@ -31,6 +31,7 @@
 <div class="legend"><span><i class="dot" style="background:#63e2af"></i>Squad</span><span><i class="dot" style="background:#e77f78"></i>Sentries</span><span>🟨 Supply crates</span><span>🛬 Extraction</span></div>
 <p>This independent browser gameplay test contains no proprietary media and requires no original-game archives. It does not run the VanillaTD campaign.</p>
 <script src="vertical-slice.js"></script>
+<script src="mission-pack.js"></script>
 <script>
 (() => {
   "use strict";
@@ -43,9 +44,12 @@
     status.textContent=`${state.message} | Supplies ${state.cargo}/2 | ${state.phase.toUpperCase()}`;
     if(state.phase!=="playing"&&timer){clearInterval(timer);timer=null;}
   };
-  const start=()=>{
+  const start=async()=>{
     if(timer)clearInterval(timer);
-    state=WCVerticalSlice.start();draw();timer=setInterval(()=>{WCVerticalSlice.tick(state);draw();},200);
+    let map;
+    try{map=(await WCMissionPack.load("../../game/content/missions")).map;}
+    catch(_){/* A directly opened file:// copy uses the identical built-in map. */}
+    state=WCVerticalSlice.start(map);draw();timer=setInterval(()=>{WCVerticalSlice.tick(state);draw();},200);
   };
   document.getElementById("start").addEventListener("click",start);
   document.getElementById("restart").addEventListener("click",start);

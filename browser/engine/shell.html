@@ -85,6 +85,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <script src="wireframe-asset.js"></script>
 <script src="cargo-hd.js"></script>
 <script src="vertical-slice.js"></script>
+<script src="mission-pack.js"></script>
 <script>
 (function () {
   "use strict";
@@ -100,9 +101,12 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     sliceStatus.textContent=`${slice.message} | Cargo ${slice.cargo}/2 | ${slice.phase.toUpperCase()}`;
     if(slice.phase!=="playing"&&sliceTimer){clearInterval(sliceTimer);sliceTimer=null;}
   }
-  function beginSlice(){
+  async function beginSlice(){
     if(sliceTimer)clearInterval(sliceTimer);
-    slice=WCVerticalSlice.start();
+    let map;
+    try{map=(await WCMissionPack.load()).map;}
+    catch(error){report("[mission] Mission pack unavailable; using built-in fallback: "+error.message,true);}
+    slice=WCVerticalSlice.start(map);
     sliceRestart.disabled=false;
     paintSlice();
     sliceTimer=setInterval(()=>{WCVerticalSlice.tick(slice);paintSlice();},200);
@@ -208,6 +212,11 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   nativeSlice.addEventListener("click", async () => {
     if(!ready||started)return;
     nativeSlice.disabled=true;
+    try{
+      const mission=await WCMissionPack.load();
+      Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
+      report("[browser-native-slice] staged verified original-content mission map");
+    }catch(error){report("[browser-native-slice] Mission pack unavailable; using built-in map: "+error.message,true);}
     try {
       if(!hdImages)hdImages=await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
       const offscreen=document.createElement("canvas");

@@ -103,6 +103,8 @@ async function main() {
     await page.locator("#run-native-slice").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] C++ tactical mission started"),
                                undefined,{timeout:40000});
+    assert((await page.locator("#log").textContent()).includes("verified external mission map loaded"),
+           "Native C++ mission did not consume the verified source-controlled map");
     assert((await page.locator("#log").textContent()).includes("[browser-native-slice] verified HD aircraft texture=loaded"),
            "Verified Courier RGBA texture was not loaded by native C++ renderer");
     const nativeCanvas=page.locator("#canvas");
