@@ -2,6 +2,36 @@
 
 This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not the independent SDL2 smoke test. It deliberately defers game main() until the user starts it.
 
+## Tactical Alpha 0.1 — browser-playable native mission
+
+The default browser shell now leads with **Start Tactical Alpha**. The player
+commands a two-person infantry squad in Operation Courier Extraction: recover
+two guarded crates and bring at least one surviving soldier to the aircraft.
+The native 18×11 mission includes selectable infantry, terrain-obstructed
+movement, a click-to-attack command, moving sentry patrols, automatic defense,
+health, combat defeat, extraction victory, and **R** to restart in place.
+
+The player infantry are constructed production `InfantryClass` objects placed
+on `MapClass` cells. Their movement orders use live `NavCom` targets and
+`InfantryClass::AI()`; their coordinates are read back from the actual engine
+on every tick. A separate deterministic Courier combat component owns health,
+attack selection, and sentry movement, while a small HUD tracks remaining
+squad HP, sentries, and recovered cargo. Sentry actors, supply pickups, and
+win/loss rules are **not yet** production campaign entities or systems.
+The game is a self-contained single-mission alpha, not the complete historical
+VanillaTD campaign and not a multiplayer release.
+
+To play the native version, build the WebAssembly bundle via
+`docs/browser/BUILD.md`, serve `build/browser-engine/`, open `vanillatd.html`,
+wait for **Runtime ready**, and press **Start Tactical Alpha**. No proprietary
+game assets are required. The `world-conquer-courier-playable` artifact contains
+the separate, lightweight JavaScript fallback; the compiled native game lives
+in the **VanillaTD WebAssembly** CI artifact.
+
+CI covers native combat orders, pursuit, damage, death, reset, and the entire
+browser extraction loop. The Chromium test exercises the new launch button,
+HUD, combat command, mission victory, and restart within the compiled engine.
+
 ## Original-content browser-playable vertical slice
 
 For an immediate lightweight launch, open `browser/engine/play.html` directly
@@ -184,7 +214,7 @@ This is an **on-map object-allocation diagnostic**, not a playable
 engine movement loop or a replacement for the remaining theater and
 visibility initialization required by full campaign gameplay.
 
-### Experimental engine-owned Courier movement
+### Engine-owned Courier movement and tactical combat
 
 The launcher also exposes **Play Courier with native infantry movement
 (experimental)**. It stages the verified 18×11 mission in real `MapClass`
@@ -192,16 +222,17 @@ cells, allocates a player house and two `INFANTRY_E1` objects, and places
 them via `Unlimbo()`. Clicks dispatch actual `MISSION_MOVE` commands with
 translated cell `TARGET`s. Every native tick invokes `InfantryClass::AI()`;
 the SDL renderer reads the players' real `Coord_Cell()` positions, rather
-than advancing Courier's independent breadth-first movement. Cargo pickup,
-extraction victory, and restart remain mission-level logic. Static sentry
-markers are retained for visual context, but they do not attack in this
-experimental mode. The existing `--browser-native-slice` remains available
-unchanged as a fallback.
+than advancing Courier's independent breadth-first movement. Courier combat
+rules add attack orders, autonomous moving sentries, ranged auto-defense,
+damage, and defeat. Sentries and combat damage are still mission-level actors
+and rules, not the production weapon/projectile/targeting systems. Cargo pickup,
+extraction victory, and restart also remain mission-level logic. The existing
+`--browser-native-slice` remains available unchanged as a fallback.
 
 Chromium CI requires successful production unit staging, a changed engine
-unit position, and a restart. **The experimental movement path is not
-considered validated until that hosted test passes.** This is a constrained
-single-mission engine integration, not the full historical campaign startup.
+unit position, supply recovery, extraction victory, a restart, and a combat
+attack order that damages a sentry. This is a constrained single-mission engine
+integration, not the full historical campaign startup.
 
 ## Try it
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VanillaTD · Browser Runtime Lab</title>
+<title>World-Conquer · Tactical Alpha 0.1</title>
 <style>
 :root{color-scheme:dark;font:16px system-ui,-apple-system,Segoe UI,sans-serif;background:#111925;color:#edf4fa}
 body{max-width:1120px;margin:auto;padding:25px 18px}
@@ -13,9 +13,16 @@ p{color:#b8c8d8;line-height:1.55}
 .eyebrow{font-size:.75rem;color:#69dfb2;text-transform:uppercase;letter-spacing:.15em;font-weight:700}
 .grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
 .panel{padding:19px;background:#1b2736;border:1px solid #394d60;border-radius:12px}
+.alpha-banner{padding:18px 20px;border:1px solid #4aa689;border-radius:12px;background:linear-gradient(125deg,#193d3c,#182838 70%);margin-bottom:14px}
+.alpha-banner h2{margin:3px 0 9px;font-size:1.65rem}
+.alpha-banner p{max-width:680px;line-height:1.5}
+.alpha-objectives{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.alpha-objectives span{padding:5px 10px;border-radius:20px;background:#28504b;color:#d6f7e9;font-size:.82rem}
+.alpha-result{padding:12px 15px;border-radius:9px;border:1px solid #d2b16b;background:#3b3526;color:#ffe6ab;font-weight:700}
 .status{padding:11px 15px;margin:20px 0;border:1px solid #365e64;border-radius:9px;background:#172e37;color:#aff0d6}
 canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
 canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
+#canvas{cursor:crosshair;touch-action:manipulation}
 #cargo-hd-canvas{width:min(100%,512px);aspect-ratio:1/1}
 #vertical-slice-canvas{aspect-ratio:18/11;cursor:crosshair;touch-action:manipulation}
 button,label.pick{display:inline-block;margin:5px 5px 5px 0;padding:10px 13px;border:1px solid #64848a;border-radius:8px;background:#234452;color:#eefcf8;font:600 .9rem system-ui;cursor:pointer}
@@ -30,29 +37,38 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 </style>
 </head>
 <body data-runtime="loading" data-mode="idle">
-<div class="eyebrow">Engineering preview · WebAssembly</div>
-<h1>VanillaTD Browser Runtime Lab</h1>
-<p>The <strong>actual VanillaTD WebAssembly executable</strong>, not a playable release. Test graphics and input using the diagnostic mode, or stage legally owned game files for experimental startup.</p>
+<div class="eyebrow">World-Conquer · Original-content WebAssembly game</div>
+<h1>World-Conquer Tactical Alpha 0.1</h1>
+<p>Command a two-person squad through hostile territory, recover both supply crates, and reach the Courier aircraft. Powered by native VanillaTD movement, with original project-owned artwork and mission content.</p>
 <div class="status" role="status" aria-live="polite" id="runtime-state">Loading engine runtime…</div>
 <div class="grid">
 <section class="panel">
-<h2>Engine canvas</h2>
-<h3>Play the original-content tactical slice</h3>
+<div class="alpha-banner">
+<div class="eyebrow">Operation Courier Extraction</div>
+<h2>Your squad. Your mission.</h2>
+<p>Move with a click, click a red sentry to attack, and keep at least one soldier alive. Recover two amber crates and reach the aircraft to win.</p>
+<div class="alpha-objectives"><span>2 squad members</span><span>2 guarded crates</span><span>Live enemy patrols</span><span>Extraction victory</span></div>
+<button type="button" id="launch-alpha" class="primary" disabled>Start Tactical Alpha</button>
+<p class="note">Controls: click green squad member to select; click ground to move; click red enemy to attack; press R to restart.</p>
+</div>
+<canvas id="canvas" tabindex="0" width="720" height="440" aria-label="World-Conquer native tactical battlefield"></canvas>
+<p id="engine-courier-status" class="status" role="status" aria-live="polite" hidden>Engine-owned mission ready to launch.</p>
+<p id="alpha-result" class="alpha-result" role="status" aria-live="polite" hidden></p>
+<h3>Standalone JavaScript fallback</h3>
 <canvas id="vertical-slice-canvas" width="900" height="550" aria-label="Tactical supply extraction game map"></canvas>
 <button type="button" id="slice-start" class="primary">Start tactical mission</button>
 <button type="button" id="slice-restart" disabled>Restart mission</button>
 <p id="slice-status" class="note" role="status">Recover two supply crates, survive the sentries, and reach the cargo aircraft. Select a green unit, then click a destination. No game data required.</p>
 <p class="note">This is a standalone original-content gameplay slice. The experimental VanillaTD C++ campaign remains separate below.</p>
-<h3>VanillaTD engine diagnostics</h3>
+<h3>VanillaTD engineering diagnostics</h3>
 <!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
-<canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
 <button type="button" id="run-shape" disabled>Render original SHP sample</button>
 <button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
 <button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
 <button type="button" id="run-engine-courier" disabled>Play Courier with native infantry movement (experimental)</button>
-<p class="note">Experimental engine-owned Courier: the two allied units use VanillaTD infantry movement and the original map-cell system. Supplies and extraction use Courier mission rules; sentry combat remains disabled in this mode. Press R to restart.</p>
+<p class="note">The experimental native mode behind Alpha 0.1 uses VanillaTD movement plus deterministic Courier combat, objectives, and sentry AI. Historical campaign systems remain separate.</p>
 <button type="button" id="run-unit-probe" disabled>Test native infantry allocation (experimental)</button>
 <p class="note">The experimental infantry diagnostic allocates a production house and places one E1 unit onto native map cells. It is a one-shot probe, not the playable mission; reload before switching modes.</p>
 <p class="note">Native mission: click a green squad unit and a tile to move; press R to restart. This gameplay runs inside the compiled VanillaTD WebAssembly executable using original procedural visuals.</p>
@@ -160,7 +176,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const shape = document.getElementById("run-shape");
   const wireframes = document.getElementById("run-wireframes");
   const nativeSlice = document.getElementById("run-native-slice");
+  const alphaLaunch = document.getElementById("launch-alpha");
   const engineCourier = document.getElementById("run-engine-courier");
+  const engineHud = document.getElementById("engine-courier-status");
+  const alphaResult = document.getElementById("alpha-result");
   const unitProbe = document.getElementById("run-unit-probe");
   const game = document.getElementById("run-game");
   const assetProbe = document.getElementById("run-asset-probe");
@@ -169,16 +188,50 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const count = document.getElementById("file-count");
   let ready = false;
   let started = false;
+  let preparingCourier = false;
   let imported = 0;
   let loadingAssets = false;
   let assetReady = false;
   const knownNames = new Set();
+  let alphaStats={cargo:0,players:[5,6],sentries:[3,3],phase:"playing"};
+
+  function updateAlphaStatus(){
+    const enemies=alphaStats.sentries.filter(hp=>hp>0).length;
+    engineHud.textContent=`Scout ${Math.max(0,alphaStats.players[0])}/5 HP · Ranger ${Math.max(0,alphaStats.players[1])}/6 HP · Cargo ${alphaStats.cargo}/2 · Sentries ${enemies}/2`;
+    if(alphaStats.phase==="won"){
+      alphaResult.hidden=false;
+      alphaResult.textContent="Mission accomplished — Both supply crates extracted! Press R to play again.";
+    }else if(alphaStats.phase==="lost"){
+      alphaResult.hidden=false;
+      alphaResult.textContent="Squad lost — The Courier mission failed. Press R to retry.";
+    }else if(alphaStats.phase==="error"){
+      alphaResult.hidden=false;
+      alphaResult.textContent="Engine mission error. See the runtime log and reload to retry.";
+    }else alphaResult.hidden=true;
+  }
 
   function report(message, isError) {
     const value = String(message);
     log.textContent += (isError ? "[error] " : "") + value + "\n";
     log.scrollTop = log.scrollHeight;
     (isError ? console.error : console.log)(value);
+    if(document.body.dataset.mode==="engine-courier"){
+      const cargo=value.match(/\[browser-native-slice\] crates=(\d)\/2/);
+      if(cargo)alphaStats.cargo=Number(cargo[1]);
+      const combat=value.match(/\[browser-engine-courier\] combat unit=(\d) hp=(-?\d+)/);
+      if(combat){
+        const index=Number(combat[1]),hp=Number(combat[2]);
+        if(index<2)alphaStats.players[index]=hp;
+        else if(index<4)alphaStats.sentries[index-2]=hp;
+      }
+      if(value.includes("[browser-native-slice] result=victory"))alphaStats.phase="won";
+      if(value.includes("[browser-native-slice] result=defeat"))alphaStats.phase="lost";
+      if(value.includes("[browser-engine-courier] mission restarted"))
+        alphaStats={cargo:0,players:[5,6],sentries:[3,3],phase:"playing"};
+      if(value.includes("[browser-engine-courier] ERROR"))
+        alphaStats.phase="error";
+      updateAlphaStatus();
+    }
   }
   function status(message, kind) {
     state.textContent = message;
@@ -190,7 +243,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     shape.disabled = !ready || started || loadingAssets;
     wireframes.disabled = !ready || started || loadingAssets;
     nativeSlice.disabled = !ready || started;
-    engineCourier.disabled = !ready || started;
+    alphaLaunch.disabled = !ready || started || preparingCourier;
+    engineCourier.disabled = !ready || started || preparingCourier;
     unitProbe.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
@@ -219,7 +273,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
   unitProbe.addEventListener("click", () => run(["--browser-unit-probe"], "unit-probe"));
   async function launchCourier(mode) {
-    if(!ready||started)return;
+    if(!ready||started||preparingCourier)return;
+    preparingCourier=true;
+    status("Preparing the Courier mission and verified original art…","loading");
+    alphaLaunch.disabled=true;
     nativeSlice.disabled=true;
     engineCourier.disabled=true;
     try{
@@ -244,10 +301,17 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
       report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
     }
     canvas.style.aspectRatio="18/11";
+    if(mode==="engine-courier"){
+      engineHud.hidden=false;
+      alphaStats={cargo:0,players:[5,6],sentries:[3,3],phase:"playing"};
+      updateAlphaStatus();
+    }
     run([mode==="engine-courier"?"--browser-engine-courier":"--browser-native-slice"],mode);
+    preparingCourier=false;
   }
   nativeSlice.addEventListener("click",()=>launchCourier("native-slice"));
   engineCourier.addEventListener("click",()=>launchCourier("engine-courier"));
+  alphaLaunch.addEventListener("click",()=>launchCourier("engine-courier"));
   shape.addEventListener("click", async () => {
     if (!ready || started || loadingAssets) return;
     loadingAssets = true;

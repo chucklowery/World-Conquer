@@ -4,6 +4,7 @@
 #include "native_slice_core.h"
 #include "courier_engine_foot.h"
 #include "courier_engine_map.h"
+#include "courier_combat.h"
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
@@ -17,6 +18,7 @@ SDL_Texture* cargoTexture=nullptr;
 SDL_Texture* infantryTexture=nullptr;
 SDL_Texture* sceneryTexture=nullptr;
 courier::State mission;
+courier::Combat combat;
 courier::EngineFootBridge footBridge;
 courier::WorldPlan worldPlacement={};
 bool engineOwned=false;
@@ -56,7 +58,7 @@ bool placeLiveUnits(){
 }
 
 void synchronizeLivePositions(){
-    for(int i=0;i<2;i++)if(liveUnits[i]){
+    for(int i=0;i<2;i++)if(liveUnits[i]&&mission.units[i].hp>0){
         const CELL cell=Coord_Cell(liveUnits[i]->Coord);
         mission.units[i].p={Cell_X(cell)-16,Cell_Y(cell)-16};
     }
@@ -65,25 +67,40 @@ void synchronizeLivePositions(){
 void tickEngineMission(){
     if(mission.phase!=0)return;
     ++Frame;
-    for(int i=0;i<2;i++)if(liveUnits[i])liveUnits[i]->AI();
+    for(int i=0;i<2;i++)if(liveUnits[i]&&mission.units[i].hp>0)liveUnits[i]->AI();
     const courier::Point before[2]={mission.units[0].p,mission.units[1].p};
     synchronizeLivePositions();
     for(int i=0;i<2;i++)if(!(before[i]==mission.units[i].p))
         std::printf("[browser-engine-courier] moved unit=%d x=%d y=%d\n",i,
                     mission.units[i].p.x,mission.units[i].p.y);
+    const int priorHP[4]={mission.units[0].hp,mission.units[1].hp,
+                          mission.units[2].hp,mission.units[3].hp};
+    courier::tickCombat(mission,combat);
+    for(int i=0;i<4;i++)if(mission.units[i].hp!=priorHP[i]){
+        std::printf("[browser-engine-courier] combat unit=%d hp=%d\n",i,mission.units[i].hp);
+        if(i<2&&mission.units[i].hp<=0&&liveUnits[i]){
+            liveUnits[i]->Limbo();
+            footBridge.units[i]=nullptr;
+            if(mission.selected==i&&mission.units[1-i].hp>0)mission.selected=1-i;
+        }
+        if(i>=2&&mission.units[i].hp<=0)
+            std::printf("[browser-engine-courier] sentry defeated=%d\n",i);
+    }
+    if(mission.phase!=0)return;
     for(int j=0;j<2;j++)if(!mission.collected[j])for(int i=0;i<2;i++)
-        if(courier::distance(mission.units[i].p,mission.crates[j])<=1){
+        if(mission.units[i].hp>0&&courier::distance(mission.units[i].p,mission.crates[j])<=1){
             mission.collected[j]=true;++mission.cargo;break;
         }
     if(mission.cargo==2)for(int i=0;i<2;i++)
-        if(courier::distance(mission.units[i].p,mission.exit)<=1)mission.phase=1;
+        if(mission.units[i].hp>0&&courier::distance(mission.units[i].p,mission.exit)<=1)mission.phase=1;
 }
 
 bool restartEngineMission(){
     if(!engineOwned)return false;
     ++ScenarioInit;
     bool reset=true;
-    for(int i=0;i<2;i++)if(!liveUnits[i]||!liveUnits[i]->Limbo()||
+    for(int i=0;i<2;i++)if(!liveUnits[i]||
+       (!liveUnits[i]->IsInLimbo&&!liveUnits[i]->Limbo())||
        !liveUnits[i]->Unlimbo(Cell_Coord(static_cast<CELL>(worldPlacement.units[i])),DIR_E)){
         reset=false;break;
     }
@@ -91,6 +108,8 @@ bool restartEngineMission(){
     if(!reset)return false;
     mission=courier::State();
     if(!missionSource.empty())courier::loadMap(mission,missionSource);
+    combat=courier::Combat();
+    footBridge.units[0]=liveUnits[0];footBridge.units[1]=liveUnits[1];
     mission.orderSink=courier::EngineFootBridge::onOrder;
     mission.orderContext=&footBridge;
     priorCargo=priorPhase=0;
@@ -114,12 +133,39 @@ void frame(){
         if(event.type==SDL_MOUSEBUTTONDOWN&&event.button.button==SDL_BUTTON_LEFT){
             int x=event.button.x/40,y=event.button.y/40;
             if(engineOwned)synchronizeLivePositions();
-            courier::click(mission,{x,y});
+            bool attackOrdered=false;
+            if(engineOwned&&mission.phase==0&&mission.units[mission.selected].hp>0){
+                for(int j=2;j<4;j++)if(mission.units[j].hp>0&&
+                    (mission.units[j].p==courier::Point{x,y})){
+                    attackOrdered=courier::orderAttack(mission,combat,mission.selected,j);
+                    if(attackOrdered){
+                        std::printf("[browser-engine-courier] attack-order unit=%d enemy=%d\n",
+                                    mission.selected,j);
+                        if(courier::distance(mission.units[mission.selected].p,mission.units[j].p)>2){
+                            courier::Point approach{0,0};
+                            if(courier::approachEnemy(mission,mission.selected,j,approach))
+                                courier::assignDestination(mission,mission.selected,approach);
+                        }
+                    }
+                    break;
+                }
+            }
+            if(!attackOrdered){
+                const int selectedBefore=mission.selected;
+                courier::click(mission,{x,y});
+                if(engineOwned&&mission.selected==selectedBefore&&courier::inside(mission,{x,y})&&
+                   !(mission.units[selectedBefore].p==courier::Point{x,y}))combat.focus[selectedBefore]=-1;
+            }
             std::printf("[browser-native-slice] click x=%d y=%d selected=%d route=%u\n",
                         x,y,mission.selected,static_cast<unsigned>(mission.units[mission.selected].route.size()));
+            if(engineOwned&&liveUnits[mission.selected]&&mission.hasNav[mission.selected]){
+                const TARGET liveTarget=liveUnits[mission.selected]->NavCom;
+                std::printf("[browser-engine-courier] live orders=%u nav-cell=%u\n",
+                            footBridge.delivered,::Target_Value(liveTarget));
+            }
             if(mission.hasNav[mission.selected]){
                 TARGET destination=TARGET_NONE;
-                if(courier::toEngineTarget(mission.navTargets[mission.selected],destination)){
+                if(!engineOwned&&courier::toEngineTarget(mission.navTargets[mission.selected],destination)){
                     courier::Point decoded{-1,-1};
                     if(courier::fromEngineTarget(destination,decoded))
                         std::printf("[browser-native-slice] engine CELL target=%u x=%d y=%d\n",
@@ -183,7 +229,25 @@ void frame(){
             SDL_RenderCopy(renderer,infantryTexture,nullptr,&target);
         }else fill(u.p.x*40+7,u.p.y*40+7,26,26,u.enemy?231:99,u.enemy?127:226,u.enemy?120:175);
         if(i==mission.selected)outline(u.p.x*40+5,u.p.y*40+5,30,30,255,255,255);
+        if(engineOwned&&i>=2&&
+           (combat.focus[0]==i||combat.focus[1]==i))outline(u.p.x*40+3,u.p.y*40+3,34,34,255,207,98);
         fill(u.p.x*40+10,u.p.y*40+29,u.hp*3,3,17,37,39);
+    }
+    if(engineOwned)for(int i=0;i<4;i++)if(combat.lastShot[i]>=mission.frame-1){
+        int target=-1;
+        if(i<2){
+            target=combat.focus[i];
+            if(target<2||target>=4||mission.units[target].hp<=0){
+                for(int j=2;j<4;j++)if(combat.lastHit[j]>=mission.frame-1){target=j;break;}
+            }
+        }else{
+            for(int j=0;j<2;j++)if(combat.lastHit[j]>=mission.frame-1){target=j;break;}
+        }
+        if(target>=0&&target<4){
+            const courier::Point a=mission.units[i].p,b=mission.units[target].p;
+            SDL_SetRenderDrawColor(renderer,i<2?255:255,i<2?224:89,i<2?108:89,255);
+            SDL_RenderDrawLine(renderer,a.x*40+20,a.y*40+20,b.x*40+20,b.y*40+20);
+        }
     }
     if(mission.phase!=0){
         // Visible outcome banner; R restarts without reloading the WASM module.
@@ -217,8 +281,8 @@ int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
             }else std::puts("[browser-native-slice] invalid external map; using built-in fallback");
         }
     }
-    // The browser mission has no production HouseClass/MapClass/FootClass
-    // instances. Install the observer but leave its guarded handles disabled.
+    // The observer starts disabled; engine-owned mode binds it only after
+    // MapClass staging and successful production infantry placement.
     mission.orderSink=courier::EngineFootBridge::onOrder;
     mission.orderContext=&footBridge;
     std::puts("[browser-native-slice] engine FootClass dispatch=deferred (world not initialized)");

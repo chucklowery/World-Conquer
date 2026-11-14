@@ -87,6 +87,8 @@ jobs:
           build/browser-engine/test-native-slice
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-world-plan.cpp -o build/browser-engine/test-world-plan
           build/browser-engine/test-world-plan
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-combat.cpp -o build/browser-engine/test-combat
+          build/browser-engine/test-combat
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/replay-native-slice.cpp -o build/browser-engine/replay-native-slice
           node browser/engine/test-replay-parity.js build/browser-engine/replay-native-slice
           # The historical engine headers require the same compile definitions as VanillaTD.

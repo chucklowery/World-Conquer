@@ -155,12 +155,15 @@ async function main() {
     messages.push("PASS: original VanillaTD HouseClass and InfantryClass allocated and placed on the real map");
     await page.reload({waitUntil:"domcontentloaded",timeout:90000});
     await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
-    await page.locator("#run-engine-courier").click();
+    assert.equal(await page.locator("#launch-alpha").isEnabled(),true,"Tactical Alpha launch button is disabled");
+    await page.locator("#launch-alpha").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] movement source=InfantryClass::AI"),
                                undefined,{timeout:40000});
     const engineCanvas=page.locator("#canvas");
     await clickNativeTile(engineCanvas,1,2);
     await clickNativeTile(engineCanvas,3,2);
+    await page.waitForFunction(() => /\[browser-engine-courier\] live orders=[1-9]\d* nav-cell=\d+/.test(
+      document.getElementById("log").textContent),undefined,{timeout:15000});
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] moved unit=0"),
                                undefined,{timeout:45000});
     await clickNativeTile(engineCanvas,7,2); // first supply crate
@@ -172,10 +175,25 @@ async function main() {
     await clickNativeTile(engineCanvas,16,8); // approach extraction
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] result=victory"),
                                undefined,{timeout:120000});
+    assert((await page.locator("#alpha-result").textContent()).includes("Mission accomplished"),
+           "Engine-owned mission victory was not visible in the browser HUD");
+    assert.equal(await page.locator("#alpha-result").isVisible(),true,
+                 "Victory panel did not become visible");
     await page.keyboard.press("r");
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] mission restarted"),
                                undefined,{timeout:15000});
-    messages.push("PASS: engine-owned E1 infantry recovered both crates, extracted, and restarted via VanillaTD AI");
+    assert((await page.locator("#engine-courier-status").textContent()).includes("Cargo 0/2"),
+           "Engine-owned mission HUD did not reset after restart");
+    assert.equal(await page.locator("#alpha-result").isHidden(),true,
+                 "Victory panel did not clear on restart");
+    await clickNativeTile(engineCanvas,10,2); // order the scout to attack a real sentry actor
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] attack-order unit=0 enemy=2"),
+                               undefined,{timeout:15000});
+    await page.waitForFunction(() => /\[browser-engine-courier\] combat unit=2 hp=[0-2]/.test(
+      document.getElementById("log").textContent),undefined,{timeout:120000});
+    assert((await page.locator("#engine-courier-status").textContent()).includes("Sentries"),
+           "Tactical Alpha HUD did not report combat state");
+    messages.push("PASS: native infantry recovered crates, extracted, restarted, and attacked a pursuing sentry");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
