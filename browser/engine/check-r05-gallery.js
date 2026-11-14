@@ -52,6 +52,17 @@ async function main(){
       images.add((await capture()).hash);
     }
     assert.equal(images.size,5,"Five visual states did not produce five distinct battlefield compositions");
+    await page.locator("[data-phase='2']").click();
+    const directions=new Set([(await capture()).hash]);
+    for(let facing=1;facing<8;facing++){
+      await page.locator("#turn").click();
+      assert.equal(await page.locator("#field").getAttribute("data-heading"),String(facing));
+      directions.add((await capture()).hash);
+    }
+    assert(directions.size>=6,`Eight facings were not visually distinct (${directions.size})`);
+    const beforeStep=(await capture()).hash;
+    await page.locator("#step").click();
+    assert.notEqual((await capture()).hash,beforeStep,"Frame stepping did not advance action animation");
     await page.locator("[data-phase='0']").click();
     const shot=path.join(site,"gallery-proof.png");await page.screenshot({path:shot,fullPage:true});
     assert.equal(errors.length,0,errors.join("\n"));
@@ -61,7 +72,7 @@ async function main(){
     await broken.goto(`http://127.0.0.1:${server.address().port}/gallery.html`);
     await broken.locator("#status[data-error='true']").waitFor({timeout:15000});
     assert.match(await broken.locator("#status").innerText(),/size mismatch|hash mismatch/);
-    console.log(`PASS: R05 Chromium gallery (${manifest.assets.length} cards, both team colors at 24px cells, 5 visual states, SHA rejection); screenshot ${shot}`);
+    console.log(`PASS: R05 Chromium gallery (${manifest.assets.length} cards, both team colors at 24px cells, 5 visual states, 8 directional views, animation stepping, SHA rejection); screenshot ${shot}`);
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

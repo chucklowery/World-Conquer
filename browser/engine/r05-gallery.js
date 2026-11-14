@@ -3,7 +3,7 @@
   const CELL=24, WIDTH=36, HEIGHT=20;
   const canvas=document.getElementById("field"),ctx=canvas.getContext("2d",{alpha:false});
   const status=document.getElementById("status"),roster=document.getElementById("roster");
-  let manifest, pages=[], phase=0, tick=0;
+  let manifest, pages=[], phase=0, tick=0, headingOffset=0;
   ctx.imageSmoothingEnabled=false;
 
   async function verified(path,record){
@@ -68,11 +68,11 @@
     background();
     for(const a of manifest.assets){
       const pos=CELL_POS[a.id.slice(4)];if(!pos)continue;
-      let heading=(a.kind==="infantry"||a.kind==="vehicle")?(a.faction==="aster"?2:6):0;
-      if(phase===1&&a.kind==="vehicle")heading=(heading+(tick%8))%8;
+      let heading=(a.kind==="infantry"||a.kind==="vehicle")?((a.faction==="aster"?2:6)+headingOffset)%8:0;
       drawAsset(a,pos[0]*CELL,pos[1]*CELL,stateFor(a),heading,tick);
     }
     canvas.dataset.ready="true";canvas.dataset.phase=String(phase);
+    canvas.dataset.heading=String(headingOffset);canvas.dataset.step=String(tick);
   }
   function buildCards(){
     for(const a of manifest.assets){
@@ -115,6 +115,8 @@
     for(const b of document.querySelectorAll("[data-phase]"))b.setAttribute("aria-pressed",String(b===button));
     draw();
   });
+  document.getElementById("turn").addEventListener("click",()=>{headingOffset=(headingOffset+1)%8;draw();});
+  document.getElementById("step").addEventListener("click",()=>{tick++;draw();});
   window.__r05Gallery={redraw:()=>{tick++;draw();},getManifest:()=>manifest};
   init();
 })();
