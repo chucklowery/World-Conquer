@@ -124,6 +124,22 @@ round trip executes inside the linked VanillaTD WASM build. Courier still
 owns its units and collision rules; this is a typed command translation seam,
 not a call to `FootClass::Assign_Destination` on a live production unit.
 
+### Opt-in production unit command port
+
+`native_slice_core.h` now exposes an optional accepted-order callback. It
+emits one command when an order is issued or cancelled, never on rejected
+clicks or path replans. The callback is covered by host C++ tests. The native
+browser mission installs `EngineFootBridge`, a guarded implementation of that
+port which calls the **real virtual** `FootClass::Assign_Destination(TARGET)`
+only when a production world is marked ready and a live unit is bound. The
+browser currently provides neither, so dispatch remains disabled and the
+isolated Courier gameplay is unchanged. This avoids constructing infantry
+without initialized `HouseClass`, `MapClass` cells, scenario context, and
+type tables; `InfantryClass` construction and `Unlimbo()` depend on them.
+Compile-only CI checks the port against the actual production `FootClass`
+headers. A subsequent milestone must initialize and own those units before
+the bridge can legitimately be enabled.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.

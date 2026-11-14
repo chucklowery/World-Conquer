@@ -13,6 +13,9 @@ struct Point { int x,y; };
 inline bool operator==(Point a,Point b){return a.x==b.x&&a.y==b.y;}
 inline int distance(Point a,Point b){return std::abs(a.x-b.x)+std::abs(a.y-b.y);}
 struct Unit { Point p;int hp;bool enemy;std::vector<Point> route; };
+// Optional observer for accepted orders, including cancellation. The observer
+// must not mutate State and is never called for rejected destinations.
+typedef void (*OrderSink)(int index,bool hasTarget,Point target,void* context);
 struct State {
     std::array<Unit,4> units;
     std::array<Point,2> crates;
@@ -21,11 +24,14 @@ struct State {
     std::array<bool,198> blocked;
     std::array<Point,2> navTargets;
     std::array<bool,2> hasNav;
+    OrderSink orderSink;
+    void* orderContext;
     int selected,frame,cargo; // phase: 0 playing, 1 victory, 2 defeat
     int phase;
     State():units{{{{1,2},5,false,{}},{{2,3},6,false,{}},{{10,2},3,true,{}},{{14,6},3,true,{}}}},
         crates{{{7,2},{15,4}}},collected{{false,false}},exit{16,9},
-        navTargets{{{0,0},{0,0}}},hasNav{{false,false}},selected(0),frame(0),cargo(0),phase(0){
+        navTargets{{{0,0},{0,0}}},hasNav{{false,false}},orderSink(nullptr),orderContext(nullptr),
+        selected(0),frame(0),cargo(0),phase(0){
         blocked.fill(false);
         const Point walls[]={{5,2},{5,3},{5,4},{5,5},{5,6},{9,5},{10,5},
             {11,5},{12,5},{12,6},{12,7},{3,8},{4,8},{5,8}};
@@ -104,11 +110,14 @@ inline std::vector<Point> route(const State& s,int index,Point goal){
 inline bool assignDestination(State& s,int index,Point target){
     if(index<0||index>=2||s.units[index].hp<=0||!inside(s,target))return false;
     if(target==s.units[index].p){
-        s.hasNav[index]=false;s.units[index].route.clear();return true;
+        s.hasNav[index]=false;s.units[index].route.clear();
+        if(s.orderSink)s.orderSink(index,false,target,s.orderContext);
+        return true;
     }
     const std::vector<Point> path=route(s,index,target);
     if(path.empty())return false;
     s.navTargets[index]=target;s.hasNav[index]=true;s.units[index].route=path;
+    if(s.orderSink)s.orderSink(index,true,target,s.orderContext);
     return true;
 }
 inline void click(State& s,Point p){

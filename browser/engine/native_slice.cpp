@@ -2,7 +2,7 @@
 // Original geometry, no game archives; deliberately isolated from campaigns.
 #ifdef __EMSCRIPTEN__
 #include "native_slice_core.h"
-#include "courier_engine_target.h"
+#include "courier_engine_foot.h"
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
@@ -16,6 +16,7 @@ SDL_Texture* cargoTexture=nullptr;
 SDL_Texture* infantryTexture=nullptr;
 SDL_Texture* sceneryTexture=nullptr;
 courier::State mission;
+courier::EngineFootBridge footBridge;
 std::string missionSource;
 Uint32 lastStep=0;
 int priorCargo=0,priorPhase=0;
@@ -50,6 +51,8 @@ void frame(){
         }else if(event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
             mission=courier::State();
             if(!missionSource.empty())courier::loadMap(mission,missionSource);
+            mission.orderSink=courier::EngineFootBridge::onOrder;
+            mission.orderContext=&footBridge;
             priorCargo=priorPhase=0;
             std::puts("[browser-native-slice] mission restarted");
         }else if(event.type==SDL_QUIT){
@@ -129,6 +132,11 @@ int Browser_Native_Slice(const char* argv0){
             }else std::puts("[browser-native-slice] invalid external map; using built-in fallback");
         }
     }
+    // The browser mission has no production HouseClass/MapClass/FootClass
+    // instances. Install the observer but leave its guarded handles disabled.
+    mission.orderSink=courier::EngineFootBridge::onOrder;
+    mission.orderContext=&footBridge;
+    std::puts("[browser-native-slice] engine FootClass dispatch=deferred (world not initialized)");
     // Browser JS writes verified, decoded RGBA bytes to this exact MEMFS path.
     // The fallback marker above is used if the pack is not present/valid.
     if(FILE* input=std::fopen("/COURIER.RGBA","rb")){
