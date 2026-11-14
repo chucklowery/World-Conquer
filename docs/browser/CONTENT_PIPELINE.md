@@ -16,6 +16,13 @@ provisional concept art rather than approved game production assets.
 The [WF-0002 cargo art candidate](WF_0002_CARGO_ART.md) now has 80 individual
 RGBA PNG frames, independent state previews and an authored-draft SHP build.
 
+**R05 separate original-game art pack:** [Two-faction content and visual
+contracts](R05_ORIGINAL_FACTIONS.md) describes the newly authored Aster and
+Forge roster, 24 project-specific art IDs, 552 state/facing frames, a compact
+source-driven SHP/PAL/PNG atlas builder, and a real-scale in-browser gallery.
+It coexists with the engine-slot wireframe catalog and does not change legacy
+class filenames or the future simulation registry.
+
 ## Build
 
 Requires Node.js 18+; no external npm dependencies.

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "namespace": "r05",
+  "gameplayCellPixels": 24,
+  "license": "CC0-1.0",
+  "creator": "World-Conquer original content team (AI-assisted vector design)",
+  "factions": [
+    {"id": "aster", "name": "Aster Expedition", "identity": "Field science, layered protection and teal beacon lighting", "teamPalette": [6, 7, 8, 9]},
+    {"id": "forge", "name": "Forge Compact", "identity": "Mobile industry, angular armor and amber signal lighting", "teamPalette": [10, 11, 12, 13]}
+  ],
+  "assets": [
+    {"id":"r05.aster.ranger","name":"Trail Ranger","faction":"aster","kind":"infantry","role":"recon / security","source":"source/aster/ranger.svg","size":24,"footprint":[1,1]},
+    {"id":"r05.aster.harvester","name":"Dew Collector","faction":"aster","kind":"vehicle","role":"resource transport","source":"source/aster/harvester.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.aster.rover","name":"Peregrine Rover","faction":"aster","kind":"vehicle","role":"armored escort","source":"source/aster/rover.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.aster.hub","name":"Beacon Hub","faction":"aster","kind":"building","role":"base headquarters","source":"source/aster/hub.svg","size":48,"footprint":[3,2]},
+    {"id":"r05.aster.refinery","name":"Dew Refinery","faction":"aster","kind":"building","role":"resource processing","source":"source/aster/refinery.svg","size":48,"footprint":[2,2]},
+    {"id":"r05.aster.power","name":"Sun Sail","faction":"aster","kind":"building","role":"power generation","source":"source/aster/power.svg","size":48,"footprint":[2,2]},
+    {"id":"r05.aster.barracks","name":"Field Quarters","faction":"aster","kind":"building","role":"infantry training","source":"source/aster/barracks.svg","size":48,"footprint":[2,2]},
+    {"id":"r05.aster.factory","name":"Modular Foundry","faction":"aster","kind":"building","role":"vehicle production","source":"source/aster/factory.svg","size":48,"footprint":[3,2]},
+    {"id":"r05.forge.ranger","name":"Ash Guard","faction":"forge","kind":"infantry","role":"recon / security","source":"source/forge/ranger.svg","size":24,"footprint":[1,1]},
+    {"id":"r05.forge.harvester","name":"Ore Crawler","faction":"forge","kind":"vehicle","role":"resource transport","source":"source/forge/harvester.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.forge.rover","name":"Anvil Striker","faction":"forge","kind":"vehicle","role":"armored escort","source":"source/forge/rover.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.forge.hub","name":"Kiln Citadel","faction":"forge","kind":"building","role":"base headquarters","source":"source/forge/hub.svg","size":48,"footprint":[3,2]},
+    {"id":"r05.forge.refinery","name":"Smeltworks","faction":"forge","kind":"building","role":"resource processing","source":"source/forge/refinery.svg","size":48,"footprint":[2,2]},
+    {"id":"r05.forge.power","name":"Heat Stack","faction":"forge","kind":"building","role":"power generation","source":"source/forge/power.svg","size":48,"footprint":[2,2]},
+    {"id":"r05.forge.barracks","name":"Iron Lodge","faction":"forge","kind":"building","role":"infantry training","source":"source/forge/barracks.svg","size":48,"footprint":[2,2]},
+    {"id":"r05.forge.factory","name":"Hammer Works","faction":"forge","kind":"building","role":"vehicle production","source":"source/forge/factory.svg","size":48,"footprint":[3,2]},
+    {"id":"r05.world.crystal","name":"Skyglass Cluster","faction":null,"kind":"resource","role":"harvestable mineral","source":"source/world/crystal.svg","size":24,"footprint":[1,1]},
+    {"id":"r05.world.grove","name":"Biofiber Grove","faction":null,"kind":"resource","role":"harvestable fiber","source":"source/world/grove.svg","size":24,"footprint":[1,1]},
+    {"id":"r05.world.rock","name":"Slate Outcrop","faction":null,"kind":"terrain","role":"blocking rocky cover","source":"source/world/rock.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.world.brush","name":"Copperbrush","faction":null,"kind":"terrain","role":"low soft cover","source":"source/world/brush.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.world.crater","name":"Impact Scar","faction":null,"kind":"terrain","role":"passable ground detail","source":"source/world/crater.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.world.muzzle","name":"Pulse Flash","faction":null,"kind":"effect","role":"weapon muzzle","source":"source/world/muzzle.svg","size":24,"footprint":[1,1]},
+    {"id":"r05.world.impact","name":"Shatter Burst","faction":null,"kind":"effect","role":"projectile impact","source":"source/world/impact.svg","size":32,"footprint":[1,1]},
+    {"id":"r05.world.smoke","name":"Rising Ash","faction":null,"kind":"effect","role":"damaged structure smoke","source":"source/world/smoke.svg","size":32,"footprint":[1,1]}
+  ]
+}

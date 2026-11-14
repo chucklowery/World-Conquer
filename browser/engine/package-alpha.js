@@ -11,7 +11,7 @@ const files = [
   "asset-import.js", "original-asset.js", "wireframe-asset.js",
   "cargo-hd.js", "vertical-slice.js", "mission-pack.js", "tactical-hud.js", "play.html"
 ];
-const folders = ["missions", "cargo-hd", "content", "wireframes"];
+const folders = ["missions", "cargo-hd", "content", "wireframes", "r05"];
 
 function packageAlpha(buildPath, outputPath, revision="local") {
   const source=path.resolve(buildPath), target=path.resolve(outputPath);

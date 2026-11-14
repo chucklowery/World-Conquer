@@ -20,10 +20,11 @@ try{
   assert.throws(()=>packageAlpha(source,source),/outside/);
   assert.throws(()=>packageAlpha(source,path.join(source,"nested")),/outside/);
   const result=packageAlpha(source,target,"f00dbabe");
-  assert.equal(result.folders,4);
+  assert.equal(result.folders,5);
   assert.equal(fs.readFileSync(path.join(target,"index.html"),"utf8"),"original-content-fixture");
   assert.equal(fs.readFileSync(path.join(target,"vanillatd.wasm"),"utf8"),"original-content-fixture");
   assert.equal(fs.readFileSync(path.join(target,"missions","asset.dat"),"utf8"),"fixture");
+  assert.equal(fs.readFileSync(path.join(target,"r05","asset.dat"),"utf8"),"fixture");
   assert.equal(JSON.parse(fs.readFileSync(path.join(target,"release.json"))).revision,"f00dbabe");
   assert(fs.existsSync(path.join(target,".nojekyll")));
   assert(!fs.existsSync(path.join(target,"CMakeCache.txt")));

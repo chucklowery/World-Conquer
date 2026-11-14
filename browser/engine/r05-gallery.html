@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>World-Conquer • R05 Original Art Field Guide</title>
+<style>
+  :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#e6f1ed;background:#0b141b}
+  *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 60% 0%,#1c3336 0,#0b141b 65%)}
+  .frame{max-width:1190px;margin:auto;padding:28px 20px 80px}header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .eyebrow{font:700 11px/1.4 ui-monospace,monospace;letter-spacing:.21em;color:#85d4c1;text-transform:uppercase;margin:0 0 10px}
+  h1{font-size:clamp(27px,4vw,45px);line-height:1.06;letter-spacing:-.035em;margin:0 0 9px}
+  .intro{color:#a0b9b5;max-width:640px;line-height:1.55;margin:0 0 22px;font-size:14px}
+  .pill{border:1px solid #35514f;border-radius:999px;color:#8dcaba;padding:8px 13px;font:600 11px ui-monospace,monospace}
+  .status{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .status p{font:600 11px ui-monospace,monospace;letter-spacing:.05em;color:#a9c9c1;margin:0}
+  .controls{display:flex;gap:5px;flex-wrap:wrap}.controls button{border:1px solid #35504d;border-radius:5px;padding:9px 13px;color:#b6d3cb;background:#1a292c;font-weight:700;font-size:12px;cursor:pointer}
+  .controls button[aria-pressed="true"]{background:#83d4c2;border-color:#83d4c2;color:#0a2425}.controls button:hover{border-color:#a8ded2}
+  .field-frame{border:1px solid #3c5d59;background:#101e25;padding:10px;box-shadow:0 24px 80px #0008;overflow:auto}
+  #field{width:864px;height:480px;max-width:none;display:block;image-rendering:pixelated;background:#18262a;margin:auto}
+  .scale-note{color:#8facaa;font:11px ui-monospace,monospace;margin:10px 0 24px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .factions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-bottom:24px}
+  .faction{border:1px solid #30494a;padding:17px 19px;background:#16262c;position:relative;overflow:hidden}
+  .faction:before{content:"";display:block;width:5px;position:absolute;left:0;top:0;bottom:0;background:#66cfbe}.faction.forge:before{background:#f2a279}
+  .faction strong{font-size:17px}.faction p{color:#9db7af;font-size:12px;line-height:1.4;margin:7px 0 0}
+  h2{font-size:18px;letter-spacing:-.02em;margin:24px 0 13px}
+  #roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(181px,1fr));gap:10px}
+  .asset{background:#15242b;border:1px solid #2f474a;border-radius:6px;padding:12px;display:flex;align-items:center;gap:10px;min-width:0}
+  .asset canvas{flex:0 0 52px;width:52px;height:52px;image-rendering:pixelated;background:#223438;border:1px solid #34474b}
+  .asset h3{margin:0 0 4px;font-size:12px}.asset p{margin:0;color:#8db1a9;font:10px ui-monospace,monospace;line-height:1.35}
+  footer{margin-top:30px;border-top:1px solid #304349;padding-top:14px;color:#86aaa3;font-size:12px;line-height:1.6}
+  @media(max-width:640px){.frame{padding:20px 12px 50px}.factions{grid-template-columns:1fr}.field-frame{margin:0 -12px}.controls button{padding:8px 10px}}
+</style>
+</head>
+<body>
+<main class="frame">
+  <header><div><p class="eyebrow">World-Conquer / original content / R05</p><h1>The battlefield, before the battle.</h1><p class="intro">An original two-faction visual field guide. Switch phases to inspect facings, motion, production activity, damage and destruction. Every sprite below is shown on a 24-pixel tactical cell grid.</p></div><div class="pill">FIELD GUIDE · ART CONTRACT 01</div></header>
+  <section class="factions" aria-label="Two original factions"><div class="faction"><strong>01 / Aster Expedition</strong><p>Scientific field logistics, smooth shell armor, cool beacons, modular shelters.</p></div><div class="faction forge"><strong>02 / Forge Compact</strong><p>Heavy industry, squared plating, heat stacks, amber signals and fortified hubs.</p></div></section>
+  <div class="status"><p id="status" role="status">VERIFYING SOURCE HASHES…</p><div class="controls" aria-label="Animation phase">
+    <button data-phase="0" aria-pressed="true">Operational</button><button data-phase="1" aria-pressed="false">In motion</button><button data-phase="2" aria-pressed="false">Action</button><button data-phase="3" aria-pressed="false">Damaged</button><button data-phase="4" aria-pressed="false">Destroyed</button>
+  </div></div>
+  <div class="field-frame"><canvas id="field" width="864" height="480" role="img" aria-label="Both original factions on a 36 by 20 tactical battlefield at 24 pixels per cell"></canvas></div>
+  <div class="scale-note"><span>36 × 20 cells / 24px per cell / native 1× sprite pixels / 8 compass facings</span><span>Art demonstration only — construction is not yet playable.</span></div>
+  <h2>Sprite roster <span id="count" class="pill">24 pieces</span></h2><section id="roster" aria-label="Original source-driven content roster"></section>
+  <footer>CC0-1.0 project-authored vectors, palette and metadata; deterministic PNG atlas + tactical SHP. R05 art IDs are intentionally not simulation registry IDs. No proprietary RTS assets are used. <span id="digest"></span></footer>
+</main>
+<script src="gallery.js" defer></script>
+</body>
+</html>

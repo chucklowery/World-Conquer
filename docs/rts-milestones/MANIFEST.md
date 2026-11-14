@@ -26,7 +26,7 @@ row; never overwrite another worker's status or evidence.
 | R02 | [Unit orders and pathfinding](R02-unit-orders-pathfinding/PROMPT.md) | R00 | W1 | planned | — |
 | R03 | [Combat, weapons, and damage](R03-combat-weapons/PROMPT.md) | R00 | W1 | planned | — |
 | R04 | [Maps and terrain pipeline](R04-map-terrain-pipeline/PROMPT.md) | R00 | W1 | planned | — |
-| R05 | [Original faction art and content](R05-original-art-content/PROMPT.md) | — | W0 | planned | — |
+| R05 | [Original faction art and content](R05-original-art-content/PROMPT.md) | — | W0 | in_progress | R05 implementation branch `feature/r05-original-factions`; acceptance pending content tests, browser gallery, asset CI, and code review. |
 | R06 | [Resource economy and harvesting](R06-economy-harvesting/PROMPT.md) | R00, R04 | W2 | planned | — |
 | R07 | [Building placement and power](R07-structures-power/PROMPT.md) | R00, R04, R06 | W3 | planned | — |
 | R08 | [Production, queues, and tech tree](R08-production-tech/PROMPT.md) | R00, R06, R07 | W4 | planned | — |
