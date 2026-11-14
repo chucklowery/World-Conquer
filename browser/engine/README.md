@@ -10,6 +10,9 @@ two guarded crates and bring at least one surviving soldier to the aircraft.
 The native 18×11 mission includes selectable infantry, terrain-obstructed
 movement, a click-to-attack command, moving sentry patrols, automatic defense,
 health, combat defeat, extraction victory, and **R** to restart in place.
+The keyboard also supports **1** (Scout), **2** (Ranger), and **Esc**
+(cancel the selected unit's orders). A live status message now announces
+supplies, combat events, and the extraction objective.
 
 The player infantry are constructed production `InfantryClass` objects placed
 on `MapClass` cells. Their movement orders use live `NavCom` targets and
@@ -31,6 +34,40 @@ in the **VanillaTD WebAssembly** CI artifact.
 CI covers native combat orders, pursuit, damage, death, reset, and the entire
 browser extraction loop. The Chromium test exercises the new launch button,
 HUD, combat command, mission victory, and restart within the compiled engine.
+
+### GitHub Pages publication
+
+The `Publish World-Conquer Tactical Alpha` workflow builds the native game,
+stages original assets, runs the Chromium gameplay acceptance suite, packages
+only public runtime files through `package-alpha.js`, and deploys the verified
+artifact through GitHub's official Pages deployment action. It runs on
+feature-branch pushes and can be dispatched manually after the workflow reaches
+the repository's default branch. Publication never writes or force-pushes a
+branch and does not grant pull-request code repository write permissions.
+The standard browser CI independently checks this package and uploads the
+`world-conquer-tactical-alpha-site` artifact.
+
+One-time repository-owner setup is needed before the site appears publicly:
+under **Settings → Pages → Build and deployment**, select **GitHub Actions**
+as the source, then rerun the publication workflow. Until enabled, the job
+builds and tests the site but skips deployment with an explanatory notice.
+Once GitHub Pages
+finishes publishing, the intended URL is
+`https://chucklowery.github.io/World-Conquer/`. The URL is not live until
+GitHub reports a successful Pages deployment. Future pushes to the feature
+branch deploy the site automatically after passing the full native browser test.
+
+For local packaging of an already compiled and staged engine:
+
+```sh
+node browser/engine/test-package-alpha.js
+node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site
+python3 -m http.server 8080 --directory build/tactical-alpha-site
+```
+
+Open `http://localhost:8080/`. The output directory must be empty; the packer
+refuses to overwrite an existing publication. Only original project-owned
+content is included, not historical EA game data or native build intermediates.
 
 ## Original-content browser-playable vertical slice
 

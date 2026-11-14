@@ -186,6 +186,13 @@ async function main() {
            "Engine-owned mission HUD did not reset after restart");
     assert.equal(await page.locator("#alpha-result").isHidden(),true,
                  "Victory panel did not clear on restart");
+    await page.keyboard.press("2");
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] selected unit=1"),
+                               undefined,{timeout:15000});
+    assert((await page.locator("#engine-courier-status").textContent()).includes("Selected: Ranger"));
+    await page.keyboard.press("1");
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] selected unit=0"),
+                               undefined,{timeout:15000});
     await clickNativeTile(engineCanvas,10,2); // order the scout to attack a real sentry actor
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] attack-order unit=0 enemy=2"),
                                undefined,{timeout:15000});

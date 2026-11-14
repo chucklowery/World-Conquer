@@ -183,6 +183,18 @@ void frame(){
             mission.orderContext=&footBridge;
             priorCargo=priorPhase=0;
             std::puts("[browser-native-slice] mission restarted");
+        }else if(engineOwned&&mission.phase==0&&event.type==SDL_KEYDOWN&&
+                 (event.key.keysym.sym==SDLK_1||event.key.keysym.sym==SDLK_2)){
+            const int index=event.key.keysym.sym==SDLK_1?0:1;
+            if(mission.units[index].hp>0){
+                mission.selected=index;
+                std::printf("[browser-engine-courier] selected unit=%d\n",index);
+            }
+        }else if(engineOwned&&mission.phase==0&&event.type==SDL_KEYDOWN&&
+                 event.key.keysym.sym==SDLK_ESCAPE){
+            combat.focus[mission.selected]=-1;
+            courier::assignDestination(mission,mission.selected,mission.units[mission.selected].p);
+            std::printf("[browser-engine-courier] cancelled unit=%d\n",mission.selected);
         }else if(event.type==SDL_QUIT){
             emscripten_cancel_main_loop();return;
         }

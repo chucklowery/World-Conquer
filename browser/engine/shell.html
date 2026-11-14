@@ -19,6 +19,7 @@ p{color:#b8c8d8;line-height:1.55}
 .alpha-objectives{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .alpha-objectives span{padding:5px 10px;border-radius:20px;background:#28504b;color:#d6f7e9;font-size:.82rem}
 .alpha-result{padding:12px 15px;border-radius:9px;border:1px solid #d2b16b;background:#3b3526;color:#ffe6ab;font-weight:700}
+.alpha-event{min-height:1.5rem;color:#a6f0d8;font-size:.9rem;margin:6px 0}
 .status{padding:11px 15px;margin:20px 0;border:1px solid #365e64;border-radius:9px;background:#172e37;color:#aff0d6}
 canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
 canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
@@ -49,10 +50,11 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <p>Move with a click, click a red sentry to attack, and keep at least one soldier alive. Recover two amber crates and reach the aircraft to win.</p>
 <div class="alpha-objectives"><span>2 squad members</span><span>2 guarded crates</span><span>Live enemy patrols</span><span>Extraction victory</span></div>
 <button type="button" id="launch-alpha" class="primary" disabled>Start Tactical Alpha</button>
-<p class="note">Controls: click green squad member to select; click ground to move; click red enemy to attack; press R to restart.</p>
+<p class="note">Controls: click a squad member or press 1/2 to select; click ground to move; click a red sentry to attack; Esc cancels orders; R restarts.</p>
 </div>
 <canvas id="canvas" tabindex="0" width="720" height="440" aria-label="World-Conquer native tactical battlefield"></canvas>
 <p id="engine-courier-status" class="status" role="status" aria-live="polite" hidden>Engine-owned mission ready to launch.</p>
+<p id="alpha-event" class="alpha-event" role="status" aria-live="polite" hidden></p>
 <p id="alpha-result" class="alpha-result" role="status" aria-live="polite" hidden></p>
 <h3>Standalone JavaScript fallback</h3>
 <canvas id="vertical-slice-canvas" width="900" height="550" aria-label="Tactical supply extraction game map"></canvas>
@@ -179,6 +181,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const alphaLaunch = document.getElementById("launch-alpha");
   const engineCourier = document.getElementById("run-engine-courier");
   const engineHud = document.getElementById("engine-courier-status");
+  const alphaEvent = document.getElementById("alpha-event");
   const alphaResult = document.getElementById("alpha-result");
   const unitProbe = document.getElementById("run-unit-probe");
   const game = document.getElementById("run-game");
@@ -193,11 +196,12 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   let loadingAssets = false;
   let assetReady = false;
   const knownNames = new Set();
-  let alphaStats={cargo:0,players:[5,6],sentries:[3,3],phase:"playing"};
+  const initialAlphaStats=()=>({cargo:0,players:[5,6],sentries:[3,3],selected:0,phase:"playing"});
+  let alphaStats=initialAlphaStats();
 
   function updateAlphaStatus(){
     const enemies=alphaStats.sentries.filter(hp=>hp>0).length;
-    engineHud.textContent=`Scout ${Math.max(0,alphaStats.players[0])}/5 HP · Ranger ${Math.max(0,alphaStats.players[1])}/6 HP · Cargo ${alphaStats.cargo}/2 · Sentries ${enemies}/2`;
+    engineHud.textContent=`Selected: ${alphaStats.selected===0?"Scout":"Ranger"} · Scout ${Math.max(0,alphaStats.players[0])}/5 HP · Ranger ${Math.max(0,alphaStats.players[1])}/6 HP · Cargo ${alphaStats.cargo}/2 · Sentries ${enemies}/2`;
     if(alphaStats.phase==="won"){
       alphaResult.hidden=false;
       alphaResult.textContent="Mission accomplished — Both supply crates extracted! Press R to play again.";
@@ -217,17 +221,29 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     (isError ? console.error : console.log)(value);
     if(document.body.dataset.mode==="engine-courier"){
       const cargo=value.match(/\[browser-native-slice\] crates=(\d)\/2/);
-      if(cargo)alphaStats.cargo=Number(cargo[1]);
+      if(cargo){
+        alphaStats.cargo=Number(cargo[1]);
+        alphaEvent.textContent=`Supply secured: ${alphaStats.cargo} of 2 crates. ${alphaStats.cargo===2?"Reach the aircraft to extract!":"Keep moving!"}`;
+      }
+      const selected=value.match(/\[browser-engine-courier\] selected unit=(\d)/) ||
+        value.match(/\[browser-native-slice\] click x=\d+ y=\d+ selected=(\d)/);
+      if(selected)alphaStats.selected=Number(selected[1]);
       const combat=value.match(/\[browser-engine-courier\] combat unit=(\d) hp=(-?\d+)/);
       if(combat){
         const index=Number(combat[1]),hp=Number(combat[2]);
         if(index<2)alphaStats.players[index]=hp;
         else if(index<4)alphaStats.sentries[index-2]=hp;
+        alphaEvent.textContent=index<2?`${index===0?"Scout":"Ranger"} under fire — ${Math.max(0,hp)} HP remaining!`:
+          (hp<=0?"Enemy sentry eliminated!":"Sentry hit — keep up the pressure!");
       }
+      if(value.includes("[browser-engine-courier] attack-order"))alphaEvent.textContent="Attack order issued. Close in on the sentry!";
+      if(value.includes("[browser-engine-courier] cancelled"))alphaEvent.textContent="Orders cancelled. Select a new destination.";
       if(value.includes("[browser-native-slice] result=victory"))alphaStats.phase="won";
       if(value.includes("[browser-native-slice] result=defeat"))alphaStats.phase="lost";
-      if(value.includes("[browser-engine-courier] mission restarted"))
-        alphaStats={cargo:0,players:[5,6],sentries:[3,3],phase:"playing"};
+      if(value.includes("[browser-engine-courier] mission restarted")){
+        alphaStats=initialAlphaStats();
+        alphaEvent.textContent="Squad reassembled. Recover both crates and extract.";
+      }
       if(value.includes("[browser-engine-courier] ERROR"))
         alphaStats.phase="error";
       updateAlphaStatus();
@@ -303,7 +319,9 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     canvas.style.aspectRatio="18/11";
     if(mode==="engine-courier"){
       engineHud.hidden=false;
-      alphaStats={cargo:0,players:[5,6],sentries:[3,3],phase:"playing"};
+      alphaEvent.hidden=false;
+      alphaEvent.textContent="Squad deployed. Two crates are marked in amber.";
+      alphaStats=initialAlphaStats();
       updateAlphaStatus();
     }
     run([mode==="engine-courier"?"--browser-engine-courier":"--browser-native-slice"],mode);
