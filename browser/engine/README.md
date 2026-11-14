@@ -140,6 +140,20 @@ Compile-only CI checks the port against the actual production `FootClass`
 headers. A subsequent milestone must initialize and own those units before
 the bridge can legitimately be enabled.
 
+### Bounded production-map placement plan
+
+`courier_world_plan.h` now prepares a pure, validated placement of all 198
+Courier tiles into a larger engine cell grid. The native browser mode plans
+the verified mission at origin (16,16) using the real VanillaTD `MAP_CELL_W`
+and `MAP_CELL_H` dimensions (128×128 in the MEGAMAPS build). It calculates
+the 14 blocked cells, four unit spawn cells, two supply cells and extraction
+cell without modifying `MapClass`. Validation rejects out-of-bounds placement,
+overflow, obstructed spawns and overlapping squad spawns, preserving the
+previous plan on rejection. Host CI verifies exact mapped cells, and Chromium
+requires a successful runtime plan. Applying those cells to the production
+theater and constructing units remains a separate, guarded initialization
+milestone; this plan alone does not make an engine scenario playable.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.

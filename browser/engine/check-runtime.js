@@ -105,6 +105,8 @@ async function main() {
                                undefined,{timeout:40000});
     assert((await page.locator("#log").textContent()).includes("verified external mission map loaded"),
            "Native C++ mission did not consume the verified source-controlled map");
+    assert((await page.locator("#log").textContent()).includes("engine world plan=ready cells=198 walls=14"),
+           "Courier mission could not stage a bounded VanillaTD cell footprint");
     assert((await page.locator("#log").textContent()).includes("[browser-native-slice] verified HD aircraft texture=loaded"),
            "Verified Courier RGBA texture was not loaded by native C++ renderer");
     assert((await page.locator("#log").textContent()).includes("[browser-native-slice] tactical infantry sprite=loaded"),
