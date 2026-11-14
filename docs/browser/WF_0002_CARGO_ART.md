@@ -1,5 +1,26 @@
 # WF-0002: original cargo aircraft artwork — draft 1
 
+## Option B: editable HD master (review draft)
+
+The reusable original Courier aircraft model is defined in
+[`tools/content/wf-0002-hd.py`](../../tools/content/wf-0002-hd.py).
+Run `blender -b --factory-startup --python tools/content/wf-0002-hd.py`
+to regenerate the editable `.blend` master and **36 transparent 512×512 RGBA PNGs** in
+[`game/content/wireframes/hd/WF-0002`](../../game/content/wireframes/hd/WF-0002).
+Frames `0000`–`0031` are directional and `0032`–`0035` are four loading-ramp states.
+The master and HD frames use a single orthographic camera, constant lighting and
+center registration, with anti-aliased edges. Run
+`python tools/content/validate-wf-0002-hd.py` to validate frame coverage,
+dimensions, alpha, anti-aliasing, directional/ramp differences, and produce
+the SHA-256 HD manifest. The source is entirely project-owned procedural geometry.
+
+**Important:** HD source images are not indexed tactical SHP files; the current
+game renderer still uses the original 32×32 eight-color assets below as a
+**legacy fallback**. A high-resolution renderer/texture-atlas integration is
+not established by exporting the artwork. Gameplay-level validation, art
+approval, and new HD runtime integration remain outstanding; do not advertise
+these images as playable/production-approved game sprites.
+
 **Resource:** `C17.SHP` · **Engine enum:** `AIRCRAFT_CARGO` · **Art stage:** `authored-draft` · **Canvas:** 32×32 indexed pixels · **Frames:** 80 · **Provenance:** [ATTRIBUTION.json](../../game/content/wireframes/final/WF-0002/ATTRIBUTION.json).
 
 This is a first fully populated, project-authored replacement candidate for [WF-0002](WIREFRAME_REPLACEMENT_CATALOG.md#wf-0002). The visual design is an original fictional **Courier-class utility transport**: a broad, tapered high wing, twin underslung lift nacelles, central freight spine, distinctive split tail, compact cockpit and a mechanical rear loading ramp. No real C-17 image or proprietary game sprite was copied, traced or used as a generator input.
