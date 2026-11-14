@@ -154,6 +154,20 @@ requires a successful runtime plan. Applying those cells to the production
 theater and constructing units remains a separate, guarded initialization
 milestone; this plan alone does not make an engine scenario playable.
 
+### Real `MapClass` cell staging (browser native mode)
+
+The dedicated native Courier browser mode now invokes the original engine's
+`Map.One_Time_Editor()`, `Map.Init_Cells()` and `Map.Set_Map_Dimensions()` after
+producing a valid placement plan. It writes `LAND_ROCK` for the mission's
+blocked tiles and `LAND_CLEAR` for walkable tiles using the actual
+`CellClass::Override_Land_Type()`, then reads back every cell through
+`Map[cell].Land_Type()` and confirms its radar bounds. Chromium CI requires
+the staging/read-back success log, and host CI compile-checks the bridge
+against the production engine API. The isolated Courier simulation still
+drives gameplay, and no `HouseClass` or `InfantryClass` instances are created.
+This initializes only the terrain-cell storage in a separate browser mode;
+it is not a full theater, visibility, collision, or campaign initialization.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.

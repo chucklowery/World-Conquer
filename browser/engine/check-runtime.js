@@ -107,6 +107,8 @@ async function main() {
            "Native C++ mission did not consume the verified source-controlled map");
     assert((await page.locator("#log").textContent()).includes("engine world plan=ready cells=198 walls=14"),
            "Courier mission could not stage a bounded VanillaTD cell footprint");
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] engine MapClass terrain=staged"),
+           "Courier terrain was not written and read back through engine MapClass cells");
     assert((await page.locator("#log").textContent()).includes("[browser-native-slice] verified HD aircraft texture=loaded"),
            "Verified Courier RGBA texture was not loaded by native C++ renderer");
     assert((await page.locator("#log").textContent()).includes("[browser-native-slice] tactical infantry sprite=loaded"),

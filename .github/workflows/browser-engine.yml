@@ -93,6 +93,7 @@ jobs:
           # Compile-only here; the linked WASM runtime exercises target encoding in Chromium.
           g++ -std=c++11 -DTRUE_FALSE_DEFINED -DMEGAMAPS -isystem . -isystem common -Ibrowser/engine -c browser/engine/test-engine-target.cpp -o build/browser-engine/test-engine-target.o
           g++ -std=c++11 -DTRUE_FALSE_DEFINED -DMEGAMAPS -isystem . -isystem common -Ibrowser/engine -c browser/engine/test-engine-foot.cpp -o build/browser-engine/test-engine-foot.o
+          g++ -std=c++11 -DTRUE_FALSE_DEFINED -DMEGAMAPS -isystem . -isystem common -Ibrowser/engine -c browser/engine/test-engine-map.cpp -o build/browser-engine/test-engine-map.o
           test -s browser/engine/play.html
           test -s build/browser-engine/play.html
       - name: Verify original content pipeline

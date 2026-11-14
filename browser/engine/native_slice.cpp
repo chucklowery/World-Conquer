@@ -3,7 +3,7 @@
 #ifdef __EMSCRIPTEN__
 #include "native_slice_core.h"
 #include "courier_engine_foot.h"
-#include "courier_world_plan.h"
+#include "courier_engine_map.h"
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
@@ -139,10 +139,12 @@ int Browser_Native_Slice(const char* argv0){
     mission.orderContext=&footBridge;
     std::puts("[browser-native-slice] engine FootClass dispatch=deferred (world not initialized)");
     courier::WorldPlan placement={};
-    if(courier::planWorld(mission,16,16,MAP_CELL_W,MAP_CELL_H,placement))
+    if(courier::planWorld(mission,16,16,MAP_CELL_W,MAP_CELL_H,placement)){
         std::printf("[browser-native-slice] engine world plan=ready cells=198 walls=%d scout-cell=%d\n",
                     placement.blockedCount,placement.units[0]);
-    else std::puts("[browser-native-slice] engine world plan=invalid");
+        const bool staged=courier::stageEngineMap(mission,placement);
+        std::printf("[browser-native-slice] engine MapClass terrain=%s\n",staged?"staged":"invalid");
+    }else std::puts("[browser-native-slice] engine world plan=invalid");
     // Browser JS writes verified, decoded RGBA bytes to this exact MEMFS path.
     // The fallback marker above is used if the pack is not present/valid.
     if(FILE* input=std::fopen("/COURIER.RGBA","rb")){
