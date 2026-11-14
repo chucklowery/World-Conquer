@@ -35,6 +35,33 @@ CI covers native combat orders, pursuit, damage, death, reset, and the entire
 browser extraction loop. The Chromium test exercises the new launch button,
 HUD, combat command, mission victory, and restart within the compiled engine.
 
+### Immersive tactical command HUD spike
+
+Starting **Tactical Alpha** now moves the *same SDL engine canvas* into a
+full-viewport tactical layout. The battlefield occupies the left side and is
+letterboxed at the native 18:11 mission aspect ratio, growing to fill the
+available play area without distorting input coordinates. The right command
+sidebar keeps a live minimap **above** the construction options, and provides
+Build, Intel, and Controls navigation. The minimap reads the verified mission
+grid and follows actual infantry position, sentry movement, combat health,
+pickup, and restart messages emitted by the native game; it never substitutes
+JavaScript movement for `InfantryClass::AI()`.
+
+The four original-concept construction cards are **non-buildable previews**:
+they reveal planned roles but cannot place structures or spend resources until
+the production/building model exists. The panel can collapse to maximize the
+field, and automatically becomes a collapsible drawer at narrow widths.
+**Fullscreen** uses the browser Fullscreen API; browser F11 is also supported
+by the viewport-filling CSS. The production HUD uses no third-party game art.
+Engineering diagnostics and the standalone JavaScript fallback remain on the
+launcher page, separate from the gameplay overlay.
+
+`tactical-hud.js` is a small testable UI model and minimap renderer.
+`test-tactical-hud.js` checks authored terrain, moving actors, pickup order,
+health, selection, and restart. Chromium CI also asserts stage/sidebar order,
+minimap-above-build layout, browser-sized HUD, responsive aspect ratio, and
+navigation without breaking the full native extraction loop.
+
 ### GitHub Pages publication
 
 The `Publish World-Conquer Tactical Alpha` workflow builds the native game,

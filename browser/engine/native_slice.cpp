@@ -73,9 +73,13 @@ void tickEngineMission(){
     for(int i=0;i<2;i++)if(!(before[i]==mission.units[i].p))
         std::printf("[browser-engine-courier] moved unit=%d x=%d y=%d\n",i,
                     mission.units[i].p.x,mission.units[i].p.y);
+    const courier::Point sentriesBefore[2]={mission.units[2].p,mission.units[3].p};
     const int priorHP[4]={mission.units[0].hp,mission.units[1].hp,
                           mission.units[2].hp,mission.units[3].hp};
     courier::tickCombat(mission,combat);
+    for(int j=2;j<4;j++)if(!(sentriesBefore[j-2]==mission.units[j].p))
+        std::printf("[browser-engine-courier] sentry moved unit=%d x=%d y=%d\n",j,
+                    mission.units[j].p.x,mission.units[j].p.y);
     for(int i=0;i<4;i++)if(mission.units[i].hp!=priorHP[i]){
         std::printf("[browser-engine-courier] combat unit=%d hp=%d\n",i,mission.units[i].hp);
         if(i<2&&mission.units[i].hp<=0&&liveUnits[i]){
@@ -89,7 +93,9 @@ void tickEngineMission(){
     if(mission.phase!=0)return;
     for(int j=0;j<2;j++)if(!mission.collected[j])for(int i=0;i<2;i++)
         if(mission.units[i].hp>0&&courier::distance(mission.units[i].p,mission.crates[j])<=1){
-            mission.collected[j]=true;++mission.cargo;break;
+            mission.collected[j]=true;++mission.cargo;
+            std::printf("[browser-engine-courier] crate collected=%d\n",j);
+            break;
         }
     if(mission.cargo==2)for(int i=0;i<2;i++)
         if(mission.units[i].hp>0&&courier::distance(mission.units[i].p,mission.exit)<=1)mission.phase=1;

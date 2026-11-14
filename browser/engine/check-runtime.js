@@ -159,13 +159,54 @@ async function main() {
     await page.locator("#launch-alpha").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] movement source=InfantryClass::AI"),
                                undefined,{timeout:40000});
+    assert.equal(await page.locator("#tactical-hud").isVisible(),true,"In-game HUD did not open");
+    assert.equal(await page.locator("#hud-build-panel").isVisible(),true,"Production sidebar was not visible");
+    const layout=await page.evaluate(()=>{
+      const rect=id=>document.getElementById(id).getBoundingClientRect();
+      const field=rect("hud-playfield"),side=rect("hud-sidebar"),map=rect("hud-minimap"),build=rect("hud-build-panel");
+      const canvas=rect("canvas");
+      return {fieldRight:field.right,sideLeft:side.left,mapBottom:map.bottom,buildTop:build.top,
+              canvasAspect:canvas.width/canvas.height,viewportWidth:innerWidth,viewportHeight:innerHeight,
+              hudHeight:rect("tactical-hud").height};
+    });
+    assert(layout.fieldRight<=layout.sideLeft+2,"The battlefield and sidebar overlap");
+    assert(layout.mapBottom<layout.buildTop,"Minimap must sit above building options");
+    assert(Math.abs(layout.canvasAspect-18/11)<0.025,"Scaled game canvas lost its mission aspect ratio");
+    assert.equal(Math.round(layout.hudHeight),layout.viewportHeight,"HUD does not use the entire viewport");
+    await page.setViewportSize({width:720,height:480});
+    await page.waitForFunction(() => document.getElementById("tactical-hud").classList.contains("sidebar-closed"),
+                               undefined,{timeout:15000});
+    const compact=await page.evaluate(()=>{
+      const hud=document.getElementById("tactical-hud").getBoundingClientRect();
+      const field=document.getElementById("canvas").getBoundingClientRect();
+      return {height:hud.height,width:hud.width,aspect:field.width/field.height};
+    });
+    assert.equal(Math.round(compact.height),480,"Compact HUD must fill the browser viewport");
+    assert.equal(Math.round(compact.width),720);
+    assert(Math.abs(compact.aspect-18/11)<0.025,"Compact battlefield lost aspect ratio");
+    await page.setViewportSize({width:1360,height:980});
+    await page.waitForFunction(() => !document.getElementById("tactical-hud").classList.contains("sidebar-closed"),
+                               undefined,{timeout:15000});
+    await page.locator("#hud-tab-intel").click();
+    assert.equal(await page.locator("#hud-intel-panel").isVisible(),true,"Sidebar intel navigation failed");
+    await page.locator("#hud-tab-build").click();
+    await page.locator('[data-build="relay"]').click();
+    assert((await page.locator("#hud-build-detail").textContent()).includes("Placement is not yet enabled"),
+           "Build option implied construction is already available");
+    await page.locator("#hud-sidebar-toggle").click();
+    assert.equal(await page.locator("#hud-sidebar").isVisible(),false,"Sidebar did not collapse");
+    await page.locator("#hud-sidebar-toggle").click();
+    assert.equal(await page.locator("#hud-sidebar").isVisible(),true,"Sidebar did not reopen");
     const engineCanvas=page.locator("#canvas");
+    const minimapBefore=await page.locator("#hud-minimap").screenshot();
     await clickNativeTile(engineCanvas,1,2);
     await clickNativeTile(engineCanvas,3,2);
     await page.waitForFunction(() => /\[browser-engine-courier\] live orders=[1-9]\d* nav-cell=\d+/.test(
       document.getElementById("log").textContent),undefined,{timeout:15000});
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] moved unit=0"),
                                undefined,{timeout:45000});
+    const minimapAfter=await page.locator("#hud-minimap").screenshot();
+    assert(!minimapBefore.equals(minimapAfter),"Live minimap did not follow native unit movement");
     await clickNativeTile(engineCanvas,7,2); // first supply crate
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] crates=1/2"),
                                undefined,{timeout:120000});

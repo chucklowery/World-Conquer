@@ -67,6 +67,11 @@ uses GitHub's official Pages artifact deployment, and repository settings must
 select **GitHub Actions** as the Pages source before the public URL becomes active. See
 [`browser/engine/README.md`](../../browser/engine/README.md#github-pages-publication).
 
+The gameplay launcher now transitions to a full-viewport tactical HUD with an
+aspect-correct battlefield, responsive minimap and sidebar. Build cards are
+clearly labeled as previews, not functional construction. The native browser
+test verifies the HUD layout at both desktop and compact viewport sizes.
+
 [Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
 
 ## Browser runtime bootstrap (P2a; experimental)
