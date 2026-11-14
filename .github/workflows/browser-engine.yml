@@ -178,6 +178,8 @@ jobs:
             build/browser-engine/mission-pack.js
             build/browser-engine/tactical-hud.js
             build/browser-engine/simulation-bridge.js
+            build/browser-engine/rts-camera.js
+            build/browser-engine/rts-input-ui.js
             build/browser-engine/missions/**
             build/browser-engine/play.html
             build/browser-engine/cargo-hd/**
