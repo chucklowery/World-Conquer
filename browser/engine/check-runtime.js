@@ -26,6 +26,16 @@ const server = http.createServer((req, res) => {
   });
 });
 
+async function clickNativeTile(canvas,x,y){
+  // Emscripten scales the 720x440 SDL canvas to the CSS layout. Use the
+  // displayed dimensions so far-edge tiles remain clickable at any viewport.
+  const bounds=await canvas.evaluate(element=>{
+    const rect=element.getBoundingClientRect();
+    return {width:rect.width,height:rect.height};
+  });
+  await canvas.click({position:{x:(x+0.5)*bounds.width/18,y:(y+0.5)*bounds.height/11}});
+}
+
 async function main() {
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   const port = server.address().port;
@@ -148,17 +158,18 @@ async function main() {
     await page.locator("#run-engine-courier").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] movement source=InfantryClass::AI"),
                                undefined,{timeout:40000});
-    await page.locator("#canvas").click({position:{x:60,y:100}});
-    await page.locator("#canvas").click({position:{x:140,y:100}});
+    const engineCanvas=page.locator("#canvas");
+    await clickNativeTile(engineCanvas,1,2);
+    await clickNativeTile(engineCanvas,3,2);
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] moved unit=0"),
                                undefined,{timeout:45000});
-    await page.locator("#canvas").click({position:{x:300,y:100}}); // first supply crate (7,2)
+    await clickNativeTile(engineCanvas,7,2); // first supply crate
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] crates=1/2"),
                                undefined,{timeout:120000});
-    await page.locator("#canvas").click({position:{x:620,y:180}}); // second crate (15,4)
+    await clickNativeTile(engineCanvas,15,4); // second crate
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] crates=2/2"),
                                undefined,{timeout:120000});
-    await page.locator("#canvas").click({position:{x:660,y:340}}); // approach extraction (16,8)
+    await clickNativeTile(engineCanvas,16,8); // approach extraction
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] result=victory"),
                                undefined,{timeout:120000});
     await page.keyboard.press("r");
