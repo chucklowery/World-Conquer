@@ -5,6 +5,7 @@
 #include "courier_engine_foot.h"
 #include "courier_engine_map.h"
 #include "courier_combat.h"
+#include "simulation_contract.h"
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>
@@ -19,6 +20,8 @@ SDL_Texture* infantryTexture=nullptr;
 SDL_Texture* sceneryTexture=nullptr;
 courier::State mission;
 courier::Combat combat;
+rts::Contract simulation(mission,combat);
+uint64_t nextCommandSequence=1;
 courier::EngineFootBridge footBridge;
 courier::WorldPlan worldPlacement={};
 bool engineOwned=false;
@@ -27,6 +30,25 @@ HouseClass* liveHouse=nullptr;
 std::string missionSource;
 Uint32 lastStep=0;
 int priorCargo=0,priorPhase=0;
+
+void publishSimulation(){
+    if(!engineOwned)return;
+    const std::string payload=rts::json(simulation.publish());
+    EM_ASM({
+        if(typeof WCRTS!=="undefined")WCRTS.receive(UTF8ToString($0));
+    },payload.c_str());
+}
+
+rts::ResultCode command(rts::CommandKind kind,rts::EntityId actor,
+                        courier::Point tile={0,0},rts::EntityId target=0){
+    const rts::Command request={static_cast<uint64_t>(mission.frame)+1,
+        nextCommandSequence++,rts::PLAYER_HOUSE,actor,kind,tile,target};
+    const rts::CommandResult result=simulation.enqueue(request);
+    if(result.code==rts::ResultCode::Accepted)simulation.process(request.tick);
+    std::printf("[rts-command] seq=%llu code=%s actor=%u\n",
+        static_cast<unsigned long long>(result.sequence),rts::name(result.code),actor);
+    return result.code;
+}
 
 bool placeLiveUnits(){
     Houses.Set_Heap(HOUSE_MAX);
@@ -119,7 +141,10 @@ bool restartEngineMission(){
     mission.orderSink=courier::EngineFootBridge::onOrder;
     mission.orderContext=&footBridge;
     priorCargo=priorPhase=0;
+    nextCommandSequence=1;
+    simulation.restart();
     std::puts("[browser-engine-courier] mission restarted");
+    publishSimulation();
     return true;
 }
 
@@ -143,24 +168,26 @@ void frame(){
             if(engineOwned&&mission.phase==0&&mission.units[mission.selected].hp>0){
                 for(int j=2;j<4;j++)if(mission.units[j].hp>0&&
                     (mission.units[j].p==courier::Point{x,y})){
-                    attackOrdered=courier::orderAttack(mission,combat,mission.selected,j);
+                    attackOrdered=command(rts::CommandKind::Attack,
+                        rts::UNIT_IDS[mission.selected],{x,y},rts::UNIT_IDS[j])==rts::ResultCode::Accepted;
                     if(attackOrdered){
                         std::printf("[browser-engine-courier] attack-order unit=%d enemy=%d\n",
                                     mission.selected,j);
-                        if(courier::distance(mission.units[mission.selected].p,mission.units[j].p)>2){
-                            courier::Point approach{0,0};
-                            if(courier::approachEnemy(mission,mission.selected,j,approach))
-                                courier::assignDestination(mission,mission.selected,approach);
-                        }
                     }
                     break;
                 }
             }
             if(!attackOrdered){
                 const int selectedBefore=mission.selected;
-                courier::click(mission,{x,y});
-                if(engineOwned&&mission.selected==selectedBefore&&courier::inside(mission,{x,y})&&
-                   !(mission.units[selectedBefore].p==courier::Point{x,y}))combat.focus[selectedBefore]=-1;
+                if(engineOwned){
+                    int selectedUnit=-1;
+                    for(int i=0;i<2;i++)if(mission.units[i].hp>0&&
+                        mission.units[i].p==courier::Point{x,y})selectedUnit=i;
+                    if(selectedUnit>=0){
+                        command(rts::CommandKind::Select,rts::UNIT_IDS[selectedUnit]);
+                        std::printf("[browser-engine-courier] selected unit=%d\n",mission.selected);
+                    }else command(rts::CommandKind::Move,rts::UNIT_IDS[selectedBefore],{x,y});
+                }else courier::click(mission,{x,y});
             }
             std::printf("[browser-native-slice] click x=%d y=%d selected=%d route=%u\n",
                         x,y,mission.selected,static_cast<unsigned>(mission.units[mission.selected].route.size()));
@@ -178,6 +205,7 @@ void frame(){
                                     ::Target_Value(destination),decoded.x,decoded.y);
                 }
             }
+            publishSimulation();
         }else if(event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
             if(engineOwned){
                 if(!restartEngineMission())std::puts("[browser-engine-courier] ERROR: restart failed");
@@ -193,14 +221,15 @@ void frame(){
                  (event.key.keysym.sym==SDLK_1||event.key.keysym.sym==SDLK_2)){
             const int index=event.key.keysym.sym==SDLK_1?0:1;
             if(mission.units[index].hp>0){
-                mission.selected=index;
+                command(rts::CommandKind::Select,rts::UNIT_IDS[index]);
                 std::printf("[browser-engine-courier] selected unit=%d\n",index);
+                publishSimulation();
             }
         }else if(engineOwned&&mission.phase==0&&event.type==SDL_KEYDOWN&&
                  event.key.keysym.sym==SDLK_ESCAPE){
-            combat.focus[mission.selected]=-1;
-            courier::assignDestination(mission,mission.selected,mission.units[mission.selected].p);
+            command(rts::CommandKind::Stop,rts::UNIT_IDS[mission.selected]);
             std::printf("[browser-engine-courier] cancelled unit=%d\n",mission.selected);
+            publishSimulation();
         }else if(event.type==SDL_QUIT){
             emscripten_cancel_main_loop();return;
         }
@@ -209,6 +238,7 @@ void frame(){
     if(now-lastStep>=180){
         if(engineOwned)tickEngineMission();
         else courier::tick(mission);
+        publishSimulation();
         lastStep=now;
         if(priorCargo!=mission.cargo){
             priorCargo=mission.cargo;
@@ -317,6 +347,7 @@ int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
             return 4;
         }
         std::puts("[browser-engine-courier] movement source=InfantryClass::AI");
+        publishSimulation();
     }
     // Browser JS writes verified, decoded RGBA bytes to this exact MEMFS path.
     // The fallback marker above is used if the pack is not present/valid.

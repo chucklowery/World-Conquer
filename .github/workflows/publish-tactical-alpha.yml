@@ -53,7 +53,7 @@ jobs:
           cmake --build build/browser-engine --target VanillaTD --parallel 2
       - name: Stage mission and verified original assets
         run: |
-          cp browser/engine/{asset-import,original-asset,wireframe-asset,cargo-hd,vertical-slice,mission-pack,tactical-hud}.js build/browser-engine/
+          cp browser/engine/{asset-import,original-asset,wireframe-asset,cargo-hd,vertical-slice,mission-pack,tactical-hud,simulation-bridge}.js build/browser-engine/
           cp browser/engine/play.html build/browser-engine/
           mkdir -p build/browser-engine/missions build/browser-engine/cargo-hd
           cp game/content/missions/{courier-extraction.map,manifest.json} build/browser-engine/missions/
@@ -66,6 +66,7 @@ jobs:
           node browser/engine/test-asset-import.js
           node browser/engine/test-mission-pack.js
           node browser/engine/test-tactical-hud.js
+          node browser/engine/test-simulation-bridge.js
           node browser/engine/test-cargo-hd.js
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install --with-deps chromium

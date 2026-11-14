@@ -68,6 +68,7 @@ jobs:
           cp browser/engine/vertical-slice.js build/browser-engine/vertical-slice.js
           cp browser/engine/mission-pack.js build/browser-engine/mission-pack.js
           cp browser/engine/tactical-hud.js build/browser-engine/tactical-hud.js
+          cp browser/engine/simulation-bridge.js build/browser-engine/simulation-bridge.js
           cp browser/engine/play.html build/browser-engine/play.html
           mkdir -p build/browser-engine/missions
           cp game/content/missions/courier-extraction.map game/content/missions/manifest.json build/browser-engine/missions/
@@ -85,6 +86,7 @@ jobs:
           node browser/engine/test-vertical-slice.js
           node browser/engine/test-mission-pack.js
           node browser/engine/test-tactical-hud.js
+          node browser/engine/test-simulation-bridge.js
           node browser/engine/test-package-alpha.js
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-native-slice.cpp -o build/browser-engine/test-native-slice
           build/browser-engine/test-native-slice
@@ -92,6 +94,8 @@ jobs:
           build/browser-engine/test-world-plan
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-combat.cpp -o build/browser-engine/test-combat
           build/browser-engine/test-combat
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-simulation-contract.cpp -o build/browser-engine/test-simulation-contract
+          build/browser-engine/test-simulation-contract
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/replay-native-slice.cpp -o build/browser-engine/replay-native-slice
           node browser/engine/test-replay-parity.js build/browser-engine/replay-native-slice
           # The historical engine headers require the same compile definitions as VanillaTD.
@@ -152,7 +156,6 @@ jobs:
             build/browser-engine/play.html
             build/browser-engine/vertical-slice.js
             build/browser-engine/mission-pack.js
-            build/browser-engine/tactical-hud.js
             build/browser-engine/missions/**
           if-no-files-found: error
       - name: Upload engine HTML/JS/WASM artifacts
@@ -169,6 +172,8 @@ jobs:
             build/browser-engine/cargo-hd.js
             build/browser-engine/vertical-slice.js
             build/browser-engine/mission-pack.js
+            build/browser-engine/tactical-hud.js
+            build/browser-engine/simulation-bridge.js
             build/browser-engine/missions/**
             build/browser-engine/play.html
             build/browser-engine/cargo-hd/**
