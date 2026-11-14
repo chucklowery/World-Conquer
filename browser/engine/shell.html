@@ -51,6 +51,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <button type="button" id="run-shape" disabled>Render original SHP sample</button>
 <button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
 <button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
+<button type="button" id="run-engine-courier" disabled>Play Courier with native infantry movement (experimental)</button>
+<p class="note">Experimental engine-owned Courier: the two allied units use VanillaTD infantry movement and the original map-cell system. Supplies and extraction use Courier mission rules; sentry combat remains disabled in this mode. Press R to restart.</p>
 <button type="button" id="run-unit-probe" disabled>Test native infantry allocation (experimental)</button>
 <p class="note">The experimental infantry diagnostic allocates a production house and places one E1 unit onto native map cells. It is a one-shot probe, not the playable mission; reload before switching modes.</p>
 <p class="note">Native mission: click a green squad unit and a tile to move; press R to restart. This gameplay runs inside the compiled VanillaTD WebAssembly executable using original procedural visuals.</p>
@@ -158,6 +160,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   const shape = document.getElementById("run-shape");
   const wireframes = document.getElementById("run-wireframes");
   const nativeSlice = document.getElementById("run-native-slice");
+  const engineCourier = document.getElementById("run-engine-courier");
   const unitProbe = document.getElementById("run-unit-probe");
   const game = document.getElementById("run-game");
   const assetProbe = document.getElementById("run-asset-probe");
@@ -187,6 +190,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     shape.disabled = !ready || started || loadingAssets;
     wireframes.disabled = !ready || started || loadingAssets;
     nativeSlice.disabled = !ready || started;
+    engineCourier.disabled = !ready || started;
     unitProbe.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
@@ -196,7 +200,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    const names={"native-slice":"Playing native C++ tactical mission",probe:"SDL2 probe running",
+    const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",probe:"SDL2 probe running",
       cooperative:"Cooperative C++ loop running",assets:"Checking engine file search",
       shape:"Rendering original sprite",wireframes:"Rendering wireframe roster"};
     status(names[mode]||"Starting game (experimental)","running");
@@ -214,9 +218,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
   unitProbe.addEventListener("click", () => run(["--browser-unit-probe"], "unit-probe"));
-  nativeSlice.addEventListener("click", async () => {
+  async function launchCourier(mode) {
     if(!ready||started)return;
     nativeSlice.disabled=true;
+    engineCourier.disabled=true;
     try{
       const result=await WCWireframes.load(Module.FS,"wireframes/manifest.json");
       report("[browser-native-slice] staged verified tactical SHP pack ("+result.shapes+" resources)");
@@ -239,8 +244,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
       report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
     }
     canvas.style.aspectRatio="18/11";
-    run(["--browser-native-slice"],"native-slice");
-  });
+    run([mode==="engine-courier"?"--browser-engine-courier":"--browser-native-slice"],mode);
+  }
+  nativeSlice.addEventListener("click",()=>launchCourier("native-slice"));
+  engineCourier.addEventListener("click",()=>launchCourier("engine-courier"));
   shape.addEventListener("click", async () => {
     if (!ready || started || loadingAssets) return;
     loadingAssets = true;

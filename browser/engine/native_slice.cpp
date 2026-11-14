@@ -18,9 +18,85 @@ SDL_Texture* infantryTexture=nullptr;
 SDL_Texture* sceneryTexture=nullptr;
 courier::State mission;
 courier::EngineFootBridge footBridge;
+courier::WorldPlan worldPlacement={};
+bool engineOwned=false;
+InfantryClass* liveUnits[2]={nullptr,nullptr};
+HouseClass* liveHouse=nullptr;
 std::string missionSource;
 Uint32 lastStep=0;
 int priorCargo=0,priorPhase=0;
+
+bool placeLiveUnits(){
+    Houses.Set_Heap(HOUSE_MAX);
+    Infantry.Set_Heap(INFANTRY_MAX);
+    HouseClass::Init();
+    InfantryClass::Init();
+    liveHouse=new HouseClass(HOUSE_GOOD);
+    if(!liveHouse)return false;
+    PlayerPtr=liveHouse;
+    liveHouse->IsHuman=true;
+    GameActive=true;
+    ++ScenarioInit;
+    bool placed=true;
+    for(int i=0;i<2;i++){
+        liveUnits[i]=new InfantryClass(INFANTRY_E1,HOUSE_GOOD);
+        if(!liveUnits[i]||!liveUnits[i]->Unlimbo(
+            Cell_Coord(static_cast<CELL>(worldPlacement.units[i])),DIR_E)){
+            placed=false;break;
+        }
+    }
+    --ScenarioInit;
+    if(!placed)return false;
+    footBridge.units[0]=liveUnits[0];footBridge.units[1]=liveUnits[1];
+    footBridge.originX=16;footBridge.originY=16;
+    footBridge.issueMoveMission=true;
+    footBridge.worldReady=true;
+    std::puts("[browser-engine-courier] production infantry=2 on-map=ready");
+    return true;
+}
+
+void synchronizeLivePositions(){
+    for(int i=0;i<2;i++)if(liveUnits[i]){
+        const CELL cell=Coord_Cell(liveUnits[i]->Coord);
+        mission.units[i].p={Cell_X(cell)-16,Cell_Y(cell)-16};
+    }
+}
+
+void tickEngineMission(){
+    if(mission.phase!=0)return;
+    ++Frame;
+    for(int i=0;i<2;i++)if(liveUnits[i])liveUnits[i]->AI();
+    const courier::Point before[2]={mission.units[0].p,mission.units[1].p};
+    synchronizeLivePositions();
+    for(int i=0;i<2;i++)if(!(before[i]==mission.units[i].p))
+        std::printf("[browser-engine-courier] moved unit=%d x=%d y=%d\n",i,
+                    mission.units[i].p.x,mission.units[i].p.y);
+    for(int j=0;j<2;j++)if(!mission.collected[j])for(int i=0;i<2;i++)
+        if(courier::distance(mission.units[i].p,mission.crates[j])<=1){
+            mission.collected[j]=true;++mission.cargo;break;
+        }
+    if(mission.cargo==2)for(int i=0;i<2;i++)
+        if(courier::distance(mission.units[i].p,mission.exit)<=1)mission.phase=1;
+}
+
+bool restartEngineMission(){
+    if(!engineOwned)return false;
+    ++ScenarioInit;
+    bool reset=true;
+    for(int i=0;i<2;i++)if(!liveUnits[i]||!liveUnits[i]->Limbo()||
+       !liveUnits[i]->Unlimbo(Cell_Coord(static_cast<CELL>(worldPlacement.units[i])),DIR_E)){
+        reset=false;break;
+    }
+    --ScenarioInit;
+    if(!reset)return false;
+    mission=courier::State();
+    if(!missionSource.empty())courier::loadMap(mission,missionSource);
+    mission.orderSink=courier::EngineFootBridge::onOrder;
+    mission.orderContext=&footBridge;
+    priorCargo=priorPhase=0;
+    std::puts("[browser-engine-courier] mission restarted");
+    return true;
+}
 
 void fill(int x,int y,int w,int h,Uint8 r,Uint8 g,Uint8 b){
     SDL_Rect rect={x,y,w,h};
@@ -37,6 +113,7 @@ void frame(){
     while(SDL_PollEvent(&event)){
         if(event.type==SDL_MOUSEBUTTONDOWN&&event.button.button==SDL_BUTTON_LEFT){
             int x=event.button.x/40,y=event.button.y/40;
+            if(engineOwned)synchronizeLivePositions();
             courier::click(mission,{x,y});
             std::printf("[browser-native-slice] click x=%d y=%d selected=%d route=%u\n",
                         x,y,mission.selected,static_cast<unsigned>(mission.units[mission.selected].route.size()));
@@ -50,6 +127,10 @@ void frame(){
                 }
             }
         }else if(event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
+            if(engineOwned){
+                if(!restartEngineMission())std::puts("[browser-engine-courier] ERROR: restart failed");
+                continue;
+            }
             mission=courier::State();
             if(!missionSource.empty())courier::loadMap(mission,missionSource);
             mission.orderSink=courier::EngineFootBridge::onOrder;
@@ -62,7 +143,9 @@ void frame(){
     }
     const Uint32 now=SDL_GetTicks();
     if(now-lastStep>=180){
-        courier::tick(mission);lastStep=now;
+        if(engineOwned)tickEngineMission();
+        else courier::tick(mission);
+        lastStep=now;
         if(priorCargo!=mission.cargo){
             priorCargo=mission.cargo;
             std::printf("[browser-native-slice] crates=%d/2\n",priorCargo);
@@ -110,7 +193,8 @@ void frame(){
 }
 }
 
-int Browser_Native_Slice(const char* argv0){
+int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
+    engineOwned=withEngineUnits;
     if(SDL_Init(SDL_INIT_VIDEO)!=0){std::fprintf(stderr,"[browser-native-slice] SDL_Init failed: %s\n",SDL_GetError());return 1;}
     window=SDL_CreateWindow("Courier Extraction (native C++)",SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED,720,440,SDL_WINDOW_SHOWN);
@@ -138,13 +222,20 @@ int Browser_Native_Slice(const char* argv0){
     mission.orderSink=courier::EngineFootBridge::onOrder;
     mission.orderContext=&footBridge;
     std::puts("[browser-native-slice] engine FootClass dispatch=deferred (world not initialized)");
-    courier::WorldPlan placement={};
-    if(courier::planWorld(mission,16,16,MAP_CELL_W,MAP_CELL_H,placement)){
+    bool mapStaged=false;
+    if(courier::planWorld(mission,16,16,MAP_CELL_W,MAP_CELL_H,worldPlacement)){
         std::printf("[browser-native-slice] engine world plan=ready cells=198 walls=%d scout-cell=%d\n",
-                    placement.blockedCount,placement.units[0]);
-        const bool staged=courier::stageEngineMap(mission,placement);
-        std::printf("[browser-native-slice] engine MapClass terrain=%s\n",staged?"staged":"invalid");
+                    worldPlacement.blockedCount,worldPlacement.units[0]);
+        mapStaged=courier::stageEngineMap(mission,worldPlacement);
+        std::printf("[browser-native-slice] engine MapClass terrain=%s\n",mapStaged?"staged":"invalid");
     }else std::puts("[browser-native-slice] engine world plan=invalid");
+    if(engineOwned){
+        if(!mapStaged||!placeLiveUnits()){
+            std::puts("[browser-engine-courier] ERROR: production units could not initialize");
+            return 4;
+        }
+        std::puts("[browser-engine-courier] movement source=InfantryClass::AI");
+    }
     // Browser JS writes verified, decoded RGBA bytes to this exact MEMFS path.
     // The fallback marker above is used if the pack is not present/valid.
     if(FILE* input=std::fopen("/COURIER.RGBA","rb")){
@@ -169,4 +260,6 @@ int Browser_Native_Slice(const char* argv0){
     emscripten_set_main_loop(frame,0,1);
     return 0;
 }
+int Browser_Native_Slice(const char* argv0){return Launch_Courier_Slice(argv0,false);}
+int Browser_Engine_Courier(const char* argv0){return Launch_Courier_Slice(argv0,true);}
 #endif

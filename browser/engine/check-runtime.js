@@ -143,6 +143,28 @@ async function main() {
     assert((await page.locator("#log").textContent()).includes("on-map=yes"),
            "Native infantry diagnostic did not place a real infantry on MapClass");
     messages.push("PASS: original VanillaTD HouseClass and InfantryClass allocated and placed on the real map");
+    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
+    await page.locator("#run-engine-courier").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] movement source=InfantryClass::AI"),
+                               undefined,{timeout:40000});
+    await page.locator("#canvas").click({position:{x:60,y:100}});
+    await page.locator("#canvas").click({position:{x:140,y:100}});
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] moved unit=0"),
+                               undefined,{timeout:45000});
+    await page.locator("#canvas").click({position:{x:300,y:100}}); // first supply crate (7,2)
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] crates=1/2"),
+                               undefined,{timeout:120000});
+    await page.locator("#canvas").click({position:{x:620,y:180}}); // second crate (15,4)
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] crates=2/2"),
+                               undefined,{timeout:120000});
+    await page.locator("#canvas").click({position:{x:660,y:340}}); // approach extraction (16,8)
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] result=victory"),
+                               undefined,{timeout:120000});
+    await page.keyboard.press("r");
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] mission restarted"),
+                               undefined,{timeout:15000});
+    messages.push("PASS: engine-owned E1 infantry recovered both crates, extracted, and restarted via VanillaTD AI");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

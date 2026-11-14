@@ -184,6 +184,25 @@ This is an **on-map object-allocation diagnostic**, not a playable
 engine movement loop or a replacement for the remaining theater and
 visibility initialization required by full campaign gameplay.
 
+### Experimental engine-owned Courier movement
+
+The launcher also exposes **Play Courier with native infantry movement
+(experimental)**. It stages the verified 18×11 mission in real `MapClass`
+cells, allocates a player house and two `INFANTRY_E1` objects, and places
+them via `Unlimbo()`. Clicks dispatch actual `MISSION_MOVE` commands with
+translated cell `TARGET`s. Every native tick invokes `InfantryClass::AI()`;
+the SDL renderer reads the players' real `Coord_Cell()` positions, rather
+than advancing Courier's independent breadth-first movement. Cargo pickup,
+extraction victory, and restart remain mission-level logic. Static sentry
+markers are retained for visual context, but they do not attack in this
+experimental mode. The existing `--browser-native-slice` remains available
+unchanged as a fallback.
+
+Chromium CI requires successful production unit staging, a changed engine
+unit position, and a restart. **The experimental movement path is not
+considered validated until that hosted test passes.** This is a constrained
+single-mission engine integration, not the full historical campaign startup.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.
