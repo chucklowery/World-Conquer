@@ -16,6 +16,8 @@ p{color:#b8c8d8;line-height:1.55}
 .status{padding:11px 15px;margin:20px 0;border:1px solid #365e64;border-radius:9px;background:#172e37;color:#aff0d6}
 canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
 canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
+#cargo-hd-canvas{width:min(100%,512px);aspect-ratio:1/1}
+#vertical-slice-canvas{aspect-ratio:18/11;cursor:crosshair;touch-action:manipulation}
 button,label.pick{display:inline-block;margin:5px 5px 5px 0;padding:10px 13px;border:1px solid #64848a;border-radius:8px;background:#234452;color:#eefcf8;font:600 .9rem system-ui;cursor:pointer}
 button.primary{background:#237357;border-color:#4dac84}
 button:disabled{opacity:.45;cursor:default}
@@ -35,11 +37,31 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <div class="grid">
 <section class="panel">
 <h2>Engine canvas</h2>
+<h3>Play the original-content tactical slice</h3>
+<canvas id="vertical-slice-canvas" width="900" height="550" aria-label="Tactical supply extraction game map"></canvas>
+<button type="button" id="slice-start" class="primary">Start tactical mission</button>
+<button type="button" id="slice-restart" disabled>Restart mission</button>
+<p id="slice-status" class="note" role="status">Recover two supply crates, survive the sentries, and reach the cargo aircraft. Select a green unit, then click a destination. No game data required.</p>
+<p class="note">This is a standalone original-content gameplay slice. The experimental VanillaTD C++ campaign remains separate below.</p>
+<h3>VanillaTD engine diagnostics</h3>
 <!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
 <canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
+<button type="button" id="run-shape" disabled>Render original SHP sample</button>
+<button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
+<button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
+<p class="note">Native mission: click a green squad unit and a tile to move; press R to restart. This gameplay runs inside the compiled VanillaTD WebAssembly executable using original procedural visuals.</p>
+<h3>WF-0002 HD cargo transport (independent preview)</h3>
+<canvas id="cargo-hd-canvas" width="512" height="512" aria-label="High-resolution Courier cargo aircraft preview"></canvas>
+<button type="button" id="load-cargo-hd">Load verified HD aircraft</button>
+<button type="button" id="cargo-prev" disabled>Previous heading</button>
+<button type="button" id="cargo-next" disabled>Next heading</button>
+<button type="button" id="cargo-ramp" disabled>Cycle ramp stages</button>
+<p id="cargo-hd-status" class="note" role="status">HD preview not loaded; native 32×32 SHP remains the engine fallback.</p>
 <p class="note">No game assets required. Select either probe (reload to switch modes). Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
+<p class="note">The original SHP diagnostic loads project-owned sprite and palette files from <code>content/</code>. It draws the sprite through the game's own tactical <code>CC_Draw_Shape()</code> into an offscreen buffer and presents that buffer with SDL2. It does not initialize a mission.</p>
+<p class="note">The wireframe roster diagnostic separately loads six verified, original-art placeholder SHPs from <code>wireframes/</code>, stages them in memory, then checks real C++ resource lookup and <code>CC_Draw_Shape()</code> for infantry, vehicle, aircraft, building, terrain and effect. Their final game-state frame layouts are not yet validated.</p>
 <h2>Runtime log</h2>
 <pre id="log" aria-live="polite"></pre>
 </section>
@@ -59,13 +81,81 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 </section>
 </div>
 <script src="asset-import.js"></script>
+<script src="original-asset.js"></script>
+<script src="wireframe-asset.js"></script>
+<script src="cargo-hd.js"></script>
+<script src="vertical-slice.js"></script>
+<script src="mission-pack.js"></script>
 <script>
 (function () {
   "use strict";
+  const sliceCanvas=document.getElementById("vertical-slice-canvas");
+  const sliceStatus=document.getElementById("slice-status");
+  const sliceStart=document.getElementById("slice-start");
+  const sliceRestart=document.getElementById("slice-restart");
+  const sliceCtx=sliceCanvas.getContext("2d");
+  let slice=null,sliceTimer=null,sliceAircraft=null;
+  function paintSlice(){
+    if(!slice)return;
+    WCVerticalSlice.render(sliceCtx,slice,sliceAircraft);
+    sliceStatus.textContent=`${slice.message} | Cargo ${slice.cargo}/2 | ${slice.phase.toUpperCase()}`;
+    if(slice.phase!=="playing"&&sliceTimer){clearInterval(sliceTimer);sliceTimer=null;}
+  }
+  async function beginSlice(){
+    if(sliceTimer)clearInterval(sliceTimer);
+    let map;
+    try{map=(await WCMissionPack.load()).map;}
+    catch(error){report("[mission] Mission pack unavailable; using built-in fallback: "+error.message,true);}
+    slice=WCVerticalSlice.start(map);
+    sliceRestart.disabled=false;
+    paintSlice();
+    sliceTimer=setInterval(()=>{WCVerticalSlice.tick(slice);paintSlice();},200);
+  }
+  sliceStart.addEventListener("click",beginSlice);
+  sliceRestart.addEventListener("click",beginSlice);
+  sliceCanvas.addEventListener("click",event=>{
+    if(!slice||slice.phase!=="playing")return;
+    const r=sliceCanvas.getBoundingClientRect();
+    const x=Math.floor((event.clientX-r.left)/r.width*slice.width);
+    const y=Math.floor((event.clientY-r.top)/r.height*slice.height);
+    WCVerticalSlice.select(slice,x,y);paintSlice();
+  });
+  const hdCanvas = document.getElementById("cargo-hd-canvas");
+  const hdStatus = document.getElementById("cargo-hd-status");
+  const hdLoad = document.getElementById("load-cargo-hd");
+  const hdPrev = document.getElementById("cargo-prev");
+  const hdNext = document.getElementById("cargo-next");
+  const hdRamp = document.getElementById("cargo-ramp");
+  let hdImages = null, hdFrame = 0;
+  function paintHD(frame) {
+    hdFrame = frame;
+    WCCargoHD.draw(hdCanvas.getContext("2d"), hdImages, frame);
+    hdStatus.textContent = `Verified 512×512 HD preview — ${frame<32 ? `heading ${frame+1}/32` : `ramp ${frame-31}/4`}; independent of the C++ renderer.`;
+  }
+  hdLoad.addEventListener("click", async () => {
+    hdLoad.disabled = true;
+    hdStatus.textContent = "Verifying all 36 HD image hashes…";
+    try {
+      hdImages = await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
+      sliceAircraft=hdImages[0];
+      if(slice)paintSlice();
+      hdPrev.disabled = hdNext.disabled = hdRamp.disabled = false;
+      paintHD(0);
+    } catch (error) {
+      hdStatus.textContent = `HD unavailable (${error.message}); native SHP fallback unchanged.`;
+      hdLoad.disabled = false;
+    }
+  });
+  hdPrev.addEventListener("click", () => paintHD((hdFrame+31)%32));
+  hdNext.addEventListener("click", () => paintHD((hdFrame+1)%32));
+  hdRamp.addEventListener("click", () => paintHD(32+(hdFrame<32 ? 0 : (hdFrame-31)%4)));
   const state = document.getElementById("runtime-state");
   const log = document.getElementById("log");
   const probe = document.getElementById("run-probe");
   const cooperative = document.getElementById("run-cooperative");
+  const shape = document.getElementById("run-shape");
+  const wireframes = document.getElementById("run-wireframes");
+  const nativeSlice = document.getElementById("run-native-slice");
   const game = document.getElementById("run-game");
   const assetProbe = document.getElementById("run-asset-probe");
   const assetStatus = document.getElementById("asset-status");
@@ -91,6 +181,9 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   function controls() {
     probe.disabled = !ready || started;
     cooperative.disabled = !ready || started;
+    shape.disabled = !ready || started || loadingAssets;
+    wireframes.disabled = !ready || started || loadingAssets;
+    nativeSlice.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
   }
@@ -99,7 +192,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : (mode === "assets" ? "Checking engine file search" : "Starting game (experimental)")), "running");
+    const names={"native-slice":"Playing native C++ tactical mission",probe:"SDL2 probe running",
+      cooperative:"Cooperative C++ loop running",assets:"Checking engine file search",
+      shape:"Rendering original sprite",wireframes:"Rendering wireframe roster"};
+    status(names[mode]||"Starting game (experimental)","running");
     canvas.focus();
     try {
       Module.callMain(args);
@@ -113,6 +209,63 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   }
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
+  nativeSlice.addEventListener("click", async () => {
+    if(!ready||started)return;
+    nativeSlice.disabled=true;
+    try{
+      const result=await WCWireframes.load(Module.FS,"wireframes/manifest.json");
+      report("[browser-native-slice] staged verified tactical SHP pack ("+result.shapes+" resources)");
+    }catch(error){report("[browser-native-slice] Tactical SHP pack unavailable; using unit markers: "+error.message,true);}
+    try{
+      const mission=await WCMissionPack.load();
+      Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
+      report("[browser-native-slice] staged verified original-content mission map");
+    }catch(error){report("[browser-native-slice] Mission pack unavailable; using built-in map: "+error.message,true);}
+    try {
+      if(!hdImages)hdImages=await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
+      const offscreen=document.createElement("canvas");
+      offscreen.width=offscreen.height=512;
+      const ctx=offscreen.getContext("2d",{willReadFrequently:true});
+      ctx.drawImage(hdImages[0],0,0);
+      const rgba=new Uint8Array(ctx.getImageData(0,0,512,512).data);
+      Module.FS.writeFile("/COURIER.RGBA",rgba);
+      report("[browser-native-slice] staged verified 512x512 RGBA cargo texture");
+    } catch(error) {
+      report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
+    }
+    canvas.style.aspectRatio="18/11";
+    run(["--browser-native-slice"],"native-slice");
+  });
+  shape.addEventListener("click", async () => {
+    if (!ready || started || loadingAssets) return;
+    loadingAssets = true;
+    controls();
+    try {
+      const result = await WCContent.load(Module.FS, "content/manifest.json");
+      report("[browser-shape] verified " + result.count + " bundled original assets (" + result.bytes + " bytes)");
+      loadingAssets = false;
+      run(["--browser-shape-probe"], "shape");
+    } catch (error) {
+      loadingAssets = false;
+      report("[browser-shape] " + error.message, true);
+      controls();
+    }
+  });
+  wireframes.addEventListener("click", async () => {
+    if (!ready || started || loadingAssets) return;
+    loadingAssets = true;
+    controls();
+    try {
+      const result = await WCWireframes.load(Module.FS, "wireframes/manifest.json");
+      report("[browser-wireframes] verified and staged " + result.shapes + " shapes and palette (" + result.bytes + " bytes)");
+      loadingAssets = false;
+      run(["--browser-wireframe-probe"], "wireframes");
+    } catch (error) {
+      loadingAssets = false;
+      report("[browser-wireframes] " + error.message, true);
+      controls();
+    }
+  });
   game.addEventListener("click", () => run([], "game"));
   assetProbe.addEventListener("click", () => run(["--browser-data-probe"], "assets"));
 

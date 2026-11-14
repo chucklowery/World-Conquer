@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Verified browser smoke-test roster; not production animation contracts",
+  "assets": [
+    {"id": "WF-0185", "category": "infantry", "engineEnum": "INFANTRY_E1", "engineFilename": "E1.SHP", "label": "Infantry"},
+    {"id": "WF-0289", "category": "vehicle", "engineEnum": "UNIT_MTANK", "engineFilename": "MTNK.SHP", "label": "Tank"},
+    {"id": "WF-0004", "category": "aircraft", "engineEnum": "AIRCRAFT_ORCA", "engineFilename": "ORCA.SHP", "label": "Aircraft"},
+    {"id": "WF-0013", "category": "building", "engineEnum": "STRUCT_CONST", "engineFilename": "FACT.SHP", "label": "Construction yard"},
+    {"id": "WF-0256", "category": "terrain", "engineEnum": "TERRAIN_TREE1", "engineFilename": "T01.SHP", "label": "Tree"},
+    {"id": "WF-0072", "category": "effect", "engineEnum": "ANIM_ART_EXP1", "engineFilename": "ART-EXP1.SHP", "label": "Explosion"}
+  ]
+}

@@ -10,10 +10,11 @@ const {chromium} = require("playwright");
 
 const root = path.resolve(__dirname, "../../build/browser-engine");
 const messages = [];
-const mime = {".html": "text/html", ".js": "text/javascript", ".wasm": "application/wasm"};
+const mime = {".html": "text/html", ".js": "text/javascript", ".wasm": "application/wasm", ".json": "application/json", ".shp": "application/octet-stream"};
 const server = http.createServer((req, res) => {
   const filename = decodeURIComponent((req.url || "/").split("?")[0]);
-  if (!/^\/[a-zA-Z0-9_.-]+$/.test(filename)) {
+  if (!/^\/[a-zA-Z0-9_./-]+$/.test(filename) || filename.split("/").includes("..") ||
+      filename.split("/").includes(".")) {
     res.writeHead(400); res.end("Invalid path"); return;
   }
   const full = path.join(root, filename.substring(1));
@@ -35,6 +36,19 @@ async function main() {
   try {
     await page.goto("http://127.0.0.1:" + port + "/vanillatd.html", {waitUntil: "domcontentloaded", timeout: 90000});
     await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    const sliceCanvas=page.locator("#vertical-slice-canvas");
+    const sliceBlank=await sliceCanvas.screenshot();
+    await page.locator("#slice-start").click();
+    const sliceStarted=await sliceCanvas.screenshot();
+    assert(!sliceBlank.equals(sliceStarted), "Standalone mission did not render a map");
+    assert((await page.locator("#slice-status").textContent()).includes("Cargo 0/2"));
+    await sliceCanvas.click({position:{x:75,y:125}}); // select starting scout
+    await sliceCanvas.click({position:{x:175,y:125}}); // order move east
+    await page.waitForTimeout(700);
+    assert((await page.locator("#slice-status").textContent()).includes("PLAYING"));
+    await page.locator("#slice-restart").click();
+    assert((await page.locator("#slice-status").textContent()).includes("Cargo 0/2"));
+    messages.push("PASS: no-game-data tactical scenario launches, draws and accepts move/restart input");
     messages.push("Real VanillaTD WASM runtime initialized");
     await page.locator("#run-probe").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-probe] real VanillaTD module"),
@@ -83,9 +97,99 @@ async function main() {
     assert.equal(await page.locator("body").getAttribute("data-mode"), "cooperative");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: synchronous C++ loop yielded to JavaScript heartbeat and SDL2 mouse/keyboard input");
+    // A real C++ tactical mission, not the independent JavaScript slice.
+    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
+    await page.locator("#run-native-slice").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] C++ tactical mission started"),
+                               undefined,{timeout:40000});
+    assert((await page.locator("#log").textContent()).includes("verified external mission map loaded"),
+           "Native C++ mission did not consume the verified source-controlled map");
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] verified HD aircraft texture=loaded"),
+           "Verified Courier RGBA texture was not loaded by native C++ renderer");
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] tactical infantry sprite=loaded"),
+           "Original infantry SHP was not resolved and rendered by CC_Draw_Shape");
+    assert((await page.locator("#log").textContent()).includes("[browser-native-slice] tactical terrain sprite=loaded"),
+           "Original terrain SHP was not resolved and rendered by CC_Draw_Shape");
+    const nativeCanvas=page.locator("#canvas");
+    const nativeBefore=await nativeCanvas.screenshot();
+    await nativeCanvas.click({position:{x:60,y:100}}); // scout at (1,2)
+    await nativeCanvas.click({position:{x:140,y:100}}); // issue a reachable eastward move
+    await page.waitForFunction(() => /\[browser-native-slice\] click x=\d+ y=2 selected=0 route=[1-9]/.test(
+      document.getElementById("log").textContent),
+                               undefined,{timeout:15000});
+    await page.waitForTimeout(800);
+    const nativeAfter=await nativeCanvas.screenshot();
+    assert(!nativeBefore.equals(nativeAfter),"Native C++ unit did not move");
+    await page.keyboard.press("r");
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-native-slice] mission restarted"),
+                               undefined,{timeout:15000});
+    assert.equal(await page.locator("body").getAttribute("data-mode"),"native-slice");
+    messages.push("PASS: original-content tactical mission moves and restarts inside real VanillaTD WASM executable");
+    // Original project-owned sprite, no EA media: verified HTTP package,
+    // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    const emptyCanvas = await page.locator("#canvas").screenshot();
+    await page.locator("#run-shape").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-shape] CC_Draw_Shape rendered original tactical SHP via engine buffer"),
+                               undefined, {timeout: 40000});
+    await page.waitForTimeout(250);
+    const renderedCanvas = await page.locator("#canvas").screenshot();
+    assert(!emptyCanvas.equals(renderedCanvas), "Original shape was not rendered to canvas");
+    assert.equal(await page.locator("body").getAttribute("data-mode"), "shape");
+    messages.push("PASS: original sample SHP loaded with integrity check and rendered by engine SDL2 diagnostic");
+    // HD canvas is deliberately separate from the C++ tactical SHP renderer.
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    await page.locator("#load-cargo-hd").click();
+    await page.waitForFunction(() => document.getElementById("cargo-hd-status").textContent.includes("heading 1/32"),
+                               undefined, {timeout: 60000});
+    const hdBefore = await page.locator("#cargo-hd-canvas").screenshot();
+    await page.locator("#cargo-next").click();
+    const hdAfter = await page.locator("#cargo-hd-canvas").screenshot();
+    assert(!hdBefore.equals(hdAfter), "HD heading switch did not update the canvas");
+    await page.locator("#cargo-ramp").click();
+    assert((await page.locator("#cargo-hd-status").textContent()).includes("ramp 1/4"));
+    assert.equal(await page.locator("body").getAttribute("data-mode"), "idle",
+                 "HD preview must not launch the native game or change its mode");
+    messages.push("PASS: HD SHA-verified 512x512 directional/ramp canvas rendering independent of native engine");
+    // Six project-owned wireframes loaded by manifest/roster, SHA-256 verified,
+    // resolved by CCFileClass and actually drawn with CC_Draw_Shape.
+    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    const blankRoster = await page.locator("#canvas").screenshot();
+    await page.locator("#run-wireframes").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-wireframes] rendered 6 original placeholder shapes via native engine"),
+                               undefined, {timeout: 40000});
+    await page.waitForTimeout(250);
+    const renderedRoster = await page.locator("#canvas").screenshot();
+    assert(!blankRoster.equals(renderedRoster), "Six-class wireframe roster did not render to canvas");
+    const rosterLog = await page.locator("#log").textContent();
+    const expectedContracts=JSON.parse(fs.readFileSync(path.join(root,"wireframes/contracts.json"),"utf8"));
+    for(const {engineFilename:filename, diagnosticActionFrame:stateFrame} of expectedContracts.assets){
+      const line=rosterLog.split("\n").find(entry=>entry.includes("[browser-wireframes] CC_Draw_Shape " + filename + " "));
+      assert(line && line.includes("state-frame=" + stateFrame + " pixels="), filename + " action frame was not drawn by engine");
+      assert(await page.evaluate(filename => Module.FS.analyzePath("/game/" + filename).exists, filename), filename + " missing from MEMFS");
+    }
+    assert(rosterLog.includes("verified and staged 7 shapes and palette"), "Separate buildup SHP was not staged");
+    assert(await page.evaluate(() => Module.FS.analyzePath("/game/FACTMAKE.SHP").exists),
+           "FACTMAKE.SHP missing from MEMFS");
+    assert.equal(await page.locator("body").getAttribute("data-mode"), "wireframes");
+    await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
+    messages.push("PASS: manifest-verified six-class base and action frames rendered by actual VanillaTD CC_Draw_Shape");
+    // Direct-launch build uses the same checksum-verified mission pack without WASM.
+    await page.goto("http://127.0.0.1:"+port+"/play.html",{waitUntil:"domcontentloaded",timeout:30000});
+    await page.locator("#start").click();
+    await page.waitForFunction(() => document.getElementById("status").textContent.includes("PLAYING"),
+                               undefined,{timeout:20000});
+    assert((await page.locator("#status").textContent()).includes("Supplies 0/2"));
+    await page.locator("#restart").click();
+    assert((await page.locator("#status").textContent()).includes("Supplies 0/2"));
+    messages.push("PASS: direct-launch static browser mission and restart without WASM or proprietary media");
     // Synthetic stand-ins exercise MEMFS and the real C++ file search,
     // but are NOT game assets and cannot prove archive/mission validity.
-    await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
+    await page.goto("http://127.0.0.1:" + port + "/vanillatd.html", {waitUntil: "domcontentloaded", timeout: 90000});
     await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
     assert.equal(await page.locator("#run-game").isDisabled(), true);
     await page.locator("#select-files").setInputFiles([
