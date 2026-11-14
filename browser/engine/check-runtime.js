@@ -36,6 +36,19 @@ async function main() {
   try {
     await page.goto("http://127.0.0.1:" + port + "/vanillatd.html", {waitUntil: "domcontentloaded", timeout: 90000});
     await page.waitForFunction(() => document.body.dataset.runtime === "ready", undefined, {timeout: 90000});
+    const sliceCanvas=page.locator("#vertical-slice-canvas");
+    const sliceBlank=await sliceCanvas.screenshot();
+    await page.locator("#slice-start").click();
+    const sliceStarted=await sliceCanvas.screenshot();
+    assert(!sliceBlank.equals(sliceStarted), "Standalone mission did not render a map");
+    assert((await page.locator("#slice-status").textContent()).includes("Cargo 0/2"));
+    await sliceCanvas.click({position:{x:75,y:125}}); // select starting scout
+    await sliceCanvas.click({position:{x:175,y:125}}); // order move east
+    await page.waitForTimeout(700);
+    assert((await page.locator("#slice-status").textContent()).includes("PLAYING"));
+    await page.locator("#slice-restart").click();
+    assert((await page.locator("#slice-status").textContent()).includes("Cargo 0/2"));
+    messages.push("PASS: no-game-data tactical scenario launches, draws and accepts move/restart input");
     messages.push("Real VanillaTD WASM runtime initialized");
     await page.locator("#run-probe").click();
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-probe] real VanillaTD module"),

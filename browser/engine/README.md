@@ -2,6 +2,22 @@
 
 This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not the independent SDL2 smoke test. It deliberately defers game main() until the user starts it.
 
+## Original-content browser-playable vertical slice
+
+Click **Start tactical mission** in the browser shell. A deterministic, self-contained
+18×11 mission opens without any third-party data: select either green squad member,
+click a clear tile to move along a four-way path, retrieve the two amber supply
+crates, survive the red sentries, and reach the Courier extraction zone. Restart
+after victory or defeat. The original aircraft HD frame appears in the extraction
+zone if the separately verified HD pack has been loaded; otherwise the landing
+zone has a schematic aircraft marker. Tests cover pathfinding, pickup, victory,
+defeat and the responsive browser canvas. Source: `vertical-slice.js`.
+
+This **is gameplay, but it is not the native VanillaTD campaign**: the mission
+simulation and canvas renderer are independent browser JavaScript. It is intended
+to playtest controls, layout, original artwork and the supply-extraction loop
+while the C++ gameplay asset/mission integration is still underway.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.

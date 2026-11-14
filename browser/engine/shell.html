@@ -17,6 +17,7 @@ p{color:#b8c8d8;line-height:1.55}
 canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
 canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
 #cargo-hd-canvas{width:min(100%,512px);aspect-ratio:1/1}
+#vertical-slice-canvas{aspect-ratio:18/11;cursor:crosshair;touch-action:manipulation}
 button,label.pick{display:inline-block;margin:5px 5px 5px 0;padding:10px 13px;border:1px solid #64848a;border-radius:8px;background:#234452;color:#eefcf8;font:600 .9rem system-ui;cursor:pointer}
 button.primary{background:#237357;border-color:#4dac84}
 button:disabled{opacity:.45;cursor:default}
@@ -36,6 +37,13 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <div class="grid">
 <section class="panel">
 <h2>Engine canvas</h2>
+<h3>Play the original-content tactical slice</h3>
+<canvas id="vertical-slice-canvas" width="900" height="550" aria-label="Tactical supply extraction game map"></canvas>
+<button type="button" id="slice-start" class="primary">Start tactical mission</button>
+<button type="button" id="slice-restart" disabled>Restart mission</button>
+<p id="slice-status" class="note" role="status">Recover two supply crates, survive the sentries, and reach the cargo aircraft. Select a green unit, then click a destination. No game data required.</p>
+<p class="note">This is a standalone original-content gameplay slice. The experimental VanillaTD C++ campaign remains separate below.</p>
+<h3>VanillaTD engine diagnostics</h3>
 <!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
 <canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
@@ -74,9 +82,38 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <script src="original-asset.js"></script>
 <script src="wireframe-asset.js"></script>
 <script src="cargo-hd.js"></script>
+<script src="vertical-slice.js"></script>
 <script>
 (function () {
   "use strict";
+  const sliceCanvas=document.getElementById("vertical-slice-canvas");
+  const sliceStatus=document.getElementById("slice-status");
+  const sliceStart=document.getElementById("slice-start");
+  const sliceRestart=document.getElementById("slice-restart");
+  const sliceCtx=sliceCanvas.getContext("2d");
+  let slice=null,sliceTimer=null,sliceAircraft=null;
+  function paintSlice(){
+    if(!slice)return;
+    WCVerticalSlice.render(sliceCtx,slice,sliceAircraft);
+    sliceStatus.textContent=`${slice.message} | Cargo ${slice.cargo}/2 | ${slice.phase.toUpperCase()}`;
+    if(slice.phase!=="playing"&&sliceTimer){clearInterval(sliceTimer);sliceTimer=null;}
+  }
+  function beginSlice(){
+    if(sliceTimer)clearInterval(sliceTimer);
+    slice=WCVerticalSlice.start();
+    sliceRestart.disabled=false;
+    paintSlice();
+    sliceTimer=setInterval(()=>{WCVerticalSlice.tick(slice);paintSlice();},200);
+  }
+  sliceStart.addEventListener("click",beginSlice);
+  sliceRestart.addEventListener("click",beginSlice);
+  sliceCanvas.addEventListener("click",event=>{
+    if(!slice||slice.phase!=="playing")return;
+    const r=sliceCanvas.getBoundingClientRect();
+    const x=Math.floor((event.clientX-r.left)/r.width*slice.width);
+    const y=Math.floor((event.clientY-r.top)/r.height*slice.height);
+    WCVerticalSlice.select(slice,x,y);paintSlice();
+  });
   const hdCanvas = document.getElementById("cargo-hd-canvas");
   const hdStatus = document.getElementById("cargo-hd-status");
   const hdLoad = document.getElementById("load-cargo-hd");
@@ -94,6 +131,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     hdStatus.textContent = "Verifying all 36 HD image hashes…";
     try {
       hdImages = await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
+      sliceAircraft=hdImages[0];
+      if(slice)paintSlice();
       hdPrev.disabled = hdNext.disabled = hdRamp.disabled = false;
       paintHD(0);
     } catch (error) {
