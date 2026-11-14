@@ -1,0 +1,9 @@
+# Deterministic command stream: select/move are map tile coordinates; tick advances frames.
+select 1 2
+move 4 2
+tick 2
+move 4 4
+tick 3
+select 2 3
+move 3 6
+tick 5

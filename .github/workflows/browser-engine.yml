@@ -85,6 +85,8 @@ jobs:
           node browser/engine/test-mission-pack.js
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-native-slice.cpp -o build/browser-engine/test-native-slice
           build/browser-engine/test-native-slice
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/replay-native-slice.cpp -o build/browser-engine/replay-native-slice
+          node browser/engine/test-replay-parity.js build/browser-engine/replay-native-slice
           test -s browser/engine/play.html
           test -s build/browser-engine/play.html
       - name: Verify original content pipeline

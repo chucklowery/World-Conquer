@@ -97,6 +97,18 @@ same behavior, with host C++ and Node regression coverage. This remains a
 that VanillaTD mission movement is active; binding it to real engine units
 requires the production world and house initialization sequence.
 
+### Native/JavaScript replay parity
+
+The checked-in `courier-replay.txt` is a small, deterministic tile-command
+stream (`select x y`, `move x y`, `tick count`). The host C++ replay runner
+loads the validated mission map, executes those commands through Courier's
+native click/tick boundary, and prints the resulting mission state. The Node
+parity test executes the same commands through the browser slice and compares
+frame, selected unit, cargo, phase, all unit positions and HP, and pending
+movement commands. GitHub Actions compiles and runs both implementations on
+each browser build. This establishes a regression fixture for future engine
+unit-system work; it is **not** a production replay/save-game format.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.
