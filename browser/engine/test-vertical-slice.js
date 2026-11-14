@@ -10,9 +10,23 @@ assert.equal(game.path(s,{x:1,y:2},{x:7,y:2},new Set()).some(p=>p.x===5&&p.y===2
 assert.equal(game.select(s,1,2),true);
 assert.equal(game.select(s,7,2),true);
 assert(s.units[0].path.length>0);
+assert.deepEqual(s.units[0].destination,{x:7,y:2});
+assert.equal(game.select(s,5,2),false);
+assert.deepEqual(s.units[0].destination,{x:7,y:2});
 for(let i=0;i<12;i++)game.tick(s);
 assert(s.frame===12);
 assert(s.units[0].x!==1||s.units[0].y!==2);
+const nav=game.start();
+nav.units.filter(u=>u.team==="enemy").forEach(u=>u.hp=0);
+assert.equal(game.select(nav,4,2),true);
+nav.units[1].x=3;nav.units[1].y=2;
+game.tick(nav);
+assert.deepEqual({x:nav.units[0].x,y:nav.units[0].y},{x:2,y:2});
+assert.deepEqual(nav.units[0].destination,{x:4,y:2});
+nav.units[1].x=3;nav.units[1].y=3;
+game.tick(nav);game.tick(nav);
+assert.deepEqual({x:nav.units[0].x,y:nav.units[0].y},{x:4,y:2});
+assert.equal(nav.units[0].destination,null);
 // Isolated acceptance fixtures avoid conflating win flow with sentry damage.
 const win=game.start();
 win.units.filter(u=>u.team==="enemy").forEach(u=>u.hp=0);

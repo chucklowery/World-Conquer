@@ -32,8 +32,8 @@
     const at=(token,backup)=>map?map.markers[token]:backup;
     return {width,height,walls:map?map.walls:new Set(walls),selected:0,frame:0,phase:"playing",cargo:0,
       message:"Recover both supply crates, then reach the Courier extraction zone.",
-      units:[{id:"scout",...at("S",{x:1,y:2}),hp:5,team:"player",label:"Scout",path:[]},
-             {id:"ranger",...at("R",{x:2,y:3}),hp:6,team:"player",label:"Ranger",path:[]},
+      units:[{id:"scout",...at("S",{x:1,y:2}),hp:5,team:"player",label:"Scout",path:[],destination:null},
+             {id:"ranger",...at("R",{x:2,y:3}),hp:6,team:"player",label:"Ranger",path:[],destination:null},
              {id:"guard-a",...at("A",{x:10,y:2}),hp:3,team:"enemy",label:"Sentry",path:[]},
              {id:"guard-b",...at("B",{x:14,y:6}),hp:3,team:"enemy",label:"Sentry",path:[]}],
       crates:[{...at("1",{x:7,y:2}),found:false},{...at("2",{x:15,y:4}),found:false}],exit:at("X",{x:16,y:9})};
@@ -61,10 +61,14 @@
     const i=s.units.findIndex(u=>u.team==="player"&&u.hp>0&&u.x===x&&u.y===y);
     if(i>=0){s.selected=i;s.message=`${s.units[i].label} selected. Click a tile to move.`;return true;}
     const u=s.units[s.selected];if(!u||u.hp<=0)return false;
+    if(!inside(s,x,y))return false;
+    if(u.x===x&&u.y===y){u.destination=null;u.path=[];s.message=`${u.label}: movement canceled.`;return true;}
     const blocked=new Set(s.units.filter(v=>v.hp>0&&v!==u).map(v=>key(v.x,v.y)));
-    u.path=path(s,u,{x,y},blocked);
-    s.message=u.path.length?`${u.label}: moving ${u.path.length} tiles.`:"No clear route to that tile.";
-    return u.path.length>0;
+    const candidate=path(s,u,{x,y},blocked);
+    if(!candidate.length){s.message="No clear route to that tile.";return false;}
+    u.destination={x,y};u.path=candidate;
+    s.message=`${u.label}: moving ${u.path.length} tiles.`;
+    return true;
   }
   function tick(s){
     if(s.phase!=="playing")return s;
@@ -73,9 +77,14 @@
     if(!players.length){s.phase="lost";s.message="Squad lost. Restart to retry.";return s;}
     // Player movement takes priority, with occupied tiles protected.
     for(const unit of players){
+      if(!unit.destination)continue;
+      const blocked=new Set(s.units.filter(u=>u!==unit&&u.hp>0).map(u=>key(u.x,u.y)));
+      if(!unit.path.length||blocked.has(key(unit.path[0].x,unit.path[0].y)))
+        unit.path=path(s,unit,unit.destination,blocked);
       const next=unit.path[0];if(!next)continue;
-      if(living.some(u=>u!==unit&&u.x===next.x&&u.y===next.y)){unit.path=[];continue;}
+      if(blocked.has(key(next.x,next.y)))continue;
       unit.x=next.x;unit.y=next.y;unit.path.shift();
+      if(unit.x===unit.destination.x&&unit.y===unit.destination.y){unit.destination=null;unit.path=[];}
     }
     for(const crate of s.crates){
       if(!crate.found&&players.some(p=>distance(p,crate)<=1)){

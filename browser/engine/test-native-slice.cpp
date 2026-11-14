@@ -19,7 +19,25 @@ int main(){
     assert(courier::route(s,0,{5,2}).empty());
     courier::click(s,{7,2});
     assert(!s.units[0].route.empty());
+    assert(s.hasNav[0]&&(s.navTargets[0]==courier::Point{7,2}));
     for(auto p:s.units[0].route)assert(courier::inside(p));
+    assert(!courier::assignDestination(s,0,{5,2}));
+    assert(s.hasNav[0]&&(s.navTargets[0]==courier::Point{7,2}));
+    assert(courier::assignDestination(s,0,{4,2}));
+    assert((s.navTargets[0]==courier::Point{4,2}));
+    s.units[2].hp=s.units[3].hp=0;
+    s.units[1].p={3,2}; // another squad member temporarily blocks the next step
+    courier::tick(s);
+    assert((s.units[0].p==courier::Point{2,2}));
+    assert(s.hasNav[0]);
+    s.units[1].p={3,3};
+    courier::tick(s);
+    assert((s.units[0].p==courier::Point{3,2}));
+    courier::tick(s);
+    assert((s.units[0].p==courier::Point{4,2}));
+    assert(!s.hasNav[0]&&s.units[0].route.empty());
+    assert(courier::assignDestination(s,0,{4,2}));
+    assert(!s.hasNav[0]);
     courier::State win;
     win.units[2].hp=win.units[3].hp=0;
     win.units[0].p={7,2};courier::tick(win);assert(win.cargo==1);

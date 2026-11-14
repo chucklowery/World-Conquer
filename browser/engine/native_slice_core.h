@@ -19,10 +19,13 @@ struct State {
     std::array<bool,2> collected;
     Point exit;
     std::array<bool,198> blocked;
+    std::array<Point,2> navTargets;
+    std::array<bool,2> hasNav;
     int selected,frame,cargo; // phase: 0 playing, 1 victory, 2 defeat
     int phase;
     State():units{{{{1,2},5,false,{}},{{2,3},6,false,{}},{{10,2},3,true,{}},{{14,6},3,true,{}}}},
-        crates{{{7,2},{15,4}}},collected{{false,false}},exit{16,9},selected(0),frame(0),cargo(0),phase(0){
+        crates{{{7,2},{15,4}}},collected{{false,false}},exit{16,9},
+        navTargets{{{0,0},{0,0}}},hasNav{{false,false}},selected(0),frame(0),cargo(0),phase(0){
         blocked.fill(false);
         const Point walls[]={{5,2},{5,3},{5,4},{5,5},{5,6},{9,5},{10,5},
             {11,5},{12,5},{12,6},{12,7},{3,8},{4,8},{5,8}};
@@ -95,20 +98,40 @@ inline std::vector<Point> route(const State& s,int index,Point goal){
     for(int n=target;n!=source;n=previous[n])result.push_back({n%18,n/18});
     std::reverse(result.begin(),result.end());return result;
 }
+// Adapter boundary mirrors FootClass::Assign_Destination/NavCom semantics:
+// the command persists independently of the current path. It may later be
+// forwarded to a real FootClass once the production game is initialized.
+inline bool assignDestination(State& s,int index,Point target){
+    if(index<0||index>=2||s.units[index].hp<=0||!inside(s,target))return false;
+    if(target==s.units[index].p){
+        s.hasNav[index]=false;s.units[index].route.clear();return true;
+    }
+    const std::vector<Point> path=route(s,index,target);
+    if(path.empty())return false;
+    s.navTargets[index]=target;s.hasNav[index]=true;s.units[index].route=path;
+    return true;
+}
 inline void click(State& s,Point p){
     if(s.phase!=0||!inside(s,p))return;
     for(int i=0;i<2;i++)if(s.units[i].hp>0&&s.units[i].p==p){s.selected=i;return;}
-    if(s.units[s.selected].hp>0)s.units[s.selected].route=route(s,s.selected,p);
+    assignDestination(s,s.selected,p);
 }
 inline void tick(State& s){
     if(s.phase!=0)return;
     ++s.frame;
     if(s.units[0].hp<=0&&s.units[1].hp<=0){s.phase=2;return;}
     for(int i=0;i<2;i++){
-        Unit& u=s.units[i];if(u.hp<=0||u.route.empty())continue;
+        Unit& u=s.units[i];
+        if(u.hp<=0){s.hasNav[i]=false;u.route.clear();continue;}
+        if(!s.hasNav[i])continue;
+        if(u.route.empty()||occupied(s,u.route.front(),i)){
+            u.route=route(s,i,s.navTargets[i]);
+        }
+        if(u.route.empty())continue; // destination remains assigned for retry
         Point next=u.route.front();
-        if(occupied(s,next,i)){u.route.clear();continue;}
+        if(occupied(s,next,i))continue;
         u.p=next;u.route.erase(u.route.begin());
+        if(u.p==s.navTargets[i]){s.hasNav[i]=false;u.route.clear();}
     }
     for(int j=0;j<2;j++)if(!s.collected[j])for(int i=0;i<2;i++){
         if(s.units[i].hp>0&&distance(s.units[i].p,s.crates[j])<=1){

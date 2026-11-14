@@ -84,6 +84,19 @@ from the original theater-template or `MapClass` collision rules. Failure to
 load either SHP leaves the fallback rendering intact. Chromium CI checks
 both sprite classes independently.
 
+### Persistent movement-command seam
+
+Courier now maintains a destination per squad member independently of its
+current breadth-first route. The native `assignDestination()` adapter mirrors
+the command lifetime of `FootClass::Assign_Destination`/`NavCom`: a new valid
+order replaces the prior target, arrival clears it, and a temporarily occupied
+next tile triggers replanning without discarding the command. An invalid order
+leaves the existing command intact. The standalone JavaScript slice uses the
+same behavior, with host C++ and Node regression coverage. This remains a
+**Courier-owned adapter**, not a constructed production `FootClass` or a claim
+that VanillaTD mission movement is active; binding it to real engine units
+requires the production world and house initialization sequence.
+
 ## Try it
 
 Build the engine with Emscripten per docs/browser/BUILD.md, then serve build/browser-engine over HTTP and open vanillatd.html.
