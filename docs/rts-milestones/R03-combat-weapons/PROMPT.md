@@ -1,0 +1,11 @@
+# R03 — RTS combat, unit weapons, and defeat
+
+Implement **R03** for `https://github.com/chucklowery/World-Conquer` in a fresh worktree; this brief contains the necessary setup. The browser-native VanillaTD Courier Extraction alpha has a deterministic, purpose-built combat component in `browser/engine/courier_combat.h` and real movement on engine `InfantryClass`/`MapClass`. Sentries are not yet generalized production combat entities. The HUD in `browser/engine/tactical-hud.js` exposes health and mission state. Read `browser/engine/README.md`, `docs/browser/BUILD.md`, `.github/workflows/browser-engine.yml`.
+
+**Dependency gate:** R00 must be `completed` and merged in `docs/rts-milestones/MANIFEST.md`; use its stable entity/house IDs, ticks, commands, snapshots/events. If missing, mark blocked.
+
+**Deliverable:** model data-driven weapons with range, cooldown, target types, projectile/instant effects, armor, damage, line of sight, friendly-fire policy and death cleanup. Route attack commands and autonomous acquisition through canonical C++ simulation; produce deterministic hit/damage/death events consumable by HUD and future sound/VFX. Include at least distinct infantry-vs-vehicle class behaviors and target filtering. Preserve existing Courier rules until replaced with passing parity tests.
+
+**Acceptance:** test cooldown, range, target rejection, damage modifiers, deaths, order cancellation, simultaneous attacks and deterministic replay of a scripted fight. A playable native WASM scenario visibly demonstrates damage and victory/defeat with correct HUD synchronization; existing mission completion/restart passes. Document data definition and extension for new factions.
+
+**Manifest protocol:** change **only R03** to `in_progress` in `docs/rts-milestones/MANIFEST.md` when starting; set `blocked` if gated/blocked; set `completed` only when tests, browser evidence and relevant CI are green. Record PR, commit, commands/results, CI and gameplay observation in its evidence cell; preserve other rows during integration. Run `node docs/rts-milestones/validate-roadmap.js` and existing relevant checks, then open a scoped PR. Avoid copyrighted game assets.

@@ -1,0 +1,11 @@
+# R13 — RTS audio, visual feedback, and accessibility
+
+Implement **R13** from a new context for `https://github.com/chucklowery/World-Conquer`. The browser-native VanillaTD tactical alpha has a fullscreen battlefield-left/right-sidebar HUD with minimap above build options. Original content lives in `game/content/` and `tools/content/`; HUD code lives in `browser/engine/`, with gameplay events from native C++/WASM. R01 introduces richer input/camera UX; R03 combat event semantics; R05 original faction content. Inspect these merged interfaces, `browser/engine/README.md`, and `docs/browser/BUILD.md`. No earlier chat is necessary.
+
+**Dependency gate:** R01, R03 and R05 must be `completed` in `docs/rts-milestones/MANIFEST.md`. If absent, set R13 blocked.
+
+**Deliverable:** legally distributable original audio cues for selection, commands, harvesting, production, alerts, weapon fire, destruction and match end, with per-bus volume/mute, browser audio-unlock handling and positional/priority mixing. Add native-event-driven VFX, selection/target indicators, readable damage/low-power alerts, color-blind-safe team identification, reduced-motion option, keyboard-focus states, remappable/common shortcut help and basic screen-reader text for menu/HUD state. Keep expensive effects bounded and never let sound block simulation ticks.
+
+**Acceptance:** event-to-effect mapping has tests; mute/volume persists for the active browser session; autoplay restrictions fail gracefully; keyboard users can launch and control basic gameplay; contrast and mobile/fullscreen HUD usability are checked; reduced-motion setting actually changes effects. Chromium acceptance confirms command, battle, alert and endgame feedback without exposing fog-hidden actors. Existing game and content CI pass.
+
+**Manifest protocol:** update only **R13** row in `docs/rts-milestones/MANIFEST.md` to `in_progress` upon start, `blocked` with reason when appropriate, `completed` only once tested and accepted including browser evidence and relevant CI. Record PR, commit, tests and CI; preserve other rows. Run `node docs/rts-milestones/validate-roadmap.js` and workflow tests, open scoped PR. Use entirely original/allowed audio and artwork with attribution.

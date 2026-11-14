@@ -1,0 +1,11 @@
+# R14 — Versioned saves, loads, and deterministic replays
+
+Implement **R14** in a clean context for `https://github.com/chucklowery/World-Conquer`. The current native browser alpha has a deterministic Courier command replay prototype in `browser/engine/courier-replay.txt` and `test-replay-parity.js`, but no robust save/load of a full match. The authoritative SDL2/WebAssembly engine is in `tiberiandawn/` and `browser/engine/`; `docs/browser/BUILD.md` describes build commands. R00 defines canonical simulation snapshots and command ordering; R02/R03/R04/R06/R07/R08/R09 provide orders, combat, maps, economy, structures, production and visibility. Do not rely on previous chat.
+
+**Dependency gate:** R00, R02, R03, R04, R06, R07, R08 and R09 must all be `completed` in `docs/rts-milestones/MANIFEST.md`. If not, mark blocked; avoid serializing temporary data contracts.
+
+**Deliverable:** versioned canonical simulation-state serializer/restorer, deterministic input log and seed, state hash checks, replay controls and migration/rejection policy for unknown versions. Include every authoritative component (houses, credits, terrain, entities, orders/path state, combat cooldowns, production queues, fog, AI inputs where applicable, mission/game clock). Support explicit user-driven browser save export/import or durable local save with privacy-safe error handling; document storage limits. Resume simulation via native state, never DOM state. Tests should catch desync at the first divergent tick.
+
+**Acceptance:** save mid-match and load to identical canonical state; two runs of same command log produce matching per-tick hashes; corrupt/truncated/unsupported files reject without mutating live game; browser replay scrub/restart demonstrates faithful output; older Courier replay parity still passes. Host and Chromium CI are green and file schema is documented.
+
+**Manifest protocol:** edit only **R14** in `docs/rts-milestones/MANIFEST.md`: `in_progress` on start; `blocked` with reason when gated; `completed` only after all acceptance, browser and CI checks pass, with PR/commit/tests/CI evidence. Preserve all other rows on rebase. Run `node docs/rts-milestones/validate-roadmap.js` and relevant workflow checks, then open scoped PR. No third-party proprietary assets.
