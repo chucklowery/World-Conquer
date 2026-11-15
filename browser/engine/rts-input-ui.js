@@ -167,7 +167,7 @@
         announce(`Group ${digit} saved (${selection.ids.length} units)`);
         return;
       }
-      if(key===" "){spaceDown=true;event.preventDefault();return;}
+      if(key===" "&&event.target.tagName!=="BUTTON"){spaceDown=true;event.preventDefault();return;}
       if(/^[1-9]$/.test(key)){
         event.preventDefault();event.stopPropagation();
         if(selection.groups.has(Number(key))){selection.recall(Number(key));selected(selection.ids);centerSelection();}
