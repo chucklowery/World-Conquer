@@ -430,10 +430,20 @@ async function main() {
     // armored sentries, making target rejection, defeat and restart observable.
     await page.reload({waitUntil:"domcontentloaded",timeout:90000});
     await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
+    await page.evaluate(()=>{
+      window.__r03DrillUnits=null;
+      const originalReceive=WCRTS.receive;
+      WCRTS.receive=function(payload){
+        const snapshot=originalReceive(payload);
+        if(window.__r03DrillUnits===null&&snapshot.entities[2].kind==="vehicle")
+          window.__r03DrillUnits=snapshot.entities.slice(0,4).map(e=>[e.id,e.kind,e.hp]);
+        return snapshot;
+      };
+    });
     await page.locator("#launch-r03-drill").click();
-    await page.waitForFunction(() => WCRTS.latest()&&WCRTS.latest().entities[2].kind==="vehicle",
+    await page.waitForFunction(() => window.__r03DrillUnits!==null,
                                undefined,{timeout:40000});
-    const drillUnits=await page.evaluate(()=>WCRTS.latest().entities.slice(0,4).map(e=>[e.id,e.kind,e.hp]));
+    const drillUnits=await page.evaluate(()=>window.__r03DrillUnits);
     assert.deepEqual(drillUnits,[[1001,"infantry",5],[1002,"infantry",6],
                                  [2001,"vehicle",8],[2002,"vehicle",8]]);
     await clickNativeTile(page.locator("#canvas"),3,2);
