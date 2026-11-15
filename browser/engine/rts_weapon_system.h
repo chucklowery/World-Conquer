@@ -98,7 +98,8 @@ class System {
     }
     void hit(const Missile& shot,const Weapon& w){
         for(Actor& victim:actors_){
-            if(victim.hp<=0||distance(victim.position,shot.impact)>w.splashRadius||
+            if(victim.hp<=0||(w.splashRadius==0&&victim.id!=shot.target)||
+               distance(victim.position,shot.impact)>w.splashRadius||
                !(w.targetMask&victim.targetClass)||
                (w.friendlyFire==EnemiesOnly&&victim.team==shot.team))continue;
             const int amount=std::min(victim.hp,damageAgainst(w.damage,w.type,victim.armor));
