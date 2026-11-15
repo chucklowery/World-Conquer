@@ -26,7 +26,7 @@ row; never overwrite another worker's status or evidence.
 | R02 | [Unit orders and pathfinding](R02-unit-orders-pathfinding/PROMPT.md) | R00 | W1 | planned | — |
 | R03 | [Combat, weapons, and damage](R03-combat-weapons/PROMPT.md) | R00 | W1 | planned | — |
 | R04 | [Maps and terrain pipeline](R04-map-terrain-pipeline/PROMPT.md) | R00 | W1 | planned | — |
-| R05 | [Original faction art and content](R05-original-art-content/PROMPT.md) | — | W0 | planned | — |
+| R05 | [Original faction art and content](R05-original-art-content/PROMPT.md) | — | W0 | in_progress | [PR #10](https://github.com/chucklowery/World-Conquer/pull/10); art commit `7d903f3`; PASS `node docs/rts-milestones/validate-roadmap.js`, `node tools/content/test-{build,wireframes,representative-contracts,representative-animation,first-pass-art,cargo-plane-art,r05}.js`, browser HUD/package/mission JS and Courier C++ host tests. Visual: 24 original SVGs, 552 frame contracts, 1 atlas, 743,239 bytes, Node-verified sprite pixels; [PR CI checks](https://github.com/chucklowery/World-Conquer/pull/10/checks) queued, Chromium gallery screenshot and native alpha startup still pending (local browser socket denied). Code/visual review and R00 art-ID integration pending. |
 | R06 | [Resource economy and harvesting](R06-economy-harvesting/PROMPT.md) | R00, R04 | W2 | planned | — |
 | R07 | [Building placement and power](R07-structures-power/PROMPT.md) | R00, R04, R06 | W3 | planned | — |
 | R08 | [Production, queues, and tech tree](R08-production-tech/PROMPT.md) | R00, R06, R07 | W4 | planned | — |

@@ -113,13 +113,18 @@ jobs:
           node tools/content/test-representative-animation.js
           node tools/content/test-first-pass-art.js
           node tools/content/test-cargo-plane-art.js
+          node tools/content/test-r05.js
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           node tools/content/wireframes.js build build/browser-engine/wireframes --representative
+          node tools/content/r05.js build build/browser-engine/r05
           node browser/engine/test-wireframe-asset.js build/browser-engine/wireframes
           test -s build/browser-engine/content/manifest.json
           test -s build/browser-engine/wireframes/roster.json
           test -s build/browser-engine/wireframes/contracts.json
           test -s build/browser-engine/wireframes/game-root/FACTMAKE.SHP
+          test -s build/browser-engine/r05/manifest.json
+          test -s build/browser-engine/r05/atlases/atlas-0.png
+          test -s build/browser-engine/r05/shapes/r05.aster.ranger.SHP
           g++ -std=c++11 -Icommon tests/test-original-shape.cpp common/lcw.cpp -o build/browser-engine/test-original-shape
           build/browser-engine/test-original-shape build/browser-engine/content/files/units/SCOUT.SHP
           g++ -std=c++11 -Icommon tests/test-wireframe-shapes.cpp common/lcw.cpp -o build/browser-engine/test-wireframe-shapes
@@ -136,7 +141,9 @@ jobs:
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install --with-deps chromium
       - name: Test actual engine in headless Chromium
-        run: node browser/engine/check-runtime.js
+        run: |
+          node browser/engine/check-runtime.js
+          node browser/engine/check-r05-gallery.js build/browser-engine/r05
       - name: Package Pages-ready native tactical alpha
         run: node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site "$GITHUB_SHA"
       - name: Upload browser probe evidence
@@ -147,6 +154,7 @@ jobs:
           path: |
             build/browser-engine/browser-probe.png
             build/browser-engine/browser-probe.log
+            build/browser-engine/r05/gallery-proof.png
           if-no-files-found: ignore
       - name: Upload standalone original-content mission
         uses: actions/upload-artifact@v4
@@ -179,6 +187,7 @@ jobs:
             build/browser-engine/cargo-hd/**
             build/browser-engine/content/**
             build/browser-engine/wireframes/**
+            build/browser-engine/r05/**
           if-no-files-found: error
       - name: Upload Pages-ready native tactical alpha
         uses: actions/upload-artifact@v4
