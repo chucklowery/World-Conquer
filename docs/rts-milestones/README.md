@@ -22,6 +22,25 @@ the conversation that produced this roadmap.
   `docs/browser/BUILD.md`, `docs/browser/ROADMAP.md`, and the two browser
   GitHub Actions workflows.
 
+## R00/R05 review and new gates
+
+R00 (native simulation/HUD contract) and R05 (deterministic two-faction
+content pack and gallery) are **completed**. The
+[R00/R05 implementation review](REVIEW-R00-R05.md) records what their actual
+tests prove and what remains unfinished. Two new, independently executable
+milestones close explicit gaps before this can be called a full RTS:
+
+- **R18 — Dynamic world and gameplay-definition registries:** after R00/R05,
+  before R02/R03/R04. This decouples later simulation systems from the fixed
+  Courier entity list and connects faction definitions to art-only keys.
+- **R19 — Native gameplay art/content binding:** after real gameplay systems
+  R03/R04/R07/R08/R09 and R18, before R13 and final R16. Its acceptance is a
+  playable **native WASM** match showing R05 art, not just a gallery.
+
+With the current accepted rows, **R01 and R18 are the immediately ready W1
+tasks**. R02/R03/R04 must not start until R18 is integrated. The full
+dependency register and waves are in [MANIFEST.md](MANIFEST.md).
+
 ## Execute a milestone in a fresh context
 
 1. Create a branch/worktree from the latest integrated target branch. Open a
@@ -29,7 +48,8 @@ the conversation that produced this roadmap.
    dependency gate, implementation boundaries, tests, and completion protocol.
 2. Check its prerequisite IDs in [MANIFEST.md](MANIFEST.md). Do not implement
    against a missing dependency; mark the milestone blocked and describe the
-   missing interface. `R00` and `R05` can start immediately.
+   missing interface. R00 and R05 are complete; start from currently ready
+   gates (R01 and R18), not from the historical W0 instructions.
 3. Change that milestone's manifest row from `planned` to `in_progress` in your
    branch. Implement with regression tests and a verifiable browser outcome.
 4. Mark the **same row** `completed` only after its acceptance criteria and
@@ -65,3 +85,7 @@ Validate manifest/brief consistency locally with:
 ```sh
 node docs/rts-milestones/validate-roadmap.js
 ```
+
+The lightweight `validate-rts-roadmap.yml` workflow also checks all roadmap
+pull requests, including documentation-only changes that would not trigger the
+large browser-engine build.

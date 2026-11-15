@@ -2,7 +2,7 @@
 
 Implement **R16** in an independent context for `https://github.com/chucklowery/World-Conquer`. This repo began as native VanillaTD compiled to WebAssembly with a small Courier Extraction tactical alpha. Before this milestone, completed branches should have delivered real RTS controls, units, combat, maps, original content, economy, power, production, fog, strategic AI, campaign, skirmish, audio/accessibility, saves/replays and multiplayer. Code is in `tiberiandawn/`, `browser/engine/`, `game/content/`, with build/CI guidance under `docs/browser/BUILD.md` and `.github/workflows/`. Inspect actual source, recent PRs and the manifest; do not assume unmerged promises are real.
 
-**Dependency gate:** R10, R11, R12, R13, R14 and R15 must all be `completed` in `docs/rts-milestones/MANIFEST.md`; all their transitive foundations must be integrated. Otherwise mark R16 blocked.
+**Dependency gate:** R10, R11, R12, R13, R14, R15 **and R19** must all be `completed` in `docs/rts-milestones/MANIFEST.md`; all their transitive foundations (including R18) must be integrated. Otherwise mark R16 blocked.
 
 **Deliverable:** harden the assembled game into one coherent browser entry point with smooth onboarding and an honest feature set. Fix cross-system defects, unify faction definitions and UI, tune economy/tech/combat pacing, eliminate performance regressions, profile C++/WASM frames and memory, audit network/state determinism, fog leaks and save correctness. Establish reproducible performance budgets for typical laptop and mobile-class viewports, match-length targets, frame/heap counters, and regression baselines. Replace leftover placeholder-only affordances with working behavior or clearly remove them. Add end-to-end test matrix and seeded soak tests.
 
