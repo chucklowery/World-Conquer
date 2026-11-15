@@ -294,6 +294,71 @@ async function main() {
            "Tactical Alpha HUD did not report combat state");
     messages.push("PASS: native infantry recovered crates, extracted, restarted, and attacked a pursuing sentry");
     messages.push("PASS: R00 versioned native snapshots match live infantry and reject wall orders without changing state");
+    // R02: entirely separate, real four-InfantryClass command mode. Native
+    // C++ A* reserves waypoints, MapClass supplies terrain, and Infantry AI
+    // changes actual positions. The existing Courier regression above remains.
+    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
+    await page.locator("#run-r02-orders").click();
+    await page.waitForFunction(() => document.getElementById("log").textContent.includes(
+      "[r02] navigation=bounded-A* movement=InfantryClass::AI terrain=MapClass"),
+      undefined,{timeout:45000});
+    assert((await page.locator("#log").textContent()).includes("[r02] production infantry=4 on-map=ready"));
+    assert.equal(await page.locator("body").getAttribute("data-mode"),"r02-orders");
+    const r02Canvas=page.locator("#canvas");
+    await clickNativeTile(r02Canvas,5,2);
+    await page.waitForFunction(() => WCRTS.eventHistory().some(e=>e.type==="command"&&e.code==="blocked"),
+      undefined,{timeout:15000});
+    const commands=[
+      {unit:"1",target:[15,1]},
+      {unit:"2",target:[15,3]},
+      {unit:"3",target:[14,8],attack:true},
+      {unit:"4",target:[15,9],patrol:true}
+    ];
+    for(const c of commands){
+      await page.keyboard.press(c.unit);
+      if(c.patrol)await page.keyboard.press("p");
+      if(c.attack)await page.keyboard.down("Shift");
+      await clickNativeTile(r02Canvas,...c.target);
+      if(c.attack)await page.keyboard.up("Shift");
+    }
+    await page.waitForFunction(()=>WCRTS.latest().commandStates.length===4 &&
+      WCRTS.latest().commandStates.some(o=>o.kind==="attack_move") &&
+      WCRTS.latest().commandStates.some(o=>o.kind==="patrol"),undefined,{timeout:15000});
+    await page.waitForFunction(()=>WCRTS.latest().entities.filter(e=>e.kind==="infantry"&&e.x>=7).length===4,
+      undefined,{timeout:150000});
+    const crossed=await page.evaluate(()=>{
+      const s=WCRTS.latest();
+      return {units:s.entities.filter(e=>e.kind==="infantry").map(e=>[e.id,e.x,e.y]),
+        states:s.commandStates,budgetLog:document.getElementById("log").textContent.includes("[r02] budget searches="),
+        immutable:Object.isFrozen(s.commandStates)};
+    });
+    assert.equal(new Set(crossed.units.map(e=>e[1]+","+e[2])).size,4,"Production units phased into a shared cell");
+    assert(crossed.budgetLog,"No native bounded-search telemetry");
+    assert(crossed.immutable,"R02 state did not use the immutable R00 snapshot bridge");
+    await page.keyboard.press("1");
+    await page.keyboard.press("h");
+    await page.waitForFunction(()=>WCRTS.latest().commandStates[0].status==="holding",
+      undefined,{timeout:15000});
+    await page.keyboard.press("2");
+    await page.keyboard.press("g");
+    const third=await page.evaluate(()=>{
+      const u=WCRTS.latest().entities.find(e=>e.id===1003);return [u.x,u.y];
+    });
+    await clickNativeTile(r02Canvas,...third);
+    await page.waitForFunction(()=>WCRTS.latest().commandStates[1].kind==="guard",
+      undefined,{timeout:15000});
+    await page.keyboard.press("3");
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(()=>WCRTS.latest().commandStates[2].status==="idle",
+      undefined,{timeout:15000});
+    await page.screenshot({path:path.join(root,"r02-orders.png"),fullPage:true});
+    await page.keyboard.press("r");
+    await page.waitForFunction(()=>WCRTS.eventHistory().some(e=>e.type==="restart"),
+      undefined,{timeout:15000});
+    assert.deepEqual(await page.evaluate(()=>WCRTS.latest().entities.map(e=>[e.x,e.y])),
+      [[1,2],[2,3],[1,4],[2,5]],"R02 restart did not reset native unit positions");
+    messages.push("PASS: R02 four real production units crossed obstacles with bounded A*, command states, hold/guard/stop/restart and no phasing");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});
