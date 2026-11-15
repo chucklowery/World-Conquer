@@ -39,6 +39,7 @@ row; never overwrite another worker's status or evidence.
 | R15 | [Multiplayer synchronization](R15-multiplayer/PROMPT.md) | R12, R14 | W7 | planned | — |
 | R16 | [Integration, balance, and performance](R16-integration-balance/PROMPT.md) | R10, R11, R12, R13, R14, R15 | W8 | planned | — |
 | R17 | [Release, deployment, and hardening](R17-release-hardening/PROMPT.md) | R16 | W9 | planned | — |
+| R18 | [Dynamic RTS world, house and gameplay-definition registries](R18-world-house-definition-registry/PROMPT.md) | R00, R05 | W1 | blocked | Dependency gate failed on `vanilla` at `039d3b4`: R00 is `completed` but R05 is still `in_progress`, even though [PR #10](https://github.com/chucklowery/World-Conquer/pull/10) was merged (`2d67c7d`). R05's own acceptance/review and manifest completion must be resolved by its owner and integrated before R18 starts; R02/R03/R04 should wait for R18's native world API. No R18 implementation or browser acceptance is claimed. |
 
 ## Parallel execution guide
 
