@@ -1,0 +1,32 @@
+name: Twisted Insurrection compatibility tools
+
+on:
+  push:
+    paths:
+      - 'tools/ti_compat/**'
+      - '.github/workflows/ti-compat.yml'
+  pull_request:
+    paths:
+      - 'tools/ti_compat/**'
+      - '.github/workflows/ti-compat.yml'
+      - 'docs/browser/TI_COMPATIBILITY.md'
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-data-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run synthetic file-format and rules adapter tests
+        run: python3 -m unittest discover -s tools/ti_compat/tests -v
+      - name: Confirm CLI help works
+        run: |
+          python3 -m tools.ti_compat --help
+          python3 -m tools.ti_compat inspect --help
+          python3 -m tools.ti_compat rules --help
