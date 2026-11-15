@@ -350,6 +350,10 @@ async function main() {
       undefined,{timeout:45000});
     assert((await page.locator("#log").textContent()).includes("[r02] production infantry=4 on-map=ready"));
     assert.equal(await page.locator("body").getAttribute("data-mode"),"r02-orders");
+    assert.equal(await page.locator(".hud-command-bar").isVisible(),false,
+      "R01 command toolbar intercepted the independent R02 native battlefield");
+    assert.equal(await page.locator(".hud-pan-pad").isVisible(),false,
+      "R01 camera buttons covered R02 native input tiles");
     const r02Canvas=page.locator("#canvas");
     await clickNativeTile(r02Canvas,5,2);
     await page.waitForFunction(() => WCRTS.eventHistory().some(e=>e.type==="command"&&e.code==="blocked"),

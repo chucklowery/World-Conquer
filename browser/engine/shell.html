@@ -53,6 +53,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 .hud-command-bar .hud-selection-text{width:100%;font-size:.78rem;color:#d6ffb5;font-weight:700}
 .hud-pan-pad{position:absolute;bottom:13px;left:13px;z-index:3;display:flex;gap:5px;background:#0a1b15d9;padding:5px;border-radius:6px}
 .hud-pan-pad button{padding:5px 9px;min-width:30px}
+/* R02 owns its native canvas inputs; R01-only controls must not intercept them. */
+body[data-mode="r02-orders"] .hud-command-bar,
+body[data-mode="r02-orders"] .hud-pan-pad,
+body[data-mode="r02-orders"] #hud-selection-overlay{display:none}
 .hud-toast-anchor{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(92%,680px);pointer-events:none;text-align:center}
 .hud-toast-anchor .alpha-event{padding:8px 12px;background:#061912c9;border:1px solid #5e9473;border-radius:6px;margin:0;min-height:0;color:#d0ffe4}
 .hud-toast-anchor .alpha-result{margin:8px 0;background:#423d24ef}
