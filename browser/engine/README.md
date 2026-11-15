@@ -1,5 +1,10 @@
 # VanillaTD browser runtime bootstrap
 
+R02 adds an opt-in **four production-unit orders** mode alongside Courier.
+It uses live `InfantryClass::AI` / `MapClass` and bounded C++ pathfinding,
+with command state in the R00 snapshot/HUD. See
+[`R02_UNIT_ORDERS.md`](../../docs/browser/R02_UNIT_ORDERS.md).
+
 This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not the independent SDL2 smoke test. It deliberately defers game main() until the user starts it.
 
 ## Tactical Alpha 0.1 — browser-playable native mission

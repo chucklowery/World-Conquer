@@ -96,6 +96,8 @@ jobs:
           build/browser-engine/test-combat
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-simulation-contract.cpp -o build/browser-engine/test-simulation-contract
           build/browser-engine/test-simulation-contract
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-production-orders.cpp -o build/browser-engine/test-production-orders
+          build/browser-engine/test-production-orders
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/replay-native-slice.cpp -o build/browser-engine/replay-native-slice
           node browser/engine/test-replay-parity.js build/browser-engine/replay-native-slice
           # The historical engine headers require the same compile definitions as VanillaTD.
@@ -155,6 +157,7 @@ jobs:
             build/browser-engine/browser-probe.png
             build/browser-engine/browser-probe.log
             build/browser-engine/r05/gallery-proof.png
+            build/browser-engine/r02-orders.png
           if-no-files-found: ignore
       - name: Upload standalone original-content mission
         uses: actions/upload-artifact@v4
