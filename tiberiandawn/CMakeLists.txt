@@ -240,6 +240,9 @@ if(BUILD_VANILLATD)
         target_sources(VanillaTD PRIVATE
             ${CMAKE_SOURCE_DIR}/browser/engine/probe.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/data_probe.cpp
+            ${CMAKE_SOURCE_DIR}/browser/engine/shape_probe.cpp
+            ${CMAKE_SOURCE_DIR}/browser/engine/native_slice.cpp
+            ${CMAKE_SOURCE_DIR}/browser/engine/courier_unit_probe.cpp
         )
         set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")
         target_link_options(VanillaTD PRIVATE

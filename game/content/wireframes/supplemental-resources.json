@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "supplemental.fact-buildup",
+  "supportingFor": "WF-0013",
+  "engineFilename": "FACTMAKE.SHP",
+  "width": 48,
+  "height": 48,
+  "frames": 24,
+  "finalFrameDirectory": "final/supplemental/FACTMAKE",
+  "sourceRules": [
+    "tiberiandawn/bdata.cpp: building.IniName + MAKE is loaded as a separate tactical SHP",
+    "tiberiandawn/bdata.cpp: Get_Build_Frame_Count determines construction frame count and rate",
+    "tiberiandawn/building.cpp: deconstruction reverses the sequence"
+  ],
+  "status": "generated-tactical-placeholder",
+  "frameCountVerified": false,
+  "canvasVerified": false,
+  "replacement": "Supply 0000.png through 0023.png and ATTRIBUTION.json; index 0 must be fully transparent. Retain the 3x2 foundation/cell anchor, ensure progressive construction is reversible and verify runtime rate at native and browser scale."
+}

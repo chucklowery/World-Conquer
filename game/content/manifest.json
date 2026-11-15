@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "gameId": "world-conquer",
+  "assets": [
+    {
+      "id": "ui.placeholder-command",
+      "type": "ui",
+      "source": "source/placeholder-command.svg",
+      "target": "ui/placeholder-command.svg",
+      "creator": "World-Conquer project",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "unit.placeholder-scout",
+      "type": "sprite",
+      "source": "source/placeholder-scout.frames.json",
+      "target": "units/SCOUT.SHP",
+      "transform": "tactical-shape",
+      "creator": "World-Conquer project",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "palette.placeholder",
+      "type": "palette",
+      "source": "source/placeholder.palette.json",
+      "target": "palettes/SCOUT.PAL",
+      "transform": "palette6",
+      "creator": "World-Conquer project",
+      "license": "CC0-1.0"
+    }
+  ]
+}

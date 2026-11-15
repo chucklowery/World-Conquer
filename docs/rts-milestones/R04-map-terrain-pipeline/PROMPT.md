@@ -1,0 +1,11 @@
+# R04 — Playable maps, terrain rules, and mission loading
+
+Implement **R04** in a fresh context for `https://github.com/chucklowery/World-Conquer`. The current published tactical alpha runs a hard-sized 18×11 Courier Extraction level, authored at `game/content/missions/courier-extraction.map`, checked through `mission-pack.js` and native map loading. Infantry movement touches the real `MapClass`; historical VanillaTD theater/campaign maps are not production-integrated with this browser experience. Inspect `browser/engine/README.md`, `docs/browser/ARCHITECTURE.md`, `docs/browser/BUILD.md` and `game/content/missions/manifest.json`.
+
+**Dependency gate:** complete, integrated R00 entity/map/tick/command contract in `docs/rts-milestones/MANIFEST.md`. Otherwise report `blocked`.
+
+**Deliverable:** versioned, validated map schema and original-content loading path for multiple maps of configurable sizes. Support terrain types, movement cost, obstruction, resource nodes, spawn zones, starting bases, victory bounds, minimap tiles, and scenario metadata. Integrate real native engine world/map state and expose map data to the R00 snapshot, rather than presenting decorative JavaScript terrain. Include checksum/invalid-map safeguards, two example maps and a reproducible authoring/validation workflow; keep compatibility with Courier mission.
+
+**Acceptance:** both example maps load in actual browser WASM, render and navigate correctly, seed factions/units predictably and reject malicious/corrupt input without losing active state. Automated map parser and traversal tests; smoke test minimap accuracy and mission restart; old extraction map regressions remain green. Document format/version migration.
+
+**Manifest protocol:** set **only R04** `in_progress` at start in `docs/rts-milestones/MANIFEST.md`, `blocked` with cause if necessary, and `completed` only after tests and CI plus browser acceptance pass; write PR/SHA/test/CI evidence in row. Do not overwrite parallel edits. Run `node docs/rts-milestones/validate-roadmap.js` and relevant browser/engine tests; open a scoped PR. Use original or properly licensed assets only.

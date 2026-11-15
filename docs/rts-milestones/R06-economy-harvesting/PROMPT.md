@@ -1,0 +1,11 @@
+# R06 — Resource gathering and player economy
+
+Implement **R06** for `https://github.com/chucklowery/World-Conquer` with **no dependency on past chats**. The current native VanillaTD SDL2/WASM Courier Extraction tactical alpha has supply crates and a HUD currency-like area, but **no functional RTS harvesting/building economy**; construction cards are previews. The mission, engine, HUD, and browser build sources are `game/content/missions/`, `tiberiandawn/`, `browser/engine/`, and `docs/browser/BUILD.md`. Inspect the merged simulation contract from R00 and map schema from R04.
+
+**Dependency gate:** R00 **and** R04 must both be `completed` in `docs/rts-milestones/MANIFEST.md` and integrated. Otherwise mark blocked and specify what is missing.
+
+**Deliverable:** canonical per-house credits, resource deposits with finite quantities and optional regrowth, harvest-capable units, pickup/carry/return/unload behavior, refinery deposit processing, costs/spending with insufficient-funds rejection, and event/snapshot updates for the HUD. Provide AI-addressable economic commands and deterministic update rules. Use native simulation, not browser-local counters. For now, if structure placement (R07) is incomplete, use a scenario-seeded refinery as an explicit temporary prerequisite and document its retirement.
+
+**Acceptance:** player directs a harvester to resources and back to the initial refinery; cargo decreases as credits rise; depleted fields and full cargo are handled; insufficient funds cannot cause negative credits; two players' balances remain isolated; browser HUD shows genuine engine balances. Add native deterministic tests and browser acceptance without breaking Courier extraction.
+
+**Manifest protocol:** modify **only R06** in `docs/rts-milestones/MANIFEST.md`—`in_progress` on start, `blocked` with reason when applicable, `completed` only after acceptance, tests and relevant GitHub Actions pass; record PR/SHA/commands/CI/play observation. Preserve concurrent row updates, run `node docs/rts-milestones/validate-roadmap.js` and relevant `.github/workflows/browser-engine.yml` checks, and open a scoped PR. Do not commit proprietary assets.

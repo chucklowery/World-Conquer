@@ -1,0 +1,11 @@
+# R01 — RTS camera, selection, and command interface
+
+Implement **R01** in a fresh context for `https://github.com/chucklowery/World-Conquer`. The current browser-native VanillaTD alpha has a full-viewport tactical HUD with the left play area and right sidebar/minimap, controlled through `browser/engine/tactical-hud.js` and the compiled engine launcher. It has two selectable infantry on a small 18×11 mission; it lacks broad RTS camera, groups, contextual commands, and multi-unit control. See `browser/engine/README.md`, `docs/browser/BUILD.md`, and the `browser-engine.yml` workflow. **Do not assume access to any prior chat.**
+
+**Dependency gate:** `R00` must be `completed` in `docs/rts-milestones/MANIFEST.md`; inspect its merged contract for entity IDs, commands, snapshots, and events. If absent, stop and report blocked.
+
+**Deliverable:** viewport-scaled camera pan, scroll/zoom, optional edge-scroll, drag-box multi-select, shift-add and control groups, contextual right-click actions, explicit command modes, selection feedback, keyboard shortcuts, and mobile/touch affordances where practical. Keep battlefield-left/sidebar-right layout, minimap-above-build panel, responsive browser fullscreen and pointer coordinate accuracy; clicking a minimap location should move the camera, not teleport a unit. User commands must feed the R00 native boundary. Keep shortcuts discoverable and avoid hijacking browser-critical keys.
+
+**Acceptance:** automated coordinate/camera/selection regressions across at least two viewport shapes; browser play test covering single/multi-select, group recall, pan/zoom and move order; no stretched canvas or broken HUD/minimap; current mission can be completed and restarted; keyboard-only basic commands are documented. Update controls help and a short UX guide.
+
+**Manifest protocol:** set **only R01** to `in_progress` in `docs/rts-milestones/MANIFEST.md` as work starts. If dependencies or integration block progress, use `blocked` with reason; mark `completed` only after acceptance tests and relevant CI pass, recording PR, commit, test commands/results, CI, and browser observation. Reconcile latest manifest before merging without changing other milestone rows. Run `node docs/rts-milestones/validate-roadmap.js` plus the relevant workflow checks, create a scoped PR; no unauthorized assets.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VanillaTD · Browser Runtime Lab</title>
+<title>World-Conquer · Tactical Alpha 0.1</title>
 <style>
 :root{color-scheme:dark;font:16px system-ui,-apple-system,Segoe UI,sans-serif;background:#111925;color:#edf4fa}
 body{max-width:1120px;margin:auto;padding:25px 18px}
@@ -13,9 +13,19 @@ p{color:#b8c8d8;line-height:1.55}
 .eyebrow{font-size:.75rem;color:#69dfb2;text-transform:uppercase;letter-spacing:.15em;font-weight:700}
 .grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:18px}
 .panel{padding:19px;background:#1b2736;border:1px solid #394d60;border-radius:12px}
+.alpha-banner{padding:18px 20px;border:1px solid #4aa689;border-radius:12px;background:linear-gradient(125deg,#193d3c,#182838 70%);margin-bottom:14px}
+.alpha-banner h2{margin:3px 0 9px;font-size:1.65rem}
+.alpha-banner p{max-width:680px;line-height:1.5}
+.alpha-objectives{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.alpha-objectives span{padding:5px 10px;border-radius:20px;background:#28504b;color:#d6f7e9;font-size:.82rem}
+.alpha-result{padding:12px 15px;border-radius:9px;border:1px solid #d2b16b;background:#3b3526;color:#ffe6ab;font-weight:700}
+.alpha-event{min-height:1.5rem;color:#a6f0d8;font-size:.9rem;margin:6px 0}
 .status{padding:11px 15px;margin:20px 0;border:1px solid #365e64;border-radius:9px;background:#172e37;color:#aff0d6}
 canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
 canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
+#canvas{cursor:crosshair;touch-action:manipulation}
+#cargo-hd-canvas{width:min(100%,512px);aspect-ratio:1/1}
+#vertical-slice-canvas{aspect-ratio:18/11;cursor:crosshair;touch-action:manipulation}
 button,label.pick{display:inline-block;margin:5px 5px 5px 0;padding:10px 13px;border:1px solid #64848a;border-radius:8px;background:#234452;color:#eefcf8;font:600 .9rem system-ui;cursor:pointer}
 button.primary{background:#237357;border-color:#4dac84}
 button:disabled{opacity:.45;cursor:default}
@@ -24,22 +34,106 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 .warning{color:#f8c18d}
 #log{box-sizing:border-box;max-height:275px;min-height:155px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#0d1723;border:1px solid #3a4c60;border-radius:7px;padding:12px;font:12px/1.55 ui-monospace,Consolas,monospace;color:#afd7e1}
 #file-count{color:#a8ebcd;font-size:.87rem}
+[hidden]{display:none!important}
+/* The engine owns the battlefield; this full-viewport layer owns only HUD UI. */
+.hud-shell{position:fixed;inset:0;z-index:20;width:100vw;height:100dvh;display:grid;grid-template-rows:54px minmax(0,1fr) 47px;background:#07100f;color:#e8f5ee;overflow:hidden;font-size:14px}
+.hud-shell button{margin:0;border-radius:5px;padding:7px 11px;min-height:33px}
+.hud-topbar{min-width:0;display:flex;align-items:center;gap:13px;padding:6px 12px;background:linear-gradient(#25352e,#111c1b);border-bottom:2px solid #607363}
+.hud-brand{color:#86d9b0;font-size:.76rem;font-weight:800;letter-spacing:.14em;white-space:nowrap}
+.hud-mission{font-weight:800;white-space:nowrap}
+.hud-topbar .hud-topline{margin-left:auto;color:#bacdc5;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud-body{min-height:0;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(275px,24vw,375px)}
+.hud-play-area{min-width:0;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at center,#1a3229 0%,#06110c 65%,#030908 100%)}
+#hud-playfield{width:100%;height:100%;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#hud-playfield #canvas{flex:none;width:720px;height:440px;max-width:none;max-height:none;margin:0;aspect-ratio:18/11;border-radius:0;border:1px solid #536b5b;object-fit:fill;box-shadow:0 0 0 1px #0c271b,0 0 60px #030906}
+.hud-toast-anchor{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(92%,680px);pointer-events:none;text-align:center}
+.hud-toast-anchor .alpha-event{padding:8px 12px;background:#061912c9;border:1px solid #5e9473;border-radius:6px;margin:0;min-height:0;color:#d0ffe4}
+.hud-toast-anchor .alpha-result{margin:8px 0;background:#423d24ef}
+.hud-sidebar{min-height:0;min-width:0;display:flex;flex-direction:column;overflow-y:auto;background:#13221e;border-left:3px ridge #74816a;scrollbar-color:#557a62 #101e19}
+.hud-sidebar-heading{display:flex;justify-content:space-between;align-items:center;gap:5px;padding:9px 12px 6px;font-weight:800;color:#deeacb;letter-spacing:.1em;font-size:.76rem;text-transform:uppercase}
+.hud-map-wrap{padding:5px 10px 9px;background:#0c1816}
+#hud-minimap{width:min(100%,44dvh);height:auto;aspect-ratio:18/11;margin:0 auto;border:2px solid #7c9a7b;border-radius:3px;image-rendering:pixelated;cursor:crosshair;touch-action:manipulation}
+#hud-map-readout{margin:6px 0 0;color:#c6ddc9;font-size:.79rem;min-height:1.1rem}
+.hud-sidebar-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:8px;background:#24352d;border-block:1px solid #60745f}
+.hud-sidebar-nav button{padding:8px 3px;background:#16271f;color:#b4cbb9;border:1px solid #405c4a;font-size:.76rem}
+.hud-sidebar-nav button[aria-selected="true"]{background:#41644b;color:white;border-color:#a2c487}
+.hud-section-panel{padding:10px;min-height:0}
+.hud-section-panel h3{margin:4px 2px 10px;color:#d5e5ce;font-size:.93rem}
+.hud-building-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hud-build-card{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:6px!important;background:#23392f!important;border:1px solid #647f6e!important;text-align:left}
+.hud-build-card[aria-pressed="true"]{border-color:#e2c66f!important;background:#3d4430!important}
+.hud-build-art{display:flex;align-items:center;justify-content:center;height:61px;background:repeating-linear-gradient(135deg,#34483e,#34483e 8px,#2c4036 8px,#2c4036 16px);color:#d0b66c;text-shadow:0 2px 2px #08130e;font-size:2rem;border:1px solid #4b6457}
+.hud-build-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.045em;line-height:1.2}
+.hud-build-cost{font-size:.66rem;color:#b8c9ac}
+.hud-build-detail{margin-top:10px;padding:9px;background:#0c1b17;border-left:3px solid #c7ad64;color:#cbdacc;font-size:.79rem;line-height:1.5}
+.hud-intel-list{padding-left:17px;color:#cddfcd;line-height:1.9;font-size:.86rem}
+.hud-controls-list{display:grid;grid-template-columns:auto 1fr;gap:9px 12px;font-size:.84rem}
+.hud-controls-list dt{font-weight:800;color:#e5c975}.hud-controls-list dd{margin:0;color:#d1e2d5}
+.hud-footer{display:flex;align-items:center;gap:12px;padding:5px 12px;background:#15241d;border-top:2px solid #667e66;min-width:0}
+#hud-status-slot{flex:1;min-width:0;overflow:hidden}
+#hud-status-slot .status{margin:0;padding:0;background:transparent;border:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.79rem;color:#bfe5c6}
+.hud-shortcuts{color:#b8c7b5;font-size:.73rem;white-space:nowrap}
+.hud-shell.sidebar-closed .hud-body{grid-template-columns:minmax(0,1fr) 0}
+.hud-shell.sidebar-closed .hud-sidebar{visibility:hidden}
+body.hud-active{overflow:hidden}
+@media(max-width:900px){
+  .hud-shell{grid-template-rows:50px minmax(0,1fr) 43px}
+  .hud-body{display:block;position:relative}
+  .hud-play-area{width:100%;height:100%}
+  .hud-sidebar{position:absolute;right:0;top:0;bottom:0;width:min(330px,88vw);z-index:2;box-shadow:-12px 0 25px #0008}
+  .hud-shell.sidebar-closed .hud-sidebar{visibility:hidden;transform:translateX(100%)}
+  .hud-topline,.hud-shortcuts{display:none}
+}
 @media(max-width:760px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-runtime="loading" data-mode="idle">
-<div class="eyebrow">Engineering preview · WebAssembly</div>
-<h1>VanillaTD Browser Runtime Lab</h1>
-<p>The <strong>actual VanillaTD WebAssembly executable</strong>, not a playable release. Test graphics and input using the diagnostic mode, or stage legally owned game files for experimental startup.</p>
+<div class="eyebrow">World-Conquer · Original-content WebAssembly game</div>
+<h1>World-Conquer Tactical Alpha 0.1</h1>
+<p>Command a two-person squad through hostile territory, recover both supply crates, and reach the Courier aircraft. Powered by native VanillaTD movement, with original project-owned artwork and mission content.</p>
 <div class="status" role="status" aria-live="polite" id="runtime-state">Loading engine runtime…</div>
 <div class="grid">
 <section class="panel">
-<h2>Engine canvas</h2>
+<div class="alpha-banner">
+<div class="eyebrow">Operation Courier Extraction</div>
+<h2>Your squad. Your mission.</h2>
+<p>Move with a click, click a red sentry to attack, and keep at least one soldier alive. Recover two amber crates and reach the aircraft to win.</p>
+<div class="alpha-objectives"><span>2 squad members</span><span>2 guarded crates</span><span>Live enemy patrols</span><span>Extraction victory</span></div>
+<button type="button" id="launch-alpha" class="primary" disabled>Start Tactical Alpha</button>
+<p class="note">Controls: click a squad member or press 1/2 to select; click ground to move; click a red sentry to attack; Esc cancels orders; R restarts.</p>
+</div>
+<canvas id="canvas" tabindex="0" width="720" height="440" aria-label="World-Conquer native tactical battlefield"></canvas>
+<p id="engine-courier-status" class="status" role="status" aria-live="polite" hidden>Engine-owned mission ready to launch.</p>
+<p id="alpha-event" class="alpha-event" role="status" aria-live="polite" hidden></p>
+<p id="alpha-result" class="alpha-result" role="status" aria-live="polite" hidden></p>
+<h3>Standalone JavaScript fallback</h3>
+<canvas id="vertical-slice-canvas" width="900" height="550" aria-label="Tactical supply extraction game map"></canvas>
+<button type="button" id="slice-start" class="primary">Start tactical mission</button>
+<button type="button" id="slice-restart" disabled>Restart mission</button>
+<p id="slice-status" class="note" role="status">Recover two supply crates, survive the sentries, and reach the cargo aircraft. Select a green unit, then click a destination. No game data required.</p>
+<p class="note">This is a standalone original-content gameplay slice. The experimental VanillaTD C++ campaign remains separate below.</p>
+<h3>VanillaTD engineering diagnostics</h3>
 <!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
-<canvas id="canvas" tabindex="0" width="720" height="400" aria-label="VanillaTD rendering canvas"></canvas>
 <button type="button" id="run-probe" class="primary" disabled>Run engine SDL2 probe</button>
 <button type="button" id="run-cooperative" disabled>Test cooperative C++ loop</button>
+<button type="button" id="run-shape" disabled>Render original SHP sample</button>
+<button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
+<button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
+<button type="button" id="run-engine-courier" disabled>Play Courier with native infantry movement (experimental)</button>
+<p class="note">The experimental native mode behind Alpha 0.1 uses VanillaTD movement plus deterministic Courier combat, objectives, and sentry AI. Historical campaign systems remain separate.</p>
+<button type="button" id="run-unit-probe" disabled>Test native infantry allocation (experimental)</button>
+<p class="note">The experimental infantry diagnostic allocates a production house and places one E1 unit onto native map cells. It is a one-shot probe, not the playable mission; reload before switching modes.</p>
+<p class="note">Native mission: click a green squad unit and a tile to move; press R to restart. This gameplay runs inside the compiled VanillaTD WebAssembly executable using original procedural visuals.</p>
+<h3>WF-0002 HD cargo transport (independent preview)</h3>
+<canvas id="cargo-hd-canvas" width="512" height="512" aria-label="High-resolution Courier cargo aircraft preview"></canvas>
+<button type="button" id="load-cargo-hd">Load verified HD aircraft</button>
+<button type="button" id="cargo-prev" disabled>Previous heading</button>
+<button type="button" id="cargo-next" disabled>Next heading</button>
+<button type="button" id="cargo-ramp" disabled>Cycle ramp stages</button>
+<p id="cargo-hd-status" class="note" role="status">HD preview not loaded; native 32×32 SHP remains the engine fallback.</p>
 <p class="note">No game assets required. Select either probe (reload to switch modes). Click the canvas to change the moving rectangle's color. Press a key while the canvas is focused to log input. Reload to switch modes.</p>
+<p class="note">The original SHP diagnostic loads project-owned sprite and palette files from <code>content/</code>. It draws the sprite through the game's own tactical <code>CC_Draw_Shape()</code> into an offscreen buffer and presents that buffer with SDL2. It does not initialize a mission.</p>
+<p class="note">The wireframe roster diagnostic separately loads six verified, original-art placeholder SHPs from <code>wireframes/</code>, stages them in memory, then checks real C++ resource lookup and <code>CC_Draw_Shape()</code> for infantry, vehicle, aircraft, building, terrain and effect. Their final game-state frame layouts are not yet validated.</p>
 <h2>Runtime log</h2>
 <pre id="log" aria-live="polite"></pre>
 </section>
@@ -58,31 +152,283 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 <p class="note">Choose an installed game folder and, where available, original <code>gdi</code> CD contents. Root assets go to <code>/game</code>; GDI disc assets to <code>/game/gdi</code>. The original lower-case disc directory is preserved; files are uppercased. Imported data stays local and is cleared on reload.</p>
 </section>
 </div>
+<div id="tactical-hud" class="hud-shell" hidden aria-label="World-Conquer tactical command interface">
+  <header class="hud-topbar">
+    <span class="hud-brand">WORLD-CONQUER</span>
+    <strong class="hud-mission">COURIER EXTRACTION</strong>
+    <span class="hud-topline">TACTICAL ALPHA 0.1 · ORIGINAL CONTENT</span>
+    <button type="button" id="hud-sidebar-toggle" aria-controls="hud-sidebar" aria-expanded="true">Panels</button>
+    <button type="button" id="hud-fullscreen" aria-pressed="false" title="Toggle browser fullscreen">⛶ Fullscreen</button>
+  </header>
+  <div class="hud-body">
+    <main class="hud-play-area" aria-label="Active battlefield">
+      <div id="hud-playfield"></div>
+      <div id="hud-toast-anchor" class="hud-toast-anchor"></div>
+    </main>
+    <aside id="hud-sidebar" class="hud-sidebar" aria-label="Command sidebar">
+      <div class="hud-sidebar-heading"><span>Tactical minimap</span><span>18 × 11</span></div>
+      <div class="hud-map-wrap">
+        <canvas id="hud-minimap" width="360" height="220" aria-label="Live overview of terrain, allied infantry, sentries, crates and extraction"></canvas>
+        <p id="hud-map-readout" role="status">Click a tile to inspect · issue orders on the battlefield</p>
+      </div>
+      <nav class="hud-sidebar-nav" role="tablist" aria-label="Sidebar navigation">
+        <button type="button" role="tab" id="hud-tab-build" aria-controls="hud-build-panel" aria-selected="true" data-hud-tab="build">Build</button>
+        <button type="button" role="tab" id="hud-tab-intel" aria-controls="hud-intel-panel" aria-selected="false" data-hud-tab="intel">Intel</button>
+        <button type="button" role="tab" id="hud-tab-controls" aria-controls="hud-controls-panel" aria-selected="false" data-hud-tab="controls">Controls</button>
+      </nav>
+      <section id="hud-build-panel" class="hud-section-panel" role="tabpanel" aria-labelledby="hud-tab-build">
+        <h3>Construction options <span class="note">· preview</span></h3>
+        <div class="hud-building-grid">
+          <button type="button" class="hud-build-card" data-build="barricade" aria-pressed="true"><span class="hud-build-art" aria-hidden="true">▥</span><span class="hud-build-title">Field barricade</span><span class="hud-build-cost">Defense · locked</span></button>
+          <button type="button" class="hud-build-card" data-build="relay" aria-pressed="false"><span class="hud-build-art" aria-hidden="true">⌁</span><span class="hud-build-title">Signal relay</span><span class="hud-build-cost">Support · locked</span></button>
+          <button type="button" class="hud-build-card" data-build="medic" aria-pressed="false"><span class="hud-build-art" aria-hidden="true">✚</span><span class="hud-build-title">Medical post</span><span class="hud-build-cost">Recovery · locked</span></button>
+          <button type="button" class="hud-build-card" data-build="supply" aria-pressed="false"><span class="hud-build-art" aria-hidden="true">▤</span><span class="hud-build-title">Supply depot</span><span class="hud-build-cost">Logistics · locked</span></button>
+        </div>
+        <p id="hud-build-detail" class="hud-build-detail" role="status">Field barricade — a defensive structure planned for a future construction milestone. Placement is not yet enabled.</p>
+      </section>
+      <section id="hud-intel-panel" class="hud-section-panel" role="tabpanel" aria-labelledby="hud-tab-intel" hidden>
+        <h3>Operation briefing</h3>
+        <ol class="hud-intel-list"><li>Keep Scout or Ranger alive.</li><li>Recover both amber supply crates.</li><li>Reach the blue aircraft extraction zone.</li><li>Neutralize or evade the two mobile sentries.</li></ol>
+        <p class="note">Green dots = allied infantry · Red = sentries · Gold = supplies · Cyan = extraction.</p>
+      </section>
+      <section id="hud-controls-panel" class="hud-section-panel" role="tabpanel" aria-labelledby="hud-tab-controls" hidden>
+        <h3>Squad controls</h3>
+        <dl class="hud-controls-list"><dt>Click ally</dt><dd>Select a soldier</dd><dt>Click ground</dt><dd>Move to destination</dd><dt>Click sentry</dt><dd>Attack target</dd><dt>1 / 2</dt><dd>Scout / Ranger</dd><dt>Esc</dt><dd>Cancel orders</dd><dt>R</dt><dd>Restart mission</dd><dt>⛶</dt><dd>Toggle fullscreen</dd></dl>
+      </section>
+    </aside>
+  </div>
+  <footer class="hud-footer"><div id="hud-status-slot"></div><span class="hud-shortcuts">1/2 Select · Esc Hold · R Restart</span></footer>
+</div>
 <script src="asset-import.js"></script>
+<script src="original-asset.js"></script>
+<script src="wireframe-asset.js"></script>
+<script src="cargo-hd.js"></script>
+<script src="vertical-slice.js"></script>
+<script src="mission-pack.js"></script>
+<script src="tactical-hud.js"></script>
+<script src="simulation-bridge.js"></script>
 <script>
 (function () {
   "use strict";
+  const sliceCanvas=document.getElementById("vertical-slice-canvas");
+  const sliceStatus=document.getElementById("slice-status");
+  const sliceStart=document.getElementById("slice-start");
+  const sliceRestart=document.getElementById("slice-restart");
+  const sliceCtx=sliceCanvas.getContext("2d");
+  let slice=null,sliceTimer=null,sliceAircraft=null;
+  function paintSlice(){
+    if(!slice)return;
+    WCVerticalSlice.render(sliceCtx,slice,sliceAircraft);
+    sliceStatus.textContent=`${slice.message} | Cargo ${slice.cargo}/2 | ${slice.phase.toUpperCase()}`;
+    if(slice.phase!=="playing"&&sliceTimer){clearInterval(sliceTimer);sliceTimer=null;}
+  }
+  async function beginSlice(){
+    if(sliceTimer)clearInterval(sliceTimer);
+    let map;
+    try{map=(await WCMissionPack.load()).map;}
+    catch(error){report("[mission] Mission pack unavailable; using built-in fallback: "+error.message,true);}
+    slice=WCVerticalSlice.start(map);
+    sliceRestart.disabled=false;
+    paintSlice();
+    sliceTimer=setInterval(()=>{WCVerticalSlice.tick(slice);paintSlice();},200);
+  }
+  sliceStart.addEventListener("click",beginSlice);
+  sliceRestart.addEventListener("click",beginSlice);
+  sliceCanvas.addEventListener("click",event=>{
+    if(!slice||slice.phase!=="playing")return;
+    const r=sliceCanvas.getBoundingClientRect();
+    const x=Math.floor((event.clientX-r.left)/r.width*slice.width);
+    const y=Math.floor((event.clientY-r.top)/r.height*slice.height);
+    WCVerticalSlice.select(slice,x,y);paintSlice();
+  });
+  const hdCanvas = document.getElementById("cargo-hd-canvas");
+  const hdStatus = document.getElementById("cargo-hd-status");
+  const hdLoad = document.getElementById("load-cargo-hd");
+  const hdPrev = document.getElementById("cargo-prev");
+  const hdNext = document.getElementById("cargo-next");
+  const hdRamp = document.getElementById("cargo-ramp");
+  let hdImages = null, hdFrame = 0;
+  function paintHD(frame) {
+    hdFrame = frame;
+    WCCargoHD.draw(hdCanvas.getContext("2d"), hdImages, frame);
+    hdStatus.textContent = `Verified 512×512 HD preview — ${frame<32 ? `heading ${frame+1}/32` : `ramp ${frame-31}/4`}; independent of the C++ renderer.`;
+  }
+  hdLoad.addEventListener("click", async () => {
+    hdLoad.disabled = true;
+    hdStatus.textContent = "Verifying all 36 HD image hashes…";
+    try {
+      hdImages = await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
+      sliceAircraft=hdImages[0];
+      if(slice)paintSlice();
+      hdPrev.disabled = hdNext.disabled = hdRamp.disabled = false;
+      paintHD(0);
+    } catch (error) {
+      hdStatus.textContent = `HD unavailable (${error.message}); native SHP fallback unchanged.`;
+      hdLoad.disabled = false;
+    }
+  });
+  hdPrev.addEventListener("click", () => paintHD((hdFrame+31)%32));
+  hdNext.addEventListener("click", () => paintHD((hdFrame+1)%32));
+  hdRamp.addEventListener("click", () => paintHD(32+(hdFrame<32 ? 0 : (hdFrame-31)%4)));
   const state = document.getElementById("runtime-state");
   const log = document.getElementById("log");
   const probe = document.getElementById("run-probe");
   const cooperative = document.getElementById("run-cooperative");
+  const shape = document.getElementById("run-shape");
+  const wireframes = document.getElementById("run-wireframes");
+  const nativeSlice = document.getElementById("run-native-slice");
+  const alphaLaunch = document.getElementById("launch-alpha");
+  const engineCourier = document.getElementById("run-engine-courier");
+  const engineHud = document.getElementById("engine-courier-status");
+  const alphaEvent = document.getElementById("alpha-event");
+  const alphaResult = document.getElementById("alpha-result");
+  const unitProbe = document.getElementById("run-unit-probe");
   const game = document.getElementById("run-game");
   const assetProbe = document.getElementById("run-asset-probe");
   const assetStatus = document.getElementById("asset-status");
   const canvas = document.getElementById("canvas");
   const count = document.getElementById("file-count");
+  const tacticalHUD = document.getElementById("tactical-hud");
+  const hudPlayfield = document.getElementById("hud-playfield");
+  const hudMinimap = document.getElementById("hud-minimap");
+  const hudMapReadout = document.getElementById("hud-map-readout");
+  const hudFullscreen = document.getElementById("hud-fullscreen");
+  const hudSidebarToggle = document.getElementById("hud-sidebar-toggle");
+  const buildDescriptions={
+    barricade:"Field barricade — planned defensive cover. Placement is not yet enabled.",
+    relay:"Signal relay — planned command range and radar support. Placement is not yet enabled.",
+    medic:"Medical post — planned squad recovery structure. Placement is not yet enabled.",
+    supply:"Supply depot — planned logistics and resupply. Placement is not yet enabled."
+  };
+  let hudModel=WCTacticalHUD.create();
+
+  function resizeBattlefield(){
+    if(tacticalHUD.hidden)return;
+    const width=hudPlayfield.clientWidth,height=hudPlayfield.clientHeight;
+    if(!width||!height)return;
+    const scale=Math.min(width/720,height/440);
+    canvas.style.width=Math.max(1,Math.floor(720*scale))+"px";
+    canvas.style.height=Math.max(1,Math.floor(440*scale))+"px";
+  }
+  function setSidebarOpen(open){
+    tacticalHUD.classList.toggle("sidebar-closed",!open);
+    hudSidebarToggle.setAttribute("aria-expanded",String(open));
+    requestAnimationFrame(resizeBattlefield);
+  }
+  function activateTacticalHUD(){
+    document.body.classList.add("hud-active");
+    tacticalHUD.hidden=false;
+    hudPlayfield.appendChild(canvas);
+    document.getElementById("hud-status-slot").appendChild(engineHud);
+    const notifications=document.getElementById("hud-toast-anchor");
+    notifications.appendChild(alphaEvent);
+    notifications.appendChild(alphaResult);
+    setSidebarOpen(!window.matchMedia("(max-width:900px)").matches);
+    WCTacticalHUD.draw(hudMinimap,hudModel);
+    resizeBattlefield();
+  }
+  hudSidebarToggle.addEventListener("click",()=>{
+    setSidebarOpen(tacticalHUD.classList.contains("sidebar-closed"));
+    canvas.focus();
+  });
+  hudFullscreen.addEventListener("click",async()=>{
+    try{
+      if(document.fullscreenElement)await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    }catch(error){hudMapReadout.textContent="Fullscreen unavailable: "+error.message;}
+    canvas.focus();
+  });
+  document.addEventListener("fullscreenchange",()=>{
+    const active=Boolean(document.fullscreenElement);
+    hudFullscreen.setAttribute("aria-pressed",String(active));
+    hudFullscreen.textContent=active?"⛶ Exit fullscreen":"⛶ Fullscreen";
+    requestAnimationFrame(resizeBattlefield);
+  });
+  window.addEventListener("resize",resizeBattlefield);
+  window.matchMedia("(max-width:900px)").addEventListener("change",event=>setSidebarOpen(!event.matches));
+  if(typeof ResizeObserver!=="undefined")new ResizeObserver(resizeBattlefield).observe(hudPlayfield);
+  hudMinimap.addEventListener("click",event=>{
+    const rect=hudMinimap.getBoundingClientRect();
+    const x=Math.min(17,Math.max(0,Math.floor((event.clientX-rect.left)/rect.width*18)));
+    const y=Math.min(10,Math.max(0,Math.floor((event.clientY-rect.top)/rect.height*11)));
+    const terrain=WCTacticalHUD.inspect(hudModel,x,y);
+    hudMapReadout.textContent=`${terrain} · Sector ${x+1},${y+1} · Order units on the battlefield`;
+    WCTacticalHUD.draw(hudMinimap,hudModel);
+    canvas.focus();
+  });
+  document.querySelectorAll("[data-hud-tab]").forEach(button=>button.addEventListener("click",()=>{
+    const active=button.dataset.hudTab;
+    document.querySelectorAll("[data-hud-tab]").forEach(tab=>tab.setAttribute("aria-selected",String(tab===button)));
+    for(const id of ["build","intel","controls"])
+      document.getElementById("hud-"+id+"-panel").hidden=id!==active;
+    canvas.focus();
+  }));
+  document.querySelectorAll("[data-build]").forEach(button=>button.addEventListener("click",()=>{
+    document.querySelectorAll("[data-build]").forEach(card=>card.setAttribute("aria-pressed",String(card===button)));
+    document.getElementById("hud-build-detail").textContent=buildDescriptions[button.dataset.build];
+    canvas.focus();
+  }));
   let ready = false;
   let started = false;
+  let preparingCourier = false;
   let imported = 0;
   let loadingAssets = false;
   let assetReady = false;
   const knownNames = new Set();
+  const initialAlphaStats=()=>({cargo:0,players:[5,6],sentries:[3,3],selected:0,phase:"playing"});
+  let alphaStats=initialAlphaStats();
+
+  function updateAlphaStatus(){
+    const enemies=alphaStats.sentries.filter(hp=>hp>0).length;
+    engineHud.textContent=`Selected: ${alphaStats.selected===0?"Scout":"Ranger"} · Scout ${Math.max(0,alphaStats.players[0])}/5 HP · Ranger ${Math.max(0,alphaStats.players[1])}/6 HP · Cargo ${alphaStats.cargo}/2 · Sentries ${enemies}/2`;
+    if(alphaStats.phase==="won"){
+      alphaResult.hidden=false;
+      alphaResult.textContent="Mission accomplished — Both supply crates extracted! Press R to play again.";
+    }else if(alphaStats.phase==="lost"){
+      alphaResult.hidden=false;
+      alphaResult.textContent="Squad lost — The Courier mission failed. Press R to retry.";
+    }else if(alphaStats.phase==="error"){
+      alphaResult.hidden=false;
+      alphaResult.textContent="Engine mission error. See the runtime log and reload to retry.";
+    }else alphaResult.hidden=true;
+  }
+
+  // Native C++ publishes the sole gameplay state. The HUD is a read-only
+  // projection; historical runtime log messages remain diagnostics only.
+  WCRTS.subscribe(snapshot=>{
+    if(document.body.dataset.mode!=="engine-courier")return;
+    WCTacticalHUD.applySnapshot(hudModel,snapshot);
+    WCTacticalHUD.draw(hudMinimap,hudModel);
+    const units=snapshot.entities;
+    const hp=id=>units.find(entity=>entity.id===id).hp;
+    alphaStats={cargo:snapshot.cargo,players:[hp(1001),hp(1002)],
+      sentries:[hp(2001),hp(2002)],selected:snapshot.selectedEntityId===1001?0:1,
+      phase:snapshot.phase};
+    engineHud.dataset.snapshotVersion=String(snapshot.version);
+    engineHud.dataset.snapshotTick=String(snapshot.tick);
+    for(const event of snapshot.events){
+      if(event.type==="restart")alphaEvent.textContent="Squad reassembled. Recover both crates and extract.";
+      if(event.type==="pickup")alphaEvent.textContent=`Supply secured: ${snapshot.cargo} of 2 crates. ${snapshot.cargo===2?"Reach the aircraft to extract!":"Keep moving!"}`;
+      if(event.type==="health")alphaEvent.textContent=event.entityId<2000?
+        `${event.entityId===1001?"Scout":"Ranger"} under fire — ${Math.max(0,event.value)} HP remaining!`:
+        (event.value<=0?"Enemy sentry eliminated!":"Sentry hit — keep up the pressure!");
+      if(event.type==="command"&&event.code!=="accepted")
+        alphaEvent.textContent=`Order rejected: ${event.code.replaceAll("_"," ")}.`;
+    }
+    updateAlphaStatus();
+  });
 
   function report(message, isError) {
     const value = String(message);
     log.textContent += (isError ? "[error] " : "") + value + "\n";
     log.scrollTop = log.scrollHeight;
     (isError ? console.error : console.log)(value);
+    if(document.body.dataset.mode==="engine-courier"){
+      if(value.includes("[browser-engine-courier] ERROR")){
+        alphaStats.phase="error";
+        updateAlphaStatus();
+      }
+    }
   }
   function status(message, kind) {
     state.textContent = message;
@@ -91,6 +437,12 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   function controls() {
     probe.disabled = !ready || started;
     cooperative.disabled = !ready || started;
+    shape.disabled = !ready || started || loadingAssets;
+    wireframes.disabled = !ready || started || loadingAssets;
+    nativeSlice.disabled = !ready || started;
+    alphaLaunch.disabled = !ready || started || preparingCourier;
+    engineCourier.disabled = !ready || started || preparingCourier;
+    unitProbe.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
   }
@@ -99,7 +451,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    status(mode === "probe" ? "SDL2 probe running" : (mode === "cooperative" ? "Cooperative C++ loop running" : (mode === "assets" ? "Checking engine file search" : "Starting game (experimental)")), "running");
+    const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",probe:"SDL2 probe running",
+      cooperative:"Cooperative C++ loop running",assets:"Checking engine file search",
+      shape:"Rendering original sprite",wireframes:"Rendering wireframe roster"};
+    status(names[mode]||"Starting game (experimental)","running");
     canvas.focus();
     try {
       Module.callMain(args);
@@ -113,6 +468,82 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   }
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
+  unitProbe.addEventListener("click", () => run(["--browser-unit-probe"], "unit-probe"));
+  async function launchCourier(mode) {
+    if(!ready||started||preparingCourier)return;
+    preparingCourier=true;
+    status("Preparing the Courier mission and verified original art…","loading");
+    alphaLaunch.disabled=true;
+    nativeSlice.disabled=true;
+    engineCourier.disabled=true;
+    try{
+      const result=await WCWireframes.load(Module.FS,"wireframes/manifest.json");
+      report("[browser-native-slice] staged verified tactical SHP pack ("+result.shapes+" resources)");
+    }catch(error){report("[browser-native-slice] Tactical SHP pack unavailable; using unit markers: "+error.message,true);}
+    try{
+      const mission=await WCMissionPack.load();
+      Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
+      if(mode==="engine-courier")hudModel=WCTacticalHUD.create(mission.map);
+      report("[browser-native-slice] staged verified original-content mission map");
+    }catch(error){report("[browser-native-slice] Mission pack unavailable; using built-in map: "+error.message,true);}
+    try {
+      if(!hdImages)hdImages=await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
+      const offscreen=document.createElement("canvas");
+      offscreen.width=offscreen.height=512;
+      const ctx=offscreen.getContext("2d",{willReadFrequently:true});
+      ctx.drawImage(hdImages[0],0,0);
+      const rgba=new Uint8Array(ctx.getImageData(0,0,512,512).data);
+      Module.FS.writeFile("/COURIER.RGBA",rgba);
+      report("[browser-native-slice] staged verified 512x512 RGBA cargo texture");
+    } catch(error) {
+      report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
+    }
+    canvas.style.aspectRatio="18/11";
+    if(mode==="engine-courier"){
+      WCRTS.clear();
+      activateTacticalHUD();
+      engineHud.hidden=false;
+      alphaEvent.hidden=false;
+      alphaEvent.textContent="Squad deployed. Two crates are marked in amber.";
+      alphaStats=initialAlphaStats();
+      updateAlphaStatus();
+    }
+    run([mode==="engine-courier"?"--browser-engine-courier":"--browser-native-slice"],mode);
+    preparingCourier=false;
+  }
+  nativeSlice.addEventListener("click",()=>launchCourier("native-slice"));
+  engineCourier.addEventListener("click",()=>launchCourier("engine-courier"));
+  alphaLaunch.addEventListener("click",()=>launchCourier("engine-courier"));
+  shape.addEventListener("click", async () => {
+    if (!ready || started || loadingAssets) return;
+    loadingAssets = true;
+    controls();
+    try {
+      const result = await WCContent.load(Module.FS, "content/manifest.json");
+      report("[browser-shape] verified " + result.count + " bundled original assets (" + result.bytes + " bytes)");
+      loadingAssets = false;
+      run(["--browser-shape-probe"], "shape");
+    } catch (error) {
+      loadingAssets = false;
+      report("[browser-shape] " + error.message, true);
+      controls();
+    }
+  });
+  wireframes.addEventListener("click", async () => {
+    if (!ready || started || loadingAssets) return;
+    loadingAssets = true;
+    controls();
+    try {
+      const result = await WCWireframes.load(Module.FS, "wireframes/manifest.json");
+      report("[browser-wireframes] verified and staged " + result.shapes + " shapes and palette (" + result.bytes + " bytes)");
+      loadingAssets = false;
+      run(["--browser-wireframe-probe"], "wireframes");
+    } catch (error) {
+      loadingAssets = false;
+      report("[browser-wireframes] " + error.message, true);
+      controls();
+    }
+  });
   game.addEventListener("click", () => run([], "game"));
   assetProbe.addEventListener("click", () => run(["--browser-data-probe"], "assets"));
 

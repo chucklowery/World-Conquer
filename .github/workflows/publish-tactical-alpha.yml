@@ -1,0 +1,110 @@
+name: Publish World-Conquer Tactical Alpha
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/original-content-pipeline
+    paths:
+      - '.github/workflows/publish-tactical-alpha.yml'
+      - 'CMakeLists.txt'
+      - 'browser/engine/**'
+      - 'game/content/**'
+      - 'tools/content/**'
+      - 'tiberiandawn/**'
+      - 'common/**'
+      - 'cmake/**'
+
+# Only trusted push builds can publish. GitHub Pages deploys the exact tested
+# artifact with a short-lived OIDC token; no content write or branch rewrite.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: tactical-alpha-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: github.repository == 'chucklowery/World-Conquer' && github.ref == 'refs/heads/feature/original-content-pipeline'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ninja
+        run: sudo apt-get update -qq && sudo apt-get install -y ninja-build
+      - name: Install Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v15
+        with:
+          version: '3.1.68'
+      - name: Build browser game
+        run: |
+          emcmake cmake -S . -B build/browser-engine -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF \
+            -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
+            -DNETWORKING=OFF -DOPENAL=OFF -DSDL2=ON \
+            -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF
+          cmake --build build/browser-engine --target VanillaTD --parallel 2
+      - name: Stage mission and verified original assets
+        run: |
+          cp browser/engine/{asset-import,original-asset,wireframe-asset,cargo-hd,vertical-slice,mission-pack,tactical-hud,simulation-bridge}.js build/browser-engine/
+          cp browser/engine/play.html build/browser-engine/
+          mkdir -p build/browser-engine/missions build/browser-engine/cargo-hd
+          cp game/content/missions/{courier-extraction.map,manifest.json} build/browser-engine/missions/
+          cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
+          node tools/content/build.js game/content/manifest.json build/browser-engine/content
+          node tools/content/wireframes.js build build/browser-engine/wireframes --representative
+          node tools/content/r05.js build build/browser-engine/r05
+      - name: Verify release and browser gameplay
+        run: |
+          node browser/engine/test-package-alpha.js
+          node browser/engine/test-asset-import.js
+          node browser/engine/test-mission-pack.js
+          node browser/engine/test-tactical-hud.js
+          node browser/engine/test-simulation-bridge.js
+          node browser/engine/test-cargo-hd.js
+          node tools/content/test-r05.js
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install --with-deps chromium
+          node browser/engine/check-runtime.js
+          node browser/engine/check-r05-gallery.js build/browser-engine/r05
+      - name: Package public native alpha
+        run: node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site "$GITHUB_SHA"
+      - name: Check one-time Pages configuration
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          response="$(mktemp)"
+          status="$(curl --silent --show-error --output "$response" --write-out '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pages")"
+          if [ "$status" = '200' ] && [ "$(jq -r '.build_type' "$response")" = 'workflow' ]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          elif [ "$status" = '404' ] || [ "$status" = '200' ]; then
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Pages is not configured for GitHub Actions. Enable it in Settings > Pages > Build and deployment, then re-run.'
+            echo 'Pages activation required before public hosting.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Unexpected Pages API response: $status" >&2
+            exit 1
+          fi
+      - name: Configure GitHub Pages
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+      - name: Upload verified Pages artifact
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./build/tactical-alpha-site
+      - name: Deploy verified native tactical alpha
+        if: steps.pages.outputs.enabled == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4

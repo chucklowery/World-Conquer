@@ -1,0 +1,33 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const crypto=require("node:crypto");
+const pack=require("./mission-pack");
+const game=require("./vertical-slice");
+const dir=path.resolve(__dirname,"../../game/content/missions");
+const manifest=JSON.parse(fs.readFileSync(path.join(dir,"manifest.json")));
+const bytes=fs.readFileSync(path.join(dir,manifest.file));
+const digest=crypto.createHash("sha256").update(bytes).digest("hex");
+assert.equal(digest,manifest.sha256);
+const fetcher=async url=>{
+  const name=url.split("/").pop(),file=path.join(dir,name);
+  if(!fs.existsSync(file))return {ok:false};
+  const b=fs.readFileSync(file);
+  return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};
+};
+const hash=async input=>crypto.createHash("sha256").update(Buffer.from(input)).digest("hex");
+(async()=>{
+  const result=await pack.load("missions",fetcher,hash);
+  const state=game.start(result.map);
+  assert.equal(state.units[0].x,1);
+  assert.equal(state.units[2].x,10);
+  assert.equal(state.crates[1].y,4);
+  assert.equal(state.walls.size,14);
+  assert.deepEqual(game.parseMap(result.map).markers.X,{x:16,y:9});
+  assert.throws(()=>pack.validate(result.map.replace(".S...#",".S...S")),/marker/);
+  assert.throws(()=>game.parseMap(result.map.replace(".S...#",".S...S")),/Duplicate/);
+  const bad=async url=>url.endsWith(".map")?{ok:true,arrayBuffer:async()=>new Uint8Array([1,2]).buffer}:fetcher(url);
+  await assert.rejects(pack.load("missions",bad,hash),/checksum mismatch/);
+  console.log("PASS: shared mission map, source digest, placements and rejection tests");
+})().catch(e=>{console.error(e);process.exitCode=1;});

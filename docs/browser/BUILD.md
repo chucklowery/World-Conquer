@@ -1,6 +1,8 @@
 # Build, Run and Verify
 
-Native and Emscripten builds have compiled in CI; browser runtime testing and the game loop are still experimental.
+Native and Emscripten builds compile in CI. Operation Courier Extraction is
+now a browser-playable original-content native tactical alpha; the historical
+campaign game loop and external game-data startup remain experimental.
 
 ## Native engine baseline (Linux/WSL2)
 
@@ -36,9 +38,12 @@ browser/smoke/dist/index.wasm
 
 Acceptance: rectangle animates; mouse click changes color; keyboard logging visible in developer console; no failed JS/WASM requests. This is NOT the actual VanillaTD engine.
 
-## Experimental VanillaTD Emscripten build (P1 compile spike)
+## VanillaTD Emscripten build (native Tactical Alpha 0.1)
 
-The browser build is **not yet a playable game**. It is an opt-in compile/link target intended to reveal platform incompatibilities without disrupting native builds. Requires Emscripten SDK 3.1.68 and Ninja.
+The browser build includes the **playable Operation Courier Extraction alpha**,
+powered by live VanillaTD infantry movement and a bounded original-content
+combat/mission layer. It is not yet a historical VanillaTD campaign build.
+Requires Emscripten SDK 3.1.68 and Ninja.
 
 ~~~bash
 # From the project root, after sourcing emsdk_env.sh:
@@ -52,6 +57,20 @@ cmake --build build/browser-engine --target VanillaTD --parallel 2
 ~~~
 
 Output (verified in engine CI): `build/browser-engine/vanillatd.html`, `vanillatd.js`, `vanillatd.wasm`. A linked game is not proof of a browser-friendly event loop or playable mission.
+
+The Chromium CI gameplay suite verifies the native alpha's movement, crate
+recovery, extraction, restart, and combat order. For a clean static hosting
+package with `index.html`, runtime scripts, WebAssembly and original assets,
+run `node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site`
+after the asset-staging steps in the engine workflow. The publication workflow
+uses GitHub's official Pages artifact deployment, and repository settings must
+select **GitHub Actions** as the Pages source before the public URL becomes active. See
+[`browser/engine/README.md`](../../browser/engine/README.md#github-pages-publication).
+
+The gameplay launcher now transitions to a full-viewport tactical HUD with an
+aspect-correct battlefield, responsive minimap and sidebar. Build cards are
+clearly labeled as previews, not functional construction. The native browser
+test verifies the HUD layout at both desktop and compact viewport sizes.
 
 [Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
 
