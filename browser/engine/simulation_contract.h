@@ -51,6 +51,14 @@ struct Entity {
     bool active,hasOrder;
     courier::Point order;
 };
+// Optional R02 extension. Empty in Courier so existing R00 entities, events,
+// IDs and snapshot version retain their established meaning.
+struct CommandState {
+    EntityId id;
+    const char* kind,*status;
+    courier::Point destination;
+    unsigned queued;
+};
 struct Snapshot {
     unsigned version;
     uint64_t tick;
@@ -59,6 +67,7 @@ struct Snapshot {
     std::vector<uint8_t> terrain;
     std::vector<Entity> entities;
     std::vector<Event> events;
+    std::vector<CommandState> commandStates;
 };
 
 inline const char* name(Kind kind){
@@ -242,6 +251,13 @@ inline std::string json(const Snapshot& s){
         if(e.hasOrder)out<<"{\"x\":"<<e.order.x<<",\"y\":"<<e.order.y<<'}';
         else out<<"null";
         out<<'}';
+    }
+    out<<"],\"commandStates\":[";
+    for(size_t i=0;i<s.commandStates.size();i++){
+        const CommandState& c=s.commandStates[i];if(i)out<<',';
+        out<<"{\"entityId\":"<<c.id<<",\"kind\":\""<<c.kind
+           <<"\",\"status\":\""<<c.status<<"\",\"x\":"<<c.destination.x
+           <<",\"y\":"<<c.destination.y<<",\"queued\":"<<c.queued<<'}';
     }
     out<<"],\"events\":[";
     for(size_t i=0;i<s.events.size();i++){

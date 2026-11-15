@@ -128,6 +128,8 @@ body.hud-active{overflow:hidden}
 <button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
 <button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
 <button type="button" id="run-engine-courier" disabled>Play Courier with native infantry movement (experimental)</button>
+<button type="button" id="run-r02-orders" disabled>Play R02: four production-unit orders</button>
+<p class="note">R02 uses four real VanillaTD infantry units and MapClass terrain. Select with 1–4 or click; click ground to move, Shift+click attack-move, P then click to patrol, G then click a friendly to guard, H to hold, S/Esc to stop, Ctrl+click to queue, and R to restart. Order states and rejected destinations appear in the native HUD.</p>
 <p class="note">The experimental native mode behind Alpha 0.1 uses VanillaTD movement plus deterministic Courier combat, objectives, and sentry AI. Historical campaign systems remain separate.</p>
 <button type="button" id="run-unit-probe" disabled>Test native infantry allocation (experimental)</button>
 <p class="note">The experimental infantry diagnostic allocates a production house and places one E1 unit onto native map cells. It is a one-shot probe, not the playable mission; reload before switching modes.</p>
@@ -306,6 +308,7 @@ body.hud-active{overflow:hidden}
   const nativeSlice = document.getElementById("run-native-slice");
   const alphaLaunch = document.getElementById("launch-alpha");
   const engineCourier = document.getElementById("run-engine-courier");
+  const r02Launch = document.getElementById("run-r02-orders");
   const engineHud = document.getElementById("engine-courier-status");
   const alphaEvent = document.getElementById("alpha-event");
   const alphaResult = document.getElementById("alpha-result");
@@ -427,6 +430,23 @@ body.hud-active{overflow:hidden}
   // Native C++ publishes the sole gameplay state. The HUD is a read-only
   // projection; historical runtime log messages remain diagnostics only.
   WCRTS.subscribe(snapshot=>{
+    if(document.body.dataset.mode==="r02-orders"){
+      WCTacticalHUD.applyOrdersSnapshot(hudModel,snapshot);
+      WCTacticalHUD.draw(hudMinimap,hudModel);
+      const unit=snapshot.commandStates.find(o=>o.entityId===snapshot.selectedEntityId);
+      engineHud.dataset.snapshotVersion=String(snapshot.version);
+      engineHud.dataset.snapshotTick=String(snapshot.tick);
+      engineHud.textContent="Infantry "+(snapshot.selectedEntityId-1000)+
+        " · "+(unit?unit.kind.replaceAll("_"," ")+" / "+unit.status+
+        " · queued "+unit.queued:"idle")+
+        " · tick "+snapshot.tick;
+      for(const event of snapshot.events){
+        if(event.type==="command"&&event.code!=="accepted")
+          alphaEvent.textContent="Order rejected: "+event.code.replaceAll("_"," ")+".";
+        if(event.type==="restart")alphaEvent.textContent="Four native units ready.";
+      }
+      return;
+    }
     if(document.body.dataset.mode!=="engine-courier")return;
     WCTacticalHUD.applySnapshot(hudModel,snapshot);
     hudInput.receive(snapshot);
@@ -473,6 +493,7 @@ body.hud-active{overflow:hidden}
     nativeSlice.disabled = !ready || started;
     alphaLaunch.disabled = !ready || started || preparingCourier;
     engineCourier.disabled = !ready || started || preparingCourier;
+    r02Launch.disabled = !ready || started || preparingCourier;
     unitProbe.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
@@ -482,7 +503,8 @@ body.hud-active{overflow:hidden}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",probe:"SDL2 probe running",
+    const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",
+      "r02-orders":"Playing native production-unit commands",probe:"SDL2 probe running",
       cooperative:"Cooperative C++ loop running",assets:"Checking engine file search",
       shape:"Rendering original sprite",wireframes:"Rendering wireframe roster"};
     status(names[mode]||"Starting game (experimental)","running");
@@ -507,6 +529,7 @@ body.hud-active{overflow:hidden}
     alphaLaunch.disabled=true;
     nativeSlice.disabled=true;
     engineCourier.disabled=true;
+    r02Launch.disabled=true;
     try{
       const result=await WCWireframes.load(Module.FS,"wireframes/manifest.json");
       report("[browser-native-slice] staged verified tactical SHP pack ("+result.shapes+" resources)");
@@ -514,7 +537,7 @@ body.hud-active{overflow:hidden}
     try{
       const mission=await WCMissionPack.load();
       Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
-      if(mode==="engine-courier")hudModel=WCTacticalHUD.create(mission.map);
+      if(mode==="engine-courier"||mode==="r02-orders")hudModel=WCTacticalHUD.create(mission.map);
       report("[browser-native-slice] staged verified original-content mission map");
     }catch(error){report("[browser-native-slice] Mission pack unavailable; using built-in map: "+error.message,true);}
     try {
@@ -530,20 +553,26 @@ body.hud-active{overflow:hidden}
       report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
     }
     canvas.style.aspectRatio="18/11";
-    if(mode==="engine-courier"){
+    if(mode==="engine-courier"||mode==="r02-orders"){
       WCRTS.clear();
       activateTacticalHUD();
+      if(mode==="r02-orders")document.querySelector(".hud-mission").textContent="R02 PRODUCTION ORDERS";
       engineHud.hidden=false;
       alphaEvent.hidden=false;
-      alphaEvent.textContent="Squad deployed. Two crates are marked in amber.";
-      alphaStats=initialAlphaStats();
-      updateAlphaStatus();
+      alphaEvent.textContent=mode==="r02-orders"?"Four native infantry units ready.":
+        "Squad deployed. Two crates are marked in amber.";
+      if(mode==="engine-courier"){
+        alphaStats=initialAlphaStats();
+        updateAlphaStatus();
+      }
     }
-    run([mode==="engine-courier"?"--browser-engine-courier":"--browser-native-slice"],mode);
+    run([mode==="engine-courier"?"--browser-engine-courier":
+      mode==="r02-orders"?"--browser-r02-orders":"--browser-native-slice"],mode);
     preparingCourier=false;
   }
   nativeSlice.addEventListener("click",()=>launchCourier("native-slice"));
   engineCourier.addEventListener("click",()=>launchCourier("engine-courier"));
+  r02Launch.addEventListener("click",()=>launchCourier("r02-orders"));
   alphaLaunch.addEventListener("click",()=>launchCourier("engine-courier"));
   shape.addEventListener("click", async () => {
     if (!ready || started || loadingAssets) return;

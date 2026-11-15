@@ -27,7 +27,7 @@
       if(c==="X"){exit.x=x;exit.y=y;}
     }
     const spawn=units.map(u=>({...u}));
-    return {width:WIDTH,height:HEIGHT,blocked,units,spawn,crates,collected:[false,false],exit,cargo:0,selected:0,inspect:null};
+    return {width:WIDTH,height:HEIGHT,blocked,units,spawn,crates,collected:[false,false],exit,cargo:0,selected:0,inspect:null,orderMode:false};
   }
   function reset(model){
     model.units=model.spawn.map(u=>({...u}));
@@ -77,13 +77,31 @@
     if(model.selected<0||model.selected>1)throw Error("Invalid native selection");
     model.cargo=snapshot.cargo;
     if(snapshot.events.some(event=>event.type==="restart"))model.inspect=null;
+    model.orderMode=false;
+    return model;
+  }
+  function applyOrdersSnapshot(model,snapshot){
+    if(!snapshot||snapshot.version!==1||snapshot.map.width!==WIDTH||
+       snapshot.map.height!==HEIGHT||!Array.isArray(snapshot.commandStates))
+      throw Error("Unsupported production command snapshot");
+    const ids=[1001,1002,1003,1004];
+    model.units=ids.map(id=>{
+      const e=snapshot.entities.find(e=>e.id===id&&e.kind==="infantry");
+      if(!e)throw Error("Missing production infantry "+id);
+      return {x:e.x,y:e.y,hp:e.hp};
+    });
+    model.orderMode=true;model.crates=[];model.collected=[];model.cargo=0;
+    model.blocked=new Set(snapshot.map.terrain.flatMap((tile,i)=>tile===1?[i]:[]));
+    model.selected=ids.indexOf(snapshot.selectedEntityId);
+    if(model.selected<0)throw Error("Invalid production selection");
     return model;
   }
   function inspect(model,x,y){
     if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>=WIDTH||y<0||y>=HEIGHT)return "Outside map";
     model.inspect={x,y};
     const who=model.units.findIndex(u=>u.hp>0&&u.x===x&&u.y===y);
-    if(who>=0)return ["Scout","Ranger","Sentry A","Sentry B"][who];
+    if(who>=0)return model.orderMode?("Infantry "+(who+1)):
+      ["Scout","Ranger","Sentry A","Sentry B"][who];
     if(model.crates.some((p,i)=>!model.collected[i]&&p.x===x&&p.y===y))return "Supply cache";
     if(model.exit.x===x&&model.exit.y===y)return "Extraction zone";
     if(model.blocked.has(y*WIDTH+x))return "Blocked terrain";
@@ -100,16 +118,18 @@
       ctx.fillStyle=wall?"#627160":(x+y)%3===0?"#254735":"#1d3c2f";
       ctx.fillRect(x*w+1,y*h+1,w-2,h-2);
     }
-    ctx.fillStyle="#73b4bb";
-    ctx.fillRect(model.exit.x*w+2,model.exit.y*h+2,w-4,h-4);
-    for(let i=0;i<2;i++)if(!model.collected[i]){
+    if(!model.orderMode){
+      ctx.fillStyle="#73b4bb";
+      ctx.fillRect(model.exit.x*w+2,model.exit.y*h+2,w-4,h-4);
+    }
+    for(let i=0;!model.orderMode&&i<2;i++)if(!model.collected[i]){
       const p=model.crates[i];ctx.fillStyle="#edbd57";
       ctx.fillRect(p.x*w+w*.25,p.y*h+h*.25,w*.5,h*.5);
     }
     model.units.forEach((u,i)=>{
       if(u.hp<=0)return;
       ctx.beginPath();ctx.arc((u.x+.5)*w,(u.y+.5)*h,Math.max(3,Math.min(w,h)*.3),0,Math.PI*2);
-      ctx.fillStyle=i>=2?"#fb7168":"#7aebbc";ctx.fill();
+      ctx.fillStyle=model.orderMode?"#7aebbc":i>=2?"#fb7168":"#7aebbc";ctx.fill();
       if(i===model.selected){ctx.strokeStyle="#f0f7f0";ctx.lineWidth=2;ctx.stroke();}
     });
     if(model.inspect){
@@ -125,5 +145,5 @@
       ctx.strokeRect(x+1,y+1,Math.max(0,width-2),Math.max(0,height-2));
     }
   }
-  return {create,reset,observe,applySnapshot,inspect,draw};
+  return {create,reset,observe,applySnapshot,applyOrdersSnapshot,inspect,draw};
 });

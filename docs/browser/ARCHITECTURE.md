@@ -1,5 +1,12 @@
 # Architecture and Source Map
 
+## R02 — bounded production-unit orders
+
+See [R02_UNIT_ORDERS.md](R02_UNIT_ORDERS.md). An isolated R02 browser mode
+uses four real `InfantryClass::AI` actors and `MapClass` terrain, a bounded
+native order/path controller, and the version-1 R00 snapshot bridge. The
+specialized Courier combat/objectives remain in the Courier mode.
+
 ## R00 — established simulation-to-browser contract (v1)
 
 The **native C++ process is authoritative** for Tactical Alpha gameplay. Its

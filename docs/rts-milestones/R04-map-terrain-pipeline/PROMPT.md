@@ -2,7 +2,7 @@
 
 Implement **R04** in a fresh context for `https://github.com/chucklowery/World-Conquer`. The current published tactical alpha runs a hard-sized 18×11 Courier Extraction level, authored at `game/content/missions/courier-extraction.map`, checked through `mission-pack.js` and native map loading. Infantry movement touches the real `MapClass`; historical VanillaTD theater/campaign maps are not production-integrated with this browser experience. Inspect `browser/engine/README.md`, `docs/browser/ARCHITECTURE.md`, `docs/browser/BUILD.md` and `game/content/missions/manifest.json`.
 
-**Dependency gate:** complete, integrated R00 entity/map/tick/command contract in `docs/rts-milestones/MANIFEST.md`. Otherwise report `blocked`.
+**Dependency gate:** complete, integrated **R00 and R18** in `docs/rts-milestones/MANIFEST.md`. R18 provides dynamic world/entity/house definitions and map-size-safe identities; R04 must hydrate those real native systems. Otherwise report `blocked`.
 
 **Deliverable:** versioned, validated map schema and original-content loading path for multiple maps of configurable sizes. Support terrain types, movement cost, obstruction, resource nodes, spawn zones, starting bases, victory bounds, minimap tiles, and scenario metadata. Integrate real native engine world/map state and expose map data to the R00 snapshot, rather than presenting decorative JavaScript terrain. Include checksum/invalid-map safeguards, two example maps and a reproducible authoring/validation workflow; keep compatibility with Courier mission.
 

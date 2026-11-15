@@ -1,5 +1,11 @@
 # Build, Run and Verify
 
+The R02 four-production-unit navigation diagnostic is launched from the
+browser engine as **Play R02: four production-unit orders**. The real WASM
+build and Chromium acceptance are part of `.github/workflows/browser-engine.yml`.
+See [R02_UNIT_ORDERS.md](R02_UNIT_ORDERS.md) for controls, host tests and
+the measured bounded A* search budget.
+
 Native and Emscripten builds compile in CI. Operation Courier Extraction is
 now a browser-playable original-content native tactical alpha; the historical
 campaign game loop and external game-data startup remain experimental.

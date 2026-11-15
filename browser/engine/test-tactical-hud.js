@@ -30,6 +30,16 @@ const context={
 HUD.draw({width:360,height:220,getContext:()=>context},model);
 assert(calls.filter(([type])=>type==="rect").length>198);
 assert(calls.some(([type])=>type==="arc"));
+const orders=HUD.create(source);
+HUD.applyOrdersSnapshot(orders,{
+  version:1,map:{width:18,height:11,terrain:Array(198).fill(0)},
+  selectedEntityId:1003,
+  entities:[1001,1002,1003,1004].map((id,i)=>({id,kind:"infantry",x:i+1,y:2,hp:5})),
+  commandStates:[]
+});
+assert.equal(orders.selected,2);
+assert.equal(HUD.inspect(orders,3,2),"Infantry 3");
+assert.doesNotThrow(()=>HUD.draw({width:360,height:220,getContext:()=>context},orders));
 assert(HUD.observe(model,"[browser-engine-courier] mission restarted"));
 assert.deepEqual(model.units[0],{x:1,y:2,hp:5});
 assert.equal(model.cargo,0);

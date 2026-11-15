@@ -1,5 +1,10 @@
 # VanillaTD browser runtime bootstrap
 
+R02 adds an opt-in **four production-unit orders** mode alongside Courier.
+It uses live `InfantryClass::AI` / `MapClass` and bounded C++ pathfinding,
+with command state in the R00 snapshot/HUD. See
+[`R02_UNIT_ORDERS.md`](../../docs/browser/R02_UNIT_ORDERS.md).
+
 This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not the independent SDL2 smoke test. It deliberately defers game main() until the user starts it.
 
 ## Tactical Alpha 0.1 — browser-playable native mission
@@ -31,6 +36,17 @@ squad HP, sentries, and recovered cargo. Sentry actors, supply pickups, and
 win/loss rules are **not yet** production campaign entities or systems.
 The game is a self-contained single-mission alpha, not the complete historical
 VanillaTD campaign and not a multiplayer release.
+
+### R05 original-faction gallery (visual content only)
+
+The source-authored Aster Expedition / Forge Compact pack is built with
+`node tools/content/r05.js build build/browser-engine/r05` and opens at
+`r05/gallery.html` under a local server, or under the packaged site's `/r05/`
+path. It renders both sides, environmental resources and tactical effects on
+the native 24-pixel cell grid; phase controls illustrate motion, combat,
+production, damage and wreckage. This is an art reference, **not a new game
+mode or working construction system**. The native Courier tactical mission
+and its existing content lookup remain unchanged.
 
 To play the native version, build the WebAssembly bundle via
 `docs/browser/BUILD.md`, serve `build/browser-engine/`, open `vanillatd.html`,

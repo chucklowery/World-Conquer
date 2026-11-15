@@ -33,6 +33,17 @@
       seen.add(e.id);
     }
     if(!seen.has(snapshot.selectedEntityId))throw Error("Unknown selected entity");
+    if(snapshot.commandStates!==undefined){
+      const orderKinds=new Set(["move","attack_move","stop","hold","guard","patrol"]);
+      const orderStatuses=new Set(["idle","moving","waiting","holding","guarding","patrolling","unreachable","dead"]);
+      if(!Array.isArray(snapshot.commandStates)||snapshot.commandStates.some(o=>
+        !o||!seen.has(o.entityId)||!orderKinds.has(o.kind)||!orderStatuses.has(o.status)||
+        !Number.isInteger(o.x)||!Number.isInteger(o.y)||
+        !Number.isInteger(o.queued)||o.queued<0||o.queued>8))
+        throw Error("Invalid native command state");
+      if(new Set(snapshot.commandStates.map(o=>o.entityId)).size!==snapshot.commandStates.length)
+        throw Error("Duplicate native command state");
+    }
     for(const e of snapshot.events){
       if(!e||!events.has(e.type)||!Number.isSafeInteger(e.tick)||
          e.tick>snapshot.tick||!Number.isInteger(e.entityId)||

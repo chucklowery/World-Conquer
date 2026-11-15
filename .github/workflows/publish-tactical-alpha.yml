@@ -60,6 +60,7 @@ jobs:
           cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           node tools/content/wireframes.js build build/browser-engine/wireframes --representative
+          node tools/content/r05.js build build/browser-engine/r05
       - name: Verify release and browser gameplay
         run: |
           node browser/engine/test-package-alpha.js
@@ -69,10 +70,12 @@ jobs:
           node browser/engine/test-simulation-bridge.js
           node browser/engine/test-rts-camera.js
           node browser/engine/test-cargo-hd.js
+          node tools/content/test-r05.js
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install --with-deps chromium
           node browser/engine/check-r01-ui.js
           node browser/engine/check-runtime.js
+          node browser/engine/check-r05-gallery.js build/browser-engine/r05
       - name: Package public native alpha
         run: node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site "$GITHUB_SHA"
       - name: Check one-time Pages configuration
