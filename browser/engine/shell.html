@@ -566,7 +566,7 @@ body.hud-active{overflow:hidden}
     }catch(error){report("[browser-native-slice] Tactical SHP pack unavailable; using unit markers: "+error.message,true);}
     try{
       const mission=await WCMissionPack.load("missions",fetch,undefined,
-        mode==="r02-orders"?"courier-extraction":mapChoice.value);
+        mode==="r02-orders"||drill?"courier-extraction":mapChoice.value);
       Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
       if(mode==="engine-courier"||mode==="r02-orders")hudModel=WCTacticalHUD.create(mission.map);
       document.getElementById("hud-mission-title").textContent=mission.parsed.title.toUpperCase();
