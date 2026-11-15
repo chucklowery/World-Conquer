@@ -81,8 +81,23 @@ inline void tickCombat(State& s,Combat& combat){
     ++s.frame;
     synchronizeCombat(s,combat);
     for(int i=0;i<2;i++){
-        if(combat.focus[i]<0)combat.weapons.cancel(1001+i);
-        else if(!combat.weapons.orderAttack(1001+i,1999+combat.focus[i]))combat.focus[i]=-1;
+        if(combat.drill){
+            if(combat.focus[i]<0)combat.weapons.cancel(1001+i);
+            else if(!combat.weapons.orderAttack(1001+i,1999+combat.focus[i]))combat.focus[i]=-1;
+            continue;
+        }
+        rtscombat::Actor* actor=combat.weapons.find(1001+i);
+        if(!actor)continue;
+        actor->autoAcquire=false;
+        int enemy=combat.focus[i];
+        if(enemy<2||enemy>=4||s.units[enemy].hp<=0||distance(s.units[i].p,s.units[enemy].p)>2){
+            enemy=-1;
+            for(int j=2;j<4;j++)if(s.units[j].hp>0&&distance(s.units[i].p,s.units[j].p)<=2){
+                enemy=j;break;
+            }
+        }
+        combat.weapons.cancel(1001+i);
+        if(enemy>=2)combat.weapons.orderAttack(1001+i,1999+enemy);
     }
     combat.weapons.tick(static_cast<uint64_t>(s.frame));
     combat.events=combat.weapons.events();
