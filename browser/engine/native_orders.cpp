@@ -119,6 +119,7 @@ void submit(int actor,orders::Kind kind,courier::Point target={0,0},
     publish();
 }
 void cancelNative(int i){
+    live[i]->Stop_Driver();
     live[i]->Assign_Destination(TARGET_NONE);
     live[i]->Assign_Mission(MISSION_GUARD);
 }
