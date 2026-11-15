@@ -451,10 +451,25 @@ async function main() {
     assert(defeat.types.includes("damage")&&defeat.types.includes("death")&&defeat.types.includes("phase"));
     assert(defeat.result.includes("Squad lost"));
     await page.screenshot({path:path.join(root,"r03-defeat.png"),fullPage:true});
+    // The drill resumes automatic fire immediately after restart. Capture the
+    // authoritative restart snapshot at receipt rather than racing its brief
+    // live display against the next combat tick.
+    await page.evaluate(()=>{
+      window.__r03RestartSnapshot=null;
+      const originalReceive=WCRTS.receive;
+      WCRTS.receive=function(payload){
+        const snapshot=originalReceive(payload);
+        if(snapshot.events.some(e=>e.type==="restart"))
+          window.__r03RestartSnapshot={phase:snapshot.phase,
+            hp:snapshot.entities.slice(0,4).map(e=>e.hp)};
+        return snapshot;
+      };
+    });
     await page.keyboard.press("r");
-    await page.waitForFunction(()=>WCRTS.latest()&&WCRTS.latest().phase==="playing"&&
-      WCRTS.latest().events.some(e=>e.type==="restart"),undefined,{timeout:15000});
-    assert.deepEqual(await page.evaluate(()=>WCRTS.latest().entities.slice(0,4).map(e=>e.hp)),[5,6,8,8]);
+    await page.waitForFunction(()=>window.__r03RestartSnapshot!==null,
+      undefined,{timeout:15000});
+    assert.deepEqual(await page.evaluate(()=>window.__r03RestartSnapshot),
+      {phase:"playing",hp:[5,6,8,8]});
     messages.push("PASS: R03 native armored vehicles reject infantry rifles; damage, death, defeat HUD and restart observed");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.

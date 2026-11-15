@@ -115,7 +115,11 @@
     }
     contextual(tile,snapshot,mode="context"){
       if(!tile||!this.ids.length||snapshot.phase!=="playing")return [];
-      const target=snapshot.entities.find(e=>e.kind==="infantry"&&e.ownerId!==1&&e.active&&e.hp>0&&e.x===tile.x&&e.y===tile.y);
+      // R03 vehicles are hostile targets too. The C++ weapon mask makes the
+      // final acceptance decision (and emits bad_target if a rifle rejects a
+      // vehicle); the browser must not silently convert the click to Move.
+      const target=snapshot.entities.find(e=>(e.kind==="infantry"||e.kind==="vehicle")&&
+        e.ownerId!==1&&e.active&&e.hp>0&&e.x===tile.x&&e.y===tile.y);
       if(mode==="attack"&&!target)return [];
       const kind=mode==="attack"||(mode==="context"&&target)?"attack":"move";
       return this.ids.map(actor=>({kind,actor,x:tile.x,y:tile.y,target:target?target.id:0}));
