@@ -72,6 +72,18 @@ CI covers native combat orders, pursuit, damage, death, reset, and the entire
 browser extraction loop. The Chromium test exercises the new launch button,
 HUD, combat command, mission victory, and restart within the compiled engine.
 
+### R03 generalized weapons and defeat drill
+
+`rts_weapon_system.h` adds deterministic C++ weapon records (range, cooldown,
+class masks, armor, instant/projectile effects, line of sight, friendly-fire
+policy), autonomous acquisition and typed shot/hit/damage/death events through
+R00's snapshot bridge. Courier's normal 3/12-tick firing rules are unchanged.
+The opt-in **R03 armored-sentry defeat drill** uses native infantry movement
+and vehicle-class Courier sentries that reject infantry-only rifle attacks;
+damage and defeat synchronize to the HUD and **R** restarts. This is a combat
+test scenario, not a historical campaign `VehicleClass` integration. See
+`docs/browser/R03_COMBAT_WEAPONS.md` for data schema and new-faction guidance.
+
 ### Immersive tactical command HUD spike
 
 Starting **Tactical Alpha** now moves the *same SDL engine canvas* into a

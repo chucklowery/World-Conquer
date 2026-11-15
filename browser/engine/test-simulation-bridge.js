@@ -22,7 +22,10 @@ assert(Object.isFrozen(first.map.terrain));
 assert.throws(()=>{first.entities[0].x=55;},TypeError);
 const next=JSON.parse(JSON.stringify(base));
 next.tick=1;next.entities[0].x=3;next.entities[4].active=false;next.cargo=1;
-next.events=[{type:"position",tick:1,entityId:1001,sequence:0,x:3,y:2,value:0,code:"accepted"}];
+next.entities[2].kind="vehicle";next.entities[2].hp=0;
+next.events=[{type:"position",tick:1,entityId:1001,sequence:0,x:3,y:2,value:0,code:"accepted"},
+  ...["shot","hit","damage","death"].map(type=>({type,tick:1,entityId:2001,
+    sourceId:1001,weaponId:1,sequence:0,x:10,y:2,value:2,code:"accepted"}))];
 bridge.receive(next);
 assert.equal(bridge.latest().entities[0].x,3);
 assert.equal(bridge.eventHistory()[0].type,"position");
@@ -38,6 +41,8 @@ HUD.applySnapshot(hud,bridge.latest());
 assert.deepEqual([hud.units[0].x,hud.units[0].y],[3,2]);
 assert.equal(hud.collected[0],true);
 assert.equal(hud.cargo,1);
+assert.equal(hud.types[2],"vehicle");
+assert.deepEqual(hud.lastCombat,{type:"death",sourceId:1001,targetId:2001,weaponId:1,value:2,tick:1});
 assert.equal(HUD.inspect(hud,5,2),"Blocked terrain");
 assert.equal(HUD.inspect(hud,7,2),"Clear terrain");
 assert.throws(()=>bridge.receive({...base,version:2}),/version/);
@@ -49,6 +54,7 @@ restart.events=[{type:"restart",tick:0,entityId:0,sequence:0,x:0,y:0,value:0,cod
 bridge.receive(restart);
 HUD.applySnapshot(hud,bridge.latest());
 assert.equal(hud.inspect,null);
+assert.equal(hud.lastCombat,null);
 assert.equal(hud.cargo,0);
 assert.equal(calls,4);
 bridge.clear();
