@@ -191,7 +191,8 @@ inline bool loadMapV2(State& state,const std::string& source){
         std::istringstream parts(line);std::string name,extra;Rect& r=candidate.victory;
         if(!(parts>>name>>r.x>>r.y>>r.w>>r.h)||name!="victory"||
            (parts>>extra)||r.x<0||r.y<0||r.w<1||r.h<1||
-           r.x+r.w>candidate.width||r.y+r.h>candidate.height)return false;
+           r.x>=candidate.width||r.y>=candidate.height||
+           r.w>candidate.width-r.x||r.h>candidate.height-r.y)return false;
     }
     int exit[2];if(!numbers("exit",exit,2))return false;
     candidate.exit={exit[0],exit[1]};
