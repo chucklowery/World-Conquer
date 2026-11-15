@@ -27,11 +27,14 @@
       if(c==="X"){exit.x=x;exit.y=y;}
     }
     const spawn=units.map(u=>({...u}));
-    return {width:WIDTH,height:HEIGHT,blocked,units,spawn,crates,collected:[false,false],exit,cargo:0,selected:0,inspect:null,orderMode:false};
+    return {width:WIDTH,height:HEIGHT,blocked,units,spawn,types:["infantry","infantry","infantry","infantry"],
+      crates,collected:[false,false],exit,cargo:0,selected:0,inspect:null,lastCombat:null,orderMode:false};
   }
   function reset(model){
     model.units=model.spawn.map(u=>({...u}));
-    model.cargo=0;model.collected=[false,false];model.selected=0;model.inspect=null;
+    model.cargo=0;model.collected=[false,false];model.selected=0;model.inspect=null;model.lastCombat=null;
+    model.types=["infantry","infantry","infantry","infantry"];
+    model.orderMode=false;
   }
   function observe(model,line){
     const value=String(line);
@@ -59,10 +62,12 @@
        snapshot.map.height!==HEIGHT)throw Error("Unsupported tactical snapshot");
     const ids=[1001,1002,2001,2002];
     model.units=ids.map(id=>{
-      const u=snapshot.entities.find(entity=>entity.id===id&&entity.kind==="infantry");
-      if(!u)throw Error("Missing native infantry "+id);
+      const u=snapshot.entities.find(entity=>entity.id===id&&
+        (entity.kind==="infantry"||(id>=2000&&entity.kind==="vehicle")));
+      if(!u)throw Error("Missing native combatant "+id);
       return {x:u.x,y:u.y,hp:u.hp};
     });
+    model.types=ids.map(id=>snapshot.entities.find(entity=>entity.id===id).kind);
     model.crates=[3001,3002].map(id=>{
       const e=snapshot.entities.find(entity=>entity.id===id&&entity.kind==="supply");
       if(!e)throw Error("Missing native supply "+id);
@@ -76,8 +81,13 @@
     model.selected=ids.indexOf(snapshot.selectedEntityId);
     if(model.selected<0||model.selected>1)throw Error("Invalid native selection");
     model.cargo=snapshot.cargo;
-    if(snapshot.events.some(event=>event.type==="restart"))model.inspect=null;
+    if(snapshot.events.some(event=>event.type==="restart")){
+      model.inspect=null;model.lastCombat=null;
+    }
     model.orderMode=false;
+    for(const event of snapshot.events)if(["shot","hit","damage","death"].includes(event.type))
+      model.lastCombat={type:event.type,sourceId:event.sourceId,targetId:event.entityId,
+        weaponId:event.weaponId,value:event.value,tick:event.tick};
     return model;
   }
   function applyOrdersSnapshot(model,snapshot){
@@ -91,6 +101,8 @@
       return {x:e.x,y:e.y,hp:e.hp};
     });
     model.orderMode=true;model.crates=[];model.collected=[];model.cargo=0;
+    model.types=["infantry","infantry","infantry","infantry"];
+    model.lastCombat=null;
     model.blocked=new Set(snapshot.map.terrain.flatMap((tile,i)=>tile===1?[i]:[]));
     model.selected=ids.indexOf(snapshot.selectedEntityId);
     if(model.selected<0)throw Error("Invalid production selection");
@@ -101,6 +113,8 @@
     model.inspect={x,y};
     const who=model.units.findIndex(u=>u.hp>0&&u.x===x&&u.y===y);
     if(who>=0)return model.orderMode?("Infantry "+(who+1)):
+      model.types[who]==="vehicle"?
+      (who===2?"Armored sentry A":"Armored sentry B"):
       ["Scout","Ranger","Sentry A","Sentry B"][who];
     if(model.crates.some((p,i)=>!model.collected[i]&&p.x===x&&p.y===y))return "Supply cache";
     if(model.exit.x===x&&model.exit.y===y)return "Extraction zone";
@@ -128,9 +142,13 @@
     }
     model.units.forEach((u,i)=>{
       if(u.hp<=0)return;
-      ctx.beginPath();ctx.arc((u.x+.5)*w,(u.y+.5)*h,Math.max(3,Math.min(w,h)*.3),0,Math.PI*2);
-      ctx.fillStyle=model.orderMode?"#7aebbc":i>=2?"#fb7168":"#7aebbc";ctx.fill();
-      if(i===model.selected){ctx.strokeStyle="#f0f7f0";ctx.lineWidth=2;ctx.stroke();}
+      ctx.fillStyle=model.orderMode?"#7aebbc":i>=2?"#fb7168":"#7aebbc";
+      if(model.types[i]==="vehicle")ctx.fillRect((u.x+.18)*w,(u.y+.2)*h,w*.64,h*.6);
+      else{ctx.beginPath();ctx.arc((u.x+.5)*w,(u.y+.5)*h,Math.max(3,Math.min(w,h)*.3),0,Math.PI*2);
+        ctx.fill();}
+      if(i===model.selected){ctx.strokeStyle="#f0f7f0";ctx.lineWidth=2;
+        if(model.types[i]==="vehicle")ctx.strokeRect((u.x+.15)*w,(u.y+.15)*h,w*.7,h*.7);
+        else ctx.stroke();}
     });
     if(model.inspect){
       ctx.strokeStyle="#ffe3a6";ctx.lineWidth=2;

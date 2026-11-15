@@ -87,6 +87,11 @@ zooms, and **R** restarts. Minimap clicks pan the camera, never a unit. See
 [`R01_INPUT_UX.md`](R01_INPUT_UX.md) for the UX and keyboard-only guide. CI now
 runs `test-rts-camera.js` and Chromium `check-r01-ui.js` for multiple viewport
 shapes before the full native `check-runtime.js` mission play-through.
+R03 adds deterministic C++ weapon/armor data, typed shot/hit/damage/death
+events and an opt-in armored-sentry native defeat drill. The normal Courier
+extraction balance remains intact. See
+[`R03_COMBAT_WEAPONS.md`](R03_COMBAT_WEAPONS.md) for faction data extension,
+host commands and WebAssembly/Chromium acceptance evidence.
 
 [Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
 

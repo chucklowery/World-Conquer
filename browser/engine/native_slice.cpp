@@ -25,6 +25,7 @@ uint64_t nextCommandSequence=1;
 courier::EngineFootBridge footBridge;
 courier::WorldPlan worldPlacement={};
 bool engineOwned=false;
+bool combatDrill=false;
 InfantryClass* liveUnits[2]={nullptr,nullptr};
 HouseClass* liveHouse=nullptr;
 std::string missionSource;
@@ -136,7 +137,12 @@ bool restartEngineMission(){
     if(!reset)return false;
     mission=courier::State();
     if(!missionSource.empty())courier::loadMap(mission,missionSource);
+    if(combatDrill){
+        mission.units[2].p={3,2};mission.units[2].hp=8;
+        mission.units[3].p={4,4};mission.units[3].hp=8;
+    }
     combat=courier::Combat();
+    combat.drill=combatDrill;
     footBridge.units[0]=liveUnits[0];footBridge.units[1]=liveUnits[1];
     mission.orderSink=courier::EngineFootBridge::onOrder;
     mission.orderContext=&footBridge;
@@ -164,10 +170,11 @@ void frame(){
         if(!engineOwned&&event.type==SDL_MOUSEBUTTONDOWN&&event.button.button==SDL_BUTTON_LEFT){
             int x=event.button.x/40,y=event.button.y/40;
             if(engineOwned)synchronizeLivePositions();
-            bool attackOrdered=false;
+            bool attackOrdered=false,clickedEnemy=false;
             if(engineOwned&&mission.phase==0&&mission.units[mission.selected].hp>0){
                 for(int j=2;j<4;j++)if(mission.units[j].hp>0&&
                     (mission.units[j].p==courier::Point{x,y})){
+                    clickedEnemy=true;
                     attackOrdered=command(rts::CommandKind::Attack,
                         rts::UNIT_IDS[mission.selected],{x,y},rts::UNIT_IDS[j])==rts::ResultCode::Accepted;
                     if(attackOrdered){
@@ -177,7 +184,7 @@ void frame(){
                     break;
                 }
             }
-            if(!attackOrdered){
+            if(!clickedEnemy){
                 const int selectedBefore=mission.selected;
                 if(engineOwned){
                     int selectedUnit=-1;
@@ -258,7 +265,11 @@ void frame(){
     }
     for(int i=0;i<4;i++){
         const courier::Unit& u=mission.units[i];if(u.hp<=0)continue;
-        if(infantryTexture){
+        if(engineOwned&&combatDrill&&i>=2){
+            fill(u.p.x*40+5,u.p.y*40+9,30,23,195,127,66);
+            fill(u.p.x*40+2,u.p.y*40+29,36,5,57,66,74);
+            outline(u.p.x*40+5,u.p.y*40+9,30,23,255,215,136);
+        }else if(infantryTexture){
             SDL_SetTextureColorMod(infantryTexture,u.enemy?245:155,u.enemy?135:255,u.enemy?140:195);
             SDL_Rect target={u.p.x*40-4,u.p.y*40-4,48,48};
             SDL_RenderCopy(renderer,infantryTexture,nullptr,&target);
@@ -322,8 +333,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE int Browser_RTS_Restart(){
     return restartEngineMission()?1:0;
 }
 
-int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
+int Launch_Courier_Slice(const char* argv0,bool withEngineUnits,bool drill=false){
     engineOwned=withEngineUnits;
+    combatDrill=drill;
     if(SDL_Init(SDL_INIT_VIDEO)!=0){std::fprintf(stderr,"[browser-native-slice] SDL_Init failed: %s\n",SDL_GetError());return 1;}
     window=SDL_CreateWindow("Courier Extraction (native C++)",SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED,720,440,SDL_WINDOW_SHOWN);
@@ -345,6 +357,12 @@ int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
                 std::puts("[browser-native-slice] verified external mission map loaded");
             }else std::puts("[browser-native-slice] invalid external map; using built-in fallback");
         }
+    }
+    if(combatDrill){
+        mission.units[2].p={3,2};mission.units[2].hp=8;
+        mission.units[3].p={4,4};mission.units[3].hp=8;
+        combat.drill=true;
+        std::puts("[r03-combat] armored sentry drill; rifle targets infantry only; survive or restart");
     }
     // The observer starts disabled; engine-owned mode binds it only after
     // MapClass staging and successful production infantry placement.
@@ -392,4 +410,5 @@ int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
 }
 int Browser_Native_Slice(const char* argv0){return Launch_Courier_Slice(argv0,false);}
 int Browser_Engine_Courier(const char* argv0){return Launch_Courier_Slice(argv0,true);}
+int Browser_R03_Combat_Drill(const char* argv0){return Launch_Courier_Slice(argv0,true,true);}
 #endif

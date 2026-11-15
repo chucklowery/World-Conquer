@@ -8,8 +8,9 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
   const VERSION=1;
   let current=null,listener=null,history=Object.freeze([]);
-  const kinds=new Set(["infantry","supply","extraction"]);
-  const events=new Set(["command","selection","position","health","pickup","phase","restart"]);
+  const kinds=new Set(["infantry","vehicle","supply","extraction"]);
+  const events=new Set(["command","selection","position","health","pickup","phase","restart",
+    "shot","hit","damage","death"]);
   function check(snapshot){
     if(!snapshot||snapshot.version!==VERSION||!Number.isSafeInteger(snapshot.tick)||snapshot.tick<0)
       throw Error("Unsupported simulation snapshot version or tick");
@@ -47,6 +48,8 @@
     for(const e of snapshot.events){
       if(!e||!events.has(e.type)||!Number.isSafeInteger(e.tick)||
          e.tick>snapshot.tick||!Number.isInteger(e.entityId)||
+         (e.sourceId!==undefined&&(!Number.isInteger(e.sourceId)||e.sourceId<0))||
+         (e.weaponId!==undefined&&(!Number.isInteger(e.weaponId)||e.weaponId<0))||
          typeof e.code!=="string")throw Error("Invalid typed event");
     }
     if(current&&snapshot.tick<current.tick&&
