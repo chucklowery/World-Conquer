@@ -78,6 +78,16 @@ aspect-correct battlefield, responsive minimap and sidebar. Build cards are
 clearly labeled as previews, not functional construction. The native browser
 test verifies the HUD layout at both desktop and compact viewport sizes.
 
+R01 adds viewport-scaled zoom/pan and a visible minimap camera rectangle, drag
+selection, Shift-add, browser-local groups, contextual native move/attack, and
+touch-friendly camera/order buttons. **Shift+1–9** stores groups (without
+intercepting browser Ctrl+digit tab shortcuts), **1–9** recalls, **M/A** selects
+target mode, arrows aim and **Enter** orders, **S** stops, **C** centers, **+/-**
+zooms, and **R** restarts. Minimap clicks pan the camera, never a unit. See
+[`R01_INPUT_UX.md`](R01_INPUT_UX.md) for the UX and keyboard-only guide. CI now
+runs `test-rts-camera.js` and Chromium `check-r01-ui.js` for multiple viewport
+shapes before the full native `check-runtime.js` mission play-through.
+
 [Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
 
 ## Browser runtime bootstrap (P2a; experimental)

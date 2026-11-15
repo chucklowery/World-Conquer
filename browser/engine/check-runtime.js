@@ -182,13 +182,18 @@ async function main() {
       const rect=id=>document.getElementById(id).getBoundingClientRect();
       const field=rect("hud-playfield"),side=rect("hud-sidebar"),map=rect("hud-minimap"),build=rect("hud-build-panel");
       const canvas=rect("canvas");
+      const overlay=getComputedStyle(document.getElementById("hud-selection-overlay"));
       return {fieldRight:field.right,sideLeft:side.left,mapBottom:map.bottom,buildTop:build.top,
               canvasAspect:canvas.width/canvas.height,viewportWidth:innerWidth,viewportHeight:innerHeight,
-              hudHeight:rect("tactical-hud").height};
+              hudHeight:rect("tactical-hud").height,overlayBackground:overlay.backgroundColor,
+              overlayBorder:overlay.borderTopWidth,overlayMargin:overlay.marginTop};
     });
     assert(layout.fieldRight<=layout.sideLeft+2,"The battlefield and sidebar overlap");
     assert(layout.mapBottom<layout.buildTop,"Minimap must sit above building options");
     assert(Math.abs(layout.canvasAspect-18/11)<0.025,"Scaled game canvas lost its mission aspect ratio");
+    assert.equal(layout.overlayBackground,"rgba(0, 0, 0, 0)","Selection overlay obscures the native battlefield");
+    assert.equal(layout.overlayBorder,"0px","Selection overlay has an inherited canvas border");
+    assert.equal(layout.overlayMargin,"0px","Selection overlay inherited canvas margin and shifted coordinates");
     assert.equal(Math.round(layout.hudHeight),layout.viewportHeight,"HUD does not use the entire viewport");
     await page.setViewportSize({width:720,height:480});
     await page.waitForFunction(() => document.getElementById("tactical-hud").classList.contains("sidebar-closed"),
@@ -201,6 +206,7 @@ async function main() {
     assert.equal(Math.round(compact.height),480,"Compact HUD must fill the browser viewport");
     assert.equal(Math.round(compact.width),720);
     assert(Math.abs(compact.aspect-18/11)<0.025,"Compact battlefield lost aspect ratio");
+    await page.screenshot({path:path.join(root,"r01-compact.png")});
     await page.setViewportSize({width:1360,height:980});
     await page.waitForFunction(() => !document.getElementById("tactical-hud").classList.contains("sidebar-closed"),
                                undefined,{timeout:15000});
@@ -278,6 +284,45 @@ async function main() {
            "Engine-owned mission HUD did not reset after restart");
     assert.equal(await page.locator("#alpha-result").isHidden(),true,
                  "Victory panel did not clear on restart");
+    // R01: the same compiled native mission now accepts two selected actors,
+    // uses browser camera transforms, and routes each command to R00.
+    await clickNativeTile(engineCanvas,1,2);
+    await page.keyboard.down("Shift");
+    await clickNativeTile(engineCanvas,2,3);
+    await page.keyboard.up("Shift");
+    assert((await page.locator("#hud-selection-text").textContent()).includes("2 selected"),
+           "Shift-add did not show both selected infantry");
+    await page.keyboard.press("Shift+3");
+    await clickNativeTile(engineCanvas,1,2);
+    assert((await page.locator("#hud-selection-text").textContent()).includes("1 selected"));
+    await page.keyboard.press("3");
+    assert((await page.locator("#hud-selection-text").textContent()).includes("2 selected"),
+           "Control-group recall did not restore native-identity selection");
+    const zoomBefore=await engineCanvas.boundingBox();
+    await page.locator("#hud-zoom-in").click();
+    const zoomAfter=await engineCanvas.boundingBox();
+    assert(zoomAfter.width>zoomBefore.width,"RTS camera zoom failed");
+    await page.keyboard.press("ArrowRight");
+    const panAfter=await engineCanvas.boundingBox();
+    assert(panAfter.x<zoomAfter.x,"Arrow-key pan did not move the world viewport");
+    const beforeMinimap=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").length);
+    await page.locator("#hud-minimap").click({position:{x:255,y:100}});
+    const afterMinimap=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").length);
+    assert.equal(afterMinimap,beforeMinimap,"Minimap click sent an unwanted native move order");
+    await page.locator("#hud-zoom-out").click();
+    const beforeGroupMove=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").length);
+    const groundBounds=await engineCanvas.boundingBox();
+    await engineCanvas.click({button:"right",position:{x:3.5*groundBounds.width/18,y:2.5*groundBounds.height/11}});
+    await page.waitForFunction(count=>WCRTS.eventHistory().filter(e=>e.type==="command").length>=count+2,
+                               beforeGroupMove,{timeout:15000});
+    const groupMove=await page.evaluate(()=>WCRTS.eventHistory().filter(e=>e.type==="command").slice(-2));
+    assert.deepEqual(groupMove.map(e=>e.entityId),[1001,1002],"Multi-move missed an R00 actor");
+    assert(groupMove.every(e=>e.code==="accepted"),"R00 rejected the group move");
+    await page.screenshot({path:path.join(root,"r01-desktop.png")});
+    await page.keyboard.press("r");
+    await page.waitForFunction(()=>WCRTS.eventHistory().filter(e=>e.type==="restart").length>=2,
+                               undefined,{timeout:15000});
+    messages.push("PASS: R01 selected two native infantry, recalled a group, zoomed/panned, recentered minimap, ordered both and restarted");
     await page.keyboard.press("2");
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] selected unit=1"),
                                undefined,{timeout:15000});
@@ -305,6 +350,10 @@ async function main() {
       undefined,{timeout:45000});
     assert((await page.locator("#log").textContent()).includes("[r02] production infantry=4 on-map=ready"));
     assert.equal(await page.locator("body").getAttribute("data-mode"),"r02-orders");
+    assert.equal(await page.locator(".hud-command-bar").isVisible(),false,
+      "R01 command toolbar intercepted the independent R02 native battlefield");
+    assert.equal(await page.locator(".hud-pan-pad").isVisible(),false,
+      "R01 camera buttons covered R02 native input tiles");
     const r02Canvas=page.locator("#canvas");
     await clickNativeTile(r02Canvas,5,2);
     await page.waitForFunction(() => WCRTS.eventHistory().some(e=>e.type==="command"&&e.code==="blocked"),

@@ -9,7 +9,8 @@ const path = require("node:path");
 const files = [
   "vanillatd.html", "vanillatd.js", "vanillatd.wasm",
   "asset-import.js", "original-asset.js", "wireframe-asset.js",
-  "cargo-hd.js", "vertical-slice.js", "mission-pack.js", "tactical-hud.js", "simulation-bridge.js", "play.html"
+  "cargo-hd.js", "vertical-slice.js", "mission-pack.js", "tactical-hud.js", "simulation-bridge.js",
+  "rts-camera.js", "rts-input-ui.js", "play.html"
 ];
 const folders = ["missions", "cargo-hd", "content", "wireframes", "r05"];
 
