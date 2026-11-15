@@ -20,6 +20,7 @@ struct Combat {
 
 inline void synchronizeCombat(const State& s,Combat& combat){
     if(!combat.initialized){
+        combat.weapons=rtscombat::System(s.width,s.height);
         // Courier compatibility profile. These IDs are R00's permanent IDs;
         // future factions may register their own weapons and actor classes.
         const rtscombat::Weapon rifle={1,2,3,1,rtscombat::Infantry,
