@@ -2,7 +2,7 @@
 
 Implement **R03** for `https://github.com/chucklowery/World-Conquer` in a fresh worktree; this brief contains the necessary setup. The browser-native VanillaTD Courier Extraction alpha has a deterministic, purpose-built combat component in `browser/engine/courier_combat.h` and real movement on engine `InfantryClass`/`MapClass`. Sentries are not yet generalized production combat entities. The HUD in `browser/engine/tactical-hud.js` exposes health and mission state. Read `browser/engine/README.md`, `docs/browser/BUILD.md`, `.github/workflows/browser-engine.yml`.
 
-**Dependency gate:** R00 must be `completed` and merged in `docs/rts-milestones/MANIFEST.md`; use its stable entity/house IDs, ticks, commands, snapshots/events. If missing, mark blocked.
+**Dependency gate:** **R00 and R18** must be `completed` and merged in `docs/rts-milestones/MANIFEST.md`; use R00 ticks, commands, snapshots/events and R18's dynamic entity/house/definition lifecycle, not Courier-only arrays. If missing, mark blocked.
 
 **Deliverable:** model data-driven weapons with range, cooldown, target types, projectile/instant effects, armor, damage, line of sight, friendly-fire policy and death cleanup. Route attack commands and autonomous acquisition through canonical C++ simulation; produce deterministic hit/damage/death events consumable by HUD and future sound/VFX. Include at least distinct infantry-vs-vehicle class behaviors and target filtering. Preserve existing Courier rules until replaced with passing parity tests.
 
