@@ -13,6 +13,14 @@ namespace orders {
 static const int WIDTH=18,HEIGHT=11,CELLS=WIDTH*HEIGHT,COUNT=4;
 static const int MAX_SEARCHES_PER_TICK=2,MAX_EXPANSIONS_PER_SEARCH=CELLS;
 static const int MAX_QUEUE=8,STALLED_TICKS=24,BLOCKED_TICKS=90;
+// R04 uses variable-size map storage. This intentionally fixed-size R02
+// diagnostic accepts only Courier's native 18x11 footprint, without silently
+// truncating another map or changing the bounded A* controller contract.
+inline bool fixedTerrain(const courier::State& source,std::array<bool,CELLS>& out){
+    if(source.width!=WIDTH||source.height!=HEIGHT||source.blocked.size()!=CELLS)return false;
+    std::copy(source.blocked.begin(),source.blocked.end(),out.begin());
+    return true;
+}
 enum class Kind { Move,AttackMove,Stop,Hold,Guard,Patrol };
 enum class Status { Idle,Moving,Waiting,Holding,Guarding,Patrolling,Unreachable,Dead };
 enum class Code { Accepted,BadActor,Dead,BadTarget,Blocked,Unreachable,QueueFull };
