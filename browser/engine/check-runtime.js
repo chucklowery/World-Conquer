@@ -182,13 +182,18 @@ async function main() {
       const rect=id=>document.getElementById(id).getBoundingClientRect();
       const field=rect("hud-playfield"),side=rect("hud-sidebar"),map=rect("hud-minimap"),build=rect("hud-build-panel");
       const canvas=rect("canvas");
+      const overlay=getComputedStyle(document.getElementById("hud-selection-overlay"));
       return {fieldRight:field.right,sideLeft:side.left,mapBottom:map.bottom,buildTop:build.top,
               canvasAspect:canvas.width/canvas.height,viewportWidth:innerWidth,viewportHeight:innerHeight,
-              hudHeight:rect("tactical-hud").height};
+              hudHeight:rect("tactical-hud").height,overlayBackground:overlay.backgroundColor,
+              overlayBorder:overlay.borderTopWidth,overlayMargin:overlay.marginTop};
     });
     assert(layout.fieldRight<=layout.sideLeft+2,"The battlefield and sidebar overlap");
     assert(layout.mapBottom<layout.buildTop,"Minimap must sit above building options");
     assert(Math.abs(layout.canvasAspect-18/11)<0.025,"Scaled game canvas lost its mission aspect ratio");
+    assert.equal(layout.overlayBackground,"rgba(0, 0, 0, 0)","Selection overlay obscures the native battlefield");
+    assert.equal(layout.overlayBorder,"0px","Selection overlay has an inherited canvas border");
+    assert.equal(layout.overlayMargin,"0px","Selection overlay inherited canvas margin and shifted coordinates");
     assert.equal(Math.round(layout.hudHeight),layout.viewportHeight,"HUD does not use the entire viewport");
     await page.setViewportSize({width:720,height:480});
     await page.waitForFunction(() => document.getElementById("tactical-hud").classList.contains("sidebar-closed"),
