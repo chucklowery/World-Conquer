@@ -23,9 +23,21 @@ for (const line of rows) {
     if (!prompt.includes(required)) throw new Error(`${id} prompt lacks ${required}`);
   }
   const deps = rawDeps === '—' ? [] : rawDeps.split(',').map(v => v.trim());
-  milestones.set(id, { deps, status });
+  milestones.set(id, { deps, status, waveStart: Number(wave.match(/^W(\d+)/)[1]), promptPath });
 }
-if (milestones.size !== 19) throw new Error(`Expected 19 milestones, found ${milestones.size}`);
+// Discover additions automatically, while rejecting accidentally orphaned
+// prompt directories and gaps in the numbered milestone register.
+const orderedIds = [...milestones.keys()].sort();
+orderedIds.forEach((id, number) => {
+  if (id !== `R${String(number).padStart(2, '0')}`)
+    throw new Error(`Missing or out-of-sequence milestone ID at R${String(number).padStart(2, '0')}`);
+});
+const promptDirs = fs.readdirSync(root, { withFileTypes: true })
+  .filter(entry => entry.isDirectory() && /^R\d{2}-/.test(entry.name))
+  .map(entry => `${entry.name}/PROMPT.md`).sort();
+const registeredPrompts = [...milestones.values()].map(entry => entry.promptPath).sort();
+if (JSON.stringify(promptDirs) !== JSON.stringify(registeredPrompts))
+  throw new Error('Prompt directories and manifest links disagree (missing/orphaned milestone)');
 const visited = new Set();
 const active = new Set();
 function walk(id) {
@@ -34,7 +46,12 @@ function walk(id) {
   const entry = milestones.get(id);
   if (!entry) throw new Error(`Missing dependency ${id}`);
   active.add(id);
-  for (const dep of entry.deps) walk(dep);
+  for (const dep of entry.deps) {
+    const dependency = milestones.get(dep);
+    if (dependency && dependency.waveStart >= entry.waveStart)
+      throw new Error(`Wave order contradicts dependency ${dep} -> ${id}`);
+    walk(dep);
+  }
   active.delete(id);
   visited.add(id);
 }

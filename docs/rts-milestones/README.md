@@ -10,6 +10,10 @@ the conversation that produced this roadmap.
 - Repository: `https://github.com/chucklowery/World-Conquer`
 - Published tactical-alpha URL: `https://chucklowery.github.io/World-Conquer/`
 - Reference branch at roadmap creation: `feature/original-content-pipeline`.
+- **Current integration/default branch: `vanilla`.** The former
+  `feature/original-content-pipeline` branch was a staging branch. Its late
+  R01–R04 PR merges must be incorporated into `vanilla` before new work starts;
+  do not open new milestone PRs against that historical staging branch.
 - Native browser implementation: VanillaTD C++ compiled to SDL2/WebAssembly;
   launcher and full-viewport HUD in `browser/engine/`; source mission data in
   `game/content/missions/`; project-owned sprite/content pipeline in
@@ -22,14 +26,37 @@ the conversation that produced this roadmap.
   `docs/browser/BUILD.md`, `docs/browser/ROADMAP.md`, and the two browser
   GitHub Actions workflows.
 
+## R00/R05 review and new gates
+
+R00 (native simulation/HUD contract) and R05 (deterministic two-faction
+content pack and gallery) are **completed**. The
+[R00/R05 implementation review](REVIEW-R00-R05.md) records what their actual
+tests prove and what remains unfinished. Two new, independently executable
+milestones close explicit gaps before this can be called a full RTS:
+
+- **R18 — Dynamic world and gameplay-definition registries:** after R00/R05,
+  before R02/R03/R04. This decouples later simulation systems from the fixed
+  Courier entity list and connects faction definitions to art-only keys.
+- **R19 — Native gameplay art/content binding:** after real gameplay systems
+  R03/R04/R07/R08/R09 and R18, before R13 and final R16. Its acceptance is a
+  playable **native WASM** match showing R05 art, not just a gallery.
+
+With the accepted rows, **R01 is completed and R18 is the next ready W1
+task**. The diagnostic R02/R03/R04 code and independent browser CI have
+landed, but their full production milestones remain blocked until that code
+uses R18's shared native registry. The full dependency register and waves are
+in [MANIFEST.md](MANIFEST.md).
+
 ## Execute a milestone in a fresh context
 
-1. Create a branch/worktree from the latest integrated target branch. Open a
+1. Create a branch/worktree from the latest `vanilla` integration branch and
+   target `vanilla` with the milestone PR. Open a
    **single** milestone's `PROMPT.md`; it contains project background, scope,
    dependency gate, implementation boundaries, tests, and completion protocol.
 2. Check its prerequisite IDs in [MANIFEST.md](MANIFEST.md). Do not implement
    against a missing dependency; mark the milestone blocked and describe the
-   missing interface. `R00` and `R05` can start immediately.
+   missing interface. R00 and R05 are complete; start from currently ready
+   gate (R18), not from the historical W0 instructions.
 3. Change that milestone's manifest row from `planned` to `in_progress` in your
    branch. Implement with regression tests and a verifiable browser outcome.
 4. Mark the **same row** `completed` only after its acceptance criteria and
@@ -65,3 +92,7 @@ Validate manifest/brief consistency locally with:
 ```sh
 node docs/rts-milestones/validate-roadmap.js
 ```
+
+The lightweight `validate-rts-roadmap.yml` workflow also checks all roadmap
+pull requests, including documentation-only changes that would not trigger the
+large browser-engine build.

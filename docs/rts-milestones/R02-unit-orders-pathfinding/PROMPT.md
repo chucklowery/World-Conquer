@@ -2,7 +2,7 @@
 
 Implement **R02** from a clean branch of `https://github.com/chucklowery/World-Conquer`, independently of chat history. Existing Courier Extraction uses real `InfantryClass::AI` and `MapClass` for infantry movement, `NavCom` destinations, and an authored 18×11 mission grid; current sentry and combat behavior still belong to the specialized Courier slice. Code resides in `browser/engine/` and VanillaTD sources under `tiberiandawn/`. Inspect `browser/engine/README.md`, `docs/browser/ARCHITECTURE.md`, and `docs/browser/BUILD.md`.
 
-**Dependency gate:** R00 simulation/entity/command contracts must be `completed` in `docs/rts-milestones/MANIFEST.md`, merged and understood. Otherwise mark R02 blocked before implementing.
+**Dependency gate:** **R00 and R18** must be `completed` in `docs/rts-milestones/MANIFEST.md`, merged and understood. R18 supplies the dynamic authoritative world/house/entity/definition registry; implement orders against it rather than Courier's hard-coded actor array. Otherwise mark R02 blocked before implementing.
 
 **Deliverable:** generalize move, attack-move, stop, hold-position, guard and patrol orders for multiple production-engine units; deterministic terrain-aware pathfinding with dynamic occupancy, collision avoidance, obstruction replanning, and explicit unreachable-order feedback. Implement a bounded cost strategy and unit tests. Use the production C++/WASM simulation, not an unrelated JavaScript simulator. Publish command state to the R00 HUD snapshot. Define predictable behavior when units die mid-order or destinations become blocked.
 

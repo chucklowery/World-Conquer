@@ -1,8 +1,34 @@
 # VanillaTD browser runtime bootstrap
 
+R02 adds an opt-in **four production-unit orders** mode alongside Courier.
+It uses live `InfantryClass::AI` / `MapClass` and bounded C++ pathfinding,
+with command state in the R00 snapshot/HUD. See
+[`R02_UNIT_ORDERS.md`](../../docs/browser/R02_UNIT_ORDERS.md).
+
 This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not the independent SDL2 smoke test. It deliberately defers game main() until the user starts it.
 
 ## Tactical Alpha 0.1 — browser-playable native mission
+
+**R01 input controls:** the tactical HUD now supports fitted camera zoom/pan,
+drag-box selection, Shift-add, local control groups, right-click move/attack,
+and explicit Move/Attack/Stop buttons. Shift+1–9 stores groups, 1–9 recalls
+them, arrows pan, +/- zoom, S stops, C centers, and R restarts. Minimap clicks
+recenter the camera rather than moving infantry. See
+[`docs/browser/R01_INPUT_UX.md`](../../docs/browser/R01_INPUT_UX.md) for the
+desktop/touch guide, keyboard-only limitations, native R00 boundary, and tests.
+
+### R04 selectable maps
+
+The playable WASM launcher now presents three original maps: legacy Courier
+Extraction (18×11), Ridge Pass (16×10) and Marsh Border (24×14). Map selection
+occurs before launch; the SHA-256-pinned pack rejects corrupt or malformed
+data before staging. The real `MapClass` receives the selected dimensions,
+typed terrain and resource-node land cells; two production infantry are seeded
+from its validated spawn coordinates. Native R00 snapshots drive the dynamic
+minimap, starting-base markers and terrain inspection. `R` restarts the
+selected map. The isolated standalone `play.html` remains Courier-only.
+See [R04 map format and authoring](../../docs/browser/R04_MAP_FORMAT.md) for
+versions, terrain costs, scenario data and the validation workflow.
 
 The default browser shell now leads with **Start Tactical Alpha**. The player
 commands a two-person infantry squad in Operation Courier Extraction: recover
@@ -45,6 +71,18 @@ in the **VanillaTD WebAssembly** CI artifact.
 CI covers native combat orders, pursuit, damage, death, reset, and the entire
 browser extraction loop. The Chromium test exercises the new launch button,
 HUD, combat command, mission victory, and restart within the compiled engine.
+
+### R03 generalized weapons and defeat drill
+
+`rts_weapon_system.h` adds deterministic C++ weapon records (range, cooldown,
+class masks, armor, instant/projectile effects, line of sight, friendly-fire
+policy), autonomous acquisition and typed shot/hit/damage/death events through
+R00's snapshot bridge. Courier's normal 3/12-tick firing rules are unchanged.
+The opt-in **R03 armored-sentry defeat drill** uses native infantry movement
+and vehicle-class Courier sentries that reject infantry-only rifle attacks;
+damage and defeat synchronize to the HUD and **R** restarts. This is a combat
+test scenario, not a historical campaign `VehicleClass` integration. See
+`docs/browser/R03_COMBAT_WEAPONS.md` for data schema and new-faction guidance.
 
 ### Immersive tactical command HUD spike
 
