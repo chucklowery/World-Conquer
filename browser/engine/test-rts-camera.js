@@ -36,6 +36,7 @@ const entities=[
   {id:1001,ownerId:1,kind:"infantry",x:1,y:2,active:true,hp:5},
   {id:1002,ownerId:1,kind:"infantry",x:2,y:3,active:true,hp:6},
   {id:2001,ownerId:2,kind:"infantry",x:10,y:2,active:true,hp:3},
+  {id:2002,ownerId:2,kind:"vehicle",x:4,y:3,active:true,hp:8},
   {id:3001,ownerId:0,kind:"supply",x:7,y:2,active:true,hp:0}
 ];
 const snapshot={entities,events:[],selectedEntityId:1001,phase:"playing"};
@@ -54,6 +55,8 @@ assert.deepEqual(selection.ids,[1001],"World-space box selected incorrect soldie
 selection.recall(3);
 assert.deepEqual(selection.contextual({x:10,y:2},snapshot).map(c=>[c.kind,c.actor,c.target]),
   [["attack",1001,2001],["attack",1002,2001]],"Contextual enemy order missing actor identity");
+assert.deepEqual(selection.contextual({x:4,y:3},snapshot).map(c=>[c.kind,c.actor,c.target]),
+  [["attack",1001,2002],["attack",1002,2002]],"Vehicle click was converted to movement before native target filtering");
 assert.deepEqual(selection.contextual({x:7,y:2},snapshot).map(c=>[c.kind,c.actor,c.x,c.y]),
   [["move",1001,7,2],["move",1002,7,2]],"Contextual move orders not native-shaped");
 assert.deepEqual(selection.contextual({x:7,y:2},snapshot,"attack"),[],"Attack mode accepted empty tile");

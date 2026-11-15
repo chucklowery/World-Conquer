@@ -330,11 +330,28 @@ async function main() {
     await page.keyboard.press("1");
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] selected unit=0"),
                                undefined,{timeout:15000});
+    const beforeAttack=await page.evaluate(()=>({
+      tick:WCRTS.latest().tick,
+      eventCount:WCRTS.eventHistory().length
+    }));
     await clickNativeTile(engineCanvas,10,2); // order the scout to attack a real sentry actor
     await page.waitForFunction(() => document.getElementById("log").textContent.includes("[browser-engine-courier] attack-order unit=0 enemy=2"),
                                undefined,{timeout:15000});
-    await page.waitForFunction(() => /\[browser-engine-courier\] combat unit=2 hp=[0-2]/.test(
-      document.getElementById("log").textContent),undefined,{timeout:120000});
+    await page.waitForFunction(before=>{
+      const current=WCRTS.latest(),fresh=WCRTS.eventHistory().slice(before.eventCount);
+      return current.tick>before.tick&&current.entities.find(e=>e.id===2001).hp<3&&
+        fresh.some(e=>e.type==="damage"&&e.entityId===2001&&e.sourceId===1001);
+    },beforeAttack,{timeout:120000});
+    const combatEvidence=await page.evaluate(before=>({
+      events:WCRTS.eventHistory().slice(before.eventCount).filter(e=>
+        ["shot","hit","damage","death"].includes(e.type)),
+      sentryHP:WCRTS.latest().entities.find(e=>e.id===2001).hp,
+      hud:document.getElementById("engine-courier-status").textContent
+    }),beforeAttack);
+    assert(combatEvidence.events.some(e=>e.type==="shot"&&e.sourceId===1001&&e.weaponId===1));
+    assert(combatEvidence.events.some(e=>e.type==="hit"&&e.entityId===2001));
+    assert(combatEvidence.events.some(e=>e.type==="damage"&&e.value===1));
+    assert(combatEvidence.sentryHP<=2&&combatEvidence.hud.includes("Sentries"));
     assert((await page.locator("#engine-courier-status").textContent()).includes("Sentries"),
            "Tactical Alpha HUD did not report combat state");
     messages.push("PASS: native infantry recovered crates, extracted, restarted, and attacked a pursuing sentry");
@@ -408,6 +425,52 @@ async function main() {
     assert.deepEqual(await page.evaluate(()=>WCRTS.latest().entities.map(e=>[e.x,e.y])),
       [[1,2],[2,3],[1,4],[2,5]],"R02 restart did not reset native unit positions");
     messages.push("PASS: R02 four real production units crossed obstacles with bounded A*, command states, hold/guard/stop/restart and no phasing");
+    messages.push("PASS: R03 canonical shot/hit/damage events and sentry HP synchronized to tactical HUD");
+    // Opt-in deterministic drill: actual native infantry are overwhelmed by
+    // armored sentries, making target rejection, defeat and restart observable.
+    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+    await page.waitForFunction(() => document.body.dataset.runtime === "ready",undefined,{timeout:90000});
+    await page.locator("#launch-r03-drill").click();
+    await page.waitForFunction(() => WCRTS.latest()&&WCRTS.latest().entities[2].kind==="vehicle",
+                               undefined,{timeout:40000});
+    const drillUnits=await page.evaluate(()=>WCRTS.latest().entities.slice(0,4).map(e=>[e.id,e.kind,e.hp]));
+    assert.deepEqual(drillUnits,[[1001,"infantry",5],[1002,"infantry",6],
+                                 [2001,"vehicle",8],[2002,"vehicle",8]]);
+    await clickNativeTile(page.locator("#canvas"),3,2);
+    await page.waitForFunction(()=>WCRTS.eventHistory().some(e=>e.type==="command"&&e.code==="bad_target"),
+                               undefined,{timeout:15000});
+    await page.waitForFunction(() => WCRTS.latest()&&WCRTS.latest().phase==="lost",
+                               undefined,{timeout:60000});
+    const defeat=await page.evaluate(()=>({
+      phase:WCRTS.latest().phase,
+      squad:WCRTS.latest().entities.slice(0,2).map(e=>e.hp),
+      types:WCRTS.eventHistory().map(e=>e.type),
+      result:document.getElementById("alpha-result").textContent
+    }));
+    assert.deepEqual(defeat.squad,[0,0]);
+    assert(defeat.types.includes("damage")&&defeat.types.includes("death")&&defeat.types.includes("phase"));
+    assert(defeat.result.includes("Squad lost"));
+    await page.screenshot({path:path.join(root,"r03-defeat.png"),fullPage:true});
+    // The drill resumes automatic fire immediately after restart. Capture the
+    // authoritative restart snapshot at receipt rather than racing its brief
+    // live display against the next combat tick.
+    await page.evaluate(()=>{
+      window.__r03RestartSnapshot=null;
+      const originalReceive=WCRTS.receive;
+      WCRTS.receive=function(payload){
+        const snapshot=originalReceive(payload);
+        if(snapshot.events.some(e=>e.type==="restart"))
+          window.__r03RestartSnapshot={phase:snapshot.phase,
+            hp:snapshot.entities.slice(0,4).map(e=>e.hp)};
+        return snapshot;
+      };
+    });
+    await page.keyboard.press("r");
+    await page.waitForFunction(()=>window.__r03RestartSnapshot!==null,
+      undefined,{timeout:15000});
+    assert.deepEqual(await page.evaluate(()=>window.__r03RestartSnapshot),
+      {phase:"playing",hp:[5,6,8,8]});
+    messages.push("PASS: R03 native armored vehicles reject infantry rifles; damage, death, defeat HUD and restart observed");
     // Original project-owned sprite, no EA media: verified HTTP package,
     // manifest SHA-256, MEMFS, C++ indexed SHP decode, and SDL2 texture render.
     await page.reload({waitUntil: "domcontentloaded", timeout: 90000});

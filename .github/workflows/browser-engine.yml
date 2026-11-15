@@ -96,6 +96,9 @@ jobs:
           build/browser-engine/test-world-plan
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-combat.cpp -o build/browser-engine/test-combat
           build/browser-engine/test-combat
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-weapons.cpp -o build/browser-engine/test-rts-weapons
+          build/browser-engine/test-rts-weapons
+          node docs/rts-milestones/validate-roadmap.js
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-simulation-contract.cpp -o build/browser-engine/test-simulation-contract
           build/browser-engine/test-simulation-contract
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-production-orders.cpp -o build/browser-engine/test-production-orders
@@ -163,6 +166,7 @@ jobs:
             build/browser-engine/r01-compact.png
             build/browser-engine/r05/gallery-proof.png
             build/browser-engine/r02-orders.png
+            build/browser-engine/r03-defeat.png
           if-no-files-found: ignore
       - name: Upload standalone original-content mission
         uses: actions/upload-artifact@v4
