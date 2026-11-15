@@ -1,8 +1,15 @@
 {
-  "schema": "world-conquer-original-mission-v1",
-  "id": "courier-extraction",
-  "width": 18,
-  "height": 11,
-  "file": "courier-extraction.map",
-  "sha256": "657774aec5a9ae08dbbba5f4e64c82a59fa952dd10b8191aca589389fa464149"
+  "schema": "world-conquer-map-pack-v2",
+  "default": "courier-extraction",
+  "maps": [
+    {"id":"courier-extraction","title":"Courier Extraction","width":18,"height":11,
+     "format":"legacy-v1","file":"courier-extraction.map",
+     "sha256":"657774aec5a9ae08dbbba5f4e64c82a59fa952dd10b8191aca589389fa464149"},
+    {"id":"ridge-pass","title":"Ridge Pass","width":16,"height":10,
+     "format":"wc-map-v2","file":"ridge-pass.map",
+     "sha256":"3f1eed395daefda04c8cc92f7d269035dbfc16d5f3a5587f03b1f5cc19969265"},
+    {"id":"marsh-border","title":"Marsh Border","width":24,"height":14,
+     "format":"wc-map-v2","file":"marsh-border.map",
+     "sha256":"956781c56b32769b2d7a32985959bf5717cc6f2f3966b4480d17153046b0283e"}
+  ]
 }

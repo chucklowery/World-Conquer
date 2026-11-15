@@ -7,6 +7,20 @@ uses four real `InfantryClass::AI` actors and `MapClass` terrain, a bounded
 native order/path controller, and the version-1 R00 snapshot bridge. The
 specialized Courier combat/objectives remain in the Courier mode.
 
+## R04 — native maps and snapshot metadata
+
+`mission-pack.js` verifies the v2 SHA-256 map catalog and chosen original
+text content before staging MEMFS. The same bound-checked grammar lives in
+`native_slice_core.h`: it makes a candidate world, then commits atomically.
+`courier_world_plan.h` positions the configured rectangular footprint and
+`courier_engine_map.h` stages/read-verifies actual `MapClass` land types and
+resource-cell ground; real infantry are allocated at the authored unit spawns.
+`simulation_contract.h` projects terrain type, cost, resources, spawn zones,
+base locations, victory bounds and scenario IDs into R00 v2 snapshots (v1
+stays for Courier), which `simulation-bridge.js` validates and freezes for the
+HUD/minimap. This does not initialize campaign TheaterClass/BuildingClass or
+create an economy. See [R04 format](R04_MAP_FORMAT.md).
+
 ## R00 — established simulation-to-browser contract (v1)
 
 The **native C++ process is authoritative** for Tactical Alpha gameplay. Its

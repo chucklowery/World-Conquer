@@ -10,15 +10,21 @@ inline bool stageEngineMap(const State& mission,const WorldPlan& plan){
     // It is safe only once in a fresh browser-native-slice process.
     Map.One_Time_Editor();
     Map.Init_Cells();
-    Map.Set_Map_Dimensions(16,16,18,11);
-    for(int i=0;i<198;i++){
+    Map.Set_Map_Dimensions(16,16,mission.width,mission.height);
+    const auto landAt=[&](size_t i)->LandType{
+        if(mission.blocked[i])return LAND_ROCK;
+        const int x=static_cast<int>(i%mission.width),y=static_cast<int>(i/mission.width);
+        for(const Resource& node:mission.resources)if(node.p==Point{x,y})return LAND_TIBERIUM;
+        return mission.terrain[i]==3?LAND_TIBERIUM:mission.terrain[i]==2?LAND_BEACH:LAND_CLEAR;
+    };
+    for(size_t i=0;i<plan.cells.size();i++){
         const CELL cell=static_cast<CELL>(plan.cells[i]);
         if(!Map.In_Radar(cell))return false;
-        Map[cell].Override_Land_Type(mission.blocked[i]?LAND_ROCK:LAND_CLEAR);
+        Map[cell].Override_Land_Type(landAt(i));
     }
-    for(int i=0;i<198;i++){
+    for(size_t i=0;i<plan.cells.size();i++){
         const CELL cell=static_cast<CELL>(plan.cells[i]);
-        if(Map[cell].Land_Type()!=(mission.blocked[i]?LAND_ROCK:LAND_CLEAR))return false;
+        if(Map[cell].Land_Type()!=landAt(i))return false;
     }
     return true;
 }

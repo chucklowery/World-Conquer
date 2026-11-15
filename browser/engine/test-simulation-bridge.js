@@ -54,4 +54,25 @@ assert.equal(calls,4);
 bridge.clear();
 assert.equal(bridge.latest(),null);
 assert.equal(bridge.eventHistory().length,0);
+const v2=JSON.parse(JSON.stringify(base));
+v2.version=2;
+v2.map={id:"ridge-pass",title:"Ridge Pass",biome:"highland",width:16,height:10,
+  terrain:Array(160).fill(0),tiles:Array(160).fill(0),costs:Array(160).fill(1),
+  resources:[{x:7,y:3,amount:450}],
+  spawns:[{house:1,x:0,y:0,w:5,h:5},{house:2,x:10,y:0,w:6,h:10}],
+  bases:[{house:1,x:0,y:0},{house:2,x:15,y:9}],victory:{x:13,y:8,w:3,h:2}};
+v2.map.tiles[6]=4;v2.map.terrain[6]=1;v2.map.costs[6]=0;
+v2.entities.find(e=>e.id===4001).x=14;
+v2.events=[];
+const accepted=bridge.receive(v2);
+assert.equal(accepted.version,bridge.MAP_VERSION);
+assert(Object.isFrozen(accepted.map.resources));
+assert.equal(bridge.latest().map.id,"ridge-pass");
+const tainted=JSON.parse(JSON.stringify(v2));tainted.map.costs[6]=9;
+assert.throws(()=>bridge.receive(tainted),/versioned/);
+assert.equal(bridge.latest(),accepted,"Rejected snapshot must not replace native state");
+const view=HUD.create();
+HUD.applySnapshot(view,accepted);
+assert.deepEqual([view.width,view.height],[16,10]);
+assert.equal(HUD.inspect(view,6,0),"Blocked terrain");
 console.log("PASS: R00 immutable snapshots, validation, typed events, HUD projection and restart");

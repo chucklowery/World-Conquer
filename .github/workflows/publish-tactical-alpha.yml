@@ -56,7 +56,7 @@ jobs:
           cp browser/engine/{asset-import,original-asset,wireframe-asset,cargo-hd,vertical-slice,mission-pack,tactical-hud,simulation-bridge,rts-camera,rts-input-ui}.js build/browser-engine/
           cp browser/engine/play.html build/browser-engine/
           mkdir -p build/browser-engine/missions build/browser-engine/cargo-hd
-          cp game/content/missions/{courier-extraction.map,manifest.json} build/browser-engine/missions/
+          cp game/content/missions/*.map game/content/missions/manifest.json build/browser-engine/missions/
           cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           node tools/content/wireframes.js build build/browser-engine/wireframes --representative
@@ -66,6 +66,10 @@ jobs:
           node browser/engine/test-package-alpha.js
           node browser/engine/test-asset-import.js
           node browser/engine/test-mission-pack.js
+          node browser/engine/validate-maps.js
+          node docs/rts-milestones/validate-roadmap.js
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-map-pipeline.cpp -o build/browser-engine/test-map-pipeline
+          build/browser-engine/test-map-pipeline
           node browser/engine/test-tactical-hud.js
           node browser/engine/test-simulation-bridge.js
           node browser/engine/test-rts-camera.js

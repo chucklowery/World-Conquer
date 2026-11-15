@@ -45,4 +45,25 @@ assert.deepEqual(model.units[0],{x:1,y:2,hp:5});
 assert.equal(model.cargo,0);
 assert.equal(model.inspect,null);
 assert.throws(()=>HUD.create("invalid"),/Invalid tactical minimap/);
+for(const [name,width,height] of [["ridge-pass",16,10],["marsh-border",24,14]]){
+  const v2=HUD.create(fs.readFileSync(path.resolve(__dirname,"../../game/content/missions/"+name+".map"),"utf8"));
+  assert.deepEqual([v2.width,v2.height],[width,height]);
+  assert.equal(v2.resources.length,2);
+  const rough=v2.terrain.indexOf(2),marsh=v2.terrain.indexOf(3),rock=v2.terrain.indexOf(4);
+  assert(rough>=0&&marsh>=0&&rock>=0);
+  assert.equal(HUD.inspect(v2,rough%width,Math.floor(rough/width)),"Rough terrain · cost 2");
+  assert.equal(HUD.inspect(v2,marsh%width,Math.floor(marsh/width)),"Marsh terrain · cost 3");
+  assert.equal(HUD.inspect(v2,rock%width,Math.floor(rock/width)),"Blocked terrain");
+  assert.equal(HUD.inspect(v2,v2.resources[0].x,v2.resources[0].y),"Resource node");
+  assert.equal(HUD.inspect(v2,v2.bases[0].x,v2.bases[0].y),"Starting base");
+  const pixels=[];
+  const visual={fillRect(x,y,w,h){pixels.push({x,y,w,h,color:this.fillStyle});},
+    strokeRect(){},beginPath(){},arc(){},fill(){},stroke(){}};
+  HUD.draw({width:width*20,height:height*20,getContext:()=>visual},v2);
+  assert.equal(pixels[1+rock].color,"#5c546b");
+  assert.equal(pixels[1+marsh].color,"#386873");
+  assert.equal(pixels[1+rough].color,"#80694b");
+  HUD.reset(v2);
+  assert.deepEqual([v2.units[0].x,v2.units[0].y],[v2.spawn[0].x,v2.spawn[0].y]);
+}
 console.log("PASS: minimap terrain, unit telemetry, combat, selection and restart");

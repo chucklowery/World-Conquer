@@ -6,18 +6,49 @@
   if(typeof module==="object"&&module.exports)module.exports=api;
   else root.WCRTS=api;
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
-  const VERSION=1;
+  const VERSION=1,MAP_VERSION=2;
   let current=null,listener=null,history=Object.freeze([]);
   const kinds=new Set(["infantry","supply","extraction"]);
   const events=new Set(["command","selection","position","health","pickup","phase","restart"]);
   function check(snapshot){
-    if(!snapshot||snapshot.version!==VERSION||!Number.isSafeInteger(snapshot.tick)||snapshot.tick<0)
+    if(!snapshot||![VERSION,MAP_VERSION].includes(snapshot.version)||!Number.isSafeInteger(snapshot.tick)||snapshot.tick<0)
       throw Error("Unsupported simulation snapshot version or tick");
     const map=snapshot.map;
     if(!map||!Number.isInteger(map.width)||!Number.isInteger(map.height)||
-       map.width<=0||map.height<=0||!Array.isArray(map.terrain)||
+       map.width<8||map.height<8||map.width>32||map.height>24||!Array.isArray(map.terrain)||
        map.terrain.length!==map.width*map.height||
        map.terrain.some(t=>t!==0&&t!==1))throw Error("Invalid snapshot terrain");
+    if(snapshot.version===MAP_VERSION){
+      const costs=[1,0,2,3,0];
+      if(typeof map.id!=="string"||!/^[a-z0-9-]{1,64}$/.test(map.id)||
+         !Array.isArray(map.tiles)||!Array.isArray(map.costs)||
+         map.tiles.length!==map.width*map.height||map.costs.length!==map.tiles.length||
+         map.tiles.some((t,i)=>!Number.isInteger(t)||t<0||t>4||costs[t]!==map.costs[i]||
+           (costs[t]===0?1:0)!==map.terrain[i])||
+         !Array.isArray(map.resources)||map.resources.length>16||
+         !Array.isArray(map.spawns)||map.spawns.length!==2||
+         !Array.isArray(map.bases)||map.bases.length!==2||!map.victory)
+        throw Error("Invalid versioned native map data");
+      const inBounds=p=>p&&Number.isInteger(p.x)&&Number.isInteger(p.y)&&
+        p.x>=0&&p.y>=0&&p.x<map.width&&p.y<map.height;
+      const rect=r=>inBounds(r)&&Number.isInteger(r.w)&&Number.isInteger(r.h)&&
+        r.w>0&&r.h>0&&r.x+r.w<=map.width&&r.y+r.h<=map.height;
+      const contained=(r,p)=>p.x>=r.x&&p.y>=r.y&&p.x<r.x+r.w&&p.y<r.y+r.h;
+      if(!rect(map.victory))throw Error("Invalid victory bounds");
+      for(let i=0;i<2;i++){
+        const base=map.bases[i],zone=map.spawns[i];
+        if(!rect(zone)||zone.house!==i+1||!inBounds(base)||base.house!==i+1||
+           !contained(zone,base)||map.terrain[base.y*map.width+base.x]!==0)
+          throw Error("Invalid native starting bases");
+      }
+      const seen=new Set();
+      for(const item of map.resources){
+        if(!inBounds(item)||!Number.isInteger(item.amount)||item.amount<1||item.amount>100000||
+           map.terrain[item.y*map.width+item.x]!==0||seen.has(item.y*map.width+item.x))
+          throw Error("Invalid native resource node");
+        seen.add(item.y*map.width+item.x);
+      }
+    }
     if(!Array.isArray(snapshot.entities)||!Array.isArray(snapshot.events)||
        !Number.isInteger(snapshot.selectedEntityId)||!Number.isInteger(snapshot.cargo)||
        !["playing","won","lost"].includes(snapshot.phase))throw Error("Invalid snapshot state");
@@ -75,5 +106,5 @@
   function latest(){return current;}
   function eventHistory(){return history;}
   function clear(){current=null;history=Object.freeze([]);}
-  return {VERSION,receive,subscribe,latest,eventHistory,clear};
+  return {VERSION,MAP_VERSION,receive,subscribe,latest,eventHistory,clear};
 });

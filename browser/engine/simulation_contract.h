@@ -65,6 +65,12 @@ struct Snapshot {
     int width,height,selected,cargo,phase;
     EntityId selectedEntityId;
     std::vector<uint8_t> terrain;
+    std::vector<uint8_t> tiles;
+    std::vector<courier::Resource> resources;
+    std::array<courier::Rect,2> spawns;
+    std::array<courier::Point,2> bases;
+    courier::Rect victory;
+    std::string mapId,title,biome;
     std::vector<Entity> entities;
     std::vector<Event> events;
     std::vector<CommandState> commandStates;
@@ -122,7 +128,7 @@ class Contract {
         if(state_.phase!=0)return ResultCode::WrongPhase;
         if(state_.units[i].hp<=0)return ResultCode::Dead;
         if(c.kind==CommandKind::Move){
-            if(c.tile.x<0||c.tile.y<0||c.tile.x>=18||c.tile.y>=11)return ResultCode::BadTarget;
+            if(c.tile.x<0||c.tile.y<0||c.tile.x>=state_.width||c.tile.y>=state_.height)return ResultCode::BadTarget;
             if(!courier::inside(state_,c.tile))return ResultCode::Blocked;
             if(!(c.tile==state_.units[i].p)&&courier::route(state_,i,c.tile).empty())
                 return ResultCode::Unreachable;
@@ -169,8 +175,8 @@ class Contract {
 public:
     Contract(courier::State& state,courier::Combat& combat):state_(state),combat_(combat),hasPrior_(false){}
     Terrain terrainAt(courier::Point p) const {
-        if(p.x<0||p.y<0||p.x>=18||p.y>=11)return Terrain::Outside;
-        return state_.blocked[p.y*18+p.x]?Terrain::Blocked:Terrain::Clear;
+        if(p.x<0||p.y<0||p.x>=state_.width||p.y>=state_.height)return Terrain::Outside;
+        return state_.blocked[p.y*state_.width+p.x]?Terrain::Blocked:Terrain::Clear;
     }
     bool passable(courier::Point p) const {return terrainAt(p)==Terrain::Clear;}
     CommandResult enqueue(const Command& c){
@@ -198,9 +204,12 @@ public:
     }
     Snapshot view() const {
         Snapshot snapshot={};
-        snapshot.version=SNAPSHOT_VERSION;
+        snapshot.version=state_.mapId=="courier-extraction"?SNAPSHOT_VERSION:2;
         snapshot.tick=static_cast<uint64_t>(state_.frame);
-        snapshot.width=18;snapshot.height=11;
+        snapshot.width=state_.width;snapshot.height=state_.height;
+        snapshot.mapId=state_.mapId;snapshot.title=state_.title;snapshot.biome=state_.biome;
+        snapshot.tiles=state_.terrain;snapshot.resources=state_.resources;
+        snapshot.spawns=state_.spawnZones;snapshot.bases=state_.bases;snapshot.victory=state_.victory;
         snapshot.selected=state_.selected;
         snapshot.selectedEntityId=UNIT_IDS[state_.selected];
         snapshot.cargo=state_.cargo;snapshot.phase=state_.phase;
@@ -239,9 +248,35 @@ public:
 inline std::string json(const Snapshot& s){
     std::ostringstream out;
     out<<"{\"version\":"<<s.version<<",\"tick\":"<<s.tick
-       <<",\"map\":{\"width\":"<<s.width<<",\"height\":"<<s.height<<",\"terrain\":[";
+       <<",\"map\":{\"width\":"<<s.width<<",\"height\":"<<s.height
+       <<",\"id\":\""<<s.mapId<<"\",\"title\":\""<<s.title<<"\",\"biome\":\""<<s.biome
+       <<"\",\"terrain\":[";
     for(size_t i=0;i<s.terrain.size();i++){if(i)out<<',';out<<static_cast<unsigned>(s.terrain[i]);}
-    out<<"]},\"selectedEntityId\":"<<s.selectedEntityId<<",\"cargo\":"<<s.cargo
+    out<<"],\"tiles\":[";
+    for(size_t i=0;i<s.tiles.size();i++){if(i)out<<',';out<<static_cast<unsigned>(s.tiles[i]);}
+    out<<"],\"costs\":[";
+    for(size_t i=0;i<s.tiles.size();i++){if(i)out<<',';out<<courier::movementCost(s.tiles[i]);}
+    out<<"],\"resources\":[";
+    for(size_t i=0;i<s.resources.size();i++){
+        if(i)out<<',';
+        out<<"{\"x\":"<<s.resources[i].p.x<<",\"y\":"<<s.resources[i].p.y
+           <<",\"amount\":"<<s.resources[i].amount<<'}';
+    }
+    out<<"],\"spawns\":[";
+    for(int i=0;i<2;i++){
+        if(i)out<<',';
+        const courier::Rect r=s.spawns[i];
+        out<<"{\"house\":"<<i+1<<",\"x\":"<<r.x<<",\"y\":"<<r.y
+           <<",\"w\":"<<r.w<<",\"h\":"<<r.h<<'}';
+    }
+    out<<"],\"bases\":[";
+    for(int i=0;i<2;i++){
+        if(i)out<<',';
+        out<<"{\"house\":"<<i+1<<",\"x\":"<<s.bases[i].x<<",\"y\":"<<s.bases[i].y<<'}';
+    }
+    out<<"],\"victory\":{\"x\":"<<s.victory.x<<",\"y\":"<<s.victory.y
+       <<",\"w\":"<<s.victory.w<<",\"h\":"<<s.victory.h
+       <<"}},\"selectedEntityId\":"<<s.selectedEntityId<<",\"cargo\":"<<s.cargo
        <<",\"phase\":\""<<phaseName(s.phase)<<"\",\"entities\":[";
     for(size_t i=0;i<s.entities.size();i++){
         const Entity& e=s.entities[i];if(i)out<<',';

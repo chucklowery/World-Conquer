@@ -46,6 +46,13 @@ Acceptance: rectangle animates; mouse click changes color; keyboard logging visi
 
 ## VanillaTD Emscripten build (native Tactical Alpha 0.1)
 
+The R04 map pack contains three choices at launch. Before publishing or
+building new map content, run `node browser/engine/validate-maps.js` and the
+native/Node parser tests in [R04 format](R04_MAP_FORMAT.md). The browser CI
+stages every `.map` file and runs native WASM map-selection, movement, minimap
+and restart checks for both v2 examples while preserving Courier regression
+coverage. Do not stage unverified or unlicensed theater data.
+
 The browser build includes the **playable Operation Courier Extraction alpha**,
 powered by live VanillaTD infantry movement and a bounded original-content
 combat/mission layer. It is not yet a historical VanillaTD campaign build.
