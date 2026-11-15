@@ -9,7 +9,7 @@ const maps=require("./mission-pack");
 function validate(directory=path.resolve(__dirname,"../../game/content/missions")){
   const manifest=JSON.parse(fs.readFileSync(path.join(directory,"manifest.json"),"utf8"));
   if(!maps.manifestValid(manifest))throw Error("Invalid versioned map manifest");
-  const entries=manifest.maps||[manifest];
+  const entries=manifest.maps||[{...manifest,format:"legacy-v1"}];
   const expected=new Set(entries.map(entry=>entry.file));
   const files=fs.readdirSync(directory).filter(file=>file.endsWith(".map"));
   if(files.length!==expected.size||files.some(file=>!expected.has(file)))
