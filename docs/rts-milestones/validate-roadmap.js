@@ -25,7 +25,7 @@ for (const line of rows) {
   const deps = rawDeps === '—' ? [] : rawDeps.split(',').map(v => v.trim());
   milestones.set(id, { deps, status });
 }
-if (milestones.size !== 18) throw new Error(`Expected 18 milestones, found ${milestones.size}`);
+if (milestones.size !== 19) throw new Error(`Expected 19 milestones, found ${milestones.size}`);
 const visited = new Set();
 const active = new Set();
 function walk(id) {
