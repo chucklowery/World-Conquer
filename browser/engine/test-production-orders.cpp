@@ -11,7 +11,9 @@ static orders::Request request(int actor,orders::Kind kind,Point p,uint64_t seq,
 }
 static std::array<bool,orders::CELLS> terrain(){
     courier::State courier;
-    return courier.blocked;
+    std::array<bool,orders::CELLS> fixed={};
+    assert(orders::fixedTerrain(courier,fixed));
+    return fixed;
 }
 static std::array<Point,orders::COUNT> starts(){
     return {{{1,2},{2,3},{1,4},{2,5}}};
@@ -42,6 +44,13 @@ static void run(orders::Controller& controller,int ticks){
     }
 }
 int main(){
+    courier::State wrongSize;
+    std::array<bool,orders::CELLS> untouched={};
+    wrongSize.width=24;
+    assert(!orders::fixedTerrain(wrongSize,untouched));
+    wrongSize=courier::State();wrongSize.blocked.pop_back();
+    assert(!orders::fixedTerrain(wrongSize,untouched));
+    for(bool b:untouched)assert(!b); // rejected conversions are atomic
     orders::Controller c;
     c.reset(terrain(),starts());
     for(int i=0;i<4;i++)assert(c.enqueue(request(i,orders::Kind::Move,{15,1+i},i+1))==

@@ -17,6 +17,19 @@ recenter the camera rather than moving infantry. See
 [`docs/browser/R01_INPUT_UX.md`](../../docs/browser/R01_INPUT_UX.md) for the
 desktop/touch guide, keyboard-only limitations, native R00 boundary, and tests.
 
+### R04 selectable maps
+
+The playable WASM launcher now presents three original maps: legacy Courier
+Extraction (18×11), Ridge Pass (16×10) and Marsh Border (24×14). Map selection
+occurs before launch; the SHA-256-pinned pack rejects corrupt or malformed
+data before staging. The real `MapClass` receives the selected dimensions,
+typed terrain and resource-node land cells; two production infantry are seeded
+from its validated spawn coordinates. Native R00 snapshots drive the dynamic
+minimap, starting-base markers and terrain inspection. `R` restarts the
+selected map. The isolated standalone `play.html` remains Courier-only.
+See [R04 map format and authoring](../../docs/browser/R04_MAP_FORMAT.md) for
+versions, terrain costs, scenario data and the validation workflow.
+
 The default browser shell now leads with **Start Tactical Alpha**. The player
 commands a two-person infantry squad in Operation Courier Extraction: recover
 two guarded crates and bring at least one surviving soldier to the aircraft.

@@ -72,7 +72,7 @@ jobs:
           cp browser/engine/rts-camera.js browser/engine/rts-input-ui.js build/browser-engine/
           cp browser/engine/play.html build/browser-engine/play.html
           mkdir -p build/browser-engine/missions
-          cp game/content/missions/courier-extraction.map game/content/missions/manifest.json build/browser-engine/missions/
+          cp game/content/missions/*.map game/content/missions/manifest.json build/browser-engine/missions/
           mkdir -p build/browser-engine/cargo-hd
           cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
           # Verify we generated the custom deferred-start launcher.
@@ -86,14 +86,18 @@ jobs:
           node browser/engine/test-cargo-hd.js
           node browser/engine/test-vertical-slice.js
           node browser/engine/test-mission-pack.js
+          node browser/engine/validate-maps.js
           node browser/engine/test-tactical-hud.js
           node browser/engine/test-simulation-bridge.js
           node browser/engine/test-rts-camera.js
           node browser/engine/test-package-alpha.js
+          node docs/rts-milestones/validate-roadmap.js
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-native-slice.cpp -o build/browser-engine/test-native-slice
           build/browser-engine/test-native-slice
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-world-plan.cpp -o build/browser-engine/test-world-plan
           build/browser-engine/test-world-plan
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-map-pipeline.cpp -o build/browser-engine/test-map-pipeline
+          build/browser-engine/test-map-pipeline
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-combat.cpp -o build/browser-engine/test-combat
           build/browser-engine/test-combat
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-weapons.cpp -o build/browser-engine/test-rts-weapons

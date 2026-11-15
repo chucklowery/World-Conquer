@@ -111,6 +111,8 @@ body.hud-active{overflow:hidden}
 <h2>Your squad. Your mission.</h2>
 <p>Select a unit, drag a selection box, or use a group. Right-click to order movement or attack; left-click ground also moves the selected squad for the alpha mission.</p>
 <div class="alpha-objectives"><span>2 squad members</span><span>2 guarded crates</span><span>Live enemy patrols</span><span>Extraction victory</span></div>
+<label for="map-choice">Playable map</label>
+<select id="map-choice" aria-label="Playable map" style="padding:9px;color:#edf4fa;background:#172e37;border:1px solid #64848a;border-radius:7px"><option value="courier-extraction">Courier Extraction · 18 × 11</option></select>
 <button type="button" id="launch-alpha" class="primary" disabled>Start Tactical Alpha</button>
 <p class="note">Controls: drag to select; Shift-click to add; Shift+1–9 save a group, 1–9 recall; right-click issues orders; M/A command modes, S stop, arrow keys pan, +/- zoom, R restart. Full help is in the in-game Controls tab.</p>
 <button type="button" id="launch-r03-drill" disabled>R03 armored-sentry defeat drill</button>
@@ -171,7 +173,7 @@ body.hud-active{overflow:hidden}
 <div id="tactical-hud" class="hud-shell" hidden aria-label="World-Conquer tactical command interface">
   <header class="hud-topbar">
     <span class="hud-brand">WORLD-CONQUER</span>
-    <strong class="hud-mission">COURIER EXTRACTION</strong>
+    <strong class="hud-mission" id="hud-mission-title">COURIER EXTRACTION</strong>
     <span class="hud-topline">TACTICAL ALPHA 0.1 · ORIGINAL CONTENT</span>
     <button type="button" id="hud-sidebar-toggle" aria-controls="hud-sidebar" aria-expanded="true">Panels</button>
     <button type="button" id="hud-fullscreen" aria-pressed="false" title="Toggle browser fullscreen">⛶ Fullscreen</button>
@@ -198,7 +200,7 @@ body.hud-active{overflow:hidden}
       <div id="hud-toast-anchor" class="hud-toast-anchor"></div>
     </main>
     <aside id="hud-sidebar" class="hud-sidebar" aria-label="Command sidebar">
-      <div class="hud-sidebar-heading"><span>Tactical minimap</span><span>18 × 11</span></div>
+      <div class="hud-sidebar-heading"><span>Tactical minimap</span><span id="hud-map-size">18 × 11</span></div>
       <div class="hud-map-wrap">
         <canvas id="hud-minimap" width="360" height="220" aria-label="Live overview of terrain, allied infantry, sentries, crates and extraction"></canvas>
         <p id="hud-map-readout" role="status">Click the minimap to pan the camera (never a unit order)</p>
@@ -316,6 +318,7 @@ body.hud-active{overflow:hidden}
   const r03Drill = document.getElementById("launch-r03-drill");
   const engineCourier = document.getElementById("run-engine-courier");
   const r02Launch = document.getElementById("run-r02-orders");
+  const mapChoice = document.getElementById("map-choice");
   const engineHud = document.getElementById("engine-courier-status");
   const alphaEvent = document.getElementById("alpha-event");
   const alphaResult = document.getElementById("alpha-result");
@@ -397,6 +400,16 @@ body.hud-active{overflow:hidden}
   window.addEventListener("resize",resizeBattlefield);
   window.matchMedia("(max-width:900px)").addEventListener("change",event=>setSidebarOpen(!event.matches));
   if(typeof ResizeObserver!=="undefined")new ResizeObserver(resizeBattlefield).observe(hudPlayfield);
+  // Preserve R01 click-to-recenter behavior; hover provides R04's terrain
+  // inspector without stealing the camera's minimap click/readout.
+  hudMinimap.addEventListener("mousemove",event=>{
+    if(document.body.dataset.mode!=="engine-courier")return;
+    const rect=hudMinimap.getBoundingClientRect();
+    const x=Math.min(hudModel.width-1,Math.max(0,Math.floor((event.clientX-rect.left)/rect.width*hudModel.width)));
+    const y=Math.min(hudModel.height-1,Math.max(0,Math.floor((event.clientY-rect.top)/rect.height*hudModel.height)));
+    const terrain=WCTacticalHUD.inspect(hudModel,x,y);
+    hudMapReadout.textContent=`${terrain} · Sector ${x+1},${y+1} · Click to recenter camera`;
+  });
   document.querySelectorAll("[data-hud-tab]").forEach(button=>button.addEventListener("click",()=>{
     const active=button.dataset.hudTab;
     document.querySelectorAll("[data-hud-tab]").forEach(tab=>tab.setAttribute("aria-selected",String(tab===button)));
@@ -457,6 +470,7 @@ body.hud-active{overflow:hidden}
     if(document.body.dataset.mode!=="engine-courier")return;
     WCTacticalHUD.applySnapshot(hudModel,snapshot);
     hudInput.receive(snapshot);
+    document.getElementById("hud-map-size").textContent=`${hudModel.width} × ${hudModel.height}`;
     const units=snapshot.entities;
     const hp=id=>units.find(entity=>entity.id===id).hp;
     alphaStats={cargo:snapshot.cargo,players:[hp(1001),hp(1002)],
@@ -499,6 +513,7 @@ body.hud-active{overflow:hidden}
     document.body.dataset.runtime = kind;
   }
   function controls() {
+    mapChoice.disabled=started||preparingCourier;
     probe.disabled = !ready || started;
     cooperative.disabled = !ready || started;
     shape.disabled = !ready || started || loadingAssets;
@@ -550,11 +565,27 @@ body.hud-active{overflow:hidden}
       report("[browser-native-slice] staged verified tactical SHP pack ("+result.shapes+" resources)");
     }catch(error){report("[browser-native-slice] Tactical SHP pack unavailable; using unit markers: "+error.message,true);}
     try{
-      const mission=await WCMissionPack.load();
+      const mission=await WCMissionPack.load("missions",fetch,undefined,
+        mode==="r02-orders"||drill?"courier-extraction":mapChoice.value);
       Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
       if(mode==="engine-courier"||mode==="r02-orders")hudModel=WCTacticalHUD.create(mission.map);
-      report("[browser-native-slice] staged verified original-content mission map");
-    }catch(error){report("[browser-native-slice] Mission pack unavailable; using built-in map: "+error.message,true);}
+      document.getElementById("hud-mission-title").textContent=mission.parsed.title.toUpperCase();
+      canvas.width=mission.parsed.width*40;
+      canvas.height=mission.parsed.height*40;
+      hudMinimap.width=mission.parsed.width*20;
+      hudMinimap.height=mission.parsed.height*20;
+      hudMinimap.style.aspectRatio=mission.parsed.width+"/"+mission.parsed.height;
+      document.getElementById("hud-map-size").textContent=`${mission.parsed.width} × ${mission.parsed.height}`;
+      report(`[browser-native-slice] staged verified original-content mission map id=${mission.parsed.id} size=${mission.parsed.width}x${mission.parsed.height}`);
+    }catch(error){
+      // Reject corrupt content before starting native gameplay or replacing the
+      // staged map. Never silently run a different mission than selected.
+      report("[browser-native-slice] Map rejected; current state preserved: "+error.message,true);
+      status("Map rejected; select a valid map and retry","error");
+      preparingCourier=false;
+      controls();
+      return;
+    }
     try {
       if(!hdImages)hdImages=await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
       const offscreen=document.createElement("canvas");
@@ -567,7 +598,7 @@ body.hud-active{overflow:hidden}
     } catch(error) {
       report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
     }
-    canvas.style.aspectRatio="18/11";
+    canvas.style.aspectRatio=hudModel.width+"/"+hudModel.height;
     if(mode==="engine-courier"||mode==="r02-orders"){
       WCRTS.clear();
       activateTacticalHUD();
@@ -669,6 +700,15 @@ body.hud-active{overflow:hidden}
       status("Runtime ready; select a mode", "ready");
       report("[browser] Real VanillaTD WASM runtime ready; game main() deferred.");
       controls();
+      WCMissionPack.list().then(pack=>{
+        mapChoice.replaceChildren(...pack.maps.map(entry=>{
+          const option=document.createElement("option");
+          option.value=entry.id;
+          option.textContent=`${entry.title} · ${entry.width} × ${entry.height}`;
+          return option;
+        }));
+        mapChoice.value=pack.default;
+      }).catch(error=>report("[maps] Mission listing unavailable: "+error.message,true));
     }
   };
 })();

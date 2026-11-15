@@ -26,14 +26,14 @@ const server = http.createServer((req, res) => {
   });
 });
 
-async function clickNativeTile(canvas,x,y){
-  // Emscripten scales the 720x440 SDL canvas to the CSS layout. Use the
+async function clickNativeTile(canvas,x,y,width=18,height=11){
+  // Emscripten scales the native SDL canvas to the CSS layout. Use the
   // displayed dimensions so far-edge tiles remain clickable at any viewport.
   const bounds=await canvas.evaluate(element=>{
     const rect=element.getBoundingClientRect();
     return {width:rect.width,height:rect.height};
   });
-  await canvas.click({position:{x:(x+0.5)*bounds.width/18,y:(y+0.5)*bounds.height/11}});
+  await canvas.click({position:{x:(x+0.5)*bounds.width/width,y:(y+0.5)*bounds.height/height}});
 }
 
 async function main() {
@@ -425,6 +425,74 @@ async function main() {
     assert.deepEqual(await page.evaluate(()=>WCRTS.latest().entities.map(e=>[e.x,e.y])),
       [[1,2],[2,3],[1,4],[2,5]],"R02 restart did not reset native unit positions");
     messages.push("PASS: R02 four real production units crossed obstacles with bounded A*, command states, hold/guard/stop/restart and no phasing");
+    // R04: load both new maps into the *real* browser WASM engine. Terrain,
+    // infantry and HUD/minimap must all read native state, including restart.
+    for(const item of [
+      {id:"ridge-pass",width:16,height:10,scout:[1,2],destination:[2,2],wall:[8,1]},
+      {id:"marsh-border",width:24,height:14,scout:[1,1],destination:[3,1],wall:[3,4]}
+    ]){
+      await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+      await page.waitForFunction(()=>document.body.dataset.runtime==="ready"&&
+        document.getElementById("map-choice").options.length===3,undefined,{timeout:90000});
+      await page.locator("#map-choice").selectOption(item.id);
+      await page.locator("#launch-alpha").click();
+      await page.waitForFunction(id=>window.WCRTS&&WCRTS.latest()?.map.id===id,item.id,{timeout:60000});
+      const native=await page.evaluate(()=>{
+        const s=WCRTS.latest(),m=s.map;
+        return {version:s.version,id:m.id,size:[m.width,m.height],tiles:m.tiles.length,
+          costs:m.costs,resources:m.resources.length,bases:m.bases.length,
+          units:s.entities.filter(e=>e.kind==="infantry").map(e=>[e.x,e.y]),
+          canvas:[document.getElementById("canvas").width,document.getElementById("canvas").height],
+          minimap:[document.getElementById("hud-minimap").width,document.getElementById("hud-minimap").height]};
+      });
+      assert.equal(native.version,2);
+      assert.equal(native.id,item.id);
+      assert.deepEqual(native.size,[item.width,item.height]);
+      assert.deepEqual(native.canvas,[item.width*40,item.height*40]);
+      assert.deepEqual(native.minimap,[item.width*20,item.height*20]);
+      assert.equal(native.tiles,item.width*item.height);
+      assert.equal(native.resources,2);assert.equal(native.bases,2);
+      assert(native.costs.includes(2)&&native.costs.includes(3)&&native.costs.includes(0));
+      assert.deepEqual(native.units[0],item.scout);
+      const log=await page.locator("#log").textContent();
+      assert(log.includes(`engine world plan=ready cells=${item.width*item.height}`));
+      assert(log.includes("engine MapClass terrain=staged"));
+      assert(log.includes("movement source=InfantryClass::AI"));
+      const tiles=await page.evaluate(wall=>{
+        const c=document.getElementById("hud-minimap"),ctx=c.getContext("2d");
+        const s=WCRTS.latest(),m=s.map;
+        const pixel=(x,y)=>[...ctx.getImageData(x*20+6,y*20+6,1,1).data].slice(0,3);
+        return {wall:pixel(wall[0],wall[1]),clear:pixel(0,0),
+          mapWall:m.terrain[wall[1]*m.width+wall[0]],
+          renderedWidth:c.width,renderedHeight:c.height};
+      },item.wall);
+      assert.equal(tiles.mapWall,1,"Authored obstruction missing from R00 native snapshot");
+      assert.notDeepEqual(tiles.wall,tiles.clear,"Minimap rendered blocked terrain as clear");
+      const active=await page.evaluate(async()=>{
+        const before=WCRTS.latest().map.id;
+        const fetcher=async url=>url.endsWith(".map")?
+          {ok:true,arrayBuffer:async()=>new Uint8Array([60,115,99,114,105,112,116,62]).buffer}:fetch(url);
+        let rejected=false;
+        try{await WCMissionPack.load("missions",fetcher,undefined,before);}
+        catch(error){rejected=/checksum mismatch/.test(error.message);}
+        return {rejected,map:WCRTS.latest().map.id};
+      });
+      assert.deepEqual(active,{rejected:true,map:item.id},"Corrupt map changed active WASM mission");
+      const field=page.locator("#canvas");
+      await clickNativeTile(field,...item.scout,item.width,item.height);
+      await clickNativeTile(field,...item.destination,item.width,item.height);
+      await page.waitForFunction(goal=>{
+        const unit=WCRTS.latest()?.entities.find(e=>e.id===1001);
+        return unit?.x===goal[0]&&unit?.y===goal[1];
+      },item.destination,{timeout:60000});
+      await field.focus();await page.keyboard.press("r");
+      await page.waitForFunction(start=>{
+        const s=WCRTS.latest(),u=s?.entities.find(e=>e.id===1001);
+        return s?.events.some(e=>e.type==="restart")&&u?.x===start[0]&&u?.y===start[1];
+      },item.scout,{timeout:20000});
+      assert.equal(await page.locator("#hud-map-size").textContent(),`${item.width} × ${item.height}`);
+      messages.push(`PASS: ${item.id} ${item.width}x${item.height} validated map loaded in native WASM, traversed, minmap verified, corruption rejected and restarted`);
+    }
     messages.push("PASS: R03 canonical shot/hit/damage events and sentry HP synchronized to tactical HUD");
     // Opt-in deterministic drill: actual native infantry are overwhelmed by
     // armored sentries, making target rejection, defeat and restart observable.

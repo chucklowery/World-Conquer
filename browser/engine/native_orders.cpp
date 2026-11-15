@@ -7,6 +7,7 @@
 #include "simulation_contract.h"
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
+#include <algorithm>
 #include <cstdio>
 #include <string>
 
@@ -267,12 +268,15 @@ int Browser_Production_Orders(const char*){
     if(FILE* file=std::fopen("/COURIER.MAP","rb")){
         char buffer[256];const size_t n=std::fread(buffer,1,sizeof(buffer),file);
         const int extra=std::fgetc(file);std::fclose(file);
-        if(extra==EOF&&!courier::loadMap(mapState,std::string(buffer,n)))
+        if(extra!=EOF||!courier::loadMap(mapState,std::string(buffer,n)))
             return 4;
     }
+    // R02 is a fixed 18x11 diagnostic. R04's mission storage is dynamic;
+    // reject other sizes before touching the production world, then copy its
+    // validated passability into R02's existing fixed-size order contract.
+    if(!orders::fixedTerrain(mapState,blocked))return 4;
     if(!courier::planWorld(mapState,16,16,MAP_CELL_W,MAP_CELL_H,placement)||
        !courier::stageEngineMap(mapState,placement))return 5;
-    blocked=mapState.blocked;
     spawns={{mapState.units[0].p,mapState.units[1].p,{1,4},{2,5}}};
     for(int i=0;i<orders::COUNT;i++){
         if(blocked[spawns[i].y*orders::WIDTH+spawns[i].x])return 6;
