@@ -75,6 +75,11 @@ int main(int argc,char** argv){
     const std::string intact=rts::worldJson(match.snapshot(false));
     assert(!match.load(ridge+"invalid\n",defs));
     assert(!match.load(marsh,"RTS-DEFINITIONS|99\n"));
+    std::string incompleteDefs=defs;
+    const size_t forgeDef=incompleteDefs.find("game.forge.ranger");
+    assert(forgeDef!=std::string::npos);
+    incompleteDefs.replace(forgeDef,17,"game.forge.scout");
+    assert(!match.load(ridge,incompleteDefs)); // valid schema, missing scripted role
     assert(rts::worldJson(match.snapshot(false))==intact);
     // A successful reload is a new epoch, even when the caller reuses this
     // LiveMatch instance; stale IDs must never identify a new actor.
@@ -105,6 +110,24 @@ int main(int argc,char** argv){
     queued.plan();
     s=queued.snapshot(false);
     assert(!s.entities[0].hasOrder&&s.commandStates[0].queued==0);
+    // Recheck range at activation too: a moving target can invalidate an
+    // otherwise legal future attack without leaving phantom weapon focus.
+    rts::LiveMatch movingTarget;
+    assert(movingTarget.load(ridge,defs));
+    assert(movingTarget.observePosition(0,{10,2}));
+    const rts::EntityId seeker=movingTarget.actors()[0].id;
+    const rts::EntityId fleeing=movingTarget.actors()[2].id;
+    assert(movingTarget.attack(1,seeker,fleeing)==rts::WorldCode::Accepted);
+    assert(movingTarget.observePosition(2,{15,2}));
+    movingTarget.plan();
+    s=movingTarget.snapshot();
+    assert(!s.entities[0].hasOrder&&s.commandStates[0].kind=="stop");
+    assert(movingTarget.combat().find(seeker)->focus==0);
+    bool invalidated=false;
+    for(const rts::WorldEvent& event:s.events)
+        invalidated|=event.type==rts::WorldEventType::Command&&
+                     event.code==rts::WorldCode::BadTarget&&event.entityId==seeker;
+    assert(invalidated);
     rts::LiveMatch wide;
     assert(wide.load(marsh,defs));
     s=wide.snapshot();

@@ -236,8 +236,14 @@ public:
             if(activation.kind==orders::Kind::Attack){
                 const orders::Unit& u=navigation_.unit(activation.actor);
                 if(u.hasOrder&&u.current.kind==orders::Kind::Attack&&
-                   !weapons_.orderAttack(id,actors_[u.current.guard].id))
-                    return {};
+                   (!weapons_.canEngage(id,actors_[u.current.guard].id)||
+                    !weapons_.orderAttack(id,actors_[u.current.guard].id))){
+                    // A target can move out of range while a future Attack is
+                    // waiting. Report the stale target at activation instead
+                    // of silently retaining an impossible weapon focus.
+                    navigation_.cancelActor(activation.actor);
+                    world_.observeOrderFeedback(id,WorldCode::BadTarget,activation.sequence);
+                }
             }
         }
         for(const orders::Feedback& feedback:navigation_.takeFeedback()){

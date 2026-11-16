@@ -303,6 +303,9 @@ public:
                     q.order.kind==Kind::Attack)&&q.order.guard==target;}),u.queued.end());
         }
     }
+    void cancelActor(int actor){
+        if(actor>=0&&static_cast<size_t>(actor)<units_.size())clearOrder(units_[actor]);
+    }
     std::vector<Move> step(uint64_t tick){
         tick_=tick;budget_=Budget();
         std::stable_sort(pending_.begin(),pending_.end(),[](const Request& a,const Request& b){

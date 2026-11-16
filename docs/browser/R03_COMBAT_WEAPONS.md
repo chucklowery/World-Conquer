@@ -89,7 +89,9 @@ eliminated team produces an R18 `won`/`lost` phase, and restart replaces IDs
 and resets native actors. This still does not claim built vehicles or economy.
 For this first match, explicit Attack is stationary: out-of-range or
 line-of-sight-blocked targets are rejected. An accepted attack takes effect
-on the next native tick, never at submission; Stop or an activated replacement
+on the next native tick, never at submission; range and hostility are checked
+again at activation so a target moving away cannot leave a phantom order.
+Stop or an activated replacement
 order cancels weapon focus, while an appended future order does not. Native
 VanillaTD houses are mutually allied solely to prevent the engine's guard AI
 from competing with R03 weapon resolution; R18 gameplay teams remain hostile.
