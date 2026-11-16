@@ -1,0 +1,32 @@
+name: RTS foundation regression gate
+
+on:
+  pull_request:
+  push:
+    branches: [vanilla]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    name: foundation (${{ matrix.mode }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [regular, asan-ubsan]
+    env:
+      RTS_SANITIZE: ${{ matrix.mode == 'asan-ubsan' && '1' || '0' }}
+      ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain versions
+        run: |
+          g++ --version
+          node --version
+      - name: Check native simulation, bridge, content and replay determinism
+        run: bash scripts/check-rts-foundation.sh

@@ -2,7 +2,7 @@
 
 Implement **R09** for the repository `https://github.com/chucklowery/World-Conquer` in a new, independent context. The native SDL2/WASM tactical alpha has a true minimap in the right HUD, above preview-only construction choices, but presently shows full mission terrain and combat state. `browser/engine/tactical-hud.js` renders the minimap; `tiberiandawn/` contains native engine systems; `game/content/missions/` contains maps. R00 canonical snapshots and R04 configurable maps are prerequisites. Inspect `browser/engine/README.md`, `docs/browser/BUILD.md` and merged interfaces.
 
-**Dependency gate:** both R00 and R04 must be `completed` in `docs/rts-milestones/MANIFEST.md`. Mark blocked if absent.
+**Dependency gate:** R00, R04 and **R20** must all be `completed` in `docs/rts-milestones/MANIFEST.md`. R20 verifies the shared native foundation and CI before adding per-house visibility. Mark blocked if any are absent; do not start R09 from historical milestone CI alone.
 
 **Deliverable:** deterministic per-house visibility and exploration layers, sight radius/obstructions, unit/building reveal on movement, shroud/fog states, and ownership-safe state queries. Render fog correctly on the battlefield and minimap; do not leak unseen enemy positions through snapshots, tooltips, selection, events or radar. Define detector/radar rules and structure-power integration seam for R07; support spectator/replay visibility explicitly. Avoid storing authoritative visibility exclusively in JavaScript.
 
