@@ -14,7 +14,10 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        preset: [release, internal, testing, nonet]
+        # macOS hosted runner capacity is limited: PRs need the testing
+        # configuration, while vanilla pushes and manual dispatches exercise
+        # the complete build matrix before foundation acceptance.
+        preset: ${{ fromJSON(github.event_name == 'pull_request' && '["testing"]' || '["release","internal","testing","nonet"]') }}
 
     steps:
     - uses: actions/checkout@v4

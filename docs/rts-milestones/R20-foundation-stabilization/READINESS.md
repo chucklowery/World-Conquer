@@ -31,6 +31,11 @@ while R20 is `in_progress` or `blocked`.
   (`Resource not accessible by integration`). Other platform runs contain
   failed release-upload steps. These are CI/publishing faults, **not evidence
   of a failed compile**. Triage all matrix steps before attributing failures.
+- PR #23's macOS matrix was [cancelled without any steps](https://github.com/chucklowery/World-Conquer/actions/runs/43910624218)
+  on both original and rerun attempts. To reduce scarce macOS runner demand,
+  pull requests now run the `testing` preset; `vanilla` pushes and explicit
+  `workflow_dispatch` still run **all four** presets. R20 completion still
+  requires full-matrix macOS evidence on the final candidate revision.
 
 ## Requirement traceability and decisions
 
