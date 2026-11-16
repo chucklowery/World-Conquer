@@ -12,12 +12,12 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 35
     strategy:
-      max-parallel: 2
+      # Run one hosted macOS job at a time to limit runner queue pressure.
+      max-parallel: 1
       matrix:
-        # macOS hosted runner capacity is limited: PRs need the testing
-        # configuration, while vanilla pushes and manual dispatches exercise
-        # the complete build matrix before foundation acceptance.
-        preset: ${{ fromJSON(github.event_name == 'pull_request' && '["testing"]' || '["release","internal","testing","nonet"]') }}
+        # PRs must compile/link the game as well as run the test preset;
+        # vanilla pushes/manual dispatches retain all four configurations.
+        preset: ${{ fromJSON(github.event_name == 'pull_request' && '["release","testing"]' || '["release","internal","testing","nonet"]') }}
 
     steps:
     - uses: actions/checkout@v4
