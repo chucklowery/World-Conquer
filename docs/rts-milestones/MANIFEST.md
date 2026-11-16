@@ -39,7 +39,7 @@ row; never overwrite another worker's status or evidence.
 | R15 | [Multiplayer synchronization](R15-multiplayer/PROMPT.md) | R12, R14 | W8 | planned | — |
 | R16 | [Integration, balance, and performance](R16-integration-balance/PROMPT.md) | R10, R11, R12, R13, R14, R15, R19 | W9 | planned | — |
 | R17 | [Release, deployment, and hardening](R17-release-hardening/PROMPT.md) | R16 | W10 | planned | — |
-| R18 | [Dynamic RTS world and definition registry](R18-world-registries/PROMPT.md) | R00, R05 | W1 | planned | Gate cleared: R00 and R05 are `completed` after integrating their accepted evidence from `feature/original-content-pipeline`. Supersedes the stale blocker recorded by [PR #17](https://github.com/chucklowery/World-Conquer/pull/17); R18 native registry implementation and acceptance have not started. |
+| R18 | [Dynamic RTS world and definition registry](R18-world-registries/PROMPT.md) | R00, R05 | W1 | in_progress | R00 and R05 prerequisites are `completed` on `vanilla`. Implementation branch `feature/r18-native-world-registries`: native v3 registry, versioned Aster/Forge/neutral catalog, deterministic lifecycle/command tests, Node bridge migration and R02/R03/R04 native ports under review. Host/Node tests running; compiled WASM/Chromium and GitHub Actions pending. Do not mark completed until all acceptance evidence is integrated. |
 | R19 | [Native gameplay art and content binding](R19-runtime-art-integration/PROMPT.md) | R03, R04, R05, R07, R08, R09, R18 | W6 | planned | — |
 
 **R00/R05 review follow-ups:** [Review and traceability](REVIEW-R00-R05.md).

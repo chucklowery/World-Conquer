@@ -124,6 +124,7 @@ class Contract {
     Snapshot prior_;
     bool hasPrior_;
     int lastCombatFrame_;
+    uint64_t lastExecutedSequence_;
 
     void emit(EventKind kind,EntityId entity,int x=0,int y=0,int value=0,
               uint64_t sequence=0,ResultCode code=ResultCode::Accepted){
@@ -182,7 +183,7 @@ class Contract {
         emit(EventKind::Command,c.actor,c.tile.x,c.tile.y,0,c.sequence,result);
     }
 public:
-    Contract(courier::State& state,courier::Combat& combat):state_(state),combat_(combat),hasPrior_(false),lastCombatFrame_(-1){}
+    Contract(courier::State& state,courier::Combat& combat):state_(state),combat_(combat),hasPrior_(false),lastCombatFrame_(-1),lastExecutedSequence_(0){}
     Terrain terrainAt(courier::Point p) const {
         if(p.x<0||p.y<0||p.x>=state_.width||p.y>=state_.height)return Terrain::Outside;
         return state_.blocked[p.y*state_.width+p.x]?Terrain::Blocked:Terrain::Clear;
@@ -191,7 +192,8 @@ public:
     CommandResult enqueue(const Command& c){
         ResultCode result=validate(c);
         if(result==ResultCode::Accepted){
-            if(c.sequence==0||std::find_if(pending_.begin(),pending_.end(),
+            if(c.sequence==0||c.sequence<=lastExecutedSequence_||
+               std::find_if(pending_.begin(),pending_.end(),
                [&c](const Command& p){return p.sequence==c.sequence;})!=pending_.end())
                 result=ResultCode::DuplicateSequence;
             else pending_.push_back(c);
@@ -203,12 +205,15 @@ public:
         std::stable_sort(pending_.begin(),pending_.end(),ordered);
         size_t completed=0;
         while(completed<pending_.size()&&pending_[completed].tick<=nextTick){
-            execute(pending_[completed]);++completed;
+            execute(pending_[completed]);
+            lastExecutedSequence_=std::max(lastExecutedSequence_,pending_[completed].sequence);
+            ++completed;
         }
         pending_.erase(pending_.begin(),pending_.begin()+completed);
     }
     void restart(){
         pending_.clear();events_.clear();hasPrior_=false;lastCombatFrame_=-1;
+        lastExecutedSequence_=0;
         emit(EventKind::Restart,0);
     }
     Snapshot view() const {

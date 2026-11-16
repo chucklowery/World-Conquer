@@ -75,5 +75,13 @@ int main(){
     assert(advanced.tick==0&&advanced.events.size()==1);
     assert(advanced.events[0].kind==rts::EventKind::Restart);
     assert(advanced.entities[0].id==initial.entities[0].id);
+    // Replay protection persists beyond command execution, not just while
+    // the original sequence is waiting in the pending queue.
+    courier::State replayState;
+    courier::Combat replayCombat;
+    rts::Contract replay(replayState,replayCombat);
+    assert(replay.enqueue(select).code==rts::ResultCode::Accepted);
+    replay.process(1);
+    assert(replay.enqueue(select).code==rts::ResultCode::DuplicateSequence);
     std::cout<<"PASS: R00 IDs, owner/team, terrain, ordering, rejection, events, versioned snapshot and restart\n";
 }
