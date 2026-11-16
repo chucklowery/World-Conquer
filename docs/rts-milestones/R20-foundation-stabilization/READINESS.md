@@ -32,11 +32,14 @@ while R20 is `in_progress` or `blocked`.
   failed release-upload steps. These are CI/publishing faults, **not evidence
   of a failed compile**. Triage all matrix steps before attributing failures.
 - PR #23's macOS matrix was [cancelled without any steps](https://github.com/chucklowery/World-Conquer/actions/runs/43910624218)
-  on both original and rerun attempts. To reduce scarce macOS runner demand,
-  pull requests now run the `release` game-build and `testing` presets
-  serially; `vanilla` pushes and explicit
-  `workflow_dispatch` still run **all four** presets. R20 completion still
-  requires full-matrix macOS evidence on the final candidate revision.
+  on both original and rerun attempts. Another [two-job attempt](https://github.com/chucklowery/World-Conquer/actions/runs/43932594444)
+  was also cancelled before execution. GitHub's check-run annotations say the
+  jobs were not acquired by a hosted runner after retries and report macOS
+  arm64 capacity constraints. Pull requests therefore run `release` game-build
+  and `testing` presets serially on `macos-15-intel` (x86_64); `vanilla` pushes
+  and explicit `workflow_dispatch` retain **all four** presets on Apple Silicon
+  (`macos-15`, arm64). R20 completion still requires full-matrix arm64 evidence
+  on the final candidate revision. Intel PR checks do not substitute for it.
 
 ## Requirement traceability and decisions
 
