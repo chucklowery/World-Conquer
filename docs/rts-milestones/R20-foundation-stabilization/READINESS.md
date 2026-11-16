@@ -41,6 +41,54 @@ while R20 is `in_progress` or `blocked`.
   (`macos-15`, arm64). R20 completion still requires full-matrix arm64 evidence
   on the final candidate revision. Intel PR checks do not substitute for it.
 
+## Post-merge exit-gate assessment (2026-11-16)
+
+**Candidate:** `vanilla` merge `6faaf47640a5080f66fad34776e496a2df4f59b8`
+([PR #24](https://github.com/chucklowery/World-Conquer/pull/24)),
+following [PR #23](https://github.com/chucklowery/World-Conquer/pull/23).
+This checkpoint is evidence collection, **not R20 sign-off**:
+
+- [Foundation regular and ASan/UBSan CI](https://github.com/chucklowery/World-Conquer/actions/runs/43946652167)
+  **PASS** on the merged candidate, with CI leak detection enabled.
+  The host C++11/Node gate also passed locally on the identical source tree;
+  its repeated 2,880-tick/24-epoch replay hash was
+  `5397879782798822267`, host p95 96 microseconds (informational,
+  **not** an accepted performance budget). The fixture still uses six
+  active infantry, not a representative 16+ actor congestion scenario.
+- Post-merge [Linux](https://github.com/chucklowery/World-Conquer/actions/runs/43946652294),
+  [Windows](https://github.com/chucklowery/World-Conquer/actions/runs/43946652110)
+  and [MinGW](https://github.com/chucklowery/World-Conquer/actions/runs/43946652271)
+  **PASS**, including their independent `publish-release` jobs. The
+  [`latest` development release](https://github.com/chucklowery/World-Conquer/releases/tag/latest)
+  contained 36 artifacts at this checkpoint, including Linux/Windows/MinGW
+  outputs. This confirms that the former HTTP 403 publishing fault has been
+  fixed for these three workflows.
+- [macOS arm64 post-merge workflow](https://github.com/chucklowery/World-Conquer/actions/runs/43946652380)
+  remains **IN PROGRESS**: `release` passed, while `internal`, `testing`
+  and `nonet` were queued at this checkpoint. The macOS publish job and
+  complete Apple Silicon matrix still require verification.
+- The [browser/WASM workflow](https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml)
+  was **not triggered** by this workflow-only merge because its
+  `paths` filter excludes other workflow files. Dispatch it explicitly
+  on the candidate `vanilla` revision, and repeat the integrated scenario
+  for flake/resource measurements; prior-commit browser success is not
+  final-SHA evidence.
+- The [`vanilla` branch](https://github.com/chucklowery/World-Conquer/tree/vanilla)
+  still reports `protected: false` via GitHub's branch API, and the
+  repository rulesets API returns no rulesets. FND-008 is an owner-level
+  repository-settings action, not a test/code fix.
+- The maintainer reports that the released gameplay looks good. This is
+  useful qualitative smoke-test feedback; the precise browser scenario,
+  revision, multi-select input path and replay/soak coverage are not
+  established by that observation.
+
+**Readiness interpretation:** FND-001 is partly resolved with direct
+post-merge evidence; FND-002 through FND-006 and FND-008 remain open.
+R05 native gameplay art binding stays an approved milestone boundary for
+R19, not a reason to begin that work in R20. In addition, FND-009 below
+requires an R09 visibility/serialization entry contract before joint
+R06/R09 maintainer sign-off.
+
 ## Requirement traceability and decisions
 
 Legend: **Verified** means the named narrow behavior has evidence, not that
@@ -62,7 +110,7 @@ documented later-milestone responsibility must remain explicit.
 
 | ID | Severity | Finding and reproducible evidence | Required resolution / proof | State |
 | --- | --- | --- | --- | --- |
-| FND-001 | P1 | Existing Linux, Windows, macOS and MinGW **workflow conclusions** fail on release creation/upload; Linux log HTTP 403 at latest SHA | Separate build/test status from deployment; make the independent foundation and browser checks green and reliably required. Resolve publishing permissions/flow independently | Open |
+| FND-001 | P1 | Existing Linux, Windows, macOS and MinGW **workflow conclusions** failed on release creation/upload; earlier Linux log HTTP 403 | Separate build/test status from deployment; make the independent foundation and browser checks green and reliably required. PR #24 resolved Linux/Windows/MinGW publication on `6faaf47`; verify remaining macOS matrix/publish and final-SHA browser run | Partially verified |
 | FND-002 | P1 | Integrated RTS mode deliberately hides Courier-only R01 camera/order controls (`browser/engine/README.md`, `ARCHITECTURE.md`) | Implement or approve a specific integrated-input contract sufficient for R06 harvest/return/stop/multi-selection, with real WASM/Chromium proof | Open |
 | FND-003 | P1 | R02 integrated acceptance uses six infantry; no representative 16+ moving-actor crowding soak in the current suite | Extend native fixture and automated collision, obstruction, path budget and determinism tests; publish measured results | Open |
 | FND-004 | P1 | R04 resource records are map metadata/neutral records, not harvestable economic instances | Define stable resource instance identity, terrain occupancy, depletion/regrowth ownership and validated map-to-R06 native ports before R06 implementation | Open |
@@ -70,6 +118,7 @@ documented later-milestone responsibility must remain explicit.
 | FND-006 | P1 | Host/Node tests pass, but current acceptance does not include sustained real WASM/Chromium soak and flake characterization | Repeat final-SHA browser scenario and platform verification; log deterministic hashes, input/event parity, browser errors and resource/perf budget | Open |
 | FND-007 | P2 | R05 gallery assets are not rendered by native gameplay | Keep an explicit placeholder contract and R19 dependency; do not block R06 purely for finished visuals | Deferred |
 | FND-008 | P1 | GitHub reports the `vanilla` branch as unprotected; passing checks are not automatically enforced before integration | Configure protected branch rules/required reviews and require foundation regular/sanitizer plus browser checks; confirm enforcement using a PR | Open |
+| FND-009 | P1 | R20's acceptance requires an R06/**R09** integration contract, but the minimum entry contract below specifies only economy; current v3 fixture exposes both houses' actors and map data without visibility filtering | Approve per-house/team visibility, concealment, discovery/memory, selection/command rejection, native event filtering, map/HUD snapshot versioning and deterministic restart policy; add bridge and Chromium acceptance before R09 starts | Open |
 
 ## Minimum pre-R06 native contract to approve
 
@@ -89,6 +138,25 @@ This is an interface specification task, **not** an implementation of economy:
 5. R06 may seed one explicit refinery before R07, but that structure must
    have an R18 identity/footprint and a documented migration to R07's native
    placement/production rules; no browser-local balances or JS simulation.
+
+## Minimum pre-R09 native contract to approve
+
+This is a **design/sign-off gate**, not an implementation of fog:
+
+1. Define native-owned visibility per observing house/team, including
+   terrain discovery, current actor/structure visibility, remembered terrain
+   and ally-sharing rules. Never derive visibility from the browser DOM.
+2. Specify deterministic sight sources, blockers, update ticks and death,
+   movement and restart invalidation. Keep public `World` identity separate
+   from what an observing player is permitted to see.
+3. Define viewer-scoped v3-compatible snapshots/events and authorization:
+   hidden hostile identity, HP, orders and projectiles cannot leak through
+   the HUD, minimap or event history; hidden target selection/commands must
+   be rejected natively. Additive schema versions must be negotiated by
+   `simulation-bridge.js`.
+4. Establish map-size and 16-house performance budgets, deterministic
+   serialization/replay, and two-house native/real Chromium test fixtures
+   that switch visibility without changing underlying simulation state.
 
 ## R20 exit checklist (all must be checked with links)
 
