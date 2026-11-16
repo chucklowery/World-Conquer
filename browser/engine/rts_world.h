@@ -283,7 +283,13 @@ class World {
     void emit(WorldEventType type,uint64_t seq,EntityId entity,
               int x=0,int y=0,int value=0,WorldCode code=WorldCode::Accepted,
               EntityId source=0,uint16_t weapon=0){
-        if(events_.size()==WORLD_MAX_EVENTS)events_.erase(events_.begin());
+        if(events_.size()==WORLD_MAX_EVENTS){
+            // A restart marker is the proof of epoch progression for v3
+            // consumers. Keep it until publish() drains this event batch.
+            auto oldest=events_.begin();
+            if(oldest->type==WorldEventType::Restart)++oldest;
+            events_.erase(oldest);
+        }
         events_.push_back({type,epoch_,tick_,seq,entity,source,weapon,code,x,y,value});
     }
     WorldCode validate(const WorldCommand& c)const{
@@ -307,7 +313,11 @@ class World {
             if(c.issuer!=0&&c.issuer!=c.owner)return WorldCode::NotOwned;
             if((d->faction=="neutral")!=(c.owner==0)||
                (owner&&d->faction!=owner->faction))return WorldCode::WrongFaction;
-            if(entities_.size()+pending_.size()>=WORLD_MAX_ENTITIES)return WorldCode::Capacity;
+            size_t reservedSpawns=0;
+            for(const WorldCommand& queued:pending_)
+                if(queued.action==WorldAction::Spawn)++reservedSpawns;
+            if(entities_.size()+reservedSpawns>=WORLD_MAX_ENTITIES)
+                return WorldCode::Capacity;
             if(!inside(c.x,c.y,d->width,d->height))return WorldCode::BadTarget;
             if(!areaFree(c.x,c.y,*d))return WorldCode::Blocked;
             return WorldCode::Accepted;
@@ -327,6 +337,9 @@ class World {
             if(!d||!inside(c.x,c.y,d->width,d->height))return WorldCode::BadTarget;
             if(!areaFree(c.x,c.y,*d,e->id))return WorldCode::Blocked;
         }else if(c.action==WorldAction::Attack){
+            // Orders serialize their attack coordinates even when a target ID
+            // is supplied. Reject values the v3 consumer cannot publish.
+            if(!inside(c.x,c.y))return WorldCode::BadTarget;
             const WorldEntity* target=findInternal(c.target);
             if(!target||target->life!=Life::Alive||target->team==e->team)
                 return WorldCode::BadTarget;

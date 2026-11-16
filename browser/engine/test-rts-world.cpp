@@ -20,6 +20,7 @@ static void print(const rts::WorldSnapshot& snapshot,bool json){
 }
 int main(int argc,char** argv){
     const bool output=argc==2&&std::string(argv[1])=="--json";
+    const bool restartStressOutput=argc==2&&std::string(argv[1])=="--restart-stress-json";
     rts::Catalog catalog;
     const std::string source=catalogText();
     assert(catalog.load(source));
@@ -96,6 +97,10 @@ int main(int argc,char** argv){
         "",3,1))==rts::WorldCode::Accepted);
     assert(world.enqueue(command(1,2,6,1,1,first,rts::WorldAction::Attack,
         "",0,0,first))==rts::WorldCode::BadTarget);
+    assert(world.enqueue(command(1,2,6,1,1,first,rts::WorldAction::Attack,
+        "",-1,0,second))==rts::WorldCode::BadTarget);
+    assert(world.enqueue(command(1,2,6,1,1,first,rts::WorldAction::Attack,
+        "",0,10,second))==rts::WorldCode::BadTarget);
     assert(world.enqueue(command(1,2,6,1,1,first,rts::WorldAction::Attack,
         "",0,0,second))==rts::WorldCode::Accepted);
     assert(world.process(2));
@@ -175,7 +180,7 @@ int main(int argc,char** argv){
     // Every event remains bounded even when no observer consumes a full batch.
     rts::World crowded;
     assert(crowded.configure(catalog,24,14,std::vector<uint8_t>(24*14,0),houses));
-    for(int n=0;n<256;n++){
+    for(int n=0;n<255;n++){
         const int x=n%24,y=n/24;
         assert(crowded.enqueue(command(1,n<128?1:2,n+1,0,0,0,
             rts::WorldAction::Spawn,"game.world.crystal",x,y))==
@@ -183,9 +188,17 @@ int main(int argc,char** argv){
         if(n==127)assert(crowded.process(1));
     }
     assert(crowded.process(2));
+    assert(crowded.entities().size()==rts::WORLD_MAX_ENTITIES-1);
+    // Selection uses the command budget but reserves no entity ID. A queued
+    // spawn still has the last record available, even with 255 tombstone slots.
+    assert(crowded.enqueue(command(1,3,256,1,1,0,rts::WorldAction::Select,
+        "",0,0))==rts::WorldCode::Accepted);
+    assert(crowded.enqueue(command(1,3,257,0,0,0,rts::WorldAction::Spawn,
+        "game.world.crystal",15,10))==rts::WorldCode::Accepted);
+    assert(crowded.process(3));
     assert(crowded.entities().size()==rts::WORLD_MAX_ENTITIES);
     assert(crowded.publish().events.size()==rts::WORLD_MAX_EVENTS);
-    assert(crowded.enqueue(command(1,3,257,0,0,0,rts::WorldAction::Spawn,
+    assert(crowded.enqueue(command(1,4,258,0,0,0,rts::WorldAction::Spawn,
         "game.world.crystal",0,12))==rts::WorldCode::Capacity);
     // Replaying one mixed, simultaneous-command stream yields identical
     // IDs, rejection events, tombstones and restart epochs byte-for-byte.
@@ -213,5 +226,22 @@ int main(int argc,char** argv){
         return begin+middle+ending;
     };
     assert(replay()==replay());
-    if(!output)std::cout<<"PASS: R18 schema, two factions/neutral, dynamic maps, ownership, replay, lifecycle, epochs and v3 JSON\n";
+    // Epoch transitions must remain publishable even when 128 commands cause
+    // 256 events to be appended after an unconsumed restart marker.
+    rts::World overflow;
+    assert(overflow.configure(catalog,16,10,std::vector<uint8_t>(160,0),houses));
+    print(overflow.publish(),restartStressOutput);
+    assert(overflow.restart());
+    for(uint64_t seq=1;seq<=rts::WORLD_MAX_COMMANDS;seq++)
+        assert(overflow.enqueue(command(2,1,seq,1,1,0,rts::WorldAction::Select,
+            "",0,0))==rts::WorldCode::Accepted);
+    assert(overflow.process(1));
+    const rts::WorldSnapshot overflowSnapshot=overflow.publish();
+    assert(overflowSnapshot.events.size()==rts::WORLD_MAX_EVENTS);
+    assert(overflowSnapshot.events.front().type==rts::WorldEventType::Restart);
+    assert(overflowSnapshot.events.back().type==rts::WorldEventType::Selection);
+    print(overflowSnapshot,restartStressOutput);
+    assert(overflow.publish().events.empty());
+    if(!output&&!restartStressOutput)
+        std::cout<<"PASS: R18 schema, two factions/neutral, dynamic maps, ownership, replay, lifecycle, epochs and v3 JSON\n";
 }

@@ -14,6 +14,17 @@
   const worldEvents=new Set(["command","spawn","selection","order","position",
     "damage","death","despawn","restart"]);
   const worldRoles=new Set(["infantry","vehicle","structure","resource"]);
+  // Reviewed R05 asset bindings: visual keys describe artwork, not gameplay.
+  // Keep this mirror in sync with native knownR05Visual() and the R05 roster.
+  const worldVisuals=Object.freeze({
+    "r05.aster.ranger":["aster","infantry",1,1],
+    "r05.aster.rover":["aster","vehicle",1,1],
+    "r05.aster.hub":["aster","structure",3,2],
+    "r05.forge.ranger":["forge","infantry",1,1],
+    "r05.forge.rover":["forge","vehicle",1,1],
+    "r05.forge.hub":["forge","structure",3,2],
+    "r05.world.crystal":["neutral","resource",1,1]
+  });
   const worldCodes=new Set(["accepted","invalid_epoch","invalid_tick","duplicate_sequence",
     "unknown_house","unknown_entity","unknown_definition","not_owned","bad_team",
     "dead","bad_target","blocked","occupied","queue_full","capacity","wrong_faction"]);
@@ -43,13 +54,15 @@
     }
     const key=/^[a-z0-9.-]{1,64}$/;
     for(const d of s.definitions){
+      const visual=worldVisuals[d?.visualKey];
       if(!d||typeof d.id!=="string"||!d.id.startsWith("game.")||!key.test(d.id)||
          definitions.has(d.id)||!["aster","forge","neutral"].includes(d.faction)||
          !worldRoles.has(d.role)||d.kind!==d.role||
          typeof d.visualKey!=="string"||!key.test(d.visualKey)||
-         !d.visualKey.startsWith(d.faction==="neutral"?"r05.world.":`r05.${d.faction}.`)||
+         !visual||visual[0]!==d.faction||visual[1]!==d.role||
          !Number.isInteger(d.width)||d.width<1||d.width>4||
          !Number.isInteger(d.height)||d.height<1||d.height>4||
+         visual[2]!==d.width||visual[3]!==d.height||
          !Number.isInteger(d.maxHp)||d.maxHp<1||d.maxHp>10000||
          (d.faction==="neutral")!==(d.role==="resource"))
         throw Error("Invalid native world definition");

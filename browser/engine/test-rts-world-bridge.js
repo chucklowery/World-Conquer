@@ -45,8 +45,34 @@ copy.entities[0].teamId=1;
 copy.definitions[0].visualKey="r05.forge.ranger";
 assert.throws(()=>bridge.receive(copy,{allowWorldV3:true}),/definition|entity/);
 assert.equal(bridge.latest().entities[0].visualKey,"r05.aster.rover");
+// JS must enforce the exact native R05 role, faction and footprint bindings,
+// not merely a matching faction prefix or self-consistent entity key.
+const invalidVisual=(visualKey,mutate=()=>{})=>{
+  const invalid=JSON.parse(JSON.stringify(newMatch));
+  const definition=invalid.definitions.find(d=>d.id==="game.aster.rover");
+  definition.visualKey=visualKey;
+  invalid.entities[0].visualKey=visualKey;
+  mutate(definition);
+  assert.throws(()=>bridge.receive(invalid,{allowWorldV3:true}),/definition/);
+  assert.equal(bridge.latest().entities[0].visualKey,"r05.aster.rover");
+};
+invalidVisual("r05.aster.unknown");
+invalidVisual("r05.aster.ranger"); // valid art, wrong gameplay role
+invalidVisual("r05.forge.rover"); // valid art, wrong faction
+invalidVisual("r05.aster.rover",d=>{d.width=2;}); // wrong footprint
 const rewind=JSON.parse(JSON.stringify(spawned));
 assert.throws(()=>bridge.receive(rewind,{allowWorldV3:true}),/epoch/);
+bridge.clear();
+// Exercise the precise native event-eviction boundary through the v3 bridge.
+// A missing restart marker would permanently block this and later epochs.
+const stress=execFileSync(binary,["--restart-stress-json"],{encoding:"utf8"})
+  .trim().split("\n").map(JSON.parse);
+assert.equal(stress.length,2);
+assert.equal(bridge.receive(stress[0],{allowWorldV3:true}).epoch,1);
+const progressed=bridge.receive(stress[1],{allowWorldV3:true});
+assert.equal(progressed.epoch,2);
+assert.equal(progressed.events.length,256);
+assert.equal(progressed.events[0].type,"restart");
 bridge.clear();
 const v1={version:1,tick:0,map:{width:18,height:11,terrain:Array(198).fill(0)},
   selectedEntityId:1001,cargo:0,phase:"playing",
