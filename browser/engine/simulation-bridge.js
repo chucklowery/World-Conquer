@@ -12,7 +12,7 @@
   const events=new Set(["command","selection","position","health","pickup","phase","restart",
     "shot","hit","damage","death"]);
   const worldEvents=new Set(["command","spawn","selection","order","position",
-    "damage","death","despawn","restart"]);
+    "shot","hit","damage","death","despawn","restart"]);
   const worldRoles=new Set(["infantry","vehicle","structure","resource"]);
   // Reviewed R05 asset bindings: visual keys describe artwork, not gameplay.
   // Keep this mirror in sync with native knownR05Visual() and the R05 roster.
@@ -27,7 +27,7 @@
   });
   const worldCodes=new Set(["accepted","invalid_epoch","invalid_tick","duplicate_sequence",
     "unknown_house","unknown_entity","unknown_definition","not_owned","bad_team",
-    "dead","bad_target","blocked","occupied","queue_full","capacity","wrong_faction"]);
+    "dead","bad_target","blocked","occupied","queue_full","capacity","wrong_faction","unreachable"]);
   function checkWorld(s){
     if(!Number.isInteger(s.epoch)||s.epoch<1||s.epoch>4095||
        s.definitionSchemaVersion!==1||!Number.isSafeInteger(s.tick)||s.tick<0)
@@ -38,12 +38,45 @@
        map.width*map.height>4096||!Array.isArray(map.terrain)||
        map.terrain.length!==map.width*map.height||
        map.terrain.some(v=>v!==0&&v!==1))throw Error("Invalid native world map");
+    if(map.id!==undefined){
+      const cost=[1,0,2,3,0];
+      const point=p=>p&&Number.isInteger(p.x)&&Number.isInteger(p.y)&&
+        p.x>=0&&p.y>=0&&p.x<map.width&&p.y<map.height;
+      const rect=r=>point(r)&&Number.isInteger(r.w)&&Number.isInteger(r.h)&&
+        r.w>0&&r.h>0&&r.x+r.w<=map.width&&r.y+r.h<=map.height;
+      if(typeof map.id!=="string"||!/^[a-z0-9-]{1,64}$/.test(map.id)||
+         typeof map.title!=="string"||!map.title.length||map.title.length>64||
+         typeof map.biome!=="string"||!map.biome.length||map.biome.length>64||
+         !Array.isArray(map.tiles)||map.tiles.length!==map.terrain.length||
+         !Array.isArray(map.costs)||map.costs.length!==map.terrain.length||
+         map.tiles.some((t,i)=>!Number.isInteger(t)||t<0||t>4||
+           map.costs[i]!==cost[t]||map.terrain[i]!==Number(cost[t]===0))||
+         !Array.isArray(map.resources)||map.resources.length>16||
+         !Array.isArray(map.spawns)||map.spawns.length!==2||
+         !Array.isArray(map.bases)||map.bases.length!==2||
+         !rect(map.victory))throw Error("Invalid native world map metadata");
+      for(let i=0;i<2;i++){
+        const z=map.spawns[i],b=map.bases[i];
+        if(!rect(z)||z.house!==i+1||!point(b)||b.house!==i+1||
+           b.x<z.x||b.y<z.y||b.x>=z.x+z.w||b.y>=z.y+z.h||
+           map.terrain[b.y*map.width+b.x])throw Error("Invalid native world spawns");
+      }
+      const resourceCells=new Set();
+      for(const r of map.resources){
+        const cell=r?.y*map.width+r?.x;
+        if(!point(r)||!Number.isInteger(r.amount)||r.amount<1||r.amount>100000||
+           map.terrain[cell]||resourceCells.has(cell))
+          throw Error("Invalid native world resource");
+        resourceCells.add(cell);
+      }
+    }
     if(!Array.isArray(s.houses)||!s.houses.length||s.houses.length>16||
        !Array.isArray(s.definitions)||!s.definitions.length||s.definitions.length>64||
        !Array.isArray(s.entities)||s.entities.length>256||
        !Array.isArray(s.events)||s.events.length>256||
        !Number.isInteger(s.selectedEntityId)||s.selectedEntityId<0||
-       s.phase!=="playing"||s.cargo!==0)throw Error("Invalid native world state");
+       !["playing","won","lost"].includes(s.phase)||s.cargo!==0)
+      throw Error("Invalid native world state");
     const houses=new Map(),definitions=new Map(),entities=new Map(),occupied=new Set();
     for(const h of s.houses){
       if(!h||!Number.isInteger(h.id)||h.id<1||h.id>65535||
@@ -102,6 +135,32 @@
     }
     if(s.selectedEntityId!==0&&(!entities.has(s.selectedEntityId)||
        !entities.get(s.selectedEntityId).active))throw Error("Invalid world selection");
+    if(s.commandStates!==undefined){
+      const kinds=new Set(["move","attack_move","stop","hold","guard","patrol","attack"]);
+      const statuses=new Set(["idle","moving","waiting","holding","guarding","patrolling","attacking","unreachable","dead"]);
+      const seen=new Set();
+      if(!Array.isArray(s.commandStates)||s.commandStates.length>256)
+        throw Error("Invalid native world command states");
+      for(const c of s.commandStates){
+        const actor=entities.get(c?.entityId);
+        if(!c||!actor?.active||actor.kind==="resource"||seen.has(c.entityId)||
+           !kinds.has(c.kind)||!statuses.has(c.status)||
+           !Number.isInteger(c.x)||!Number.isInteger(c.y)||
+           c.x<0||c.y<0||c.x>=map.width||c.y>=map.height||
+           !Number.isInteger(c.queued)||c.queued<0||c.queued>8||
+           (actor.order===null)!==(c.kind==="stop")||
+           (actor.order!==null&&(actor.order.x!==c.x||actor.order.y!==c.y))||
+           (c.kind==="stop"&&(c.queued!==0||!["idle","unreachable"].includes(c.status)))||
+           (c.kind==="attack"&&c.status!=="attacking")||
+           (c.kind==="hold"&&c.status!=="holding")||
+           (c.kind==="guard"&&!(["guarding","waiting"].includes(c.status)))||
+           (c.kind==="patrol"&&!(["patrolling","waiting"].includes(c.status)))||
+           (["move","attack_move"].includes(c.kind)&&
+             !(["moving","waiting"].includes(c.status))))
+          throw Error("Invalid native world command state");
+        seen.add(c.entityId);
+      }
+    }
     for(const event of s.events){
       if(!event||!worldEvents.has(event.type)||event.epoch!==s.epoch||
          !Number.isSafeInteger(event.tick)||event.tick<0||event.tick>s.tick||

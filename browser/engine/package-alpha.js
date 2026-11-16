@@ -12,7 +12,7 @@ const files = [
   "cargo-hd.js", "vertical-slice.js", "mission-pack.js", "tactical-hud.js", "simulation-bridge.js",
   "rts-camera.js", "rts-input-ui.js", "play.html"
 ];
-const folders = ["missions", "cargo-hd", "content", "wireframes", "r05"];
+const folders = ["missions", "cargo-hd", "content", "wireframes", "r05", "r18"];
 
 function packageAlpha(buildPath, outputPath, revision="local") {
   const source=path.resolve(buildPath), target=path.resolve(outputPath);

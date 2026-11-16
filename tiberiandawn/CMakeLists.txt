@@ -243,6 +243,7 @@ if(BUILD_VANILLATD)
             ${CMAKE_SOURCE_DIR}/browser/engine/shape_probe.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/native_slice.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/native_orders.cpp
+            ${CMAKE_SOURCE_DIR}/browser/engine/native_rts_match.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/courier_unit_probe.cpp
         )
         set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")

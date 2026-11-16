@@ -110,11 +110,42 @@ native weapon engine from R18 entity IDs and HP, committing its damage events
 back to the world. `test-rts-world-ports.cpp` covers these adapters and
 rejects wrong owners, duplicate actors and incompatible map dimensions.
 
-These ports provide one canonical future ownership seam; they do **not**
-claim that today's opt-in R02 fixed-18×11 diagnostic, Courier sentries or
-R04 map picker have already been rewritten as a complete RTS match.
-R02/R03/R04 remain blocked as production milestones until their live modes
-use dynamic R18 entities and pass combined browser acceptance. R06 funds and
+The shared `rts_live_match.h` coordinator and `native_rts_match.cpp` adapter
+now exercise these ports together in a new opt-in **real VanillaTD WASM**
+match. R04 parses the selected 16×10 or 24×14 map and seeds two R18 houses,
+six native infantry (four authored plus two scripted additional actors) and
+neutral resources. R02's controller has a bounded dynamic map/roster path,
+cost-weighted A* and collision reservations; its waypoints drive real
+`InfantryClass::AI`, with native positions committed via `observePosition`.
+R03's persistent native weapon system consumes those same entity IDs and
+commits shot/hit/damage/death into World-owned HP/lifecycle records. Native
+v3 snapshots add optional validated R04 map metadata and R02 `commandStates`,
+plus `shot`/`hit` events and `won`/`lost` phases. Existing R00 v1/R04 v2
+consumers still require no migration, and v3 remains explicitly negotiated.
+
+The integration resolves a command **only at its execution tick**. R02 reserves
+pending append capacity before R18 admission (eight queued orders per actor),
+and records each later activation, replacement, Stop and completion. R03 focus
+is changed only on activation; in-flight projectiles are retained. An explicit
+Attack is stationary in this fixture: it rejects hostile targets outside its
+weapon range or blocked by line of sight rather than claiming nonexistent
+chase behavior. Native Aster/Forge `HouseClass` objects are mutually allied
+*only for VanillaTD's movement/guard AI* to suppress its built-in weapons;
+their **R18 teams remain enemies** for R03 combat and ownership rules.
+After every native order step, the coordinator reconciles R18 `entity.order`
+and v3 `commandStates` from the same activated order, including queued orders,
+target death, and completed movement. The v3 bridge rejects contradictory
+order/state pairs. A successful `LiveMatch::load()` on an already-ready match
+advances the R18 epoch and emits `restart`; malformed content leaves the old
+match and its command/event history unchanged. A live-mode browser canvas fits
+the selected native map inside the available playfield at mobile widths; the
+Courier-only camera/order controls are hidden, while SDL owns tile input.
+
+The older Courier, four-unit R02 diagnostic and R03 defeat drill remain
+independent compatibility modes; none is silently reinterpreted as a new RTS
+match. The new fixture is a six-infantry tactical battle, **not** a production,
+harvesting or campaign system. R02/R03/R04 production acceptance requires
+host + actual WASM/Chromium checks on this combined path. R06 funds and
 harvesters belong to house/entity extensions, R07 structures use footprint
 placement, R08 queues/tech go on house state, R09 exposes team-filtered
 visibility rather than the current full-information fixture, and R14 adds

@@ -140,6 +140,14 @@ public:
         const Weapon* w=weapon(a->weapon);
         return w&&opponent(*a,*b,*w);
     }
+    // The R18 integration currently supports stationary explicit attacks.
+    // Never accept a target that cannot be fired upon at order admission.
+    bool canEngage(uint32_t source,uint32_t target) const {
+        const Actor* a=find(source),*b=find(target);
+        if(!a||!b||!canAttack(source,target))return false;
+        const Weapon* w=weapon(a->weapon);
+        return w&&inRange(*a,*b,*w);
+    }
     bool orderAttack(uint32_t source,uint32_t target){
         if(!canAttack(source,target))return false;
         find(source)->focus=target;return true;

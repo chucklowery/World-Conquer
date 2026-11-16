@@ -79,6 +79,23 @@ Courier-owned sentries; the drill does not spawn historical `VehicleClass`
 campaign units. Production vehicle ownership, save/load and generalized match
 lifecycle remain integration work.
 
+The separate **integrated native RTS match** (`rts_live_match.h`) now binds a
+persistent R03 weapon system to R18 epoch-qualified actors from two houses.
+Six real engine infantry move on native R04 terrain, acquire opposing infantry,
+and publish `shot`/`hit` traces and World-owned damage/death through negotiated
+v3 snapshots. Aster small arms and Forge projectile weapons are illustrative
+fixture data; class filtering/armor tests remain in the R03 host suite. An
+eliminated team produces an R18 `won`/`lost` phase, and restart replaces IDs
+and resets native actors. This still does not claim built vehicles or economy.
+For this first match, explicit Attack is stationary: out-of-range or
+line-of-sight-blocked targets are rejected. An accepted attack takes effect
+on the next native tick, never at submission; range and hostility are checked
+again at activation so a target moving away cannot leave a phantom order.
+Stop or an activated replacement
+order cancels weapon focus, while an appended future order does not. Native
+VanillaTD houses are mutually allied solely to prevent the engine's guard AI
+from competing with R03 weapon resolution; R18 gameplay teams remain hostile.
+
 ## Verification
 
 ```bash

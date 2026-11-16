@@ -69,6 +69,7 @@
     if(!snapshot||![1,2].includes(snapshot.version)||!snapshot.map)
       throw Error("Unsupported tactical snapshot");
     model.width=snapshot.map.width;model.height=snapshot.map.height;
+    model.worldMode=false;
     const ids=[1001,1002,2001,2002];
     model.units=ids.map(id=>{
       const u=snapshot.entities.find(entity=>entity.id===id&&
@@ -110,6 +111,7 @@
        snapshot.map.height!==HEIGHT||!Array.isArray(snapshot.commandStates))
       throw Error("Unsupported production command snapshot");
     const ids=[1001,1002,1003,1004];
+    model.worldMode=false;
     model.units=ids.map(id=>{
       const e=snapshot.entities.find(e=>e.id===id&&e.kind==="infantry");
       if(!e)throw Error("Missing production infantry "+id);
@@ -124,10 +126,37 @@
     if(model.selected<0)throw Error("Invalid production selection");
     return model;
   }
+  function applyWorldSnapshot(model,snapshot){
+    if(!snapshot||snapshot.version!==3||!snapshot.map||!Array.isArray(snapshot.houses))
+      throw Error("Unsupported R18 tactical snapshot");
+    model.width=snapshot.map.width;model.height=snapshot.map.height;
+    model.worldMode=true;model.orderMode=false;
+    const actors=snapshot.entities.filter(e=>e.kind!=="resource");
+    model.units=actors.map(e=>({x:e.x,y:e.y,hp:e.hp}));
+    model.types=actors.map(e=>e.kind);
+    model.teams=actors.map(e=>e.teamId);
+    model.unitIds=actors.map(e=>e.id);
+    model.selected=model.unitIds.indexOf(snapshot.selectedEntityId);
+    model.terrain=(snapshot.map.tiles||snapshot.map.terrain).slice();
+    model.blocked=new Set(snapshot.map.terrain.flatMap((t,i)=>t===1?[i]:[]));
+    model.resources=snapshot.map.resources||[];
+    model.spawns=snapshot.map.spawns||[];
+    model.bases=snapshot.map.bases||[];
+    model.victory=snapshot.map.victory||null;
+    model.mapId=snapshot.map.id||"rts-world";
+    model.title=snapshot.map.title||"Native RTS World";
+    model.crates=[];model.collected=[];model.cargo=0;
+    model.lastCombat=null;
+    for(const event of snapshot.events)if(["shot","hit","damage","death"].includes(event.type))
+      model.lastCombat={type:event.type,sourceId:event.sourceId,targetId:event.entityId,
+        weaponId:event.weaponId,value:event.value,tick:event.tick};
+    return model;
+  }
   function inspect(model,x,y){
     if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>=model.width||y<0||y>=model.height)return "Outside map";
     model.inspect={x,y};
     const who=model.units.findIndex(u=>u.hp>0&&u.x===x&&u.y===y);
+    if(who>=0&&model.worldMode)return `${model.teams[who]===1?"Aster":"Forge"} ${model.types[who]} #${model.unitIds[who]}`;
     if(who>=0)return model.orderMode?("Infantry "+(who+1)):
       model.types[who]==="vehicle"?
       (who===2?"Armored sentry A":"Armored sentry B"):
@@ -170,16 +199,19 @@
         ctx.strokeRect(model.victory.x*w+1,model.victory.y*h+1,
           model.victory.w*w-2,model.victory.h*h-2);
       }
-      ctx.fillStyle="#73b4bb";
-      ctx.fillRect(model.exit.x*w+2,model.exit.y*h+2,w-4,h-4);
+      if(!model.worldMode){
+        ctx.fillStyle="#73b4bb";
+        ctx.fillRect(model.exit.x*w+2,model.exit.y*h+2,w-4,h-4);
+      }
     }
-    for(let i=0;!model.orderMode&&i<2;i++)if(!model.collected[i]){
+    for(let i=0;!model.orderMode&&!model.worldMode&&i<2;i++)if(!model.collected[i]){
       const p=model.crates[i];ctx.fillStyle="#edbd57";
       ctx.fillRect(p.x*w+w*.25,p.y*h+h*.25,w*.5,h*.5);
     }
     model.units.forEach((u,i)=>{
       if(u.hp<=0)return;
-      ctx.fillStyle=model.orderMode?"#7aebbc":i>=2?"#fb7168":"#7aebbc";
+      ctx.fillStyle=model.worldMode?(model.teams[i]===1?"#7aebbc":"#fb7168"):
+        model.orderMode?"#7aebbc":i>=2?"#fb7168":"#7aebbc";
       if(model.types[i]==="vehicle")ctx.fillRect((u.x+.18)*w,(u.y+.2)*h,w*.64,h*.6);
       else{ctx.beginPath();ctx.arc((u.x+.5)*w,(u.y+.5)*h,Math.max(3,Math.min(w,h)*.3),0,Math.PI*2);
         ctx.fill();}
@@ -200,5 +232,5 @@
       ctx.strokeRect(x+1,y+1,Math.max(0,width-2),Math.max(0,height-2));
     }
   }
-  return {create,reset,observe,applySnapshot,applyOrdersSnapshot,inspect,draw};
+  return {create,reset,observe,applySnapshot,applyOrdersSnapshot,applyWorldSnapshot,inspect,draw};
 });

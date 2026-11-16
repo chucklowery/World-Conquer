@@ -73,6 +73,8 @@ jobs:
           cp browser/engine/play.html build/browser-engine/play.html
           mkdir -p build/browser-engine/missions
           cp game/content/missions/*.map game/content/missions/manifest.json build/browser-engine/missions/
+          mkdir -p build/browser-engine/r18
+          cp game/content/r18/definitions.rts build/browser-engine/r18/definitions.rts
           mkdir -p build/browser-engine/cargo-hd
           cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
           # Verify we generated the custom deferred-start launcher.
@@ -113,6 +115,9 @@ jobs:
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-world-ports.cpp -o build/browser-engine/test-rts-world-ports
           build/browser-engine/test-rts-world-ports
           node browser/engine/test-rts-world-bridge.js build/browser-engine/test-rts-world
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-live-match.cpp -o build/browser-engine/test-rts-live-match
+          build/browser-engine/test-rts-live-match
+          node browser/engine/test-rts-live-bridge.js build/browser-engine/test-rts-live-match
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/replay-native-slice.cpp -o build/browser-engine/replay-native-slice
           node browser/engine/test-replay-parity.js build/browser-engine/replay-native-slice
           # The historical engine headers require the same compile definitions as VanillaTD.
@@ -212,6 +217,7 @@ jobs:
             build/browser-engine/content/**
             build/browser-engine/wireframes/**
             build/browser-engine/r05/**
+            build/browser-engine/r18/**
           if-no-files-found: error
       - name: Upload Pages-ready native tactical alpha
         uses: actions/upload-artifact@v4

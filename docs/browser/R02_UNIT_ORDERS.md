@@ -5,6 +5,17 @@ by a player `HouseClass`, placed on the authored Courier 18×11 obstacle map
 through `MapClass`. Courier Extraction continues unchanged, with its
 specialized combat, sentry AI, crates, and victory logic.
 
+The additional **integrated native RTS match** uses the same controller's
+`resetDynamic`/`setMovementCosts` API against one R18 World: six real infantry
+across two teams, variable 16×10 and 24×14 R04 maps, cost-weighted A*, dynamic
+occupancy, stable R18 actor IDs and owner-checked move/attack-move/stop/hold/
+guard/patrol commands. The fixed four-unit demo and v1 snapshots above stay
+available; the integrated mode publishes version-3 command states and uses
+actual `InfantryClass::AI` positions, never browser movement logic.
+It reserves pending order slots at admission so a same-tick burst cannot
+accept more than eight future orders; activation, completion, target death,
+and Stop reconcile the canonical R18 order and v3 HUD state.
+
 In the browser engine, launch **Play R02: four production-unit orders**.
 Select with keys 1–4 or click; click ground to move, Shift-click for
 attack-move, P then click to patrol, G then click another friendly to guard,
@@ -45,6 +56,10 @@ waypoint reservations block other units. Each tick is limited to **two A*
 searches**, at most 198 expanded cells each (396 total). Units are processed
 in stable ID order; requests by tick, sequence, then actor. Deferred
 searches retain the order. Queue length is capped at eight.
+The dynamic controller supports cost-1 through cost-3 terrain, with a
+weighted-path sentinel sized for the longest simple path. The host regression
+uses a unique 32-step, cost-3 winding route on an 8×8 map to catch cost-bound
+errors that a short open-terrain test would miss.
 
 Host benchmark (`test-production-orders.cpp`, authored map, two across-map
 orders for 1,000 fresh ticks): **2,000 searches, 48,000 expanded cells,
