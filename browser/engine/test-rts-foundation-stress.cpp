@@ -52,6 +52,26 @@ static Result run(const std::string& defs, const std::string& ridge,
         assert(initial.mapMetadata.resources.size() == 2);
         assert(initial.entities.size() == 8);
         assert(match.actors().size() == 6);
+        // R04's authored resource quantity currently stays immutable map
+        // metadata; each node also has one R18 neutral instance identity.
+        // Freeze that pre-R06 map-to-world handoff without implementing
+        // harvesting, depletion or house credits in this fixture.
+        std::vector<rts::EntityId> resourceIds;
+        for (const rts::WorldMapResource& resource : initial.mapMetadata.resources) {
+            assert(resource.amount > 0);
+            size_t found = 0;
+            for (const rts::WorldEntity& entity : initial.entities) {
+                if (entity.owner == 0 &&
+                    entity.definitionId == "game.world.crystal" &&
+                    entity.x == resource.x && entity.y == resource.y &&
+                    entity.life == rts::Life::Alive) {
+                    ++found;
+                    resourceIds.push_back(entity.id);
+                }
+            }
+            assert(found == 1);
+        }
+        assert(resourceIds.size() == 2 && resourceIds[0] != resourceIds[1]);
         if (previousId != 0) {
             assert(match.actors()[0].id != previousId);
             assert(match.order(1, previousId, orders::Kind::Stop, {0, 0}) !=
@@ -89,6 +109,11 @@ static Result run(const std::string& defs, const std::string& ridge,
             assert(snapshot.commandStates.size() == 6);
             assert(snapshot.entities.size() <= rts::WORLD_MAX_ENTITIES);
             assert(snapshot.events.size() <= rts::WORLD_MAX_EVENTS);
+            for (rts::EntityId resourceId : resourceIds) {
+                const rts::WorldEntity* entity = match.world().entity(resourceId);
+                assert(entity && entity->owner == 0 &&
+                       entity->definitionId == "game.world.crystal");
+            }
             hash = digest(hash, rts::worldJson(snapshot));
             const auto end = std::chrono::steady_clock::now();
             tickMicros.push_back(static_cast<uint64_t>(

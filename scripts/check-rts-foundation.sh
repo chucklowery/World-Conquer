@@ -22,6 +22,7 @@ for suite in \
   test-rts-weapons \
   test-map-pipeline \
   test-rts-live-match \
+  test-rts-crowding \
   test-rts-foundation-stress; do
   echo "[foundation] $suite"
   "${CXX:-g++}" "${flags[@]}" "browser/engine/$suite.cpp" -o "$test_dir/$suite"

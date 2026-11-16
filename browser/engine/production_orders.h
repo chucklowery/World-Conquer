@@ -327,7 +327,11 @@ public:
         }
         pending_.erase(pending_.begin(),pending_.begin()+done);
         std::vector<Move> moves;
-        for(size_t i=0;i<units_.size();i++){
+        // Rotate path-search priority so a crowded early actor cannot
+        // consume both searches on every tick and starve the rest.
+        const size_t first=tick==0?0:static_cast<size_t>((tick-1)%units_.size());
+        for(size_t offset=0;offset<units_.size();offset++){
+            const size_t i=(first+offset)%units_.size();
             Unit& u=units_[i];
             if(!u.alive||!u.hasOrder)continue;
             if(u.current.kind==Kind::Hold)continue;
@@ -376,11 +380,17 @@ public:
             }
             if(!u.path.empty()&&(!clear(u.path.front())||
                 occupied(u.path.front(),i)))u.path.clear();
-            if(u.path.empty()&&budget_.searches<MAX_SEARCHES_PER_TICK)
+            bool searched=false;
+            if(u.path.empty()&&budget_.searches<MAX_SEARCHES_PER_TICK){
                 u.path=search(i,goal,true);
+                searched=true;
+            }
             if(u.path.empty()){
                 u.status=Status::Waiting;
-                if(++u.blocked>=BLOCKED_TICKS){
+                // Exhausting the global search budget is not evidence that
+                // this unit's destination is unreachable. Count only actual
+                // failed replans toward its timeout.
+                if(searched&&++u.blocked>=BLOCKED_TICKS){
                     clearOrder(u,Status::Unreachable);
                     feedback_.push_back({0,static_cast<int>(i),Code::Unreachable});
                 }
