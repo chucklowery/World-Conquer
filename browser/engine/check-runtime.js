@@ -546,7 +546,8 @@ async function main() {
         overlay:getComputedStyle(document.getElementById("hud-selection-overlay")).display,
         rect:document.getElementById("canvas").getBoundingClientRect().toJSON()
       }));
-      assert.deepEqual([fitted.commands,fitted.pan,fitted.overlay],["none","none","none"]);
+      assert(fitted.commands!=="none"&&fitted.pan!=="none"&&fitted.overlay!=="none",
+        "Integrated R18 mode must expose the shared R01 input controls");
       const click=await page.evaluate(()=>{
         const rect=document.getElementById("canvas").getBoundingClientRect();
         const e=WCRTS.latest().entities[0],m=WCRTS.latest().map;
@@ -556,6 +557,46 @@ async function main() {
       await page.mouse.click(click.x,click.y);
       await page.waitForFunction(id=>WCRTS.latest().selectedEntityId===id,first,{timeout:15000});
       await page.setViewportSize({width:1280,height:800});
+      // FND-002: real pointer box/multi-select and local control groups issue
+      // per-actor orders through the R18 native command boundary.
+      const groupCanvas=await page.evaluate(()=>{
+        const c=document.getElementById("canvas").getBoundingClientRect();
+        const m=WCRTS.latest().map;
+        const units=WCRTS.latest().entities.filter(e=>e.ownerId===1&&e.kind==="infantry").slice(0,2);
+        if(units.length!==2)throw Error("Expected two Aster infantry for box-select");
+        return {x:c.left,y:c.top,w:c.width,h:c.height,mw:m.width,mh:m.height,
+          minX:Math.min(...units.map(e=>e.x)),maxX:Math.max(...units.map(e=>e.x)),
+          minY:Math.min(...units.map(e=>e.y)),maxY:Math.max(...units.map(e=>e.y))};
+      });
+      const point=(x,y)=>({x:groupCanvas.x+x*groupCanvas.w/groupCanvas.mw,
+        y:groupCanvas.y+y*groupCanvas.h/groupCanvas.mh});
+      const dragFrom=point(groupCanvas.maxX+.85,groupCanvas.maxY+.85);
+      const dragTo=point(groupCanvas.minX+.15,groupCanvas.minY+.15);
+      await page.mouse.move(dragFrom.x,dragFrom.y);
+      await page.mouse.down();
+      await page.mouse.move(dragTo.x,dragTo.y,{steps:6});
+      await page.mouse.up();
+      await page.waitForFunction(()=>
+        /[2-9] selected/.test(document.getElementById("hud-selection-text").textContent),
+        undefined,{timeout:15000});
+      const selectedGroup=await page.locator("#hud-selection-text").textContent();
+      assert(/[2-9] selected/.test(selectedGroup));
+      await page.keyboard.press("Shift+1");
+      await page.keyboard.press("1");
+      assert(/[2-9] selected/.test(await page.locator("#hud-selection-text").textContent()),
+        "Local control group lost native-owned actors");
+      const liveCanvas=page.locator("#canvas");
+      const zoomBefore=await liveCanvas.evaluate(e=>e.getBoundingClientRect().width);
+      await page.locator("#hud-zoom-in").click();
+      const zoomAfter=await liveCanvas.evaluate(e=>e.getBoundingClientRect().width);
+      assert(zoomAfter>zoomBefore,"R18 map camera did not zoom");
+      const commandsBefore=await page.evaluate(()=>
+        WCRTS.eventHistory().filter(e=>e.type==="command").length);
+      await page.locator("#hud-stop").click();
+      await page.waitForFunction(count=>
+        WCRTS.eventHistory().filter(e=>e.type==="command").length>=count+2,
+        commandsBefore,{timeout:15000});
+      messages.push("PASS: integrated R18 native box selection, group recall, zoom and multi-unit Stop routed through C++");
       const rejected=await page.evaluate(id=>Module._Browser_Live_World_Command(
         1,2,id,3,1,0,0),first);
       assert.notEqual(rejected,0,"Forge issued an order to an Aster-owned unit");

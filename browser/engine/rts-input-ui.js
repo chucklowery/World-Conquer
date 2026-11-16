@@ -1,6 +1,6 @@
 "use strict";
 // R01 browser adapter. It owns camera and selection presentation, not combat or
-// movement state. Only native Browser_RTS_Command mutates gameplay state.
+// movement state. Only native Courier/R18 commands mutate gameplay state.
 (function(root,factory){
   const api=factory(root.WCRTSInput);
   if(typeof module==="object"&&module.exports)module.exports=api;
@@ -10,7 +10,9 @@
     const camera=new input.Camera(),selection=new input.Selection();
     const ctx=overlay.getContext("2d");
     let snapshot=null,gesture=null,mode="context",keyboardTile=null,spaceDown=false,edgeScroll=false,edge={x:0,y:0};
-    const active=()=>document.body.dataset.mode==="engine-courier"&&!playfield.closest("[hidden]");
+    const live=()=>document.body.dataset.mode==="rts-live";
+    const active=()=>["engine-courier","rts-live"].includes(document.body.dataset.mode)&&
+      !playfield.closest("[hidden]");
     const position=event=>{
       const rect=playfield.getBoundingClientRect();
       return {x:event.clientX-rect.left,y:event.clientY-rect.top};
@@ -34,7 +36,7 @@
           ctx.beginPath();ctx.ellipse(p.x,p.y,radius,radius*.65,0,0,Math.PI*2);
           ctx.strokeStyle="#e5ff91";ctx.lineWidth=2.5;ctx.stroke();
           ctx.fillStyle="#e5ff91";ctx.font="bold 11px system-ui";ctx.textAlign="center";
-          ctx.fillText(unit.id===1001?"SCOUT":"RANGER",p.x,p.y-radius*.8-5);
+          ctx.fillText(live()?("ASTER #"+unit.id):(unit.id===1001?"SCOUT":"RANGER"),p.x,p.y-radius*.8-5);
         }
       }
       if(gesture&&gesture.dragging&&gesture.type==="select"){
@@ -74,12 +76,16 @@
       feedback();paint();
     }
     function feedback(){
-      const names=selection.ids.map(id=>id===1001?"Scout":id===1002?"Ranger":"#"+id);
+      const names=selection.ids.map(id=>live()?("Aster #"+id):
+        id===1001?"Scout":id===1002?"Ranger":"#"+id);
       selectionLabel.textContent=names.length?`${names.join(" + ")} · ${names.length} selected`:"No units selected";
     }
     function order(tile,explicit=mode){
       const orders=selection.contextual(tile,snapshot,explicit);
-      if(explicit==="attack"&&!orders.length){announce("Attack: select a visible enemy tile.");return;}
+      if((explicit==="attack"||explicit==="guard")&&!orders.length){
+        announce(explicit==="guard"?"Guard: select a friendly unit tile.":
+          "Attack: select a visible enemy tile.");return;
+      }
       for(const cmd of orders)native(cmd.kind,cmd.actor,cmd.x,cmd.y,cmd.target);
       setMode("context");paint();
       if(orders.length)announce(`${orders.length} native ${orders[0].kind} order${orders.length===1?"":"s"} · Sector ${tile.x+1},${tile.y+1}`);
@@ -171,7 +177,10 @@
       if(/^[1-9]$/.test(key)){
         event.preventDefault();event.stopPropagation();
         if(selection.groups.has(Number(key))){selection.recall(Number(key));selected(selection.ids);centerSelection();}
-        else if(key==="1"||key==="2")selected([Number(key)===1?1001:1002]);
+        else if(live()){
+          const actor=selection.entities[Number(key)-1];
+          if(actor)selected([actor.id]);
+        }else if(key==="1"||key==="2")selected([Number(key)===1?1001:1002]);
         return;
       }
       if(mode!=="context"&&keyboardTile){
@@ -191,7 +200,15 @@
       if(panKeys[key]){const [x,y]=panKeys[key];camera.panBy(x*(event.shiftKey?3:1),y*(event.shiftKey?3:1));paint();event.preventDefault();return;}
       if(key==="="||key==="+"){zoom(1.2);event.preventDefault();return;}
       if(key==="-"||key==="_"){zoom(1/1.2);event.preventDefault();return;}
-      if(key==="m"||key==="a"){setMode(key==="m"?"move":"attack");event.preventDefault();return;}
+      if(key==="m"||key==="a"||(live()&&(key==="p"||key==="g"))){
+        const next=key==="m"?"move":key==="a"?(live()?"attack_move":"attack"):
+          key==="p"?"patrol":"guard";
+        setMode(next);event.preventDefault();return;
+      }
+      if(live()&&key==="h"){
+        for(const id of selection.ids)native("hold",id);
+        setMode("context");event.preventDefault();return;
+      }
       if(key==="s"){for(const id of selection.ids)native("stop",id);setMode("context");event.preventDefault();return;}
       if(key==="c"){centerSelection();event.preventDefault();return;}
       if(key==="escape"){
