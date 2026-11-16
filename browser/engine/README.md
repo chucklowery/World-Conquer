@@ -32,6 +32,12 @@ epoch. The Forge side acquires threats autonomously. This deliberately
 does **not** implement R06 harvesting, R07 production/construction or a
 historical VanillaTD campaign. The original Courier, R02 diagnostic and R03
 defeat drill remain unchanged and separately testable.
+Clicking a hostile issues a stationary explicit Attack only when the target
+is already in weapon range with line of sight; use attack-move to close range.
+Append capacity is reserved before command admission, and R18 orders and v3
+command states always reflect the currently activated order. The native
+battlefield fits the available playfield on mobile; the R01 Courier camera,
+command bar and pan controls are intentionally unavailable in this mode.
 
 ## Tactical Alpha 0.1 — browser-playable native mission
 

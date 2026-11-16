@@ -76,19 +76,82 @@ int main(int argc,char** argv){
     assert(!match.load(ridge+"invalid\n",defs));
     assert(!match.load(marsh,"RTS-DEFINITIONS|99\n"));
     assert(rts::worldJson(match.snapshot(false))==intact);
+    // A successful reload is a new epoch, even when the caller reuses this
+    // LiveMatch instance; stale IDs must never identify a new actor.
+    const rts::EntityId beforeReload=match.actors()[0].id;
+    assert(match.load(marsh,defs));
+    s=match.snapshot();
+    assert(s.epoch==3&&s.tick==1&&s.selectedEntityId==0);
+    assert(s.events.front().type==rts::WorldEventType::Restart);
+    assert(match.actors()[0].id!=beforeReload);
+    assert(s.mapMetadata.id=="marsh-border");
+    if(json)std::cout<<rts::worldJson(s)<<'\n';
+    // Reserve all eight future orders before World admits them. The ninth
+    // rejection cannot silently corrupt the canonical active Hold order.
+    rts::LiveMatch queued;
+    assert(queued.load(ridge,defs));
+    const rts::EntityId queueActor=queued.actors()[0].id;
+    assert(queued.order(1,queueActor,orders::Kind::Hold,{0,0})==rts::WorldCode::Accepted);
+    queued.plan();
+    for(int n=0;n<8;n++)assert(queued.order(1,queueActor,orders::Kind::Move,{6,2},true)==
+                                rts::WorldCode::Accepted);
+    assert(queued.order(1,queueActor,orders::Kind::Move,{6,3},true)==
+           rts::WorldCode::QueueFull);
+    queued.plan();
+    s=queued.snapshot(false);
+    assert(s.commandStates[0].kind=="hold"&&s.commandStates[0].queued==8);
+    assert(s.entities[0].hasOrder&&s.entities[0].orderX==s.commandStates[0].x);
+    assert(queued.order(1,queueActor,orders::Kind::Stop,{0,0})==rts::WorldCode::Accepted);
+    queued.plan();
+    s=queued.snapshot(false);
+    assert(!s.entities[0].hasOrder&&s.commandStates[0].queued==0);
     rts::LiveMatch wide;
     assert(wide.load(marsh,defs));
     s=wide.snapshot();
     assert(s.mapMetadata.id=="marsh-border"&&s.width==24&&s.height==14);
     assert(s.entities[2].owner==2&&s.commandStates.size()==6);
     if(json)std::cout<<rts::worldJson(s)<<'\n';
+    // Stationary attacks cannot accept an out-of-range target. A nearby
+    // target, however, becomes active only when the next tick executes.
     assert(wide.attack(1,wide.actors()[0].id,wide.actors()[2].id)==
-           rts::WorldCode::Accepted);
+           rts::WorldCode::BadTarget);
+    assert(wide.observePosition(0,{19,8})); // host mock of real native observation
+    const rts::EntityId attacker=wide.actors()[0].id,target=wide.actors()[2].id;
+    assert(wide.attack(1,attacker,target)==rts::WorldCode::Accepted);
     assert(wide.attack(2,wide.actors()[0].id,wide.actors()[2].id)==
            rts::WorldCode::NotOwned);
     assert(wide.attack(1,wide.actors()[0].id,wide.actors()[1].id)==
            rts::WorldCode::BadTarget);
+    assert(wide.combat().find(attacker)->focus==0); // admission is not execution
     assert(wide.plan().size()<=2);
+    assert(wide.combat().find(attacker)->focus==target);
+    s=wide.snapshot(false);
+    assert(s.entities[0].hasOrder&&s.entities[0].target==target);
+    assert(s.commandStates[0].kind=="attack"&&s.commandStates[0].status=="attacking");
+    assert(s.commandStates[0].x==s.entities[0].orderX);
+    if(json)std::cout<<rts::worldJson(s)<<'\n';
+    // A queued replacement must not cancel the active attack until it runs.
+    assert(wide.order(1,attacker,orders::Kind::Move,{19,7},true)==rts::WorldCode::Accepted);
+    wide.plan();
+    assert(wide.combat().find(attacker)->focus==target);
+    s=wide.snapshot(false);
+    assert(s.commandStates[0].kind=="attack"&&s.commandStates[0].queued==1);
+    assert(s.entities[0].target==target&&s.entities[0].orderX==s.commandStates[0].x);
+    assert(wide.order(1,attacker,orders::Kind::Move,{19,7})==rts::WorldCode::Accepted);
+    wide.plan();
+    assert(wide.combat().find(attacker)->focus==0);
+    s=wide.snapshot(false);
+    assert(s.entities[0].hasOrder&&s.entities[0].target==0&&
+           s.commandStates[0].kind=="move"&&s.commandStates[0].queued==0);
+    assert(wide.attack(1,attacker,target)==rts::WorldCode::Accepted);
+    wide.plan();
+    assert(wide.combat().find(attacker)->focus==target);
+    assert(wide.order(1,attacker,orders::Kind::Stop,{0,0})==rts::WorldCode::Accepted);
+    wide.plan();
+    assert(wide.combat().find(attacker)->focus==0);
+    s=wide.snapshot(false);
+    assert(!s.entities[0].hasOrder&&s.commandStates[0].kind=="stop"&&
+           s.commandStates[0].status=="idle"&&s.commandStates[0].queued==0);
     assert(wide.resolveCombat());
     const std::string result=rts::worldJson(wide.snapshot());
     assert(result.find("\"commandStates\"")!=std::string::npos);

@@ -21,19 +21,21 @@ inline bool fixedTerrain(const courier::State& source,std::array<bool,CELLS>& ou
     std::copy(source.blocked.begin(),source.blocked.end(),out.begin());
     return true;
 }
-enum class Kind { Move,AttackMove,Stop,Hold,Guard,Patrol };
-enum class Status { Idle,Moving,Waiting,Holding,Guarding,Patrolling,Unreachable,Dead };
+enum class Kind { Move,AttackMove,Stop,Hold,Guard,Patrol,Attack };
+enum class Status { Idle,Moving,Waiting,Holding,Guarding,Patrolling,Attacking,Unreachable,Dead };
 enum class Code { Accepted,BadActor,Dead,BadTarget,Blocked,Unreachable,QueueFull };
 inline const char* name(Kind k) {
     switch(k){case Kind::Move:return "move";case Kind::AttackMove:return "attack_move";
         case Kind::Stop:return "stop";case Kind::Hold:return "hold";
-        case Kind::Guard:return "guard";case Kind::Patrol:return "patrol";}
+        case Kind::Guard:return "guard";case Kind::Patrol:return "patrol";
+        case Kind::Attack:return "attack";}
     return "unknown";
 }
 inline const char* name(Status s) {
     switch(s){case Status::Idle:return "idle";case Status::Moving:return "moving";
         case Status::Waiting:return "waiting";case Status::Holding:return "holding";
         case Status::Guarding:return "guarding";case Status::Patrolling:return "patrolling";
+        case Status::Attacking:return "attacking";
         case Status::Unreachable:return "unreachable";case Status::Dead:return "dead";}
     return "unknown";
 }
@@ -47,22 +49,25 @@ inline const char* name(Code c) {
 struct Order {
     Kind kind;
     courier::Point target;
-    int guard; // index of a live friendly unit; -1 for all other orders
+    int guard; // Guard: friendly index; Attack: hostile index; otherwise -1
 };
 struct Request { uint64_t tick,sequence;int actor;Order order;bool append; };
 struct Feedback { uint64_t sequence;int actor;Code code; };
+struct Activation { uint64_t sequence;int actor;Kind kind; };
+struct Queued { Order order;uint64_t sequence; };
 struct Unit {
     courier::Point position;
     bool alive,hasOrder,inFlight;
     courier::Point waypoint,patrolStart;
     Order current;
     Status status;
-    std::vector<Order> queued;
+    std::vector<Queued> queued;
     std::vector<courier::Point> path;
     int stalled,blocked;
+    uint64_t activeSequence;
     Unit():position{0,0},alive(true),hasOrder(false),inFlight(false),
         waypoint{0,0},patrolStart{0,0},current{Kind::Stop,{0,0},-1},
-        status(Status::Idle),stalled(0),blocked(0){}
+        status(Status::Idle),stalled(0),blocked(0),activeSequence(0){}
 };
 struct Budget {
     int searches,expansions,maxOpen,issued;
@@ -77,6 +82,7 @@ class Controller {
     std::vector<Unit> units_;
     std::vector<Request> pending_;
     std::vector<Feedback> feedback_;
+    std::vector<Activation> activations_;
     Budget budget_;
     uint64_t tick_;
     int cell(courier::Point p) const {return p.y*width_+p.x;}
@@ -98,7 +104,9 @@ class Controller {
         const courier::Point start=units_[actor].position;
         if(!clear(goal))return {};
         const int source=cell(start),dest=cell(goal);
-        std::vector<int> g(cells_,cells_+1),prev(cells_,-1),serial(cells_,0);
+        // Weighted edges cost up to three; a shortest simple path may cross
+        // cells_-1 rough cells. A unit-cost sentinel truncates valid routes.
+        std::vector<int> g(cells_,cells_*3+1),prev(cells_,-1),serial(cells_,0);
         std::vector<uint8_t> closed(cells_,0),open(cells_,0);
         g[source]=0;prev[source]=source;open[source]=true;
         int opened=1,issued=1;
@@ -159,31 +167,33 @@ class Controller {
     }
     void clearOrder(Unit& u,Status status=Status::Idle){
         u.hasOrder=false;u.inFlight=false;u.path.clear();u.queued.clear();
-        u.stalled=u.blocked=0;u.status=status;
+        u.stalled=u.blocked=0;u.status=status;u.activeSequence=0;
     }
-    void activate(int actor,const Order& o){
+    void activate(int actor,const Order& o,uint64_t sequence){
         Unit& u=units_[actor];
-        u.current=o;u.hasOrder=true;u.inFlight=false;u.path.clear();
+        u.current=o;u.hasOrder=true;u.inFlight=false;u.path.clear();u.activeSequence=sequence;
         u.stalled=u.blocked=0;
         if(o.kind==Kind::Patrol)u.patrolStart=u.position;
         u.status=o.kind==Kind::Hold?Status::Holding:
             o.kind==Kind::Guard?Status::Guarding:
-            o.kind==Kind::Patrol?Status::Patrolling:Status::Moving;
+            o.kind==Kind::Patrol?Status::Patrolling:
+            o.kind==Kind::Attack?Status::Attacking:Status::Moving;
+        activations_.push_back({sequence,actor,o.kind});
     }
     void complete(int actor){
         Unit& u=units_[actor];
         u.hasOrder=false;u.inFlight=false;u.path.clear();
         u.stalled=u.blocked=0;
         if(!u.queued.empty()){
-            const Order next=u.queued.front();u.queued.erase(u.queued.begin());
-            activate(actor,next);
-        }else u.status=Status::Idle;
+            const Queued next=u.queued.front();u.queued.erase(u.queued.begin());
+            activate(actor,next.order,next.sequence);
+        }else{u.status=Status::Idle;u.activeSequence=0;}
     }
-    Code admit(const Request& r) const {
+    Code admit(const Request& r,bool reserve=true) const {
         if(r.actor<0||static_cast<size_t>(r.actor)>=units_.size())return Code::BadActor;
         const Unit& u=units_[r.actor];
         if(!u.alive)return Code::Dead;
-        if(r.order.kind==Kind::Guard){
+        if(r.order.kind==Kind::Guard||r.order.kind==Kind::Attack){
             if(r.order.guard<0||static_cast<size_t>(r.order.guard)>=units_.size()||r.order.guard==r.actor||
                !units_[r.order.guard].alive)return Code::BadTarget;
         }else if(r.order.kind==Kind::Move||r.order.kind==Kind::AttackMove||
@@ -192,7 +202,18 @@ class Controller {
             if(!clear(r.order.target))return Code::Blocked;
             if(!connected(r.actor,r.order.target))return Code::Unreachable;
         }
-        if(r.append&&u.queued.size()>=MAX_QUEUE)return Code::QueueFull;
+        if(reserve&&pending_.size()>=128)return Code::QueueFull;
+        bool has=u.hasOrder;
+        size_t queued=u.queued.size();
+        if(reserve)for(const Request& p:pending_){
+            if(p.actor!=r.actor||p.tick>r.tick||
+               (p.tick==r.tick&&p.sequence>=r.sequence))continue;
+            if(p.order.kind==Kind::Stop){has=false;queued=0;}
+            else if(!p.append){has=true;queued=0;}
+            else if(!has)has=true;
+            else ++queued;
+        }
+        if(r.append&&has&&queued>=MAX_QUEUE)return Code::QueueFull;
         return Code::Accepted;
     }
 public:
@@ -204,7 +225,7 @@ public:
         terrain_.assign(terrain.begin(),terrain.end());
         costs_.assign(CELLS,1);
         units_.assign(COUNT,Unit());
-        pending_.clear();feedback_.clear();tick_=0;budget_=Budget();
+        pending_.clear();feedback_.clear();activations_.clear();tick_=0;budget_=Budget();
         for(int i=0;i<COUNT;i++)units_[i].position=positions[i];
     }
     // R18 runtime shape: any bounded map and 1..256 stable actor slots.
@@ -224,7 +245,7 @@ public:
         terrain_=terrain;units_.assign(positions.size(),Unit());
         costs_.assign(cells_,1);
         for(size_t i=0;i<positions.size();i++)units_[i].position=positions[i];
-        pending_.clear();feedback_.clear();tick_=0;budget_=Budget();return true;
+        pending_.clear();feedback_.clear();activations_.clear();tick_=0;budget_=Budget();return true;
     }
     size_t count() const {return units_.size();}
     int width() const {return width_;}
@@ -253,6 +274,7 @@ public:
         costs_=costs;return true;
     }
     std::vector<Feedback> takeFeedback(){std::vector<Feedback> out;out.swap(feedback_);return out;}
+    std::vector<Activation> takeActivations(){std::vector<Activation> out;out.swap(activations_);return out;}
     Code enqueue(const Request& r){
         const Code code=admit(r);
         if(code==Code::Accepted)pending_.push_back(r);
@@ -269,6 +291,18 @@ public:
             if(!u.path.empty()&&u.path.front()==position)u.path.erase(u.path.begin());
         }
     }
+    // Target death must also invalidate queued follow/attack commands; the
+    // world must never revive them from its previous order snapshot.
+    void cancelDependent(int target){
+        for(size_t i=0;i<units_.size();i++){
+            Unit& u=units_[i];
+            if(u.hasOrder&&(u.current.kind==Kind::Guard||u.current.kind==Kind::Attack)&&
+               u.current.guard==target)clearOrder(u);
+            u.queued.erase(std::remove_if(u.queued.begin(),u.queued.end(),
+                [target](const Queued& q){return (q.order.kind==Kind::Guard||
+                    q.order.kind==Kind::Attack)&&q.order.guard==target;}),u.queued.end());
+        }
+    }
     std::vector<Move> step(uint64_t tick){
         tick_=tick;budget_=Budget();
         std::stable_sort(pending_.begin(),pending_.end(),[](const Request& a,const Request& b){
@@ -279,14 +313,14 @@ public:
         size_t done=0;
         while(done<pending_.size()&&pending_[done].tick<=tick){
             const Request r=pending_[done++];
-            const Code code=admit(r); // death, terrain and prior orders can change validity
+            const Code code=admit(r,false); // state now includes earlier activated orders
             feedback_.push_back({r.sequence,r.actor,code});
             if(code!=Code::Accepted)continue;
             Unit& u=units_[r.actor];
-            if(r.order.kind==Kind::Stop){clearOrder(u);continue;}
-            if(!r.append){u.queued.clear();activate(r.actor,r.order);}
-            else if(!u.hasOrder)activate(r.actor,r.order);
-            else u.queued.push_back(r.order);
+            if(r.order.kind==Kind::Stop){clearOrder(u);activations_.push_back({r.sequence,r.actor,Kind::Stop});continue;}
+            if(!r.append){u.queued.clear();activate(r.actor,r.order,r.sequence);}
+            else if(!u.hasOrder)activate(r.actor,r.order,r.sequence);
+            else u.queued.push_back({r.order,r.sequence});
         }
         pending_.erase(pending_.begin(),pending_.begin()+done);
         std::vector<Move> moves;
@@ -294,6 +328,10 @@ public:
             Unit& u=units_[i];
             if(!u.alive||!u.hasOrder)continue;
             if(u.current.kind==Kind::Hold)continue;
+            if(u.current.kind==Kind::Attack){
+                if(!units_[u.current.guard].alive)complete(i);
+                continue;
+            }
             courier::Point goal=u.current.target;
             if(u.current.kind==Kind::Guard){
                 const Unit& target=units_[u.current.guard];

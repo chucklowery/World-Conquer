@@ -7,9 +7,9 @@ const binary=process.argv[2];
 if(!binary)throw Error("Pass compiled test-rts-live-match executable");
 const snapshots=execFileSync(binary,["--json"],{encoding:"utf8"})
   .trim().split("\n").map(JSON.parse);
-assert.equal(snapshots.length,9);
+assert.equal(snapshots.length,11);
 assert(snapshots.every(s=>s.version===3));
-const [ridge,moved,restarted,marsh,attacking,fightStart,fighting,won,revived]=snapshots;
+const [ridge,moved,restarted,reloaded,marsh,activeAttack,afterStop,fightStart,fighting,won,revived]=snapshots;
 assert.equal(ridge.map.id,"ridge-pass");
 assert.equal(ridge.map.width,16);
 assert.equal(ridge.map.height,10);
@@ -26,17 +26,23 @@ assert.deepEqual(mapModel.teams,[1,1,2,2,1,2]);
 assert.equal(mapModel.selected,-1);
 assert.equal(hud.inspect(mapModel,ridge.entities[0].x,ridge.entities[0].y).startsWith("Aster"),true);
 assert.throws(()=>bridge.receive(ridge),/negotiated/);
-for(const s of [ridge,moved,restarted]){
+for(const s of [ridge,moved,restarted,reloaded]){
   const accepted=bridge.receive(s,{allowWorldV3:true});
   assert(Object.isFrozen(accepted)&&Object.isFrozen(accepted.map.resources));
 }
-assert.equal(bridge.latest().epoch,2);
+assert.equal(bridge.latest().epoch,3);
 assert.equal(restarted.events[0].type,"restart");
+assert.equal(reloaded.events[0].type,"restart");
+assert.notEqual(reloaded.entities[0].id,restarted.entities[0].id);
 bridge.clear();
 assert.equal(bridge.receive(marsh,{allowWorldV3:true}).map.width,24);
-assert.equal(bridge.receive(attacking,{allowWorldV3:true}).map.height,14);
+assert.equal(bridge.receive(activeAttack,{allowWorldV3:true}).map.height,14);
+assert.equal(activeAttack.commandStates[0].kind,"attack");
+assert.equal(activeAttack.commandStates[0].status,"attacking");
+assert.equal(activeAttack.entities[0].order.target,activeAttack.entities[2].id);
+assert.equal(bridge.receive(afterStop,{allowWorldV3:true}).entities[0].order,null);
 function invalid(edit,pattern){
-  const bad=JSON.parse(JSON.stringify(attacking));
+  const bad=JSON.parse(JSON.stringify(afterStop));
   edit(bad);
   assert.throws(()=>bridge.receive(bad,{allowWorldV3:true}),pattern);
   assert.equal(bridge.latest().map.id,"marsh-border");
@@ -47,6 +53,7 @@ invalid(s=>{s.map.resources[0].amount=-1;},/resource/);
 invalid(s=>{s.commandStates[0].queued=9;},/command state/);
 invalid(s=>{s.commandStates[0].entityId=s.entities[6].id;},/command state/);
 invalid(s=>{s.commandStates[0].kind="production";},/command state/);
+invalid(s=>{s.commandStates[0].kind="attack";},/command state/);
 bridge.clear();
 for(const s of [fightStart,fighting,won,revived])
   bridge.receive(s,{allowWorldV3:true});

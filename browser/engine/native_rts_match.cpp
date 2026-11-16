@@ -48,6 +48,12 @@ bool place(){
     houseAster=new HouseClass(HOUSE_GOOD);
     houseForge=new HouseClass(HOUSE_BAD);
     if(!houseAster||!houseForge)return false;
+    // VanillaTD is movement authority here, not combat authority. Mutual
+    // native alliances prevent MISSION_GUARD from acquiring targets and
+    // entering firing animations; the R18 teams remain hostile and only the
+    // R03 weapon system resolves damage, kills and match victory.
+    houseAster->Make_Ally(HOUSE_BAD);
+    houseForge->Make_Ally(HOUSE_GOOD);
     PlayerPtr=houseAster;houseAster->IsHuman=true;houseForge->IsHuman=false;
     GameActive=true;
     ++ScenarioInit;

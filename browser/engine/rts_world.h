@@ -508,6 +508,18 @@ public:
         if(e->x==x&&e->y==y)return true;
         e->x=x;e->y=y;emit(WorldEventType::Position,0,id,x,y);return true;
     }
+    // R02 activation/completion is observed after World has admitted the
+    // command batch. In particular, an appended command is not active until
+    // navigation selects it, and a completed move has no lingering order.
+    bool observeOrderState(EntityId id,bool active,int x,int y,EntityId target=0){
+        WorldEntity* e=mutableEntity(id);
+        if(!e||e->life!=Life::Alive||!inside(x,y)||
+           (target&&(!findInternal(target)||findInternal(target)->life!=Life::Alive)))return false;
+        if(e->hasOrder==active&&(!active||
+           (e->orderX==x&&e->orderY==y&&e->target==target)))return true;
+        e->hasOrder=active;e->orderX=x;e->orderY=y;e->target=active?target:0;
+        emit(WorldEventType::Order,0,id,x,y);return true;
+    }
     bool observeDamage(EntityId id,int damage,EntityId source=0,uint16_t weapon=0){
         WorldEntity* e=mutableEntity(id);
         if(!e||e->life!=Life::Alive||damage<=0||
@@ -540,7 +552,8 @@ public:
     // change. Report that runtime outcome without changing ownership/HP.
     bool observeOrderFeedback(EntityId id,WorldCode result,uint64_t sequence=0){
         if(!findInternal(id)||(result!=WorldCode::Blocked&&
-           result!=WorldCode::Unreachable))return false;
+           result!=WorldCode::Unreachable&&result!=WorldCode::QueueFull&&
+           result!=WorldCode::BadTarget&&result!=WorldCode::Dead))return false;
         emit(WorldEventType::Command,sequence,id,0,0,0,result);return true;
     }
     WorldSnapshot view()const{

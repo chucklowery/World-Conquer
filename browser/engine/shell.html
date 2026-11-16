@@ -56,7 +56,12 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 /* R02 owns its native canvas inputs; R01-only controls must not intercept them. */
 body[data-mode="r02-orders"] .hud-command-bar,
 body[data-mode="r02-orders"] .hud-pan-pad,
-body[data-mode="r02-orders"] #hud-selection-overlay{display:none}
+body[data-mode="r02-orders"] #hud-selection-overlay,
+body[data-mode="rts-live"] .hud-command-bar,
+body[data-mode="rts-live"] .hud-pan-pad,
+body[data-mode="rts-live"] #hud-selection-overlay{display:none}
+body[data-mode="rts-live"] #hud-minimap{cursor:default}
+body[data-mode="rts-live"] #hud-controls-panel > label{display:none}
 .hud-toast-anchor{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(92%,680px);pointer-events:none;text-align:center}
 .hud-toast-anchor .alpha-event{padding:8px 12px;background:#061912c9;border:1px solid #5e9473;border-radius:6px;margin:0;min-height:0;color:#d0ffe4}
 .hud-toast-anchor .alpha-result{margin:8px 0;background:#423d24ef}
@@ -364,6 +369,21 @@ body.hud-active{overflow:hidden}
 
   function resizeBattlefield(){
     if(tacticalHUD.hidden)return;
+    if(document.body.dataset.mode==="rts-live"){
+      // The native SDL renderer owns the entire map; fit its actual drawable
+      // dimensions inside the playfield instead of reusing Courier's fixed
+      // 720x440 camera. Never clip right/bottom cells on narrow screens.
+      const width=canvas.width,height=canvas.height;
+      const boundsWidth=hudPlayfield.clientWidth,boundsHeight=hudPlayfield.clientHeight;
+      if(width>0&&height>0&&boundsWidth>0&&boundsHeight>0){
+        const scale=Math.min(boundsWidth/width,boundsHeight/height);
+        const fittedWidth=Math.floor(width*scale),fittedHeight=Math.floor(height*scale);
+        Object.assign(canvas.style,{width:fittedWidth+"px",height:fittedHeight+"px",
+          left:Math.floor((boundsWidth-fittedWidth)/2)+"px",
+          top:Math.floor((boundsHeight-fittedHeight)/2)+"px"});
+      }
+      return;
+    }
     hudInput.resize();
   }
   function setSidebarOpen(open){
@@ -406,12 +426,14 @@ body.hud-active{overflow:hidden}
   // Preserve R01 click-to-recenter behavior; hover provides R04's terrain
   // inspector without stealing the camera's minimap click/readout.
   hudMinimap.addEventListener("mousemove",event=>{
-    if(document.body.dataset.mode!=="engine-courier")return;
+    if(document.body.dataset.mode!=="engine-courier"&&
+       document.body.dataset.mode!=="rts-live")return;
     const rect=hudMinimap.getBoundingClientRect();
     const x=Math.min(hudModel.width-1,Math.max(0,Math.floor((event.clientX-rect.left)/rect.width*hudModel.width)));
     const y=Math.min(hudModel.height-1,Math.max(0,Math.floor((event.clientY-rect.top)/rect.height*hudModel.height)));
     const terrain=WCTacticalHUD.inspect(hudModel,x,y);
-    hudMapReadout.textContent=`${terrain} · Sector ${x+1},${y+1} · Click to recenter camera`;
+    hudMapReadout.textContent=`${terrain} · Sector ${x+1},${y+1}`+
+      (document.body.dataset.mode==="rts-live"?" · Full map fitted":" · Click to recenter camera");
   });
   document.querySelectorAll("[data-hud-tab]").forEach(button=>button.addEventListener("click",()=>{
     const active=button.dataset.hudTab;
@@ -642,9 +664,27 @@ body.hud-active{overflow:hidden}
     canvas.style.aspectRatio=hudModel.width+"/"+hudModel.height;
     if(mode==="engine-courier"||mode==="r02-orders"||mode==="rts-live"){
       WCRTS.clear();
+      if(mode==="rts-live")document.body.dataset.mode=mode;
       activateTacticalHUD();
       if(mode==="r02-orders")document.querySelector(".hud-mission").textContent="R02 PRODUCTION ORDERS";
       if(mode==="rts-live")document.querySelector(".hud-mission").textContent="R18 NATIVE RTS MATCH";
+      if(mode==="rts-live"){
+        hudMapReadout.textContent="Entire native map fitted · Hover to inspect terrain";
+        document.querySelector(".hud-shortcuts").textContent=
+          "1/2/5 select · Click move/attack · A attack-move · G guard · H hold · P patrol · R restart";
+        document.querySelector("#hud-controls-panel .hud-controls-list").innerHTML=
+          "<dt>1, 2, 5</dt><dd>Select an Aster infantry actor</dd>"+
+          "<dt>Left click</dt><dd>Select friendly or move to a map cell; click an enemy to attack in range</dd>"+
+          "<dt>A / M / P</dt><dd>Choose attack-move, move, or patrol for the next click</dd>"+
+          "<dt>G / H / S</dt><dd>Guard a friendly actor, hold position, or stop</dd>"+
+          "<dt>Ctrl + click</dt><dd>Append an order, up to eight per actor</dd>"+
+          "<dt>R</dt><dd>Restart with a new R18 entity epoch</dd>";
+        document.querySelector("#hud-intel-panel .hud-intel-list").innerHTML=
+          "<li>Aster and Forge have independent hostile R18 teams.</li>"+
+          "<li>Native infantry move via VanillaTD MapClass and InfantryClass::AI.</li>"+
+          "<li>R03 weapons produce combat events; defeat Forge to win.</li>"+
+          "<li>Neutral crystals and structures are informational, not economy systems.</li>";
+      }
       engineHud.hidden=false;
       alphaEvent.hidden=false;
       alphaEvent.textContent=mode==="rts-live"?"Two faction houses, six engine infantry and native R18 events ready.":
@@ -658,6 +698,7 @@ body.hud-active{overflow:hidden}
     }
     run([mode==="rts-live"?"--browser-rts-match":drill?"--browser-r03-combat-drill":mode==="engine-courier"?"--browser-engine-courier":
       mode==="r02-orders"?"--browser-r02-orders":"--browser-native-slice"],mode);
+    requestAnimationFrame(resizeBattlefield);
     preparingCourier=false;
   }
   nativeSlice.addEventListener("click",()=>launchCourier("native-slice"));

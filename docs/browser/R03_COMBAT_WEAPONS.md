@@ -87,6 +87,12 @@ v3 snapshots. Aster small arms and Forge projectile weapons are illustrative
 fixture data; class filtering/armor tests remain in the R03 host suite. An
 eliminated team produces an R18 `won`/`lost` phase, and restart replaces IDs
 and resets native actors. This still does not claim built vehicles or economy.
+For this first match, explicit Attack is stationary: out-of-range or
+line-of-sight-blocked targets are rejected. An accepted attack takes effect
+on the next native tick, never at submission; Stop or an activated replacement
+order cancels weapon focus, while an appended future order does not. Native
+VanillaTD houses are mutually allied solely to prevent the engine's guard AI
+from competing with R03 weapon resolution; R18 gameplay teams remain hostile.
 
 ## Verification
 

@@ -137,7 +137,7 @@
        !entities.get(s.selectedEntityId).active))throw Error("Invalid world selection");
     if(s.commandStates!==undefined){
       const kinds=new Set(["move","attack_move","stop","hold","guard","patrol","attack"]);
-      const statuses=new Set(["idle","moving","waiting","holding","guarding","patrolling","unreachable","dead"]);
+      const statuses=new Set(["idle","moving","waiting","holding","guarding","patrolling","attacking","unreachable","dead"]);
       const seen=new Set();
       if(!Array.isArray(s.commandStates)||s.commandStates.length>256)
         throw Error("Invalid native world command states");
@@ -147,7 +147,16 @@
            !kinds.has(c.kind)||!statuses.has(c.status)||
            !Number.isInteger(c.x)||!Number.isInteger(c.y)||
            c.x<0||c.y<0||c.x>=map.width||c.y>=map.height||
-           !Number.isInteger(c.queued)||c.queued<0||c.queued>8)
+           !Number.isInteger(c.queued)||c.queued<0||c.queued>8||
+           (actor.order===null)!==(c.kind==="stop")||
+           (actor.order!==null&&(actor.order.x!==c.x||actor.order.y!==c.y))||
+           (c.kind==="stop"&&(c.queued!==0||!["idle","unreachable"].includes(c.status)))||
+           (c.kind==="attack"&&c.status!=="attacking")||
+           (c.kind==="hold"&&c.status!=="holding")||
+           (c.kind==="guard"&&!(["guarding","waiting"].includes(c.status)))||
+           (c.kind==="patrol"&&!(["patrolling","waiting"].includes(c.status)))||
+           (["move","attack_move"].includes(c.kind)&&
+             !(["moving","waiting"].includes(c.status))))
           throw Error("Invalid native world command state");
         seen.add(c.entityId);
       }

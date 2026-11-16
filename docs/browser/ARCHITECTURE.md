@@ -123,6 +123,24 @@ v3 snapshots add optional validated R04 map metadata and R02 `commandStates`,
 plus `shot`/`hit` events and `won`/`lost` phases. Existing R00 v1/R04 v2
 consumers still require no migration, and v3 remains explicitly negotiated.
 
+The integration resolves a command **only at its execution tick**. R02 reserves
+pending append capacity before R18 admission (eight queued orders per actor),
+and records each later activation, replacement, Stop and completion. R03 focus
+is changed only on activation; in-flight projectiles are retained. An explicit
+Attack is stationary in this fixture: it rejects hostile targets outside its
+weapon range or blocked by line of sight rather than claiming nonexistent
+chase behavior. Native Aster/Forge `HouseClass` objects are mutually allied
+*only for VanillaTD's movement/guard AI* to suppress its built-in weapons;
+their **R18 teams remain enemies** for R03 combat and ownership rules.
+After every native order step, the coordinator reconciles R18 `entity.order`
+and v3 `commandStates` from the same activated order, including queued orders,
+target death, and completed movement. The v3 bridge rejects contradictory
+order/state pairs. A successful `LiveMatch::load()` on an already-ready match
+advances the R18 epoch and emits `restart`; malformed content leaves the old
+match and its command/event history unchanged. A live-mode browser canvas fits
+the selected native map inside the available playfield at mobile widths; the
+Courier-only camera/order controls are hidden, while SDL owns tile input.
+
 The older Courier, four-unit R02 diagnostic and R03 defeat drill remain
 independent compatibility modes; none is silently reinterpreted as a new RTS
 match. The new fixture is a six-infantry tactical battle, **not** a production,

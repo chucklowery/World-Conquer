@@ -45,12 +45,32 @@ class LiveMatch {
             case orders::Kind::Hold:return WorldAction::Hold;
             case orders::Kind::Guard:return WorldAction::Guard;
             case orders::Kind::Patrol:return WorldAction::Patrol;
+            case orders::Kind::Attack:return WorldAction::Attack;
         }
         return WorldAction::Stop;
     }
     int actorIndex(EntityId id)const{
         for(size_t i=0;i<actors_.size();i++)if(actors_[i].id==id)return static_cast<int>(i);
         return -1;
+    }
+    bool reconcileOrders(){
+        for(size_t i=0;i<actors_.size();i++){
+            const WorldEntity* e=world_.entity(actors_[i].id);
+            if(!e)return false;
+            if(e->life!=Life::Alive)continue;
+            const orders::Unit& u=navigation_.unit(static_cast<int>(i));
+            courier::Point goal=u.hasOrder?u.current.target:u.position;
+            EntityId target=0;
+            if(u.hasOrder&&(u.current.kind==orders::Kind::Guard||
+                            u.current.kind==orders::Kind::Attack)){
+                if(u.current.guard<0||static_cast<size_t>(u.current.guard)>=actors_.size())return false;
+                const WorldEntity* followed=world_.entity(actors_[u.current.guard].id);
+                if(!followed||followed->life!=Life::Alive)return false;
+                goal={followed->x,followed->y};target=followed->id;
+            }
+            if(!world_.observeOrderState(e->id,u.hasOrder,goal.x,goal.y,target))return false;
+        }
+        return true;
     }
     WorldCode spawn(HouseId owner,const std::string& definition,courier::Point p){
         const WorldCommand cmd={world_.epoch(),1,++nextSequence_,owner,owner,0,0,
@@ -132,7 +152,10 @@ public:
     bool load(const std::string& mapBytes,const std::string& catalogBytes){
         Catalog catalog;courier::State parsed;
         if(!catalog.load(catalogBytes)||!courier::loadMap(parsed,mapBytes))return false;
-        LiveMatch candidate;
+        // Keep the existing World in the candidate, so configure() increments
+        // its epoch on a successful reload. A rejected map/catalog leaves all
+        // commands, IDs, events and pending projectiles untouched.
+        LiveMatch candidate=*this;
         if(!candidate.configure(catalog,parsed))return false;
         *this=std::move(candidate);return true;
     }
@@ -144,6 +167,7 @@ public:
     const World& world()const{return world_;}
     const courier::State& authored()const{return authored_;}
     const orders::Controller& navigation()const{return navigation_;}
+    const rtscombat::System& combat()const{return weapons_;}
     const std::vector<LiveActor>& actors()const{return actors_;}
     const std::string& phase()const{return phase_;}
     WorldCode order(HouseId issuer,EntityId id,orders::Kind kind,
@@ -161,6 +185,13 @@ public:
                target->team!=actor->team||guardId==id)return WorldCode::BadTarget;
             tile={target->x,target->y};
         }
+        if(kind==orders::Kind::Attack){
+            const WorldEntity* target=world_.entity(guardId);
+            if(guard<0||!target||target->life!=Life::Alive||
+               target->team==actor->team||!weapons_.canEngage(id,guardId))
+                return WorldCode::BadTarget;
+            tile={target->x,target->y};
+        }
         if(kind==orders::Kind::Stop||kind==orders::Kind::Hold)
             tile={actor->x,actor->y};
         const orders::Request request={world_.tick()+1,nextSequence_+1,index,
@@ -171,6 +202,8 @@ public:
                                 actor->owner,id,guardId,action(kind),"",tile.x,tile.y};
         const WorldCode result=world_.enqueue(cmd);
         if(result!=WorldCode::Accepted)return result;
+        // Same single-threaded preflight; reservations in Controller::admit()
+        // make a post-World admission failure impossible without a bug.
         if(navigation_.enqueue(request)!=orders::Code::Accepted)return WorldCode::QueueFull;
         ++nextSequence_;return result;
     }
@@ -186,16 +219,7 @@ public:
         return result;
     }
     WorldCode attack(HouseId issuer,EntityId id,EntityId target){
-        if(!ready_||phase_!="playing")return WorldCode::InvalidEpoch;
-        const WorldEntity* a=world_.entity(id),*t=world_.entity(target);
-        if(!a||!t)return WorldCode::UnknownEntity;
-        if(a->owner!=issuer)return WorldCode::NotOwned;
-        if(!weapons_.canAttack(id,target))return WorldCode::BadTarget;
-        const WorldCommand cmd={world_.epoch(),world_.tick()+1,nextSequence_+1,
-                                issuer,a->owner,id,target,WorldAction::Attack,"",t->x,t->y};
-        const WorldCode result=world_.enqueue(cmd);
-        if(result==WorldCode::Accepted){++nextSequence_;weapons_.orderAttack(id,target);}
-        return result;
+        return order(issuer,id,orders::Kind::Attack,{0,0},false,target);
     }
     // Called once per simulation tick before InfantryClass::AI. This schedules
     // adjacent waypoints but never changes any actor's world position.
@@ -203,11 +227,25 @@ public:
         if(!ready_||phase_!="playing")return {};
         if(!world_.process(world_.tick()+1))return {};
         const std::vector<orders::Move> moves=navigation_.step(world_.tick());
+        for(const orders::Activation& activation:navigation_.takeActivations()){
+            const EntityId id=actors_[activation.actor].id;
+            // A future appended Move must not cancel current weapon focus.
+            // Activation, replacement and Stop all cancel the previous focus;
+            // projectiles already launched remain in the R03 system.
+            weapons_.cancel(id);
+            if(activation.kind==orders::Kind::Attack){
+                const orders::Unit& u=navigation_.unit(activation.actor);
+                if(u.hasOrder&&u.current.kind==orders::Kind::Attack&&
+                   !weapons_.orderAttack(id,actors_[u.current.guard].id))
+                    return {};
+            }
+        }
         for(const orders::Feedback& feedback:navigation_.takeFeedback()){
             const WorldCode result=orderCode(feedback.code);
-            if(result==WorldCode::Blocked||result==WorldCode::Unreachable)
+            if(result!=WorldCode::Accepted)
                 world_.observeOrderFeedback(actors_[feedback.actor].id,result,feedback.sequence);
         }
+        if(!reconcileOrders())return {};
         return moves;
     }
     bool observePosition(size_t index,courier::Point position){
@@ -243,13 +281,15 @@ public:
             if(!e||!combat||e->hp!=combat->hp)return false;
             if(e->life!=Life::Alive){
                 navigation_.update(static_cast<int>(i),{e->x,e->y},false);
+                navigation_.cancelDependent(static_cast<int>(i));
+                weapons_.cancel(e->id);
                 continue;
             }
             if(e->owner==1)aster=true;else if(e->owner==2)forge=true;
         }
         if(!aster)phase_="lost";
         else if(!forge)phase_="won";
-        return true;
+        return reconcileOrders();
     }
     WorldSnapshot snapshot(bool drain=true){
         WorldSnapshot s=drain?world_.publish():world_.view();
@@ -272,7 +312,8 @@ public:
             const WorldEntity* e=world_.entity(actors_[i].id);
             if(!e||e->life!=Life::Alive)continue;
             const orders::Unit& u=navigation_.unit(static_cast<int>(i));
-            const courier::Point goal=u.hasOrder?u.current.target:u.position;
+            const courier::Point goal={e->hasOrder?e->orderX:e->x,
+                                       e->hasOrder?e->orderY:e->y};
             s.commandStates.push_back({e->id,orders::name(u.hasOrder?u.current.kind:
                 orders::Kind::Stop),orders::name(u.status),goal.x,goal.y,
                 static_cast<unsigned>(u.queued.size())});

@@ -142,6 +142,32 @@ int main(){
     assert(!dynamic.resetDynamic(8,8,std::vector<uint8_t>(3,0),positions));
     assert(dynamic.count()==6&&dynamic.width()==12); // malformed map atomic
 
+    // An 8x8 winding corridor has a unique 32-edge route. Every open tile
+    // costs 3, so g reaches 96: greater than the old cells_+1 sentinel.
+    std::vector<uint8_t> winding(64,1),rough(64,0);
+    for(int y:{0,2,4,6})for(int x=0;x<8;x++)winding[y*8+x]=0;
+    for(const Point p:std::vector<Point>{{7,1},{0,3},{7,5},{0,7}})
+        winding[p.y*8+p.x]=0;
+    for(size_t i=0;i<winding.size();i++)if(!winding[i])rough[i]=3;
+    assert(dynamic.resetDynamic(8,8,winding,{{0,0}}));
+    assert(dynamic.setMovementCosts(rough));
+    assert(dynamic.enqueue(request(0,orders::Kind::Move,{0,7},1))==orders::Code::Accepted);
+    for(int t=1;t<=40;t++)for(const orders::Move& m:dynamic.step(t))
+        dynamic.update(m.actor,m.waypoint,true);
+    assert(dynamic.unit(0).position==Point({0,7}));
+    assert(dynamic.unit(0).status==orders::Status::Idle);
+
+    // Reserve queued capacity at admission, including requests that have not
+    // yet reached step(), so an accepted World command cannot vanish later.
+    dynamic.resetDynamic(8,8,std::vector<uint8_t>(64,0),{{0,0}});
+    assert(dynamic.enqueue(request(0,orders::Kind::Hold,{0,0},1))==orders::Code::Accepted);
+    for(int n=0;n<8;n++)assert(dynamic.enqueue(request(0,orders::Kind::Move,{1,1},2+n,true))==
+                                 orders::Code::Accepted);
+    assert(dynamic.enqueue(request(0,orders::Kind::Move,{2,2},10,true))==orders::Code::QueueFull);
+    dynamic.step(1);
+    assert(dynamic.unit(0).status==orders::Status::Holding&&
+           dynamic.unit(0).queued.size()==8);
+
     // Representative 18x11 map budget: two bounded A* replans per tick.
     auto begin=std::chrono::steady_clock::now();
     int searches=0,expansions=0;

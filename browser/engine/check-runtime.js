@@ -531,6 +531,31 @@ async function main() {
       assert.equal(initial.entities[2].visual,"r05.forge.ranger");
       assert(initial.entities.some(e=>e.owner===0));
       const first=initial.entities[0].id;
+      // The native SDL canvas must fit the visible battlefield on a narrow
+      // screen, and Courier-only command overlays must not steal click input.
+      await page.setViewportSize({width:480,height:720});
+      await page.waitForFunction(()=>{
+        const c=document.getElementById("canvas").getBoundingClientRect();
+        const p=document.getElementById("hud-playfield").getBoundingClientRect();
+        return c.width>0&&c.height>0&&c.left>=p.left-1&&c.top>=p.top-1&&
+          c.right<=p.right+1&&c.bottom<=p.bottom+1;
+      },undefined,{timeout:10000});
+      const fitted=await page.evaluate(()=>({
+        commands:getComputedStyle(document.querySelector(".hud-command-bar")).display,
+        pan:getComputedStyle(document.querySelector(".hud-pan-pad")).display,
+        overlay:getComputedStyle(document.getElementById("hud-selection-overlay")).display,
+        rect:document.getElementById("canvas").getBoundingClientRect().toJSON()
+      }));
+      assert.deepEqual([fitted.commands,fitted.pan,fitted.overlay],["none","none","none"]);
+      const click=await page.evaluate(()=>{
+        const rect=document.getElementById("canvas").getBoundingClientRect();
+        const e=WCRTS.latest().entities[0],m=WCRTS.latest().map;
+        return {x:rect.left+(e.x+.5)/m.width*rect.width,
+          y:rect.top+(e.y+.5)/m.height*rect.height};
+      });
+      await page.mouse.click(click.x,click.y);
+      await page.waitForFunction(id=>WCRTS.latest().selectedEntityId===id,first,{timeout:15000});
+      await page.setViewportSize({width:1280,height:800});
       const rejected=await page.evaluate(id=>Module._Browser_Live_World_Command(
         1,2,id,3,1,0,0),first);
       assert.notEqual(rejected,0,"Forge issued an order to an Aster-owned unit");
