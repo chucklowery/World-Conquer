@@ -2,7 +2,7 @@
 
 Implement **R06** for `https://github.com/chucklowery/World-Conquer` with **no dependency on past chats**. The current native VanillaTD SDL2/WASM Courier Extraction tactical alpha has supply crates and a HUD currency-like area, but **no functional RTS harvesting/building economy**; construction cards are previews. The mission, engine, HUD, and browser build sources are `game/content/missions/`, `tiberiandawn/`, `browser/engine/`, and `docs/browser/BUILD.md`. Inspect the merged simulation contract from R00 and map schema from R04.
 
-**Dependency gate:** R00 **and** R04 must both be `completed` in `docs/rts-milestones/MANIFEST.md` and integrated. Otherwise mark blocked and specify what is missing.
+**Dependency gate:** R00, R04 **and R20** must all be `completed` in `docs/rts-milestones/MANIFEST.md` and integrated. R20 independently verifies the shared native foundation and approves the resource/economy extension contract. Otherwise mark blocked and specify what is missing; do not start R06 on the strength of older per-milestone CI runs alone.
 
 **Deliverable:** canonical per-house credits, resource deposits with finite quantities and optional regrowth, harvest-capable units, pickup/carry/return/unload behavior, refinery deposit processing, costs/spending with insufficient-funds rejection, and event/snapshot updates for the HUD. Provide AI-addressable economic commands and deterministic update rules. Use native simulation, not browser-local counters. For now, if structure placement (R07) is incomplete, use a scenario-seeded refinery as an explicit temporary prerequisite and document its retirement.
 

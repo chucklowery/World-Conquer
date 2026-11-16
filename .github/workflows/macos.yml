@@ -11,13 +11,18 @@ permissions:
 
 jobs:
   vanilla-macos:
-    # macOS 14 runner image is retiring; use supported Apple Silicon image.
-    runs-on: macos-15
+    # Intel runners provide stable pre-merge macOS validation. Preserve the
+    # Apple Silicon matrix for vanilla pushes and explicit release QA.
+    runs-on: ${{ matrix.arch == 'x86_64' && 'macos-15-intel' || 'macos-15' }}
     timeout-minutes: 35
     strategy:
-      max-parallel: 2
+      # Run one hosted macOS job at a time to limit runner queue pressure.
+      max-parallel: 1
       matrix:
-        preset: [release, internal, testing, nonet]
+        # PRs must compile/link the game as well as run the test preset;
+        # vanilla pushes/manual dispatches retain all four configurations.
+        preset: ${{ fromJSON(github.event_name == 'pull_request' && '["release","testing"]' || '["release","internal","testing","nonet"]') }}
+        arch: ${{ fromJSON(github.event_name == 'pull_request' && '["x86_64"]' || '["arm64"]') }}
 
     steps:
     - uses: actions/checkout@v4
@@ -30,9 +35,8 @@ jobs:
       id: gitinfo
       run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    # Use prebuilt Homebrew arm64 dependencies instead of rebuilding a
-    # universal MacPorts toolchain for every preset/matrix runner.
-    - name: Install native Apple Silicon dependencies
+    # Homebrew provides the native packages for the selected architecture.
+    - name: Install native macOS dependencies
       run: |
         brew install sdl2-compat imagemagick dylibbundler
         echo "CMAKE_PREFIX_PATH=$(brew --prefix)" >> "$GITHUB_ENV"
@@ -41,7 +45,7 @@ jobs:
 
     - name: Build Vanilla Conquer
       env:
-        CMAKE_OSX_ARCHITECTURES: "arm64"
+        CMAKE_OSX_ARCHITECTURES: ${{ matrix.arch }}
         VC_CXX_FLAGS: "-w;-Wwrite-strings;-Werror=write-strings"
       run: |
         cmake --workflow --preset ${{ matrix.preset }}
@@ -56,22 +60,22 @@ jobs:
         dylibbundler --create-dir --bundle-deps --overwrite-files --dest-dir ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app/Contents/libs --fix-file build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app/Contents/MacOS/vanillatd
         dylibbundler --create-dir --bundle-deps --overwrite-files --dest-dir ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app/Contents/libs --fix-file build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app/Contents/MacOS/vanillara
         mkdir artifact
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.dSYM ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.dSYM
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-${{ matrix.arch }}-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.app ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.app
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-${{ matrix.arch }}-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillatd.dSYM ./build/${{ matrix.preset }}/RelWithDebInfo/vanillara.dSYM
 
     - name: Add internal tools to archive
       if: ${{ matrix.preset == 'internal' }}
       run: |
         dsymutil build/${{ matrix.preset }}/RelWithDebInfo/vanillamix -o build/${{ matrix.preset }}/RelWithDebInfo/vanillamix.dSYM
         strip -Sx build/${{ matrix.preset }}/RelWithDebInfo/vanillamix
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64--${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix
-        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64--${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix.dSYM
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-${{ matrix.arch }}-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix
+        7z a artifact/vanilla-conquer-${{ matrix.preset }}-macos-clang-${{ matrix.arch }}-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/${{ matrix.preset }}/RelWithDebInfo/vanillamix.dSYM
     
     - name: Upload artifact
       if: ${{ matrix.preset != 'testing' &&  matrix.preset != 'nonet' }}
       uses: actions/upload-artifact@v4
       with:
-        name: vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64
+        name: vanilla-conquer-${{ matrix.preset }}-macos-clang-${{ matrix.arch }}
         path: artifact
         
   publish-release:

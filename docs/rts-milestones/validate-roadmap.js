@@ -57,10 +57,12 @@ function walk(id) {
 }
 for (const id of milestones.keys()) walk(id);
 for (const [id, value] of milestones) {
-  if (value.status === 'completed') {
+  // Starting a gated milestone early is just as unsafe as marking it done.
+  // A planned milestone may list unfinished prerequisites; an active one may not.
+  if (value.status === 'completed' || value.status === 'in_progress') {
     for (const dep of value.deps) {
       if (milestones.get(dep).status !== 'completed') {
-        throw new Error(`${id} completed before dependency ${dep}`);
+        throw new Error(`${id} ${value.status} before dependency ${dep} completed`);
       }
     }
   }
