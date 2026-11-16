@@ -6,6 +6,9 @@ on:
     branches: [vanilla]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   vanilla-macos:
     # macOS 14 runner image is retiring; use supported Apple Silicon image.
@@ -71,23 +74,26 @@ jobs:
         name: vanilla-conquer-${{ matrix.preset }}-macos-clang-arm64
         path: artifact
         
-    - name: Upload development release
-      if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/vanilla' && matrix.preset != 'testing' &&  matrix.preset != 'nonet' }}
-      uses: softprops/action-gh-release@v2
-      with:
-        name: Development Build
-        tag_name: "latest"
-        prerelease: true
-        files: |
-          artifact/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload tagged release
-      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.preset != 'testing' &&  matrix.preset != 'nonet' }}
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          artifact/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish-release:
+    # The macOS matrix can report build status independently of publication.
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/vanilla' }}
+    needs: vanilla-macos
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    concurrency:
+      group: world-conquer-release-latest
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: vanilla-conquer-*-macos-*
+          path: artifact
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Development Build
+          tag_name: latest
+          prerelease: true
+          files: artifact/*
+          fail_on_unmatched_files: true
