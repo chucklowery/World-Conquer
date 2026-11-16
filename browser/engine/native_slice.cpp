@@ -6,6 +6,7 @@
 #include "courier_engine_map.h"
 #include "courier_combat.h"
 #include "simulation_contract.h"
+#include "rts_world.h" // R18 native world contract; Courier remains its v1/v2 adapter.
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
 #include <cstdio>

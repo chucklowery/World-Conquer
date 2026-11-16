@@ -1,5 +1,127 @@
 # Architecture and Source Map
 
+## R18 — native world, houses and gameplay-definition registry (v3)
+
+`browser/engine/rts_world.h` provides the authoritative world/lifecycle
+model for new RTS gameplay. This C++11 layer owns **all house records,
+entity-instance records, HP, lifecycle, selection, map passability and queued
+world commands** within a match. It does not calculate movement or weapons:
+native `MapClass`/`InfantryClass::AI` and R02/R03 remain execution ports.
+The Courier mission and historical VanillaTD game modes keep their existing
+accepted authority as **compatibility adapters**. There is no new JavaScript
+world or renderer.
+
+### Identities and definitions
+
+| Namespace | Policy |
+| --- | --- |
+| Instance entity ID | Nonzero `uint32_t`: bits 31–20 are a 12-bit match epoch; bits 19–0 are a monotonically allocated counter. IDs persist across ticks and are **never reused** within a match or after restart/reconfigure. Exhausting epochs requires a fresh runtime/session, not wraparound. |
+| House and team | `uint16_t` IDs. House 0/team 0 are strictly neutral; registered houses have unique nonzero IDs and nonzero teams. Several houses may share a team, but only an entity's owning house (or server authority 0) can issue orders. Team is derived from its house, never supplied independently by a spawning caller. |
+| Gameplay definition | Immutable `game.*` string selected from a validated, version-1 native catalog, e.g. `game.aster.ranger`. Specifies faction, role, 1–4-cell footprint, positive maximum HP and a visual reference. This is **not** an entity ID. |
+| R05 visual key | `r05.*`, e.g. `r05.aster.ranger`, is only a source-authored sprite ID. Its faction, kind and footprint must match a reviewed R05 roster binding. It grants no gameplay action, economy, weapon or production ability. |
+
+The canonical source is
+`game/content/r18/definitions.rts`: UTF-8, LF/CRLF-safe,
+`RTS-DEFINITIONS|1` header, then pipe-delimited `visual` rows
+(`key|faction|role|width|height`) and `def` rows
+(`gameplay-id|faction|role|width|height|visual-key|max-hp`).
+The actual records include the row tag as the first field. All IDs are
+lowercase, bounded and restricted to safe characters. `Catalog::load`
+validates into a candidate and commits atomically, refusing unknown/duplicate
+references, conflicting role/faction/footprints, unsupported version or
+malformed fields. Its initial seven immutable R05 bindings are checked against
+`game/content/r05/roster.json` by `tools/content/test-r18.js`. New roles or
+bindings require explicit source/validator updates; art and gameplay
+identifiers are never conflated.
+
+### Ownership and lifecycle API
+
+- `World::configure(catalog,width,height,terrain,houses)` validates the
+  entire row-major map and house roster before committing; valid
+  reconfiguration starts a **new epoch**, invalid input preserves all prior
+  gameplay state. Map bounds: 8–128 per axis, at most 4,096 cells; terrain is
+  binary passability. At most 16 houses and 256 entity records (including
+  tombstones) exist in a match.
+- `World::enqueue(WorldCommand)` accepts one of spawn, select, move, stop,
+  attack, kill or despawn. Commands carry epoch, tick, global sequence,
+  issuer, owner/actor, target, definition and tile as applicable. Validation
+  checks house ownership, role/faction, target team, bounds, footprint,
+  collision, lifecycle and epoch before mutation. Neutral/server issuer 0
+  may spawn neutral actors or script player entities; nonzero issuers may
+  spawn only their own faction/house. This is a scripting/test seam, **not**
+  a build/production command.
+- Command sequences are **strictly increasing at admission** per match.
+  A rejected command does not consume its sequence. The high-water mark
+  persists after processing; replaying an executed sequence is rejected.
+  Pending commands execute by (tick, sequence, actor ID), allowing future
+  scheduled ticks. Application rechecks occupancy/aliveness to catch a prior
+  same-tick spawn, kill or movement. At most 128 commands may be queued and
+  no command may target more than 64 ticks ahead.
+- `World::process(tick)` advances the logical tick and resolves only
+  administrative/order state. A successful command emits a `command`
+  acknowledgement first, then its `spawn`, `selection`, `order`, `death`
+  or `despawn` event. Death/despawn retain a tombstone in `entities[]`,
+  with `active:false` and `lifecycle:"dead"|"despawned"`; selected ID 0
+  means no selection. Destroying a selected actor emits `selection` with
+  entity ID 0 before `death`/`despawn`. Removed IDs cannot be targeted.
+- `World::observePosition(id,x,y)` commits a coordinate *already observed*
+  from native `InfantryClass::AI` after collision validation.
+  `World::observeDamage(id,amount,source,weapon)` commits an effect already
+  resolved by R03, publishing typed damage/death events. The registry never
+  synthesizes a movement step or damage roll. Events are bounded to 256
+  pending records; `publish()` drains them once and `view()` is nonmutating.
+- `World::restart()` clears orders, events, selection and entity tombstones,
+  increments the epoch, resets tick/sequence/ID counter and emits one
+  `restart` event. A pre-restart command cannot act in a new epoch even if
+  its sequence is reused.
+
+### Snapshot and compatibility policy
+
+`worldJson(World::publish())` emits the read-only **version 3** schema:
+`{version:3, definitionSchemaVersion:1, epoch, tick, map:{width,height,terrain},
+houses:[{id,teamId,faction}], definitions:[{id,faction,role,kind,width,height,
+maxHp,visualKey}], selectedEntityId, cargo:0, phase:"playing",
+entities:[{id,definitionId,visualKey,kind,ownerId,teamId,x,y,hp,active,
+lifecycle,order}], events:[{type,epoch,tick,sequence,entityId,sourceId,
+weaponId,x,y,value,code}]}`. JSON object keys are serialized in a fixed
+order, entities in allocated-ID order, and events in execution order.
+These conventions plus a command stream are the deterministic R14 replay/save
+foundation; canonical binary save loading and multiplayer transport are
+not implemented. This schema intentionally makes house/definition ownership
+explicit instead of inventing it in JavaScript.
+
+R00 Courier **v1** and R04 map **v2** snapshots remain byte-compatible and
+continue through the unchanged `WCRTS.receive(data)` path. The bridge
+**rejects v3 by default**; a consumer that understands the new schema must
+explicitly call `WCRTS.receive(data,{allowWorldV3:true})`. It validates
+epoch/team/definition/lifecycle relationships before deep-freezing and
+publishing. Existing HUD subscribers never receive v3 accidentally.
+Regressed epochs/ticks and unannounced restarts are rejected. The standalone
+native fixture (`test-rts-world.cpp --json`) and
+`test-rts-world-bridge.js` check C++→JS event parity, unselected state,
+version negotiation, and preservation of the R00 v1 bridge.
+
+### Integration seams and current limits
+
+`rts_world_ports.h` adapts R04's validated variable-size
+`courier::State` map to `World::configure`, maps R18 instance IDs and team
+ownership onto the bounded **four-infantry** R02 diagnostic, and seeds R03's
+native weapon engine from R18 entity IDs and HP, committing its damage events
+back to the world. `test-rts-world-ports.cpp` covers these adapters and
+rejects wrong owners, duplicate actors and incompatible map dimensions.
+
+These ports provide one canonical future ownership seam; they do **not**
+claim that today's opt-in R02 fixed-18×11 diagnostic, Courier sentries or
+R04 map picker have already been rewritten as a complete RTS match.
+R02/R03/R04 remain blocked as production milestones until their live modes
+use dynamic R18 entities and pass combined browser acceptance. R06 funds and
+harvesters belong to house/entity extensions, R07 structures use footprint
+placement, R08 queues/tech go on house state, R09 exposes team-filtered
+visibility rather than the current full-information fixture, and R14 adds
+canonical save/replay hydration. R15 specifies a transport and synchronization
+policy before network play. This is not a harvesting, power, production,
+weapons-content or finished-art milestone.
+
 ## R02 — bounded production-unit orders
 
 See [R02_UNIT_ORDERS.md](R02_UNIT_ORDERS.md). An isolated R02 browser mode

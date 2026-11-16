@@ -89,6 +89,7 @@ jobs:
           node browser/engine/validate-maps.js
           node browser/engine/test-tactical-hud.js
           node browser/engine/test-simulation-bridge.js
+          node tools/content/test-r18.js
           node browser/engine/test-rts-camera.js
           node browser/engine/test-package-alpha.js
           node docs/rts-milestones/validate-roadmap.js
@@ -107,6 +108,11 @@ jobs:
           build/browser-engine/test-simulation-contract
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-production-orders.cpp -o build/browser-engine/test-production-orders
           build/browser-engine/test-production-orders
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-world.cpp -o build/browser-engine/test-rts-world
+          build/browser-engine/test-rts-world
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-world-ports.cpp -o build/browser-engine/test-rts-world-ports
+          build/browser-engine/test-rts-world-ports
+          node browser/engine/test-rts-world-bridge.js build/browser-engine/test-rts-world
           g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/replay-native-slice.cpp -o build/browser-engine/replay-native-slice
           node browser/engine/test-replay-parity.js build/browser-engine/replay-native-slice
           # The historical engine headers require the same compile definitions as VanillaTD.
