@@ -596,6 +596,81 @@ async function main() {
       assert.equal(next.entities[0].x,1);
       messages.push(`PASS: ${item.id} R18 v3 world, six true InfantryClass actors, R02 movement parity, R04 terrain, ownership and epoch restart`);
     }
+    // R20: repeated real-WASM epochs on both native RTS maps. This runs
+    // inside the compiled VanillaTD module, not the host-only fixture.
+    // Keep the normal smoke test fast when no explicit soak is requested.
+    const soakEpochs=Number(process.env.R20_WASM_SOAK_EPOCHS||0);
+    assert(Number.isInteger(soakEpochs)&&soakEpochs>=0&&soakEpochs<=24,
+           "R20_WASM_SOAK_EPOCHS must be an integer between 0 and 24");
+    if(soakEpochs){
+      for(const item of [
+        {id:"ridge-pass",goal:[6,2]},
+        {id:"marsh-border",goal:[3,1]}
+      ]){
+        await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+        await page.waitForFunction(()=>document.body.dataset.runtime==="ready"&&
+          document.getElementById("map-choice").options.length===3,undefined,{timeout:90000});
+        await page.locator("#map-choice").selectOption(item.id);
+        await page.locator("#launch-rts-match").click();
+        await page.waitForFunction(id=>WCRTS.latest()?.version===3&&
+          WCRTS.latest().map.id===id,item.id,{timeout:60000});
+        const started=Date.now(),heaps=[];
+        const pageErrorsBefore=messages.filter(m=>m.startsWith("PAGE ERROR:")).length;
+        let sampledTicks=0,lastId=0;
+        for(let cycle=0;cycle<soakEpochs;cycle++){
+          const before=await page.evaluate(()=>{
+            const s=WCRTS.latest();
+            return {epoch:s.epoch,tick:s.tick,actorId:s.entities[0].id,
+              owner:s.entities[0].ownerId,commands:s.commandStates.length};
+          });
+          assert.equal(before.epoch,cycle+1,"Native epoch skipped during soak");
+          assert.equal(before.owner,1);
+          assert.equal(before.commands,6);
+          if(lastId)assert.notEqual(before.actorId,lastId,"Native ID reused after restart");
+          assert.equal(await page.evaluate(({id,goal})=>
+            Module._Browser_Live_World_Command(1,1,id,goal[0],goal[1],0,0),
+            {id:before.actorId,goal:item.goal}),0,"Soak move was rejected");
+          await page.waitForFunction(({epoch,tick})=>WCRTS.latest()?.epoch===epoch&&
+            WCRTS.latest().tick>=tick+40,
+            {epoch:before.epoch,tick:before.tick},{timeout:25000});
+          const after=await page.evaluate(id=>{
+            const s=WCRTS.latest(),actor=s.entities.find(e=>e.id===id);
+            return {epoch:s.epoch,tick:s.tick,map:s.map.id,
+              actor:actor&&{id:actor.id,owner:actor.ownerId,x:actor.x,y:actor.y},
+              width:s.map.width,height:s.map.height,
+              resourceCount:s.map.resources.length,commands:s.commandStates.length,
+              history:WCRTS.eventHistory().length,
+              accepted:WCRTS.eventHistory().some(e=>e.type==="command"&&
+                e.entityId===id&&e.code==="accepted"),
+              heapBytes:Module.HEAPU8?.buffer?.byteLength||0};
+          },before.actorId);
+          assert.equal(after.epoch,before.epoch);
+          assert.equal(after.map,item.id);
+          assert(after.actor&&after.actor.owner===1);
+          assert(after.actor.x>=0&&after.actor.x<after.width);
+          assert(after.actor.y>=0&&after.actor.y<after.height);
+          assert.equal(after.resourceCount,2);
+          assert.equal(after.commands,6);
+          assert(after.history<=256&&after.accepted,
+                 "Native command/event history lost parity during soak");
+          assert(after.heapBytes>0,"Native WASM heap was not observable");
+          heaps.push(after.heapBytes);
+          sampledTicks+=after.tick-before.tick;
+          lastId=before.actorId;
+          assert.equal(await page.evaluate(()=>Module._Browser_Live_World_Restart()),1);
+          await page.waitForFunction(epoch=>WCRTS.latest()?.epoch===epoch+1&&
+            WCRTS.latest().selectedEntityId===0, before.epoch,{timeout:15000});
+        }
+        assert.equal(messages.filter(m=>m.startsWith("PAGE ERROR:")).length,
+                     pageErrorsBefore,"Browser page error during native R20 soak");
+        const heapGrowth=heaps.length>1?
+          Math.max(...heaps.slice(1))-Math.min(...heaps.slice(1)):0;
+        messages.push("PASS: R20 native WASM "+item.id+" "+soakEpochs+
+          " restarts, "+sampledTicks+" live ticks, bounded events and IDs, "+
+          "heap delta "+heapGrowth+" bytes, "+Math.round((Date.now()-started)/1000)+
+          " elapsed seconds (memory budget pending maintainer approval)");
+      }
+    }
     // The integrated v3 scenario uses the real R03 combat system, not Courier
     // sentry arrays or JavaScript damage. Fight to a native match outcome.
     await page.reload({waitUntil:"domcontentloaded",timeout:90000});

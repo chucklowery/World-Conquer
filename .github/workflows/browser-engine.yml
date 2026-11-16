@@ -163,6 +163,8 @@ jobs:
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install --with-deps chromium
       - name: Test actual engine in headless Chromium
+        env:
+          R20_WASM_SOAK_EPOCHS: '12'
         run: |
           node browser/engine/check-r01-ui.js
           node browser/engine/check-runtime.js
