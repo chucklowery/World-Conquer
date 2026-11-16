@@ -2,7 +2,7 @@
 
 Implement **R13** from a new context for `https://github.com/chucklowery/World-Conquer`. The browser-native VanillaTD tactical alpha has a fullscreen battlefield-left/right-sidebar HUD with minimap above build options. Original content lives in `game/content/` and `tools/content/`; HUD code lives in `browser/engine/`, with gameplay events from native C++/WASM. R01 introduces richer input/camera UX; R03 combat event semantics; R05 original faction content. Inspect these merged interfaces, `browser/engine/README.md`, and `docs/browser/BUILD.md`. No earlier chat is necessary.
 
-**Dependency gate:** R01, R03 and R05 must be `completed` in `docs/rts-milestones/MANIFEST.md`. If absent, set R13 blocked.
+**Dependency gate:** R01, R03, R05 **and R19** must be `completed` in `docs/rts-milestones/MANIFEST.md`. R19 verifies the real-match R05 visual/content binding; R13 must attach sound and effect cues to those canonical native events instead of to gallery-only state. If absent, set R13 blocked.
 
 **Deliverable:** legally distributable original audio cues for selection, commands, harvesting, production, alerts, weapon fire, destruction and match end, with per-bus volume/mute, browser audio-unlock handling and positional/priority mixing. Add native-event-driven VFX, selection/target indicators, readable damage/low-power alerts, color-blind-safe team identification, reduced-motion option, keyboard-focus states, remappable/common shortcut help and basic screen-reader text for menu/HUD state. Keep expensive effects bounded and never let sound block simulation ticks.
 

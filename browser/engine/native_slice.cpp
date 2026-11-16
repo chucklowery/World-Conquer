@@ -25,6 +25,7 @@ uint64_t nextCommandSequence=1;
 courier::EngineFootBridge footBridge;
 courier::WorldPlan worldPlacement={};
 bool engineOwned=false;
+bool combatDrill=false;
 InfantryClass* liveUnits[2]={nullptr,nullptr};
 HouseClass* liveHouse=nullptr;
 std::string missionSource;
@@ -73,6 +74,7 @@ bool placeLiveUnits(){
     if(!placed)return false;
     footBridge.units[0]=liveUnits[0];footBridge.units[1]=liveUnits[1];
     footBridge.originX=16;footBridge.originY=16;
+    footBridge.width=mission.width;footBridge.height=mission.height;
     footBridge.issueMoveMission=true;
     footBridge.worldReady=true;
     std::puts("[browser-engine-courier] production infantry=2 on-map=ready");
@@ -120,7 +122,9 @@ void tickEngineMission(){
             break;
         }
     if(mission.cargo==2)for(int i=0;i<2;i++)
-        if(mission.units[i].hp>0&&courier::distance(mission.units[i].p,mission.exit)<=1)mission.phase=1;
+        if(mission.units[i].hp>0&&
+           (mission.mapId=="courier-extraction"?courier::distance(mission.units[i].p,mission.exit)<=1:
+            courier::inRect(mission.units[i].p,mission.victory)))mission.phase=1;
 }
 
 bool restartEngineMission(){
@@ -135,8 +139,13 @@ bool restartEngineMission(){
     --ScenarioInit;
     if(!reset)return false;
     mission=courier::State();
-    if(!missionSource.empty())courier::loadMap(mission,missionSource);
+    if(!missionSource.empty()&&!courier::loadMap(mission,missionSource))return false;
+    if(combatDrill){
+        mission.units[2].p={3,2};mission.units[2].hp=8;
+        mission.units[3].p={4,4};mission.units[3].hp=8;
+    }
     combat=courier::Combat();
+    combat.drill=combatDrill;
     footBridge.units[0]=liveUnits[0];footBridge.units[1]=liveUnits[1];
     mission.orderSink=courier::EngineFootBridge::onOrder;
     mission.orderContext=&footBridge;
@@ -161,13 +170,14 @@ void outline(int x,int y,int w,int h,Uint8 r,Uint8 g,Uint8 b){
 void frame(){
     SDL_Event event;
     while(SDL_PollEvent(&event)){
-        if(event.type==SDL_MOUSEBUTTONDOWN&&event.button.button==SDL_BUTTON_LEFT){
+        if(!engineOwned&&event.type==SDL_MOUSEBUTTONDOWN&&event.button.button==SDL_BUTTON_LEFT){
             int x=event.button.x/40,y=event.button.y/40;
             if(engineOwned)synchronizeLivePositions();
-            bool attackOrdered=false;
+            bool attackOrdered=false,clickedEnemy=false;
             if(engineOwned&&mission.phase==0&&mission.units[mission.selected].hp>0){
                 for(int j=2;j<4;j++)if(mission.units[j].hp>0&&
                     (mission.units[j].p==courier::Point{x,y})){
+                    clickedEnemy=true;
                     attackOrdered=command(rts::CommandKind::Attack,
                         rts::UNIT_IDS[mission.selected],{x,y},rts::UNIT_IDS[j])==rts::ResultCode::Accepted;
                     if(attackOrdered){
@@ -177,7 +187,7 @@ void frame(){
                     break;
                 }
             }
-            if(!attackOrdered){
+            if(!clickedEnemy){
                 const int selectedBefore=mission.selected;
                 if(engineOwned){
                     int selectedUnit=-1;
@@ -198,38 +208,26 @@ void frame(){
             }
             if(mission.hasNav[mission.selected]){
                 TARGET destination=TARGET_NONE;
-                if(!engineOwned&&courier::toEngineTarget(mission.navTargets[mission.selected],destination)){
+                if(!engineOwned&&courier::toEngineTarget(mission.navTargets[mission.selected],destination,
+                                                          mission.width,mission.height)){
                     courier::Point decoded{-1,-1};
-                    if(courier::fromEngineTarget(destination,decoded))
+                    if(courier::fromEngineTarget(destination,decoded,mission.width,mission.height))
                         std::printf("[browser-native-slice] engine CELL target=%u x=%d y=%d\n",
                                     ::Target_Value(destination),decoded.x,decoded.y);
                 }
             }
             publishSimulation();
-        }else if(event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
+        }else if(!engineOwned&&event.type==SDL_KEYDOWN&&event.key.keysym.sym==SDLK_r){
             if(engineOwned){
                 if(!restartEngineMission())std::puts("[browser-engine-courier] ERROR: restart failed");
                 continue;
             }
             mission=courier::State();
-            if(!missionSource.empty())courier::loadMap(mission,missionSource);
+            if(!missionSource.empty()&&!courier::loadMap(mission,missionSource))continue;
             mission.orderSink=courier::EngineFootBridge::onOrder;
             mission.orderContext=&footBridge;
             priorCargo=priorPhase=0;
             std::puts("[browser-native-slice] mission restarted");
-        }else if(engineOwned&&mission.phase==0&&event.type==SDL_KEYDOWN&&
-                 (event.key.keysym.sym==SDLK_1||event.key.keysym.sym==SDLK_2)){
-            const int index=event.key.keysym.sym==SDLK_1?0:1;
-            if(mission.units[index].hp>0){
-                command(rts::CommandKind::Select,rts::UNIT_IDS[index]);
-                std::printf("[browser-engine-courier] selected unit=%d\n",index);
-                publishSimulation();
-            }
-        }else if(engineOwned&&mission.phase==0&&event.type==SDL_KEYDOWN&&
-                 event.key.keysym.sym==SDLK_ESCAPE){
-            command(rts::CommandKind::Stop,rts::UNIT_IDS[mission.selected]);
-            std::printf("[browser-engine-courier] cancelled unit=%d\n",mission.selected);
-            publishSimulation();
         }else if(event.type==SDL_QUIT){
             emscripten_cancel_main_loop();return;
         }
@@ -250,18 +248,28 @@ void frame(){
         }
     }
     SDL_SetRenderDrawColor(renderer,16,30,39,255);SDL_RenderClear(renderer);
-    for(int y=0;y<11;y++)for(int x=0;x<18;x++){
+    for(int y=0;y<mission.height;y++)for(int x=0;x<mission.width;x++){
         const bool blocked=!courier::inside(mission,{x,y});
+        const uint8_t type=mission.terrain[y*mission.width+x];
         fill(x*40+1,y*40+1,38,38,
-             blocked?74:(x+y)%2?48:52,blocked?85:(x+y)%2?74:82,
-             blocked?92:(x+y)%2?67:73);
+             blocked?74:type==2?109:type==3?49:(x+y)%2?48:52,
+             blocked?85:type==2?101:type==3?91:(x+y)%2?74:82,
+             blocked?92:type==2?62:type==3?99:(x+y)%2?67:73);
         if(blocked){
             if(sceneryTexture){SDL_Rect tree={x*40-4,y*40-8,48,48};
                 SDL_RenderCopy(renderer,sceneryTexture,nullptr,&tree);
             }else fill(x*40+5,y*40+5,30,4,109,122,119);
         }
     }
-    fill((mission.exit.x-1)*40,(mission.exit.y-1)*40,120,80,126,175,187);
+    for(const courier::Resource& r:mission.resources){
+        fill(r.p.x*40+12,r.p.y*40+12,16,16,142,206,87);
+    }
+    for(int i=0;i<2;i++){
+        const courier::Point p=mission.bases[i];
+        outline(p.x*40+2,p.y*40+2,36,36,i?229:90,i?149:212,119);
+    }
+    fill(mission.victory.x*40,mission.victory.y*40,
+         mission.victory.w*40,mission.victory.h*40,90,144,151);
     if(cargoTexture){SDL_Rect destination={(mission.exit.x-2)*40,(mission.exit.y-2)*40,160,160};
         SDL_RenderCopy(renderer,cargoTexture,nullptr,&destination);
     }else fill(mission.exit.x*40+7,mission.exit.y*40-11,26,55,178,223,212);
@@ -271,7 +279,11 @@ void frame(){
     }
     for(int i=0;i<4;i++){
         const courier::Unit& u=mission.units[i];if(u.hp<=0)continue;
-        if(infantryTexture){
+        if(engineOwned&&combatDrill&&i>=2){
+            fill(u.p.x*40+5,u.p.y*40+9,30,23,195,127,66);
+            fill(u.p.x*40+2,u.p.y*40+29,36,5,57,66,74);
+            outline(u.p.x*40+5,u.p.y*40+9,30,23,255,215,136);
+        }else if(infantryTexture){
             SDL_SetTextureColorMod(infantryTexture,u.enemy?245:155,u.enemy?135:255,u.enemy?140:195);
             SDL_Rect target={u.p.x*40-4,u.p.y*40-4,48,48};
             SDL_RenderCopy(renderer,infantryTexture,nullptr,&target);
@@ -299,17 +311,68 @@ void frame(){
     }
     if(mission.phase!=0){
         // Visible outcome banner; R restarts without reloading the WASM module.
-        fill(185,10,350,28,mission.phase==1?34:130,mission.phase==1?141:43,73);
+        fill(std::max(0,mission.width*20-175),10,350,28,
+             mission.phase==1?34:130,mission.phase==1?141:43,73);
     }
     SDL_RenderPresent(renderer);
 }
 }
 
-int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
+// R01 browser controller calls this narrow ABI; validation, ordering and real
+// InfantryClass destination dispatch remain exclusively in the R00 contract.
+// JavaScript passes stable entity IDs from versioned native snapshots.
+extern "C" EMSCRIPTEN_KEEPALIVE int Browser_RTS_Command(int kind,unsigned actor,int x,int y,unsigned target){
+    if(!engineOwned)return static_cast<int>(rts::ResultCode::WrongPhase);
+    if(kind<0||kind>3)return static_cast<int>(rts::ResultCode::BadTarget);
+    synchronizeLivePositions();
+    const rts::ResultCode result=command(static_cast<rts::CommandKind>(kind),actor,{x,y},target);
+    if(result==rts::ResultCode::Accepted){
+        if(kind==0)std::printf("[browser-engine-courier] selected unit=%d\n",mission.selected);
+        if(kind==1){
+            std::printf("[browser-native-slice] click x=%d y=%d selected=%d route=%u\n",x,y,
+                        mission.selected,static_cast<unsigned>(mission.units[mission.selected].route.size()));
+            if(mission.hasNav[mission.selected]&&liveUnits[mission.selected]){
+                std::printf("[browser-engine-courier] live orders=%u nav-cell=%u\n",
+                            footBridge.delivered,::Target_Value(liveUnits[mission.selected]->NavCom));
+            }
+        }
+        if(kind==2)std::printf("[browser-engine-courier] cancelled unit=%d\n",rts::unitIndex(actor));
+        if(kind==3)std::printf("[browser-engine-courier] attack-order unit=%d enemy=%d\n",
+                                rts::unitIndex(actor),rts::unitIndex(target));
+    }
+    publishSimulation();
+    return static_cast<int>(result);
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE int Browser_RTS_Restart(){
+    return restartEngineMission()?1:0;
+}
+
+int Launch_Courier_Slice(const char* argv0,bool withEngineUnits,bool drill=false){
     engineOwned=withEngineUnits;
+    combatDrill=drill;
+    if(FILE* map=std::fopen("/COURIER.MAP","rb")){
+        std::vector<char> bytes(65537);
+        const size_t count=std::fread(bytes.data(),1,bytes.size(),map);
+        const int extra=std::fgetc(map);std::fclose(map);
+        if(extra==EOF&&count>0&&count<=65536){
+            const std::string source(bytes.data(),count);
+            if(courier::loadMap(mission,source)){
+                missionSource=source;
+                std::printf("[browser-native-slice] verified external mission map loaded id=%s size=%dx%d\n",
+                            mission.mapId.c_str(),mission.width,mission.height);
+            }else std::puts("[browser-native-slice] invalid external map; using built-in fallback");
+        }else std::puts("[browser-native-slice] oversize map rejected; using built-in fallback");
+    }
+    if(combatDrill){
+        mission.units[2].p={3,2};mission.units[2].hp=8;
+        mission.units[3].p={4,4};mission.units[3].hp=8;
+        combat.drill=true;
+        std::puts("[r03-combat] armored sentry drill; rifle targets infantry only; survive or restart");
+    }
     if(SDL_Init(SDL_INIT_VIDEO)!=0){std::fprintf(stderr,"[browser-native-slice] SDL_Init failed: %s\n",SDL_GetError());return 1;}
     window=SDL_CreateWindow("Courier Extraction (native C++)",SDL_WINDOWPOS_CENTERED,
-                             SDL_WINDOWPOS_CENTERED,720,440,SDL_WINDOW_SHOWN);
+                             SDL_WINDOWPOS_CENTERED,mission.width*40,mission.height*40,SDL_WINDOW_SHOWN);
     if(!window)return 2;
     renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
     if(!renderer)renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
@@ -318,17 +381,6 @@ int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
     sceneryTexture=Browser_Load_Original_Shape(renderer,argv0,"T01.SHP");
     std::printf("[browser-native-slice] tactical infantry sprite=%s\n",infantryTexture?"loaded":"fallback");
     std::printf("[browser-native-slice] tactical terrain sprite=%s\n",sceneryTexture?"loaded":"fallback");
-    if(FILE* map=std::fopen("/COURIER.MAP","rb")){
-        char buffer[256];const size_t count=std::fread(buffer,1,sizeof(buffer),map);
-        const int extra=std::fgetc(map);std::fclose(map);
-        if(extra==EOF&&count>0){
-            std::string source(buffer,count);
-            if(courier::loadMap(mission,source)){
-                missionSource=source;
-                std::puts("[browser-native-slice] verified external mission map loaded");
-            }else std::puts("[browser-native-slice] invalid external map; using built-in fallback");
-        }
-    }
     // The observer starts disabled; engine-owned mode binds it only after
     // MapClass staging and successful production infantry placement.
     mission.orderSink=courier::EngineFootBridge::onOrder;
@@ -336,8 +388,8 @@ int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
     std::puts("[browser-native-slice] engine FootClass dispatch=deferred (world not initialized)");
     bool mapStaged=false;
     if(courier::planWorld(mission,16,16,MAP_CELL_W,MAP_CELL_H,worldPlacement)){
-        std::printf("[browser-native-slice] engine world plan=ready cells=198 walls=%d scout-cell=%d\n",
-                    worldPlacement.blockedCount,worldPlacement.units[0]);
+        std::printf("[browser-native-slice] engine world plan=ready cells=%u walls=%d scout-cell=%d\n",
+                    static_cast<unsigned>(worldPlacement.cells.size()),worldPlacement.blockedCount,worldPlacement.units[0]);
         mapStaged=courier::stageEngineMap(mission,worldPlacement);
         std::printf("[browser-native-slice] engine MapClass terrain=%s\n",mapStaged?"staged":"invalid");
     }else std::puts("[browser-native-slice] engine world plan=invalid");
@@ -375,4 +427,5 @@ int Launch_Courier_Slice(const char* argv0,bool withEngineUnits){
 }
 int Browser_Native_Slice(const char* argv0){return Launch_Courier_Slice(argv0,false);}
 int Browser_Engine_Courier(const char* argv0){return Launch_Courier_Slice(argv0,true);}
+int Browser_R03_Combat_Drill(const char* argv0){return Launch_Courier_Slice(argv0,true,true);}
 #endif

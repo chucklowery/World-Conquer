@@ -1,5 +1,11 @@
 # Build, Run and Verify
 
+The R02 four-production-unit navigation diagnostic is launched from the
+browser engine as **Play R02: four production-unit orders**. The real WASM
+build and Chromium acceptance are part of `.github/workflows/browser-engine.yml`.
+See [R02_UNIT_ORDERS.md](R02_UNIT_ORDERS.md) for controls, host tests and
+the measured bounded A* search budget.
+
 Native and Emscripten builds compile in CI. Operation Courier Extraction is
 now a browser-playable original-content native tactical alpha; the historical
 campaign game loop and external game-data startup remain experimental.
@@ -40,6 +46,13 @@ Acceptance: rectangle animates; mouse click changes color; keyboard logging visi
 
 ## VanillaTD Emscripten build (native Tactical Alpha 0.1)
 
+The R04 map pack contains three choices at launch. Before publishing or
+building new map content, run `node browser/engine/validate-maps.js` and the
+native/Node parser tests in [R04 format](R04_MAP_FORMAT.md). The browser CI
+stages every `.map` file and runs native WASM map-selection, movement, minimap
+and restart checks for both v2 examples while preserving Courier regression
+coverage. Do not stage unverified or unlicensed theater data.
+
 The browser build includes the **playable Operation Courier Extraction alpha**,
 powered by live VanillaTD infantry movement and a bounded original-content
 combat/mission layer. It is not yet a historical VanillaTD campaign build.
@@ -71,6 +84,21 @@ The gameplay launcher now transitions to a full-viewport tactical HUD with an
 aspect-correct battlefield, responsive minimap and sidebar. Build cards are
 clearly labeled as previews, not functional construction. The native browser
 test verifies the HUD layout at both desktop and compact viewport sizes.
+
+R01 adds viewport-scaled zoom/pan and a visible minimap camera rectangle, drag
+selection, Shift-add, browser-local groups, contextual native move/attack, and
+touch-friendly camera/order buttons. **Shift+1–9** stores groups (without
+intercepting browser Ctrl+digit tab shortcuts), **1–9** recalls, **M/A** selects
+target mode, arrows aim and **Enter** orders, **S** stops, **C** centers, **+/-**
+zooms, and **R** restarts. Minimap clicks pan the camera, never a unit. See
+[`R01_INPUT_UX.md`](R01_INPUT_UX.md) for the UX and keyboard-only guide. CI now
+runs `test-rts-camera.js` and Chromium `check-r01-ui.js` for multiple viewport
+shapes before the full native `check-runtime.js` mission play-through.
+R03 adds deterministic C++ weapon/armor data, typed shot/hit/damage/death
+events and an opt-in armored-sentry native defeat drill. The normal Courier
+extraction balance remains intact. See
+[`R03_COMBAT_WEAPONS.md`](R03_COMBAT_WEAPONS.md) for faction data extension,
+host commands and WebAssembly/Chromium acceptance evidence.
 
 [Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
 

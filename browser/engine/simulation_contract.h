@@ -18,12 +18,13 @@ static const EntityId UNIT_IDS[4]={1001,1002,2001,2002};
 static const EntityId CRATE_IDS[2]={3001,3002};
 static const EntityId EXTRACTION_ID=4001;
 
-enum class Kind { Infantry, Supply, Extraction };
+enum class Kind { Infantry, Vehicle, Supply, Extraction };
 enum class Terrain { Clear=0, Blocked=1, Outside=2 };
 enum class CommandKind { Select, Move, Stop, Attack };
 enum class ResultCode { Accepted, InvalidTick, DuplicateSequence, UnknownEntity,
                         NotOwned, Dead, WrongPhase, BadTarget, Blocked, Unreachable };
-enum class EventKind { Command, Selection, Position, Health, Pickup, Phase, Restart };
+enum class EventKind { Command, Selection, Position, Health, Pickup, Phase, Restart,
+                       Shot, Hit, Damage, Death };
 
 struct Command {
     uint64_t tick,sequence;
@@ -40,6 +41,8 @@ struct Event {
     EntityId entity;
     int x,y,value;
     ResultCode code;
+    EntityId sourceId;
+    uint16_t weaponId;
 };
 struct Entity {
     EntityId id;
@@ -51,18 +54,34 @@ struct Entity {
     bool active,hasOrder;
     courier::Point order;
 };
+// Optional R02 extension. Empty in Courier so existing R00 entities, events,
+// IDs and snapshot version retain their established meaning.
+struct CommandState {
+    EntityId id;
+    const char* kind,*status;
+    courier::Point destination;
+    unsigned queued;
+};
 struct Snapshot {
     unsigned version;
     uint64_t tick;
     int width,height,selected,cargo,phase;
     EntityId selectedEntityId;
     std::vector<uint8_t> terrain;
+    std::vector<uint8_t> tiles;
+    std::vector<courier::Resource> resources;
+    std::array<courier::Rect,2> spawns;
+    std::array<courier::Point,2> bases;
+    courier::Rect victory;
+    std::string mapId,title,biome;
     std::vector<Entity> entities;
     std::vector<Event> events;
+    std::vector<CommandState> commandStates;
 };
 
 inline const char* name(Kind kind){
     switch(kind){case Kind::Infantry:return "infantry";
+                 case Kind::Vehicle:return "vehicle";
                  case Kind::Supply:return "supply";
                  case Kind::Extraction:return "extraction";}
     return "unknown";
@@ -87,7 +106,11 @@ inline const char* name(EventKind kind){
         case EventKind::Health:return "health";
         case EventKind::Pickup:return "pickup";
         case EventKind::Phase:return "phase";
-        case EventKind::Restart:return "restart";}
+        case EventKind::Restart:return "restart";
+        case EventKind::Shot:return "shot";
+        case EventKind::Hit:return "hit";
+        case EventKind::Damage:return "damage";
+        case EventKind::Death:return "death";}
     return "unknown";
 }
 inline const char* phaseName(int phase){return phase==1?"won":phase==2?"lost":"playing";}
@@ -100,10 +123,11 @@ class Contract {
     std::vector<Event> events_;
     Snapshot prior_;
     bool hasPrior_;
+    int lastCombatFrame_;
 
     void emit(EventKind kind,EntityId entity,int x=0,int y=0,int value=0,
               uint64_t sequence=0,ResultCode code=ResultCode::Accepted){
-        events_.push_back({kind,static_cast<uint64_t>(state_.frame),sequence,entity,x,y,value,code});
+        events_.push_back({kind,static_cast<uint64_t>(state_.frame),sequence,entity,x,y,value,code,0,0});
     }
     ResultCode validate(const Command& c) const {
         if(c.tick<=static_cast<uint64_t>(state_.frame))return ResultCode::InvalidTick;
@@ -113,13 +137,13 @@ class Contract {
         if(state_.phase!=0)return ResultCode::WrongPhase;
         if(state_.units[i].hp<=0)return ResultCode::Dead;
         if(c.kind==CommandKind::Move){
-            if(c.tile.x<0||c.tile.y<0||c.tile.x>=18||c.tile.y>=11)return ResultCode::BadTarget;
+            if(c.tile.x<0||c.tile.y<0||c.tile.x>=state_.width||c.tile.y>=state_.height)return ResultCode::BadTarget;
             if(!courier::inside(state_,c.tile))return ResultCode::Blocked;
             if(!(c.tile==state_.units[i].p)&&courier::route(state_,i,c.tile).empty())
                 return ResultCode::Unreachable;
         }else if(c.kind==CommandKind::Attack){
             const int enemy=unitIndex(c.target);
-            if(enemy<2||state_.units[enemy].hp<=0)return ResultCode::BadTarget;
+            if(enemy<2||state_.units[enemy].hp<=0||combat_.drill)return ResultCode::BadTarget;
         }
         return ResultCode::Accepted;
     }
@@ -158,10 +182,10 @@ class Contract {
         emit(EventKind::Command,c.actor,c.tile.x,c.tile.y,0,c.sequence,result);
     }
 public:
-    Contract(courier::State& state,courier::Combat& combat):state_(state),combat_(combat),hasPrior_(false){}
+    Contract(courier::State& state,courier::Combat& combat):state_(state),combat_(combat),hasPrior_(false),lastCombatFrame_(-1){}
     Terrain terrainAt(courier::Point p) const {
-        if(p.x<0||p.y<0||p.x>=18||p.y>=11)return Terrain::Outside;
-        return state_.blocked[p.y*18+p.x]?Terrain::Blocked:Terrain::Clear;
+        if(p.x<0||p.y<0||p.x>=state_.width||p.y>=state_.height)return Terrain::Outside;
+        return state_.blocked[p.y*state_.width+p.x]?Terrain::Blocked:Terrain::Clear;
     }
     bool passable(courier::Point p) const {return terrainAt(p)==Terrain::Clear;}
     CommandResult enqueue(const Command& c){
@@ -184,21 +208,24 @@ public:
         pending_.erase(pending_.begin(),pending_.begin()+completed);
     }
     void restart(){
-        pending_.clear();events_.clear();hasPrior_=false;
+        pending_.clear();events_.clear();hasPrior_=false;lastCombatFrame_=-1;
         emit(EventKind::Restart,0);
     }
     Snapshot view() const {
         Snapshot snapshot={};
-        snapshot.version=SNAPSHOT_VERSION;
+        snapshot.version=state_.mapId=="courier-extraction"?SNAPSHOT_VERSION:2;
         snapshot.tick=static_cast<uint64_t>(state_.frame);
-        snapshot.width=18;snapshot.height=11;
+        snapshot.width=state_.width;snapshot.height=state_.height;
+        snapshot.mapId=state_.mapId;snapshot.title=state_.title;snapshot.biome=state_.biome;
+        snapshot.tiles=state_.terrain;snapshot.resources=state_.resources;
+        snapshot.spawns=state_.spawnZones;snapshot.bases=state_.bases;snapshot.victory=state_.victory;
         snapshot.selected=state_.selected;
         snapshot.selectedEntityId=UNIT_IDS[state_.selected];
         snapshot.cargo=state_.cargo;snapshot.phase=state_.phase;
         for(bool blocked:state_.blocked)snapshot.terrain.push_back(blocked?1:0);
         for(int i=0;i<4;i++){
             const courier::Unit& u=state_.units[i];
-            snapshot.entities.push_back({UNIT_IDS[i],Kind::Infantry,
+            snapshot.entities.push_back({UNIT_IDS[i],i>=2&&combat_.drill?Kind::Vehicle:Kind::Infantry,
                 i<2?PLAYER_HOUSE:SENTRY_HOUSE,i<2?PLAYER_TEAM:SENTRY_TEAM,
                 u.p,u.hp,u.hp>0,i<2&&state_.hasNav[i],i<2?state_.navTargets[i]:courier::Point{0,0}});
         }
@@ -210,6 +237,19 @@ public:
     }
     Snapshot publish(){
         Snapshot current=view();
+        // R03 is the C++ producer of weapon events; publishing an additional
+        // HUD frame or command on the same tick must not duplicate combat.
+        if(combat_.initialized&&state_.frame!=lastCombatFrame_){
+            for(const rtscombat::Event& e:combat_.events){
+                EventKind kind=EventKind::Shot;
+                if(e.type==rtscombat::Hit)kind=EventKind::Hit;
+                if(e.type==rtscombat::Damage)kind=EventKind::Damage;
+                if(e.type==rtscombat::Death)kind=EventKind::Death;
+                events_.push_back({kind,e.tick,0,e.target,e.x,e.y,e.value,
+                                   ResultCode::Accepted,e.source,e.weapon});
+            }
+            lastCombatFrame_=state_.frame;
+        }
         if(hasPrior_){
             if(current.selectedEntityId!=prior_.selectedEntityId)
                 emit(EventKind::Selection,current.selectedEntityId);
@@ -230,9 +270,35 @@ public:
 inline std::string json(const Snapshot& s){
     std::ostringstream out;
     out<<"{\"version\":"<<s.version<<",\"tick\":"<<s.tick
-       <<",\"map\":{\"width\":"<<s.width<<",\"height\":"<<s.height<<",\"terrain\":[";
+       <<",\"map\":{\"width\":"<<s.width<<",\"height\":"<<s.height
+       <<",\"id\":\""<<s.mapId<<"\",\"title\":\""<<s.title<<"\",\"biome\":\""<<s.biome
+       <<"\",\"terrain\":[";
     for(size_t i=0;i<s.terrain.size();i++){if(i)out<<',';out<<static_cast<unsigned>(s.terrain[i]);}
-    out<<"]},\"selectedEntityId\":"<<s.selectedEntityId<<",\"cargo\":"<<s.cargo
+    out<<"],\"tiles\":[";
+    for(size_t i=0;i<s.tiles.size();i++){if(i)out<<',';out<<static_cast<unsigned>(s.tiles[i]);}
+    out<<"],\"costs\":[";
+    for(size_t i=0;i<s.tiles.size();i++){if(i)out<<',';out<<courier::movementCost(s.tiles[i]);}
+    out<<"],\"resources\":[";
+    for(size_t i=0;i<s.resources.size();i++){
+        if(i)out<<',';
+        out<<"{\"x\":"<<s.resources[i].p.x<<",\"y\":"<<s.resources[i].p.y
+           <<",\"amount\":"<<s.resources[i].amount<<'}';
+    }
+    out<<"],\"spawns\":[";
+    for(int i=0;i<2;i++){
+        if(i)out<<',';
+        const courier::Rect r=s.spawns[i];
+        out<<"{\"house\":"<<i+1<<",\"x\":"<<r.x<<",\"y\":"<<r.y
+           <<",\"w\":"<<r.w<<",\"h\":"<<r.h<<'}';
+    }
+    out<<"],\"bases\":[";
+    for(int i=0;i<2;i++){
+        if(i)out<<',';
+        out<<"{\"house\":"<<i+1<<",\"x\":"<<s.bases[i].x<<",\"y\":"<<s.bases[i].y<<'}';
+    }
+    out<<"],\"victory\":{\"x\":"<<s.victory.x<<",\"y\":"<<s.victory.y
+       <<",\"w\":"<<s.victory.w<<",\"h\":"<<s.victory.h
+       <<"}},\"selectedEntityId\":"<<s.selectedEntityId<<",\"cargo\":"<<s.cargo
        <<",\"phase\":\""<<phaseName(s.phase)<<"\",\"entities\":[";
     for(size_t i=0;i<s.entities.size();i++){
         const Entity& e=s.entities[i];if(i)out<<',';
@@ -243,13 +309,21 @@ inline std::string json(const Snapshot& s){
         else out<<"null";
         out<<'}';
     }
+    out<<"],\"commandStates\":[";
+    for(size_t i=0;i<s.commandStates.size();i++){
+        const CommandState& c=s.commandStates[i];if(i)out<<',';
+        out<<"{\"entityId\":"<<c.id<<",\"kind\":\""<<c.kind
+           <<"\",\"status\":\""<<c.status<<"\",\"x\":"<<c.destination.x
+           <<",\"y\":"<<c.destination.y<<",\"queued\":"<<c.queued<<'}';
+    }
     out<<"],\"events\":[";
     for(size_t i=0;i<s.events.size();i++){
         const Event& e=s.events[i];if(i)out<<',';
         out<<"{\"type\":\""<<name(e.kind)<<"\",\"tick\":"<<e.tick
            <<",\"entityId\":"<<e.entity<<",\"sequence\":"<<e.sequence
            <<",\"x\":"<<e.x<<",\"y\":"<<e.y<<",\"value\":"<<e.value
-           <<",\"code\":\""<<name(e.code)<<"\"}";
+           <<",\"code\":\""<<name(e.code)<<"\",\"sourceId\":"<<e.sourceId
+           <<",\"weaponId\":"<<e.weaponId<<'}';
     }
     out<<"]}";return out.str();
 }

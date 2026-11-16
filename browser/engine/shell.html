@@ -44,8 +44,19 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 .hud-topbar .hud-topline{margin-left:auto;color:#bacdc5;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hud-body{min-height:0;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(275px,24vw,375px)}
 .hud-play-area{min-width:0;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at center,#1a3229 0%,#06110c 65%,#030908 100%)}
-#hud-playfield{width:100%;height:100%;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#hud-playfield #canvas{flex:none;width:720px;height:440px;max-width:none;max-height:none;margin:0;aspect-ratio:18/11;border-radius:0;border:1px solid #536b5b;object-fit:fill;box-shadow:0 0 0 1px #0c271b,0 0 60px #030906}
+#hud-playfield{position:relative;width:100%;height:100%;min-height:0;min-width:0;overflow:hidden;touch-action:none}
+#hud-playfield #canvas{position:absolute;flex:none;width:720px;height:440px;max-width:none;max-height:none;margin:0;aspect-ratio:auto;border:0;border-radius:0;object-fit:fill;box-shadow:0 0 0 1px #536b5b,0 0 60px #030906;touch-action:none}
+#hud-selection-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;background:transparent;border:0;border-radius:0;margin:0;aspect-ratio:auto}
+.hud-command-bar{position:absolute;top:10px;left:10px;z-index:3;max-width:calc(100% - 20px);display:flex;flex-wrap:wrap;gap:5px;padding:7px;background:#081710e5;border:1px solid #568469;border-radius:6px}
+.hud-command-bar button{min-height:34px;padding:6px 9px}
+.hud-command-bar button[aria-pressed="true"]{background:#557444;border-color:#def6a9}
+.hud-command-bar .hud-selection-text{width:100%;font-size:.78rem;color:#d6ffb5;font-weight:700}
+.hud-pan-pad{position:absolute;bottom:13px;left:13px;z-index:3;display:flex;gap:5px;background:#0a1b15d9;padding:5px;border-radius:6px}
+.hud-pan-pad button{padding:5px 9px;min-width:30px}
+/* R02 owns its native canvas inputs; R01-only controls must not intercept them. */
+body[data-mode="r02-orders"] .hud-command-bar,
+body[data-mode="r02-orders"] .hud-pan-pad,
+body[data-mode="r02-orders"] #hud-selection-overlay{display:none}
 .hud-toast-anchor{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(92%,680px);pointer-events:none;text-align:center}
 .hud-toast-anchor .alpha-event{padding:8px 12px;background:#061912c9;border:1px solid #5e9473;border-radius:6px;margin:0;min-height:0;color:#d0ffe4}
 .hud-toast-anchor .alpha-result{margin:8px 0;background:#423d24ef}
@@ -76,6 +87,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 .hud-shell.sidebar-closed .hud-body{grid-template-columns:minmax(0,1fr) 0}
 .hud-shell.sidebar-closed .hud-sidebar{visibility:hidden}
 body.hud-active{overflow:hidden}
+@media(max-width:560px){.hud-command-bar{top:5px;left:5px;right:5px;font-size:.75rem;padding:4px}.hud-command-bar button{min-height:30px;padding:4px 7px}.hud-pan-pad{bottom:6px;left:6px}}
 @media(max-width:900px){
   .hud-shell{grid-template-rows:50px minmax(0,1fr) 43px}
   .hud-body{display:block;position:relative}
@@ -97,10 +109,14 @@ body.hud-active{overflow:hidden}
 <div class="alpha-banner">
 <div class="eyebrow">Operation Courier Extraction</div>
 <h2>Your squad. Your mission.</h2>
-<p>Move with a click, click a red sentry to attack, and keep at least one soldier alive. Recover two amber crates and reach the aircraft to win.</p>
+<p>Select a unit, drag a selection box, or use a group. Right-click to order movement or attack; left-click ground also moves the selected squad for the alpha mission.</p>
 <div class="alpha-objectives"><span>2 squad members</span><span>2 guarded crates</span><span>Live enemy patrols</span><span>Extraction victory</span></div>
+<label for="map-choice">Playable map</label>
+<select id="map-choice" aria-label="Playable map" style="padding:9px;color:#edf4fa;background:#172e37;border:1px solid #64848a;border-radius:7px"><option value="courier-extraction">Courier Extraction · 18 × 11</option></select>
 <button type="button" id="launch-alpha" class="primary" disabled>Start Tactical Alpha</button>
-<p class="note">Controls: click a squad member or press 1/2 to select; click ground to move; click a red sentry to attack; Esc cancels orders; R restarts.</p>
+<p class="note">Controls: drag to select; Shift-click to add; Shift+1–9 save a group, 1–9 recall; right-click issues orders; M/A command modes, S stop, arrow keys pan, +/- zoom, R restart. Full help is in the in-game Controls tab.</p>
+<button type="button" id="launch-r03-drill" disabled>R03 armored-sentry defeat drill</button>
+<p class="note">Optional combat drill: enemy armored vehicles cannot be targeted by the squad's infantry-only rifles. Observe damage, defeat, and restart. The regular Courier mission above is unchanged.</p>
 </div>
 <canvas id="canvas" tabindex="0" width="720" height="440" aria-label="World-Conquer native tactical battlefield"></canvas>
 <p id="engine-courier-status" class="status" role="status" aria-live="polite" hidden>Engine-owned mission ready to launch.</p>
@@ -120,6 +136,8 @@ body.hud-active{overflow:hidden}
 <button type="button" id="run-wireframes" disabled>Render six wireframe assets</button>
 <button type="button" id="run-native-slice" disabled>Play mission in native C++ engine</button>
 <button type="button" id="run-engine-courier" disabled>Play Courier with native infantry movement (experimental)</button>
+<button type="button" id="run-r02-orders" disabled>Play R02: four production-unit orders</button>
+<p class="note">R02 uses four real VanillaTD infantry units and MapClass terrain. Select with 1–4 or click; click ground to move, Shift+click attack-move, P then click to patrol, G then click a friendly to guard, H to hold, S/Esc to stop, Ctrl+click to queue, and R to restart. Order states and rejected destinations appear in the native HUD.</p>
 <p class="note">The experimental native mode behind Alpha 0.1 uses VanillaTD movement plus deterministic Courier combat, objectives, and sentry AI. Historical campaign systems remain separate.</p>
 <button type="button" id="run-unit-probe" disabled>Test native infantry allocation (experimental)</button>
 <p class="note">The experimental infantry diagnostic allocates a production house and places one E1 unit onto native map cells. It is a one-shot probe, not the playable mission; reload before switching modes.</p>
@@ -155,21 +173,37 @@ body.hud-active{overflow:hidden}
 <div id="tactical-hud" class="hud-shell" hidden aria-label="World-Conquer tactical command interface">
   <header class="hud-topbar">
     <span class="hud-brand">WORLD-CONQUER</span>
-    <strong class="hud-mission">COURIER EXTRACTION</strong>
+    <strong class="hud-mission" id="hud-mission-title">COURIER EXTRACTION</strong>
     <span class="hud-topline">TACTICAL ALPHA 0.1 · ORIGINAL CONTENT</span>
     <button type="button" id="hud-sidebar-toggle" aria-controls="hud-sidebar" aria-expanded="true">Panels</button>
     <button type="button" id="hud-fullscreen" aria-pressed="false" title="Toggle browser fullscreen">⛶ Fullscreen</button>
   </header>
   <div class="hud-body">
     <main class="hud-play-area" aria-label="Active battlefield">
-      <div id="hud-playfield"></div>
+      <div id="hud-playfield"><canvas id="hud-selection-overlay" aria-hidden="true"></canvas></div>
+      <div class="hud-command-bar" role="group" aria-label="Unit orders and camera zoom">
+        <span id="hud-selection-text" class="hud-selection-text" aria-live="polite">Scout · 1 selected</span>
+        <button type="button" data-command-mode="context" aria-pressed="true">Context</button>
+        <button type="button" data-command-mode="move" aria-pressed="false">Move (M)</button>
+        <button type="button" data-command-mode="attack" aria-pressed="false">Attack (A)</button>
+        <button type="button" id="hud-stop">Stop (S)</button>
+        <button type="button" id="hud-center">Center (C)</button>
+        <button type="button" id="hud-zoom-out" aria-label="Zoom out">−</button>
+        <button type="button" id="hud-zoom-in" aria-label="Zoom in">+</button>
+      </div>
+      <div class="hud-pan-pad" role="group" aria-label="Pan camera">
+        <button type="button" id="hud-pan-left" aria-label="Pan left">←</button>
+        <button type="button" id="hud-pan-up" aria-label="Pan up">↑</button>
+        <button type="button" id="hud-pan-down" aria-label="Pan down">↓</button>
+        <button type="button" id="hud-pan-right" aria-label="Pan right">→</button>
+      </div>
       <div id="hud-toast-anchor" class="hud-toast-anchor"></div>
     </main>
     <aside id="hud-sidebar" class="hud-sidebar" aria-label="Command sidebar">
-      <div class="hud-sidebar-heading"><span>Tactical minimap</span><span>18 × 11</span></div>
+      <div class="hud-sidebar-heading"><span>Tactical minimap</span><span id="hud-map-size">18 × 11</span></div>
       <div class="hud-map-wrap">
         <canvas id="hud-minimap" width="360" height="220" aria-label="Live overview of terrain, allied infantry, sentries, crates and extraction"></canvas>
-        <p id="hud-map-readout" role="status">Click a tile to inspect · issue orders on the battlefield</p>
+        <p id="hud-map-readout" role="status">Click the minimap to pan the camera (never a unit order)</p>
       </div>
       <nav class="hud-sidebar-nav" role="tablist" aria-label="Sidebar navigation">
         <button type="button" role="tab" id="hud-tab-build" aria-controls="hud-build-panel" aria-selected="true" data-hud-tab="build">Build</button>
@@ -193,11 +227,12 @@ body.hud-active{overflow:hidden}
       </section>
       <section id="hud-controls-panel" class="hud-section-panel" role="tabpanel" aria-labelledby="hud-tab-controls" hidden>
         <h3>Squad controls</h3>
-        <dl class="hud-controls-list"><dt>Click ally</dt><dd>Select a soldier</dd><dt>Click ground</dt><dd>Move to destination</dd><dt>Click sentry</dt><dd>Attack target</dd><dt>1 / 2</dt><dd>Scout / Ranger</dd><dt>Esc</dt><dd>Cancel orders</dd><dt>R</dt><dd>Restart mission</dd><dt>⛶</dt><dd>Toggle fullscreen</dd></dl>
+        <dl class="hud-controls-list"><dt>Left click / drag</dt><dd>Select one / box-select squad. Ground click also moves.</dd><dt>Shift-click / drag</dt><dd>Add units to the current selection.</dd><dt>Right click</dt><dd>Move to ground; attack enemy.</dd><dt>M / A</dt><dd>Explicit move / attack target mode; arrows aim and Enter orders without a pointer.</dd><dt>S / Esc</dt><dd>Stop selected units / cancel mode.</dd><dt>Shift+1–9</dt><dd>Save selected units to a control group (browser-safe).</dd><dt>1–9</dt><dd>Recall group; 1/2 select Scout/Ranger until assigned.</dd><dt>C / arrows / W / D</dt><dd>Center on selection / pan camera (in context mode).</dd><dt>Wheel / + / −</dt><dd>Zoom camera. Space+drag or middle-drag pans.</dd><dt>Minimap tap</dt><dd>Recenter camera without ordering a unit.</dd><dt>Touch</dt><dd>Tap unit / target, drag map to pan; use on-screen modes and zoom buttons.</dd><dt>R</dt><dd>Restart mission.</dd><dt>⛶</dt><dd>Toggle fullscreen.</dd></dl>
+        <label class="note"><input type="checkbox" id="hud-edge-scroll"> Edge-scroll camera (mouse; off by default)</label>
       </section>
     </aside>
   </div>
-  <footer class="hud-footer"><div id="hud-status-slot"></div><span class="hud-shortcuts">1/2 Select · Esc Hold · R Restart</span></footer>
+  <footer class="hud-footer"><div id="hud-status-slot"></div><span class="hud-shortcuts">Shift add · Shift+1–9 groups · M/A orders · +/- zoom · R restart</span></footer>
 </div>
 <script src="asset-import.js"></script>
 <script src="original-asset.js"></script>
@@ -207,6 +242,8 @@ body.hud-active{overflow:hidden}
 <script src="mission-pack.js"></script>
 <script src="tactical-hud.js"></script>
 <script src="simulation-bridge.js"></script>
+<script src="rts-camera.js"></script>
+<script src="rts-input-ui.js"></script>
 <script>
 (function () {
   "use strict";
@@ -278,7 +315,10 @@ body.hud-active{overflow:hidden}
   const wireframes = document.getElementById("run-wireframes");
   const nativeSlice = document.getElementById("run-native-slice");
   const alphaLaunch = document.getElementById("launch-alpha");
+  const r03Drill = document.getElementById("launch-r03-drill");
   const engineCourier = document.getElementById("run-engine-courier");
+  const r02Launch = document.getElementById("run-r02-orders");
+  const mapChoice = document.getElementById("map-choice");
   const engineHud = document.getElementById("engine-courier-status");
   const alphaEvent = document.getElementById("alpha-event");
   const alphaResult = document.getElementById("alpha-result");
@@ -301,14 +341,27 @@ body.hud-active{overflow:hidden}
     supply:"Supply depot — planned logistics and resupply. Placement is not yet enabled."
   };
   let hudModel=WCTacticalHUD.create();
+  const hudInput=WCRTSBrowserInput.mount({
+    playfield:hudPlayfield,canvas,
+    overlay:document.getElementById("hud-selection-overlay"),
+    minimap:hudMinimap,readout:hudMapReadout,
+    selectionLabel:document.getElementById("hud-selection-text"),
+    modeButtons:document.querySelectorAll("[data-command-mode]"),
+    onCommand:({kind,actor,x,y,target})=>{
+      const kinds={select:0,move:1,stop:2,attack:3};
+      if(typeof Module._Browser_RTS_Command!=="function")throw Error("Native RTS command boundary not ready");
+      return Module._Browser_RTS_Command(kinds[kind],actor,x,y,target);
+    },
+    onRestart:()=>{
+      if(typeof Module._Browser_RTS_Restart!=="function")throw Error("Native RTS restart boundary not ready");
+      Module._Browser_RTS_Restart();
+    },
+    onDrawMinimap:viewport=>WCTacticalHUD.draw(hudMinimap,hudModel,viewport)
+  });
 
   function resizeBattlefield(){
     if(tacticalHUD.hidden)return;
-    const width=hudPlayfield.clientWidth,height=hudPlayfield.clientHeight;
-    if(!width||!height)return;
-    const scale=Math.min(width/720,height/440);
-    canvas.style.width=Math.max(1,Math.floor(720*scale))+"px";
-    canvas.style.height=Math.max(1,Math.floor(440*scale))+"px";
+    hudInput.resize();
   }
   function setSidebarOpen(open){
     tacticalHUD.classList.toggle("sidebar-closed",!open);
@@ -324,7 +377,7 @@ body.hud-active{overflow:hidden}
     notifications.appendChild(alphaEvent);
     notifications.appendChild(alphaResult);
     setSidebarOpen(!window.matchMedia("(max-width:900px)").matches);
-    WCTacticalHUD.draw(hudMinimap,hudModel);
+    hudInput.resize();
     resizeBattlefield();
   }
   hudSidebarToggle.addEventListener("click",()=>{
@@ -347,14 +400,15 @@ body.hud-active{overflow:hidden}
   window.addEventListener("resize",resizeBattlefield);
   window.matchMedia("(max-width:900px)").addEventListener("change",event=>setSidebarOpen(!event.matches));
   if(typeof ResizeObserver!=="undefined")new ResizeObserver(resizeBattlefield).observe(hudPlayfield);
-  hudMinimap.addEventListener("click",event=>{
+  // Preserve R01 click-to-recenter behavior; hover provides R04's terrain
+  // inspector without stealing the camera's minimap click/readout.
+  hudMinimap.addEventListener("mousemove",event=>{
+    if(document.body.dataset.mode!=="engine-courier")return;
     const rect=hudMinimap.getBoundingClientRect();
-    const x=Math.min(17,Math.max(0,Math.floor((event.clientX-rect.left)/rect.width*18)));
-    const y=Math.min(10,Math.max(0,Math.floor((event.clientY-rect.top)/rect.height*11)));
+    const x=Math.min(hudModel.width-1,Math.max(0,Math.floor((event.clientX-rect.left)/rect.width*hudModel.width)));
+    const y=Math.min(hudModel.height-1,Math.max(0,Math.floor((event.clientY-rect.top)/rect.height*hudModel.height)));
     const terrain=WCTacticalHUD.inspect(hudModel,x,y);
-    hudMapReadout.textContent=`${terrain} · Sector ${x+1},${y+1} · Order units on the battlefield`;
-    WCTacticalHUD.draw(hudMinimap,hudModel);
-    canvas.focus();
+    hudMapReadout.textContent=`${terrain} · Sector ${x+1},${y+1} · Click to recenter camera`;
   });
   document.querySelectorAll("[data-hud-tab]").forEach(button=>button.addEventListener("click",()=>{
     const active=button.dataset.hudTab;
@@ -396,9 +450,27 @@ body.hud-active{overflow:hidden}
   // Native C++ publishes the sole gameplay state. The HUD is a read-only
   // projection; historical runtime log messages remain diagnostics only.
   WCRTS.subscribe(snapshot=>{
+    if(document.body.dataset.mode==="r02-orders"){
+      WCTacticalHUD.applyOrdersSnapshot(hudModel,snapshot);
+      WCTacticalHUD.draw(hudMinimap,hudModel);
+      const unit=snapshot.commandStates.find(o=>o.entityId===snapshot.selectedEntityId);
+      engineHud.dataset.snapshotVersion=String(snapshot.version);
+      engineHud.dataset.snapshotTick=String(snapshot.tick);
+      engineHud.textContent="Infantry "+(snapshot.selectedEntityId-1000)+
+        " · "+(unit?unit.kind.replaceAll("_"," ")+" / "+unit.status+
+        " · queued "+unit.queued:"idle")+
+        " · tick "+snapshot.tick;
+      for(const event of snapshot.events){
+        if(event.type==="command"&&event.code!=="accepted")
+          alphaEvent.textContent="Order rejected: "+event.code.replaceAll("_"," ")+".";
+        if(event.type==="restart")alphaEvent.textContent="Four native units ready.";
+      }
+      return;
+    }
     if(document.body.dataset.mode!=="engine-courier")return;
     WCTacticalHUD.applySnapshot(hudModel,snapshot);
-    WCTacticalHUD.draw(hudMinimap,hudModel);
+    hudInput.receive(snapshot);
+    document.getElementById("hud-map-size").textContent=`${hudModel.width} × ${hudModel.height}`;
     const units=snapshot.entities;
     const hp=id=>units.find(entity=>entity.id===id).hp;
     alphaStats={cargo:snapshot.cargo,players:[hp(1001),hp(1002)],
@@ -409,6 +481,12 @@ body.hud-active{overflow:hidden}
     for(const event of snapshot.events){
       if(event.type==="restart")alphaEvent.textContent="Squad reassembled. Recover both crates and extract.";
       if(event.type==="pickup")alphaEvent.textContent=`Supply secured: ${snapshot.cargo} of 2 crates. ${snapshot.cargo===2?"Reach the aircraft to extract!":"Keep moving!"}`;
+      if(event.type==="shot")alphaEvent.textContent=`Weapon ${event.weaponId} fired — ${event.sourceId} engaging ${event.entityId}.`;
+      if(event.type==="damage")alphaEvent.textContent=event.entityId<2000?
+        `Squad under fire! ${event.value} damage to ${event.entityId}.`:
+        `Sentry ${event.entityId} takes ${event.value} damage.`;
+      if(event.type==="death")alphaEvent.textContent=event.entityId<2000?
+        `${event.entityId===1001?"Scout":"Ranger"} down!`:`Enemy sentry ${event.entityId} defeated!`;
       if(event.type==="health")alphaEvent.textContent=event.entityId<2000?
         `${event.entityId===1001?"Scout":"Ranger"} under fire — ${Math.max(0,event.value)} HP remaining!`:
         (event.value<=0?"Enemy sentry eliminated!":"Sentry hit — keep up the pressure!");
@@ -435,13 +513,16 @@ body.hud-active{overflow:hidden}
     document.body.dataset.runtime = kind;
   }
   function controls() {
+    mapChoice.disabled=started||preparingCourier;
     probe.disabled = !ready || started;
     cooperative.disabled = !ready || started;
     shape.disabled = !ready || started || loadingAssets;
     wireframes.disabled = !ready || started || loadingAssets;
     nativeSlice.disabled = !ready || started;
     alphaLaunch.disabled = !ready || started || preparingCourier;
+    r03Drill.disabled = !ready || started || preparingCourier;
     engineCourier.disabled = !ready || started || preparingCourier;
+    r02Launch.disabled = !ready || started || preparingCourier;
     unitProbe.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
@@ -451,7 +532,8 @@ body.hud-active{overflow:hidden}
     started = true;
     controls();
     document.body.dataset.mode = mode;
-    const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",probe:"SDL2 probe running",
+    const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",
+      "r02-orders":"Playing native production-unit commands",probe:"SDL2 probe running",
       cooperative:"Cooperative C++ loop running",assets:"Checking engine file search",
       shape:"Rendering original sprite",wireframes:"Rendering wireframe roster"};
     status(names[mode]||"Starting game (experimental)","running");
@@ -469,23 +551,41 @@ body.hud-active{overflow:hidden}
   probe.addEventListener("click", () => run(["--browser-probe"], "probe"));
   cooperative.addEventListener("click", () => run(["--browser-cooperative-probe"], "cooperative"));
   unitProbe.addEventListener("click", () => run(["--browser-unit-probe"], "unit-probe"));
-  async function launchCourier(mode) {
+  async function launchCourier(mode,drill=false) {
     if(!ready||started||preparingCourier)return;
     preparingCourier=true;
     status("Preparing the Courier mission and verified original art…","loading");
     alphaLaunch.disabled=true;
+    r03Drill.disabled=true;
     nativeSlice.disabled=true;
     engineCourier.disabled=true;
+    r02Launch.disabled=true;
     try{
       const result=await WCWireframes.load(Module.FS,"wireframes/manifest.json");
       report("[browser-native-slice] staged verified tactical SHP pack ("+result.shapes+" resources)");
     }catch(error){report("[browser-native-slice] Tactical SHP pack unavailable; using unit markers: "+error.message,true);}
     try{
-      const mission=await WCMissionPack.load();
+      const mission=await WCMissionPack.load("missions",fetch,undefined,
+        mode==="r02-orders"||drill?"courier-extraction":mapChoice.value);
       Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
-      if(mode==="engine-courier")hudModel=WCTacticalHUD.create(mission.map);
-      report("[browser-native-slice] staged verified original-content mission map");
-    }catch(error){report("[browser-native-slice] Mission pack unavailable; using built-in map: "+error.message,true);}
+      if(mode==="engine-courier"||mode==="r02-orders")hudModel=WCTacticalHUD.create(mission.map);
+      document.getElementById("hud-mission-title").textContent=mission.parsed.title.toUpperCase();
+      canvas.width=mission.parsed.width*40;
+      canvas.height=mission.parsed.height*40;
+      hudMinimap.width=mission.parsed.width*20;
+      hudMinimap.height=mission.parsed.height*20;
+      hudMinimap.style.aspectRatio=mission.parsed.width+"/"+mission.parsed.height;
+      document.getElementById("hud-map-size").textContent=`${mission.parsed.width} × ${mission.parsed.height}`;
+      report(`[browser-native-slice] staged verified original-content mission map id=${mission.parsed.id} size=${mission.parsed.width}x${mission.parsed.height}`);
+    }catch(error){
+      // Reject corrupt content before starting native gameplay or replacing the
+      // staged map. Never silently run a different mission than selected.
+      report("[browser-native-slice] Map rejected; current state preserved: "+error.message,true);
+      status("Map rejected; select a valid map and retry","error");
+      preparingCourier=false;
+      controls();
+      return;
+    }
     try {
       if(!hdImages)hdImages=await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
       const offscreen=document.createElement("canvas");
@@ -498,22 +598,30 @@ body.hud-active{overflow:hidden}
     } catch(error) {
       report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
     }
-    canvas.style.aspectRatio="18/11";
-    if(mode==="engine-courier"){
+    canvas.style.aspectRatio=hudModel.width+"/"+hudModel.height;
+    if(mode==="engine-courier"||mode==="r02-orders"){
       WCRTS.clear();
       activateTacticalHUD();
+      if(mode==="r02-orders")document.querySelector(".hud-mission").textContent="R02 PRODUCTION ORDERS";
       engineHud.hidden=false;
       alphaEvent.hidden=false;
-      alphaEvent.textContent="Squad deployed. Two crates are marked in amber.";
-      alphaStats=initialAlphaStats();
-      updateAlphaStatus();
+      alphaEvent.textContent=mode==="r02-orders"?"Four native infantry units ready.":
+        drill?"Armored-sentry drill: rifles reject vehicle targets. Watch native damage and defeat; R restarts.":
+        "Squad deployed. Two crates are marked in amber.";
+      if(mode==="engine-courier"){
+        alphaStats=initialAlphaStats();
+        updateAlphaStatus();
+      }
     }
-    run([mode==="engine-courier"?"--browser-engine-courier":"--browser-native-slice"],mode);
+    run([drill?"--browser-r03-combat-drill":mode==="engine-courier"?"--browser-engine-courier":
+      mode==="r02-orders"?"--browser-r02-orders":"--browser-native-slice"],mode);
     preparingCourier=false;
   }
   nativeSlice.addEventListener("click",()=>launchCourier("native-slice"));
   engineCourier.addEventListener("click",()=>launchCourier("engine-courier"));
+  r02Launch.addEventListener("click",()=>launchCourier("r02-orders"));
   alphaLaunch.addEventListener("click",()=>launchCourier("engine-courier"));
+  r03Drill.addEventListener("click",()=>launchCourier("engine-courier",true));
   shape.addEventListener("click", async () => {
     if (!ready || started || loadingAssets) return;
     loadingAssets = true;
@@ -592,6 +700,15 @@ body.hud-active{overflow:hidden}
       status("Runtime ready; select a mode", "ready");
       report("[browser] Real VanillaTD WASM runtime ready; game main() deferred.");
       controls();
+      WCMissionPack.list().then(pack=>{
+        mapChoice.replaceChildren(...pack.maps.map(entry=>{
+          const option=document.createElement("option");
+          option.value=entry.id;
+          option.textContent=`${entry.title} · ${entry.width} × ${entry.height}`;
+          return option;
+        }));
+        mapChoice.value=pack.default;
+      }).catch(error=>report("[maps] Mission listing unavailable: "+error.message,true));
     }
   };
 })();
