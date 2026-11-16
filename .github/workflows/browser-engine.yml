@@ -3,6 +3,7 @@ name: Browser VanillaTD engine compile
 on:
   workflow_dispatch:
   push:
+    branches: [vanilla]
     paths:
       - 'CMakeLists.txt'
       - 'tiberiandawn/**'
