@@ -21,12 +21,13 @@ static const uint16_t WORLD_MAX_EPOCH=(1u<<12)-1;
 
 enum class Role { Infantry, Vehicle, Structure, Resource };
 enum class Life { Alive, Dead, Despawned };
-enum class WorldAction { Spawn, Select, Move, Stop, Attack, Despawn, Kill };
+enum class WorldAction { Spawn, Select, Move, Stop, Attack, Despawn, Kill,
+    AttackMove, Hold, Guard, Patrol };
 enum class WorldCode { Accepted, InvalidEpoch, InvalidTick, DuplicateSequence,
     UnknownHouse, UnknownEntity, UnknownDefinition, NotOwned, BadTeam,
-    Dead, BadTarget, Blocked, Occupied, QueueFull, Capacity, WrongFaction };
+    Dead, BadTarget, Blocked, Occupied, QueueFull, Capacity, WrongFaction, Unreachable };
 enum class WorldEventType { Command, Spawn, Selection, Order, Position,
-    Damage, Death, Despawn, Restart };
+    Damage, Death, Despawn, Restart, Shot, Hit };
 
 inline const char* roleName(Role r){
     switch(r){case Role::Infantry:return "infantry";case Role::Vehicle:return "vehicle";
@@ -42,7 +43,9 @@ inline const char* actionName(WorldAction a){
     switch(a){case WorldAction::Spawn:return "spawn";case WorldAction::Select:return "select";
         case WorldAction::Move:return "move";case WorldAction::Stop:return "stop";
         case WorldAction::Attack:return "attack";case WorldAction::Despawn:return "despawn";
-        case WorldAction::Kill:return "kill";}
+        case WorldAction::Kill:return "kill";case WorldAction::AttackMove:return "attack_move";
+        case WorldAction::Hold:return "hold";case WorldAction::Guard:return "guard";
+        case WorldAction::Patrol:return "patrol";}
     return "unknown";
 }
 inline const char* codeName(WorldCode c){
@@ -61,7 +64,8 @@ inline const char* codeName(WorldCode c){
         case WorldCode::Occupied:return "occupied";
         case WorldCode::QueueFull:return "queue_full";
         case WorldCode::Capacity:return "capacity";
-        case WorldCode::WrongFaction:return "wrong_faction";}
+        case WorldCode::WrongFaction:return "wrong_faction";
+        case WorldCode::Unreachable:return "unreachable";}
     return "unknown";
 }
 inline const char* worldEventName(WorldEventType t){
@@ -69,7 +73,8 @@ inline const char* worldEventName(WorldEventType t){
         case WorldEventType::Spawn:return "spawn";case WorldEventType::Selection:return "selection";
         case WorldEventType::Order:return "order";case WorldEventType::Position:return "position";
         case WorldEventType::Damage:return "damage";case WorldEventType::Death:return "death";
-        case WorldEventType::Despawn:return "despawn";case WorldEventType::Restart:return "restart";}
+        case WorldEventType::Despawn:return "despawn";case WorldEventType::Restart:return "restart";
+        case WorldEventType::Shot:return "shot";case WorldEventType::Hit:return "hit";}
     return "unknown";
 }
 inline bool safeKey(const std::string& s){
@@ -226,6 +231,24 @@ struct WorldEvent {
     WorldCode code;
     int x,y,value;
 };
+struct WorldCommandState {
+    EntityId entityId;
+    std::string kind,status;
+    int x,y;
+    unsigned queued;
+};
+struct WorldMapResource { int x,y,amount; };
+struct WorldMapSpawn { HouseId house;int x,y,w,h; };
+struct WorldMapBase { HouseId house;int x,y; };
+struct WorldMapMetadata {
+    std::string id,title,biome;
+    std::vector<uint8_t> tiles,costs;
+    std::vector<WorldMapResource> resources;
+    std::vector<WorldMapSpawn> spawns;
+    std::vector<WorldMapBase> bases;
+    int victoryX,victoryY,victoryW,victoryH;
+    bool present;
+};
 struct WorldSnapshot {
     unsigned version,definitionSchemaVersion;
     uint16_t epoch;
@@ -237,6 +260,9 @@ struct WorldSnapshot {
     std::vector<WorldEntity> entities;
     std::vector<Definition> definitions;
     std::vector<WorldEvent> events;
+    std::vector<WorldCommandState> commandStates;
+    WorldMapMetadata mapMetadata;
+    std::string phase;
 };
 
 class World {
@@ -301,7 +327,9 @@ class World {
         switch(c.action){
             case WorldAction::Spawn:case WorldAction::Select:case WorldAction::Move:
             case WorldAction::Stop:case WorldAction::Attack:case WorldAction::Despawn:
-            case WorldAction::Kill:break;
+            case WorldAction::Kill:case WorldAction::AttackMove:
+            case WorldAction::Hold:case WorldAction::Guard:
+            case WorldAction::Patrol:break;
             default:return WorldCode::BadTarget;
         }
         if(c.action==WorldAction::Spawn){
@@ -332,7 +360,8 @@ class World {
         if(c.action==WorldAction::Kill&&c.issuer!=0)return WorldCode::NotOwned;
         if(c.owner!=e->owner&&(c.issuer!=0||c.owner!=0))return WorldCode::BadTeam;
         if(e->life!=Life::Alive)return WorldCode::Dead;
-        if(c.action==WorldAction::Move){
+        if(c.action==WorldAction::Move||c.action==WorldAction::AttackMove||
+           c.action==WorldAction::Patrol){
             const Definition* d=catalog_.find(e->definitionId);
             if(!d||!inside(c.x,c.y,d->width,d->height))return WorldCode::BadTarget;
             if(!areaFree(c.x,c.y,*d,e->id))return WorldCode::Blocked;
@@ -343,6 +372,10 @@ class World {
             const WorldEntity* target=findInternal(c.target);
             if(!target||target->life!=Life::Alive||target->team==e->team)
                 return WorldCode::BadTarget;
+        }else if(c.action==WorldAction::Guard){
+            const WorldEntity* target=findInternal(c.target);
+            if(!target||target->life!=Life::Alive||target->id==e->id||
+               target->team!=e->team||!inside(c.x,c.y))return WorldCode::BadTarget;
         }
         return WorldCode::Accepted;
     }
@@ -358,12 +391,15 @@ class World {
         }else if(c.actor){
             const WorldEntity* e=findInternal(c.actor);
             if(!e||e->life!=Life::Alive)result=WorldCode::Dead;
-            else if(c.action==WorldAction::Move){
+            else if(c.action==WorldAction::Move||c.action==WorldAction::AttackMove||
+                    c.action==WorldAction::Patrol){
                 const Definition* d=catalog_.find(e->definitionId);
                 if(!d||!areaFree(c.x,c.y,*d,e->id))result=WorldCode::Blocked;
-            }else if(c.action==WorldAction::Attack){
+            }else if(c.action==WorldAction::Attack||c.action==WorldAction::Guard){
                 const WorldEntity* t=findInternal(c.target);
-                if(!t||t->life!=Life::Alive||t->team==e->team)result=WorldCode::BadTarget;
+                if(!t||t->life!=Life::Alive||
+                   (c.action==WorldAction::Attack?t->team==e->team:
+                    t->team!=e->team))result=WorldCode::BadTarget;
             }
         }
         emit(WorldEventType::Command,c.sequence,c.actor,c.x,c.y,0,result);
@@ -379,11 +415,13 @@ class World {
             selected_=c.actor;
             emit(WorldEventType::Selection,c.sequence,selected_);
         }else if(c.action==WorldAction::Move||c.action==WorldAction::Stop||
-                 c.action==WorldAction::Attack){
+                 c.action==WorldAction::Attack||c.action==WorldAction::AttackMove||
+                 c.action==WorldAction::Hold||c.action==WorldAction::Guard||
+                 c.action==WorldAction::Patrol){
             WorldEntity* e=mutableEntity(c.actor);
             e->hasOrder=c.action!=WorldAction::Stop;
             e->orderX=c.x;e->orderY=c.y;
-            e->target=c.action==WorldAction::Attack?c.target:0;
+            e->target=(c.action==WorldAction::Attack||c.action==WorldAction::Guard)?c.target:0;
             emit(WorldEventType::Order,c.sequence,c.actor,c.x,c.y);
         }else if(c.action==WorldAction::Kill||c.action==WorldAction::Despawn){
             WorldEntity* e=mutableEntity(c.actor);
@@ -489,12 +527,29 @@ public:
         }
         return true;
     }
+    // R03 emits shot/hit traces without changing World-owned health. The
+    // damage commit remains observeDamage(), so one subsystem owns HP/death.
+    bool observeCombatTrace(WorldEventType type,EntityId id,EntityId source,
+                            uint16_t weapon,int x,int y,int value=0){
+        if((type!=WorldEventType::Shot&&type!=WorldEventType::Hit)||
+           !findInternal(id)||!findInternal(source)||!weapon||
+           !inside(x,y)||value<0)return false;
+        emit(type,0,id,x,y,value,WorldCode::Accepted,source,weapon);return true;
+    }
+    // An admitted order may later become unreachable as obstacles or units
+    // change. Report that runtime outcome without changing ownership/HP.
+    bool observeOrderFeedback(EntityId id,WorldCode result,uint64_t sequence=0){
+        if(!findInternal(id)||(result!=WorldCode::Blocked&&
+           result!=WorldCode::Unreachable))return false;
+        emit(WorldEventType::Command,sequence,id,0,0,0,result);return true;
+    }
     WorldSnapshot view()const{
         WorldSnapshot s={};
         s.version=WORLD_SNAPSHOT_VERSION;s.definitionSchemaVersion=DEFINITION_SCHEMA_VERSION;
         s.epoch=epoch_;s.tick=tick_;s.width=width_;s.height=height_;
         s.selectedEntityId=selected_;s.terrain=terrain_;s.houses=houses_;
         s.entities=entities_;s.definitions=catalog_.definitions();
+        s.phase="playing";
         return s;
     }
     WorldSnapshot publish(){
@@ -510,8 +565,36 @@ inline std::string worldJson(const WorldSnapshot& s){
      <<",\"tick\":"<<s.tick<<",\"map\":{\"width\":"<<s.width
      <<",\"height\":"<<s.height<<",\"terrain\":[";
     for(size_t i=0;i<s.terrain.size();i++){if(i)o<<',';o<<unsigned(s.terrain[i]);}
-    o<<"]},\"selectedEntityId\":"<<s.selectedEntityId
-     <<",\"cargo\":0,\"phase\":\"playing\",\"houses\":[";
+    o<<']';
+    if(s.mapMetadata.present){
+        const WorldMapMetadata& m=s.mapMetadata;
+        o<<",\"id\":\""<<m.id<<"\",\"title\":\""<<m.title
+         <<"\",\"biome\":\""<<m.biome<<"\",\"tiles\":[";
+        for(size_t i=0;i<m.tiles.size();i++){if(i)o<<',';o<<unsigned(m.tiles[i]);}
+        o<<"],\"costs\":[";
+        for(size_t i=0;i<m.costs.size();i++){if(i)o<<',';o<<unsigned(m.costs[i]);}
+        o<<"],\"resources\":[";
+        for(size_t i=0;i<m.resources.size();i++){
+            const WorldMapResource& r=m.resources[i];if(i)o<<',';
+            o<<"{\"x\":"<<r.x<<",\"y\":"<<r.y<<",\"amount\":"<<r.amount<<'}';
+        }
+        o<<"],\"spawns\":[";
+        for(size_t i=0;i<m.spawns.size();i++){
+            const WorldMapSpawn& z=m.spawns[i];if(i)o<<',';
+            o<<"{\"house\":"<<z.house<<",\"x\":"<<z.x<<",\"y\":"<<z.y
+             <<",\"w\":"<<z.w<<",\"h\":"<<z.h<<'}';
+        }
+        o<<"],\"bases\":[";
+        for(size_t i=0;i<m.bases.size();i++){
+            const WorldMapBase& b=m.bases[i];if(i)o<<',';
+            o<<"{\"house\":"<<b.house<<",\"x\":"<<b.x<<",\"y\":"<<b.y<<'}';
+        }
+        o<<"],\"victory\":{\"x\":"<<m.victoryX<<",\"y\":"<<m.victoryY
+         <<",\"w\":"<<m.victoryW<<",\"h\":"<<m.victoryH<<"}";
+    }
+    o<<"},\"selectedEntityId\":"<<s.selectedEntityId
+     <<",\"cargo\":0,\"phase\":\""<<(s.phase.empty()?"playing":s.phase)
+     <<"\",\"houses\":[";
     for(size_t i=0;i<s.houses.size();i++){
         const House& h=s.houses[i];if(i)o<<',';
         o<<"{\"id\":"<<h.id<<",\"teamId\":"<<h.team
@@ -552,6 +635,17 @@ inline std::string worldJson(const WorldSnapshot& s){
          <<",\"x\":"<<e.x<<",\"y\":"<<e.y
          <<",\"value\":"<<e.value<<",\"code\":\""<<codeName(e.code)<<"\"}";
     }
-    o<<"]}";return o.str();
+    o<<']';
+    if(!s.commandStates.empty()){
+        o<<",\"commandStates\":[";
+        for(size_t i=0;i<s.commandStates.size();i++){
+            const WorldCommandState& c=s.commandStates[i];if(i)o<<',';
+            o<<"{\"entityId\":"<<c.entityId<<",\"kind\":\""<<c.kind
+             <<"\",\"status\":\""<<c.status<<"\",\"x\":"<<c.x
+             <<",\"y\":"<<c.y<<",\"queued\":"<<c.queued<<'}';
+        }
+        o<<']';
+    }
+    o<<'}';return o.str();
 }
 }

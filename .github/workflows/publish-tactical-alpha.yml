@@ -55,8 +55,9 @@ jobs:
         run: |
           cp browser/engine/{asset-import,original-asset,wireframe-asset,cargo-hd,vertical-slice,mission-pack,tactical-hud,simulation-bridge,rts-camera,rts-input-ui}.js build/browser-engine/
           cp browser/engine/play.html build/browser-engine/
-          mkdir -p build/browser-engine/missions build/browser-engine/cargo-hd
+          mkdir -p build/browser-engine/missions build/browser-engine/cargo-hd build/browser-engine/r18
           cp game/content/missions/*.map game/content/missions/manifest.json build/browser-engine/missions/
+          cp game/content/r18/definitions.rts build/browser-engine/r18/definitions.rts
           cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
           node tools/content/build.js game/content/manifest.json build/browser-engine/content
           node tools/content/wireframes.js build build/browser-engine/wireframes --representative
@@ -75,6 +76,10 @@ jobs:
           node browser/engine/test-rts-camera.js
           node browser/engine/test-cargo-hd.js
           node tools/content/test-r05.js
+          node tools/content/test-r18.js
+          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-live-match.cpp -o build/browser-engine/test-rts-live-match
+          build/browser-engine/test-rts-live-match
+          node browser/engine/test-rts-live-bridge.js build/browser-engine/test-rts-live-match
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install --with-deps chromium
           node browser/engine/check-r01-ui.js

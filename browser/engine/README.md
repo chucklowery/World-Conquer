@@ -7,6 +7,32 @@ with command state in the R00 snapshot/HUD. See
 
 This launcher is compiled into the **real VanillaTD** HTML/JS/WASM bundle, not the independent SDL2 smoke test. It deliberately defers game main() until the user starts it.
 
+### Shared R02/R03/R04 native-world integration
+
+**Play integrated R02/R03/R04 RTS match** is an additional, opt-in compiled
+VanillaTD mode. It reads the SHA-256-verified R04 selected map and stages its
+terrain into real `MapClass`, then validates the v1 gameplay catalog from
+`r18/definitions.rts`. The native `rts::LiveMatch` creates Aster and Forge
+houses, six native `InfantryClass` actors with R18 epoch-qualified instance
+IDs, and neutral resource records. Aster/Forge gameplay definitions reference
+reviewed `r05.*` visual IDs; neither artwork nor JS supplies game rules.
+
+An R18-owned C++ world admits and sequences commands. The generalized R02
+controller schedules bounded, terrain-cost-aware waypoints; actual movement
+comes only from `InfantryClass::AI()`/`MapClass`, with positions observed back
+into R18. A persistent R03 C++ weapons system resolves range, line of sight,
+cooldowns, projectiles, damage and elimination; R18 owns canonical HP,
+selection and lifecycle. The browser opts into validated v3 snapshots and
+renders native map/house/command/combat state, without a JS simulation.
+
+Select Aster infantry by clicking or keys **1**, **2**, **5**; click to move,
+**A** for attack-move, **P** for patrol, **G** then an ally to guard, **H** to
+hold, **S** to stop, Ctrl-click to queue, and **R** to restart into a new
+epoch. The Forge side acquires threats autonomously. This deliberately
+does **not** implement R06 harvesting, R07 production/construction or a
+historical VanillaTD campaign. The original Courier, R02 diagnostic and R03
+defeat drill remain unchanged and separately testable.
+
 ## Tactical Alpha 0.1 — browser-playable native mission
 
 **R01 input controls:** the tactical HUD now supports fitted camera zoom/pan,

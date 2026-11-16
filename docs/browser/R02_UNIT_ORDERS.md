@@ -5,6 +5,14 @@ by a player `HouseClass`, placed on the authored Courier 18×11 obstacle map
 through `MapClass`. Courier Extraction continues unchanged, with its
 specialized combat, sentry AI, crates, and victory logic.
 
+The additional **integrated native RTS match** uses the same controller's
+`resetDynamic`/`setMovementCosts` API against one R18 World: six real infantry
+across two teams, variable 16×10 and 24×14 R04 maps, cost-weighted A*, dynamic
+occupancy, stable R18 actor IDs and owner-checked move/attack-move/stop/hold/
+guard/patrol commands. The fixed four-unit demo and v1 snapshots above stay
+available; the integrated mode publishes version-3 command states and uses
+actual `InfantryClass::AI` positions, never browser movement logic.
+
 In the browser engine, launch **Play R02: four production-unit orders**.
 Select with keys 1–4 or click; click ground to move, Shift-click for
 attack-move, P then click to patrol, G then click another friendly to guard,

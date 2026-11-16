@@ -55,6 +55,7 @@ int Browser_Unit_Probe();
 int Browser_Engine_Courier(const char* argv0);
 int Browser_Production_Orders(const char* argv0);
 int Browser_R03_Combat_Drill(const char* argv0);
+int Browser_Live_RTS_Match(const char* argv0);
 #endif
 
 bool Read_Private_Config_Struct(FileClass& file, NewConfigType* config);
@@ -249,6 +250,9 @@ int main(int argc, char** argv)
     }
     if (argc > 1 && strcmp(argv[1], "--browser-r03-combat-drill") == 0) {
         return Browser_R03_Combat_Drill(argv[0]);
+    }
+    if (argc > 1 && strcmp(argv[1], "--browser-rts-match") == 0) {
+        return Browser_Live_RTS_Match(argv[0]);
     }
     std::printf("[browser-game] game startup entered; initializing paths and SDL2.\n");
 #endif

@@ -90,6 +90,15 @@ and engine land-speed rules, not a parallel JavaScript pathfinder. The mission
 still uses two-crate extraction; on v2 maps, any living squad unit in the
 authored victory rectangle completes that objective.
 
+The additional **integrated native R18 match** uses this *same* validated
+native map parser and SHA-pinned browser loader, but initializes dynamic
+Aster/Forge houses and real infantry from the authored spawn zones. It creates
+neutral World resource instances (no harvesting), passes movement costs to
+R02 weighted pathfinding, and publishes `map.id`, typed terrain, cost,
+resources, spawn zones, bases and victory geometry in negotiated R18 v3
+snapshots. Invalid map/catalog input leaves the active native match unchanged;
+restart preserves the selected map and creates new entity IDs in a new epoch.
+
 ## Browser / R00 snapshot migration
 
 Old 18×11 Courier map bytes and marker semantics (`. # S R A B 1 2 X`) are

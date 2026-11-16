@@ -125,6 +125,23 @@ int main(){
         if(f.code==orders::Code::Blocked&&f.sequence==0)blockedFeedback=true;
     assert(blockedFeedback);
 
+    // Final R02 integration: dynamic roster and a 12x8 R04-style cost map.
+    // Weighted A* detours around expensive (but passable) rough terrain.
+    orders::Controller dynamic;
+    std::vector<uint8_t> open(12*8,0),costs(12*8,1);
+    for(int x=2;x<10;x++)costs[1*12+x]=3;
+    const std::vector<Point> positions={{1,1},{10,7},{0,7},{5,7},{7,7},{9,7}};
+    assert(dynamic.resetDynamic(12,8,open,positions));
+    assert(dynamic.count()==6&&dynamic.width()==12&&dynamic.height()==8);
+    assert(dynamic.setMovementCosts(costs));
+    assert(dynamic.enqueue(request(0,orders::Kind::Move,{10,1},1))==orders::Code::Accepted);
+    const auto weighted=dynamic.step(1);
+    assert(!weighted.empty()&&weighted[0].actor==0);
+    assert(weighted[0].waypoint.x==1); // north/south around cost-3 tiles
+    assert(dynamic.budget().searches<=2&&dynamic.budget().expansions<=2*96);
+    assert(!dynamic.resetDynamic(8,8,std::vector<uint8_t>(3,0),positions));
+    assert(dynamic.count()==6&&dynamic.width()==12); // malformed map atomic
+
     // Representative 18x11 map budget: two bounded A* replans per tick.
     auto begin=std::chrono::steady_clock::now();
     int searches=0,expansions=0;

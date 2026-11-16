@@ -493,6 +493,121 @@ async function main() {
       assert.equal(await page.locator("#hud-map-size").textContent(),`${item.width} × ${item.height}`);
       messages.push(`PASS: ${item.id} ${item.width}x${item.height} validated map loaded in native WASM, traversed, minmap verified, corruption rejected and restarted`);
     }
+    // R02/R03/R04 final acceptance: the same live R18 world owns the actors,
+    // map and weapons; the actual InfantryClass::AI remains movement authority.
+    for(const item of [
+      {id:"ridge-pass",size:[16,10],goal:[6,2]},
+      {id:"marsh-border",size:[24,14],goal:[3,1]}
+    ]){
+      await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+      await page.waitForFunction(()=>document.body.dataset.runtime==="ready"&&
+        document.getElementById("map-choice").options.length===3,undefined,{timeout:90000});
+      await page.locator("#map-choice").selectOption(item.id);
+      await page.locator("#launch-rts-match").click();
+      await page.waitForFunction(id=>WCRTS.latest()?.version===3&&
+        WCRTS.latest().map.id===id,item.id,{timeout:60000});
+      await page.waitForFunction(()=>document.getElementById("log").textContent.includes(
+        "[rts-live] integration=R02+R03+R04 authority=R18 movement=InfantryClass::AI terrain=MapClass"),
+        undefined,{timeout:30000});
+      const initial=await page.evaluate(()=>{
+        const s=WCRTS.latest();
+        return {size:[s.map.width,s.map.height],epoch:s.epoch,
+          factions:s.houses.map(h=>h.faction),entities:s.entities.map(e=>
+            ({id:e.id,def:e.definitionId,visual:e.visualKey,owner:e.ownerId})),
+          selected:s.selectedEntityId,commands:s.commandStates.length,
+          resources:s.map.resources.length,tiles:s.map.tiles.length};
+      });
+      assert.deepEqual(initial.size,item.size);
+      assert.equal(initial.epoch,1);
+      assert.deepEqual(initial.factions,["aster","forge"]);
+      assert.equal(initial.commands,6);
+      assert.equal(initial.resources,2);
+      assert.equal(initial.tiles,item.size[0]*item.size[1]);
+      assert.equal(initial.selected,0,"Unselected state must be representable");
+      assert.deepEqual(initial.entities.slice(0,4).map(e=>e.owner),[1,1,2,2]);
+      assert.equal(initial.entities[0].def,"game.aster.ranger");
+      assert.equal(initial.entities[2].def,"game.forge.ranger");
+      assert.equal(initial.entities[0].visual,"r05.aster.ranger");
+      assert.equal(initial.entities[2].visual,"r05.forge.ranger");
+      assert(initial.entities.some(e=>e.owner===0));
+      const first=initial.entities[0].id;
+      const rejected=await page.evaluate(id=>Module._Browser_Live_World_Command(
+        1,2,id,3,1,0,0),first);
+      assert.notEqual(rejected,0,"Forge issued an order to an Aster-owned unit");
+      assert.equal(await page.evaluate(id=>WCRTS.latest().entities.find(e=>e.id===id).ownerId,first),1);
+      assert.equal(await page.evaluate(id=>Module._Browser_Live_World_Command(
+        0,1,id,0,0,0,0),first),0);
+      assert.equal(await page.evaluate(({id,goal})=>Module._Browser_Live_World_Command(
+        1,1,id,goal[0],goal[1],0,0),{id:first,goal:item.goal}),0);
+      await page.waitForFunction(id=>WCRTS.latest().selectedEntityId===id,first,{timeout:15000});
+      await page.waitForFunction(id=>WCRTS.latest().entities.find(e=>e.id===id).x>1,
+        first,{timeout:60000});
+      const moved=await page.evaluate(id=>{
+        const u=WCRTS.latest().entities.find(e=>e.id===id);
+        const pattern=new RegExp(`\\[rts-live\\] moved id=${id} x=(\\d+) y=(\\d+)`,"g");
+        const matches=[...document.getElementById("log").textContent.matchAll(pattern)];
+        const last=matches[matches.length-1];
+        return {hud:[u.x,u.y],native:last&&[Number(last[1]),Number(last[2])],
+          version:WCRTS.latest().version,ui:document.getElementById("engine-courier-status").dataset.snapshotVersion};
+      },first);
+      assert.deepEqual(moved.hud,moved.native,"R18 v3 HUD diverged from actual InfantryClass position");
+      assert.equal(moved.version,3);assert.equal(moved.ui,"3");
+      const ally=initial.entities[1].id,third=initial.entities[4].id;
+      assert.equal(await page.evaluate(id=>Module._Browser_Live_World_Command(
+        4,1,id,0,0,0,0),ally),0,"R18 hold was rejected");
+      assert.equal(await page.evaluate(({guard,target})=>Module._Browser_Live_World_Command(
+        5,1,guard,0,0,target,0),{guard:third,target:first}),0,"R18 guard was rejected");
+      await page.waitForFunction(({hold,guard})=>{
+        const states=WCRTS.latest().commandStates;
+        return states.some(s=>s.entityId===hold&&s.kind==="hold")&&
+          states.some(s=>s.entityId===guard&&s.kind==="guard");
+      },{hold:ally,guard:third},{timeout:15000});
+      assert.equal(await page.evaluate(()=>Module._Browser_Live_World_Restart()),1);
+      await page.waitForFunction(()=>WCRTS.latest().epoch===2&&
+        WCRTS.latest().events.some(e=>e.type==="restart"),undefined,{timeout:15000});
+      const next=await page.evaluate(()=>WCRTS.latest());
+      assert.equal(next.selectedEntityId,0);
+      assert.notEqual(next.entities[0].id,first,"Restart reused a stable entity ID");
+      assert.equal(next.entities[0].x,1);
+      messages.push(`PASS: ${item.id} R18 v3 world, six true InfantryClass actors, R02 movement parity, R04 terrain, ownership and epoch restart`);
+    }
+    // The integrated v3 scenario uses the real R03 combat system, not Courier
+    // sentry arrays or JavaScript damage. Fight to a native match outcome.
+    await page.reload({waitUntil:"domcontentloaded",timeout:90000});
+    await page.waitForFunction(()=>document.body.dataset.runtime==="ready"&&
+      document.getElementById("map-choice").options.length===3,undefined,{timeout:90000});
+    await page.locator("#map-choice").selectOption("ridge-pass");
+    await page.locator("#launch-rts-match").click();
+    await page.waitForFunction(()=>WCRTS.latest()?.version===3&&WCRTS.latest().commandStates.length===6,
+      undefined,{timeout:60000});
+    const combatIds=await page.evaluate(()=>WCRTS.latest().entities.slice(0,6).map(e=>e.id));
+    assert.notEqual(await page.evaluate(ids=>Module._Browser_Live_World_Command(
+      7,1,ids[0],0,0,ids[1],0),combatIds),0,"R03 accepted a friendly attack");
+    for(const [i,goal] of [[0,[10,2]],[1,[9,3]],[4,[10,6]]]){
+      const accepted=await page.evaluate(({id,goal})=>Module._Browser_Live_World_Command(
+        2,1,id,goal[0],goal[1],0,0),{id:combatIds[i],goal});
+      assert.equal(accepted,0,`Integrated attack-move ${i} was rejected`);
+    }
+    await page.waitForFunction(()=>WCRTS.eventHistory().some(e=>e.type==="shot")&&
+      WCRTS.eventHistory().some(e=>e.type==="hit")&&
+      WCRTS.eventHistory().some(e=>e.type==="damage"),undefined,{timeout:150000});
+    await page.waitForFunction(()=>WCRTS.latest().phase!=="playing",
+      undefined,{timeout:150000});
+    const battle=await page.evaluate(()=>({
+      phase:WCRTS.latest().phase,
+      dead:WCRTS.latest().entities.filter(e=>e.lifecycle==="dead").map(e=>e.id),
+      hp:WCRTS.latest().entities.slice(0,6).map(e=>e.hp),
+      result:document.getElementById("alpha-result").textContent,
+      types:[...new Set(WCRTS.eventHistory().map(e=>e.type))]
+    }));
+    assert(["won","lost"].includes(battle.phase));
+    assert(battle.dead.length>0&&battle.hp.includes(0));
+    assert(battle.types.includes("damage")&&battle.types.includes("death"));
+    assert(battle.result.includes(battle.phase==="won"?"victory":"defeated"));
+    assert.equal(await page.evaluate(()=>Module._Browser_Live_World_Restart()),1);
+    await page.waitForFunction(()=>WCRTS.latest().epoch===2&&WCRTS.latest().phase==="playing",
+      undefined,{timeout:15000});
+    messages.push(`PASS: native R18-v3 combat emitted shot/hit/damage/death, ${battle.phase} HUD and restart with six engine infantry`);
     messages.push("PASS: R03 canonical shot/hit/damage events and sentry HP synchronized to tactical HUD");
     // Opt-in deterministic drill: actual native infantry are overwhelmed by
     // armored sentries, making target rejection, defeat and restart observable.

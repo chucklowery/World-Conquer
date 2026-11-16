@@ -114,6 +114,8 @@ body.hud-active{overflow:hidden}
 <label for="map-choice">Playable map</label>
 <select id="map-choice" aria-label="Playable map" style="padding:9px;color:#edf4fa;background:#172e37;border:1px solid #64848a;border-radius:7px"><option value="courier-extraction">Courier Extraction · 18 × 11</option></select>
 <button type="button" id="launch-alpha" class="primary" disabled>Start Tactical Alpha</button>
+<button type="button" id="launch-rts-match" disabled>Play integrated R02/R03/R04 RTS match</button>
+<p class="note">Native R18 match with two faction houses, six real engine infantry, R04 variable maps, bounded R02 orders and R03 weapons. Select an Aster unit with keys 1, 2, 5 or by clicking it; click ground to move, P patrol, G guard, A attack-move, H hold, S stop, Ctrl-click queue, R restart. Forge infantry fight autonomously. This is a gameplay integration fixture, not production or harvesting.</p>
 <p class="note">Controls: drag to select; Shift-click to add; Shift+1–9 save a group, 1–9 recall; right-click issues orders; M/A command modes, S stop, arrow keys pan, +/- zoom, R restart. Full help is in the in-game Controls tab.</p>
 <button type="button" id="launch-r03-drill" disabled>R03 armored-sentry defeat drill</button>
 <p class="note">Optional combat drill: enemy armored vehicles cannot be targeted by the squad's infantry-only rifles. Observe damage, defeat, and restart. The regular Courier mission above is unchanged.</p>
@@ -316,6 +318,7 @@ body.hud-active{overflow:hidden}
   const nativeSlice = document.getElementById("run-native-slice");
   const alphaLaunch = document.getElementById("launch-alpha");
   const r03Drill = document.getElementById("launch-r03-drill");
+  const rtsMatchLaunch=document.getElementById("launch-rts-match");
   const engineCourier = document.getElementById("run-engine-courier");
   const r02Launch = document.getElementById("run-r02-orders");
   const mapChoice = document.getElementById("map-choice");
@@ -450,6 +453,26 @@ body.hud-active{overflow:hidden}
   // Native C++ publishes the sole gameplay state. The HUD is a read-only
   // projection; historical runtime log messages remain diagnostics only.
   WCRTS.subscribe(snapshot=>{
+    if(document.body.dataset.mode==="rts-live"){
+      WCTacticalHUD.applyWorldSnapshot(hudModel,snapshot);
+      WCTacticalHUD.draw(hudMinimap,hudModel);
+      engineHud.dataset.snapshotVersion=String(snapshot.version);
+      engineHud.dataset.snapshotTick=String(snapshot.tick);
+      const player=snapshot.entities.filter(e=>e.ownerId===1&&e.active);
+      const foes=snapshot.entities.filter(e=>e.ownerId===2&&e.active);
+      engineHud.textContent=`R18 epoch ${snapshot.epoch} · ${snapshot.map.id} · Aster ${player.length} / Forge ${foes.length} · tick ${snapshot.tick}`;
+      for(const event of snapshot.events){
+        if(event.type==="restart")alphaEvent.textContent="New R18 match epoch initialized.";
+        if(event.type==="shot")alphaEvent.textContent=`Native weapon ${event.weaponId} fired by ${event.sourceId}.`;
+        if(event.type==="damage")alphaEvent.textContent=`Entity ${event.entityId} takes ${event.value} damage.`;
+        if(event.type==="death")alphaEvent.textContent=`Entity ${event.entityId} destroyed.`;
+        if(event.type==="command"&&event.code!=="accepted")alphaEvent.textContent=`Order ${event.entityId}: ${event.code}.`;
+      }
+      alphaResult.hidden=snapshot.phase==="playing";
+      alphaResult.textContent=snapshot.phase==="won"?"Aster victory — Forge defeated. Press R to restart.":
+        snapshot.phase==="lost"?"Aster defeated — Press R to restart.":"";
+      return;
+    }
     if(document.body.dataset.mode==="r02-orders"){
       WCTacticalHUD.applyOrdersSnapshot(hudModel,snapshot);
       WCTacticalHUD.draw(hudMinimap,hudModel);
@@ -521,6 +544,7 @@ body.hud-active{overflow:hidden}
     nativeSlice.disabled = !ready || started;
     alphaLaunch.disabled = !ready || started || preparingCourier;
     r03Drill.disabled = !ready || started || preparingCourier;
+    rtsMatchLaunch.disabled = !ready || started || preparingCourier;
     engineCourier.disabled = !ready || started || preparingCourier;
     r02Launch.disabled = !ready || started || preparingCourier;
     unitProbe.disabled = !ready || started;
@@ -533,7 +557,8 @@ body.hud-active{overflow:hidden}
     controls();
     document.body.dataset.mode = mode;
     const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",
-      "r02-orders":"Playing native production-unit commands",probe:"SDL2 probe running",
+      "r02-orders":"Playing native production-unit commands",
+      "rts-live":"Playing integrated native RTS match",probe:"SDL2 probe running",
       cooperative:"Cooperative C++ loop running",assets:"Checking engine file search",
       shape:"Rendering original sprite",wireframes:"Rendering wireframe roster"};
     status(names[mode]||"Starting game (experimental)","running");
@@ -557,6 +582,7 @@ body.hud-active{overflow:hidden}
     status("Preparing the Courier mission and verified original art…","loading");
     alphaLaunch.disabled=true;
     r03Drill.disabled=true;
+    rtsMatchLaunch.disabled=true;
     nativeSlice.disabled=true;
     engineCourier.disabled=true;
     r02Launch.disabled=true;
@@ -568,7 +594,8 @@ body.hud-active{overflow:hidden}
       const mission=await WCMissionPack.load("missions",fetch,undefined,
         mode==="r02-orders"||drill?"courier-extraction":mapChoice.value);
       Module.FS.writeFile("/COURIER.MAP",new TextEncoder().encode(mission.map));
-      if(mode==="engine-courier"||mode==="r02-orders")hudModel=WCTacticalHUD.create(mission.map);
+      if(mode==="engine-courier"||mode==="r02-orders"||mode==="rts-live")
+        hudModel=WCTacticalHUD.create(mission.map);
       document.getElementById("hud-mission-title").textContent=mission.parsed.title.toUpperCase();
       canvas.width=mission.parsed.width*40;
       canvas.height=mission.parsed.height*40;
@@ -586,6 +613,20 @@ body.hud-active{overflow:hidden}
       controls();
       return;
     }
+    if(mode==="rts-live"){
+      try{
+        const response=await fetch("r18/definitions.rts");
+        if(!response.ok)throw Error("Catalog HTTP "+response.status);
+        const bytes=new Uint8Array(await response.arrayBuffer());
+        if(!bytes.length||bytes.length>16384)throw Error("Invalid catalog size");
+        Module.FS.writeFile("/RTS.DEFS",bytes);
+        report("[rts-live] staged versioned native gameplay catalog bytes="+bytes.length);
+      }catch(error){
+        report("[rts-live] Catalog rejected; match not launched: "+error.message,true);
+        status("R18 definition catalog unavailable","error");
+        preparingCourier=false;controls();return;
+      }
+    }
     try {
       if(!hdImages)hdImages=await WCCargoHD.decode(await WCCargoHD.load("cargo-hd"));
       const offscreen=document.createElement("canvas");
@@ -599,13 +640,15 @@ body.hud-active{overflow:hidden}
       report("[browser-native-slice] HD unavailable, using original schematic fallback: "+error.message,true);
     }
     canvas.style.aspectRatio=hudModel.width+"/"+hudModel.height;
-    if(mode==="engine-courier"||mode==="r02-orders"){
+    if(mode==="engine-courier"||mode==="r02-orders"||mode==="rts-live"){
       WCRTS.clear();
       activateTacticalHUD();
       if(mode==="r02-orders")document.querySelector(".hud-mission").textContent="R02 PRODUCTION ORDERS";
+      if(mode==="rts-live")document.querySelector(".hud-mission").textContent="R18 NATIVE RTS MATCH";
       engineHud.hidden=false;
       alphaEvent.hidden=false;
-      alphaEvent.textContent=mode==="r02-orders"?"Four native infantry units ready.":
+      alphaEvent.textContent=mode==="rts-live"?"Two faction houses, six engine infantry and native R18 events ready.":
+        mode==="r02-orders"?"Four native infantry units ready.":
         drill?"Armored-sentry drill: rifles reject vehicle targets. Watch native damage and defeat; R restarts.":
         "Squad deployed. Two crates are marked in amber.";
       if(mode==="engine-courier"){
@@ -613,7 +656,7 @@ body.hud-active{overflow:hidden}
         updateAlphaStatus();
       }
     }
-    run([drill?"--browser-r03-combat-drill":mode==="engine-courier"?"--browser-engine-courier":
+    run([mode==="rts-live"?"--browser-rts-match":drill?"--browser-r03-combat-drill":mode==="engine-courier"?"--browser-engine-courier":
       mode==="r02-orders"?"--browser-r02-orders":"--browser-native-slice"],mode);
     preparingCourier=false;
   }
@@ -622,6 +665,7 @@ body.hud-active{overflow:hidden}
   r02Launch.addEventListener("click",()=>launchCourier("r02-orders"));
   alphaLaunch.addEventListener("click",()=>launchCourier("engine-courier"));
   r03Drill.addEventListener("click",()=>launchCourier("engine-courier",true));
+  rtsMatchLaunch.addEventListener("click",()=>launchCourier("rts-live"));
   shape.addEventListener("click", async () => {
     if (!ready || started || loadingAssets) return;
     loadingAssets = true;

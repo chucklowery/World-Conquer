@@ -71,19 +71,21 @@ struct Budget {
 struct Move {int actor;courier::Point waypoint;};
 
 class Controller {
-    std::array<bool,CELLS> terrain_;
-    std::array<Unit,COUNT> units_;
+    int width_,height_,cells_;
+    std::vector<uint8_t> terrain_;
+    std::vector<uint8_t> costs_;
+    std::vector<Unit> units_;
     std::vector<Request> pending_;
     std::vector<Feedback> feedback_;
     Budget budget_;
     uint64_t tick_;
-    static int cell(courier::Point p){return p.y*WIDTH+p.x;}
+    int cell(courier::Point p) const {return p.y*width_+p.x;}
     bool inside(courier::Point p) const {
-        return p.x>=0&&p.x<WIDTH&&p.y>=0&&p.y<HEIGHT;
+        return p.x>=0&&p.x<width_&&p.y>=0&&p.y<height_;
     }
     bool clear(courier::Point p) const {return inside(p)&&!terrain_[cell(p)];}
     bool occupied(courier::Point p,int except) const {
-        for(int i=0;i<COUNT;i++)if(i!=except&&units_[i].alive&&
+        for(size_t i=0;i<units_.size();i++)if(static_cast<int>(i)!=except&&units_[i].alive&&
             (units_[i].position==p||(units_[i].inFlight&&units_[i].waypoint==p)))
             return true;
         return false;
@@ -96,17 +98,15 @@ class Controller {
         const courier::Point start=units_[actor].position;
         if(!clear(goal))return {};
         const int source=cell(start),dest=cell(goal);
-        std::array<int,CELLS> g,prev,serial;
-        std::array<bool,CELLS> closed,open;
-        g.fill(CELLS+1);prev.fill(-1);serial.fill(0);
-        closed.fill(false);open.fill(false);
+        std::vector<int> g(cells_,cells_+1),prev(cells_,-1),serial(cells_,0);
+        std::vector<uint8_t> closed(cells_,0),open(cells_,0);
         g[source]=0;prev[source]=source;open[source]=true;
         int opened=1,issued=1;
         const courier::Point dirs[]={{1,0},{0,1},{-1,0},{0,-1}};
-        while(opened&&budget_.expansions<MAX_SEARCHES_PER_TICK*MAX_EXPANSIONS_PER_SEARCH){
+        while(opened&&budget_.expansions<MAX_SEARCHES_PER_TICK*std::min(cells_,512)){
             int best=-1,bf=100000,bh=100000,bs=100000;
-            for(int n=0;n<CELLS;n++)if(open[n]){
-                const courier::Point p{n%WIDTH,n/WIDTH};
+            for(int n=0;n<cells_;n++)if(open[n]){
+                const courier::Point p{n%width_,n/width_};
                 const int h=courier::distance(p,goal),f=g[n]+h;
                 if(f<bf||(f==bf&&(h<bh||(h==bh&&serial[n]<bs)))){
                     best=n;bf=f;bh=h;bs=serial[n];
@@ -117,17 +117,17 @@ class Controller {
             ++budget_.expansions;
             if(best==dest){
                 std::vector<courier::Point> result;
-                for(int n=dest;n!=source;n=prev[n])result.push_back({n%WIDTH,n/WIDTH});
+                for(int n=dest;n!=source;n=prev[n])result.push_back({n%width_,n/width_});
                 std::reverse(result.begin(),result.end());
                 return result;
             }
-            const courier::Point p{best%WIDTH,best/WIDTH};
+            const courier::Point p{best%width_,best/width_};
             for(courier::Point d:dirs){
                 const courier::Point next{p.x+d.x,p.y+d.y};
                 if(!clear(next)||(dynamic&&occupied(next,actor)))continue;
                 const int n=cell(next);
-                if(closed[n]||g[best]+1>=g[n])continue;
-                g[n]=g[best]+1;prev[n]=best;
+                if(closed[n]||g[best]+costs_[n]>=g[n])continue;
+                g[n]=g[best]+costs_[n];prev[n]=best;
                 if(!open[n]){open[n]=true;++opened;serial[n]=issued++;}
             }
             budget_.maxOpen=std::max(budget_.maxOpen,opened);
@@ -138,8 +138,8 @@ class Controller {
         if(units_[actor].position==target)return true;
         // Static connectivity is checked at admission; this secondary BFS
         // avoids charging the per-tick dynamic replanning budget.
-        std::array<bool,CELLS> visited;visited.fill(false);
-        std::array<int,CELLS> queue;
+        std::vector<uint8_t> visited(cells_,0);
+        std::vector<int> queue(cells_);
         int head=0,tail=0;
         queue[tail++]=cell(units_[actor].position);
         visited[cell(units_[actor].position)]=true;
@@ -147,7 +147,7 @@ class Controller {
         while(head<tail){
             const int c=queue[head++];
             if(c==cell(target))return true;
-            const courier::Point p{c%WIDTH,c/WIDTH};
+            const courier::Point p{c%width_,c/width_};
             for(courier::Point d:dirs){
                 const courier::Point n{p.x+d.x,p.y+d.y};
                 if(clear(n)&&!visited[cell(n)]){
@@ -180,11 +180,11 @@ class Controller {
         }else u.status=Status::Idle;
     }
     Code admit(const Request& r) const {
-        if(r.actor<0||r.actor>=COUNT)return Code::BadActor;
+        if(r.actor<0||static_cast<size_t>(r.actor)>=units_.size())return Code::BadActor;
         const Unit& u=units_[r.actor];
         if(!u.alive)return Code::Dead;
         if(r.order.kind==Kind::Guard){
-            if(r.order.guard<0||r.order.guard>=COUNT||r.order.guard==r.actor||
+            if(r.order.guard<0||static_cast<size_t>(r.order.guard)>=units_.size()||r.order.guard==r.actor||
                !units_[r.order.guard].alive)return Code::BadTarget;
         }else if(r.order.kind==Kind::Move||r.order.kind==Kind::AttackMove||
                  r.order.kind==Kind::Patrol){
@@ -196,17 +196,62 @@ class Controller {
         return Code::Accepted;
     }
 public:
-    Controller():tick_(0){terrain_.fill(false);}
+    Controller():width_(WIDTH),height_(HEIGHT),cells_(CELLS),
+                 terrain_(CELLS,0),costs_(CELLS,1),units_(COUNT),tick_(0){}
     void reset(const std::array<bool,CELLS>& terrain,
                const std::array<courier::Point,COUNT>& positions){
-        terrain_=terrain;pending_.clear();feedback_.clear();tick_=0;budget_=Budget();
-        for(int i=0;i<COUNT;i++){units_[i]=Unit();units_[i].position=positions[i];}
+        width_=WIDTH;height_=HEIGHT;cells_=CELLS;
+        terrain_.assign(terrain.begin(),terrain.end());
+        costs_.assign(CELLS,1);
+        units_.assign(COUNT,Unit());
+        pending_.clear();feedback_.clear();tick_=0;budget_=Budget();
+        for(int i=0;i<COUNT;i++)units_[i].position=positions[i];
+    }
+    // R18 runtime shape: any bounded map and 1..256 stable actor slots.
+    // Input validation is atomic; legacy four-unit reset above remains intact.
+    bool resetDynamic(int width,int height,const std::vector<uint8_t>& terrain,
+                      const std::vector<courier::Point>& positions){
+        if(width<8||height<8||width>128||height>128||width*height>4096||
+           terrain.size()!=static_cast<size_t>(width*height)||
+           positions.empty()||positions.size()>256)return false;
+        for(uint8_t tile:terrain)if(tile>1)return false;
+        for(size_t i=0;i<positions.size();i++){
+            const courier::Point p=positions[i];
+            if(p.x<0||p.y<0||p.x>=width||p.y>=height||terrain[p.y*width+p.x])return false;
+            for(size_t j=0;j<i;j++)if(positions[j]==p)return false;
+        }
+        width_=width;height_=height;cells_=width*height;
+        terrain_=terrain;units_.assign(positions.size(),Unit());
+        costs_.assign(cells_,1);
+        for(size_t i=0;i<positions.size();i++)units_[i].position=positions[i];
+        pending_.clear();feedback_.clear();tick_=0;budget_=Budget();return true;
+    }
+    size_t count() const {return units_.size();}
+    int width() const {return width_;}
+    int height() const {return height_;}
+    bool addUnit(courier::Point position){
+        if(units_.size()>=256||!clear(position)||occupied(position,-1))return false;
+        Unit unit;unit.position=position;units_.push_back(unit);return true;
     }
     const Unit& unit(int index) const {return units_[index];}
     const Budget& budget() const {return budget_;}
     uint64_t tick() const {return tick_;}
     bool passable(courier::Point p) const {return clear(p);}
-    void updateTerrain(const std::array<bool,CELLS>& terrain){terrain_=terrain;}
+    Code preview(const Request& request) const {return admit(request);}
+    void updateTerrain(const std::array<bool,CELLS>& terrain){
+        terrain_.assign(terrain.begin(),terrain.end());
+    }
+    bool updateTerrainDynamic(const std::vector<uint8_t>& terrain){
+        if(terrain.size()!=terrain_.size())return false;
+        for(uint8_t value:terrain)if(value>1)return false;
+        terrain_=terrain;return true;
+    }
+    bool setMovementCosts(const std::vector<uint8_t>& costs){
+        if(costs.size()!=terrain_.size())return false;
+        for(size_t i=0;i<costs.size();i++)
+            if(terrain_[i]?(costs[i]!=0):(costs[i]<1||costs[i]>3))return false;
+        costs_=costs;return true;
+    }
     std::vector<Feedback> takeFeedback(){std::vector<Feedback> out;out.swap(feedback_);return out;}
     Code enqueue(const Request& r){
         const Code code=admit(r);
@@ -245,7 +290,7 @@ public:
         }
         pending_.erase(pending_.begin(),pending_.begin()+done);
         std::vector<Move> moves;
-        for(int i=0;i<COUNT;i++){
+        for(size_t i=0;i<units_.size();i++){
             Unit& u=units_[i];
             if(!u.alive||!u.hasOrder)continue;
             if(u.current.kind==Kind::Hold)continue;
@@ -277,7 +322,7 @@ public:
             }
             if(!clear(goal)){
                 clearOrder(u,Status::Unreachable);
-                feedback_.push_back({0,i,Code::Blocked});continue;
+                feedback_.push_back({0,static_cast<int>(i),Code::Blocked});continue;
             }
             if(u.inFlight){
                 if(++u.stalled<=STALLED_TICKS)continue;
@@ -285,7 +330,7 @@ public:
                 u.blocked+=STALLED_TICKS;
                 if(u.blocked>=BLOCKED_TICKS){
                     clearOrder(u,Status::Unreachable);
-                    feedback_.push_back({0,i,Code::Unreachable});continue;
+                    feedback_.push_back({0,static_cast<int>(i),Code::Unreachable});continue;
                 }
             }
             if(!u.path.empty()&&(!clear(u.path.front())||
@@ -296,7 +341,7 @@ public:
                 u.status=Status::Waiting;
                 if(++u.blocked>=BLOCKED_TICKS){
                     clearOrder(u,Status::Unreachable);
-                    feedback_.push_back({0,i,Code::Unreachable});
+                    feedback_.push_back({0,static_cast<int>(i),Code::Unreachable});
                 }
                 continue;
             }
@@ -305,7 +350,7 @@ public:
             u.waypoint=next;u.inFlight=true;u.stalled=0;u.status=
                 u.current.kind==Kind::Patrol?Status::Patrolling:
                 u.current.kind==Kind::Guard?Status::Guarding:Status::Moving;
-            moves.push_back({i,next});++budget_.issued;
+            moves.push_back({static_cast<int>(i),next});++budget_.issued;
         }
         return moves;
     }
