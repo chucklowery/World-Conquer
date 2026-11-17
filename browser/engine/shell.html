@@ -56,12 +56,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 /* R02 owns its native canvas inputs; R01-only controls must not intercept them. */
 body[data-mode="r02-orders"] .hud-command-bar,
 body[data-mode="r02-orders"] .hud-pan-pad,
-body[data-mode="r02-orders"] #hud-selection-overlay,
-body[data-mode="rts-live"] .hud-command-bar,
-body[data-mode="rts-live"] .hud-pan-pad,
-body[data-mode="rts-live"] #hud-selection-overlay{display:none}
-body[data-mode="rts-live"] #hud-minimap{cursor:default}
-body[data-mode="rts-live"] #hud-controls-panel > label{display:none}
+body[data-mode="r02-orders"] #hud-selection-overlay{display:none}
 .hud-toast-anchor{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:min(92%,680px);pointer-events:none;text-align:center}
 .hud-toast-anchor .alpha-event{padding:8px 12px;background:#061912c9;border:1px solid #5e9473;border-radius:6px;margin:0;min-height:0;color:#d0ffe4}
 .hud-toast-anchor .alpha-result{margin:8px 0;background:#423d24ef}
@@ -356,11 +351,26 @@ body.hud-active{overflow:hidden}
     selectionLabel:document.getElementById("hud-selection-text"),
     modeButtons:document.querySelectorAll("[data-command-mode]"),
     onCommand:({kind,actor,x,y,target})=>{
+      if(document.body.dataset.mode==="rts-live"){
+        // One native order per locally selected R18 actor. The browser owns
+        // only group selection/camera; C++ validates identity and ownership.
+        const kinds={select:0,move:1,attack_move:2,stop:3,hold:4,
+          guard:5,patrol:6,attack:7};
+        if(!Object.prototype.hasOwnProperty.call(kinds,kind)||
+           typeof Module._Browser_Live_World_Command!=="function")
+          throw Error("Native R18 command boundary not ready");
+        return Module._Browser_Live_World_Command(kinds[kind],1,actor,x,y,target,0);
+      }
       const kinds={select:0,move:1,stop:2,attack:3};
       if(typeof Module._Browser_RTS_Command!=="function")throw Error("Native RTS command boundary not ready");
       return Module._Browser_RTS_Command(kinds[kind],actor,x,y,target);
     },
     onRestart:()=>{
+      if(document.body.dataset.mode==="rts-live"){
+        if(typeof Module._Browser_Live_World_Restart!=="function")
+          throw Error("Native R18 restart boundary not ready");
+        return Module._Browser_Live_World_Restart();
+      }
       if(typeof Module._Browser_RTS_Restart!=="function")throw Error("Native RTS restart boundary not ready");
       Module._Browser_RTS_Restart();
     },
@@ -369,21 +379,8 @@ body.hud-active{overflow:hidden}
 
   function resizeBattlefield(){
     if(tacticalHUD.hidden)return;
-    if(document.body.dataset.mode==="rts-live"){
-      // The native SDL renderer owns the entire map; fit its actual drawable
-      // dimensions inside the playfield instead of reusing Courier's fixed
-      // 720x440 camera. Never clip right/bottom cells on narrow screens.
-      const width=canvas.width,height=canvas.height;
-      const boundsWidth=hudPlayfield.clientWidth,boundsHeight=hudPlayfield.clientHeight;
-      if(width>0&&height>0&&boundsWidth>0&&boundsHeight>0){
-        const scale=Math.min(boundsWidth/width,boundsHeight/height);
-        const fittedWidth=Math.floor(width*scale),fittedHeight=Math.floor(height*scale);
-        Object.assign(canvas.style,{width:fittedWidth+"px",height:fittedHeight+"px",
-          left:Math.floor((boundsWidth-fittedWidth)/2)+"px",
-          top:Math.floor((boundsHeight-fittedHeight)/2)+"px"});
-      }
-      return;
-    }
+    // R01 camera fits the actual R04 map at zoom=1, including narrow
+    // viewports. Its CSS transform matches the native SDL 40px tile grid.
     hudInput.resize();
   }
   function setSidebarOpen(open){
@@ -477,7 +474,7 @@ body.hud-active{overflow:hidden}
   WCRTS.subscribe(snapshot=>{
     if(document.body.dataset.mode==="rts-live"){
       WCTacticalHUD.applyWorldSnapshot(hudModel,snapshot);
-      WCTacticalHUD.draw(hudMinimap,hudModel);
+      hudInput.receive(snapshot);
       engineHud.dataset.snapshotVersion=String(snapshot.version);
       engineHud.dataset.snapshotTick=String(snapshot.tick);
       const player=snapshot.entities.filter(e=>e.ownerId===1&&e.active);
@@ -665,19 +662,23 @@ body.hud-active{overflow:hidden}
     if(mode==="engine-courier"||mode==="r02-orders"||mode==="rts-live"){
       WCRTS.clear();
       if(mode==="rts-live")document.body.dataset.mode=mode;
+      const attackButton=document.querySelector('[data-command-mode="attack"]');
+      attackButton.dataset.commandMode=mode==="rts-live"?"attack_move":"attack";
+      attackButton.textContent=mode==="rts-live"?"Attack-move (A)":"Attack (A)";
       activateTacticalHUD();
       if(mode==="r02-orders")document.querySelector(".hud-mission").textContent="R02 PRODUCTION ORDERS";
       if(mode==="rts-live")document.querySelector(".hud-mission").textContent="R18 NATIVE RTS MATCH";
       if(mode==="rts-live"){
-        hudMapReadout.textContent="Entire native map fitted · Hover to inspect terrain";
+        hudMapReadout.textContent="Native RTS camera ready · Hover to inspect terrain";
         document.querySelector(".hud-shortcuts").textContent=
-          "1/2/5 select · Click move/attack · A attack-move · G guard · H hold · P patrol · R restart";
+          "Box/Shift select · Shift+1–9 groups · Right-click order · A attack-move · P patrol · G guard · H hold · S stop · R restart";
         document.querySelector("#hud-controls-panel .hud-controls-list").innerHTML=
-          "<dt>1, 2, 5</dt><dd>Select an Aster infantry actor</dd>"+
-          "<dt>Left click</dt><dd>Select friendly or move to a map cell; click an enemy to attack in range</dd>"+
-          "<dt>A / M / P</dt><dd>Choose attack-move, move, or patrol for the next click</dd>"+
-          "<dt>G / H / S</dt><dd>Guard a friendly actor, hold position, or stop</dd>"+
-          "<dt>Ctrl + click</dt><dd>Append an order, up to eight per actor</dd>"+
+          "<dt>Click / box / Shift-click</dt><dd>Select one or several Aster units; 1–3 select individuals</dd>"+
+          "<dt>Shift+1–9 / 1–9</dt><dd>Save / recall local control groups</dd>"+
+          "<dt>Right-click / Move / Attack-move</dt><dd>Issue validated native orders for all selected actors</dd>"+
+          "<dt>A / M / P / G</dt><dd>Attack-move, move, patrol or guard target mode</dd>"+
+          "<dt>H / S</dt><dd>Hold or stop all selected actors</dd>"+
+          "<dt>Wheel / arrows / +/-</dt><dd>Native-map camera pan and zoom; minimap recenters</dd>"+
           "<dt>R</dt><dd>Restart with a new R18 entity epoch</dd>";
         document.querySelector("#hud-intel-panel .hud-intel-list").innerHTML=
           "<li>Aster and Forge have independent hostile R18 teams.</li>"+

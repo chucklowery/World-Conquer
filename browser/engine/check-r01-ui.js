@@ -63,6 +63,12 @@ async function main(){
       await page.mouse.click(unit.x,unit.y);
       await page.keyboard.press("3");
       assert.deepEqual(await page.evaluate(()=>ui.selection.ids),[1001,1002],"Group recall browser shortcut failed");
+      // Clear the recalled group first: an unchanged two-unit selection
+      // would otherwise produce a false-positive drag-box test.
+      const single=await tile(1,2);
+      await page.mouse.click(single.x,single.y);
+      assert.deepEqual(await page.evaluate(()=>ui.selection.ids),[1001],
+        "Pre-drag reset must leave only the Scout selected");
       const dragStart=await tile(0,1),dragEnd=await tile(4,5);
       await page.mouse.move(dragStart.x,dragStart.y);
       await page.mouse.down();

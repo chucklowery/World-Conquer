@@ -120,9 +120,17 @@
       // vehicle); the browser must not silently convert the click to Move.
       const target=snapshot.entities.find(e=>(e.kind==="infantry"||e.kind==="vehicle")&&
         e.ownerId!==1&&e.active&&e.hp>0&&e.x===tile.x&&e.y===tile.y);
+      const ally=snapshot.entities.find(e=>e.ownerId===1&&e.active&&e.hp>0&&
+        e.x===tile.x&&e.y===tile.y);
       if(mode==="attack"&&!target)return [];
-      const kind=mode==="attack"||(mode==="context"&&target)?"attack":"move";
-      return this.ids.map(actor=>({kind,actor,x:tile.x,y:tile.y,target:target?target.id:0}));
+      if(mode==="guard"&&!ally)return [];
+      const kind=mode==="attack_move"?"attack_move":mode==="patrol"?"patrol":
+        mode==="guard"?"guard":
+        mode==="attack"||(mode==="context"&&target)?"attack":"move";
+      return this.ids.filter(actor=>kind!=="guard"||actor!==ally.id).map(actor=>({
+        kind,actor,x:tile.x,y:tile.y,
+        target:kind==="guard"?ally.id:target?target.id:0
+      }));
     }
   }
   return {Camera,Selection,TILE};
