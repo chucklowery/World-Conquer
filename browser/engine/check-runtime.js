@@ -559,26 +559,44 @@ async function main() {
       await page.setViewportSize({width:1280,height:800});
       // FND-002: real pointer box/multi-select and local control groups issue
       // per-actor orders through the R18 native command boundary.
+      // ResizeObserver/RAF must finish fitting the native canvas before
+      // translating real pointer coordinates into R01 world coordinates.
+      await page.waitForFunction(()=>{
+        const c=document.getElementById("canvas").getBoundingClientRect();
+        const p=document.getElementById("hud-playfield").getBoundingClientRect();
+        const m=WCRTS.latest()?.map;
+        if(!m||!p.width||!p.height)return false;
+        const expected=Math.min(p.width/m.width,p.height/m.height);
+        return Math.abs(c.width-expected*m.width)<1&&
+          Math.abs(c.height-expected*m.height)<1;
+      },undefined,{timeout:10000});
       const groupCanvas=await page.evaluate(()=>{
         const c=document.getElementById("canvas").getBoundingClientRect();
         const m=WCRTS.latest().map;
-        const units=WCRTS.latest().entities.filter(e=>e.ownerId===1&&e.kind==="infantry").slice(0,2);
-        if(units.length!==2)throw Error("Expected two Aster infantry for box-select");
-        return {x:c.left,y:c.top,w:c.width,h:c.height,mw:m.width,mh:m.height,
-          minX:Math.min(...units.map(e=>e.x)),maxX:Math.max(...units.map(e=>e.x)),
-          minY:Math.min(...units.map(e=>e.y)),maxY:Math.max(...units.map(e=>e.y))};
+        return {x:c.left,y:c.top,w:c.width,h:c.height,mw:m.width,mh:m.height};
       });
       const point=(x,y)=>({x:groupCanvas.x+x*groupCanvas.w/groupCanvas.mw,
         y:groupCanvas.y+y*groupCanvas.h/groupCanvas.mh});
-      const dragFrom=point(groupCanvas.maxX+.85,groupCanvas.maxY+.85);
-      const dragTo=point(groupCanvas.minX+.15,groupCanvas.minY+.15);
+      // Drag from an unobstructed map corner across the entire battlefield;
+      // this selects all active allied units regardless of native AI movement.
+      const dragFrom=point(groupCanvas.mw-.25,groupCanvas.mh-.25);
+      const dragTo=point(.25,.25);
       await page.mouse.move(dragFrom.x,dragFrom.y);
       await page.mouse.down();
       await page.mouse.move(dragTo.x,dragTo.y,{steps:6});
       await page.mouse.up();
-      await page.waitForFunction(()=>
-        /[2-9] selected/.test(document.getElementById("hud-selection-text").textContent),
-        undefined,{timeout:15000});
+      const boxSelected=await page.locator("#hud-selection-text").textContent();
+      if(!/[2-9] selected/.test(boxSelected)){
+        const debug=await page.evaluate(()=>({
+          label:document.getElementById("hud-selection-text").textContent,
+          mode:document.body.dataset.mode,
+          units:WCRTS.latest().entities.filter(e=>e.ownerId===1).map(e=>
+            ({id:e.id,x:e.x,y:e.y,active:e.active,hp:e.hp})),
+          canvas:document.getElementById("canvas").getBoundingClientRect().toJSON(),
+          playfield:document.getElementById("hud-playfield").getBoundingClientRect().toJSON()
+        }));
+        throw Error("R18 drag box failed: "+JSON.stringify(debug));
+      }
       const selectedGroup=await page.locator("#hud-selection-text").textContent();
       assert(/[2-9] selected/.test(selectedGroup));
       await page.keyboard.press("Shift+1");
