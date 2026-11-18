@@ -10,6 +10,13 @@ const {chromium} = require("playwright");
 
 const root = path.resolve(__dirname, "../../build/browser-engine");
 const messages = [];
+// Upload comparable per-map measurements alongside the browser probe. A
+// requestAnimationFrame interval is UI responsiveness telemetry, not the
+// duration of a native simulation tick or an approved performance budget.
+const r20Metrics = {schemaVersion:1, sha:process.env.GITHUB_SHA||"local",
+  runId:process.env.GITHUB_RUN_ID||"local",
+  runAttempt:Number(process.env.GITHUB_RUN_ATTEMPT||0),
+  status:"incomplete", maps:[]};
 const mime = {".html": "text/html", ".js": "text/javascript", ".wasm": "application/wasm", ".json": "application/json", ".shp": "application/octet-stream"};
 const server = http.createServer((req, res) => {
   const filename = decodeURIComponent((req.url || "/").split("?")[0]);
@@ -673,6 +680,18 @@ async function main() {
         await page.locator("#launch-rts-match").click();
         await page.waitForFunction(id=>WCRTS.latest()?.version===3&&
           WCRTS.latest().map.id===id,item.id,{timeout:60000});
+        await page.evaluate(()=>{
+          const intervals=[];
+          let previous=null,stopped=false;
+          function sample(now){
+            if(stopped)return;
+            if(previous!==null&&intervals.length<15000)intervals.push(now-previous);
+            previous=now;
+            requestAnimationFrame(sample);
+          }
+          requestAnimationFrame(sample);
+          window.__r20StopFrameSampling=()=>{stopped=true;return intervals;};
+        });
         const started=Date.now(),heaps=[];
         const pageErrorsBefore=messages.filter(m=>m.startsWith("PAGE ERROR:")).length;
         let sampledTicks=0,lastId=0;
@@ -724,10 +743,22 @@ async function main() {
                      pageErrorsBefore,"Browser page error during native R20 soak");
         const heapGrowth=heaps.length>1?
           Math.max(...heaps.slice(1))-Math.min(...heaps.slice(1)):0;
+        const frameIntervals=await page.evaluate(()=>window.__r20StopFrameSampling());
+        frameIntervals.sort((a,b)=>a-b);
+        const frameP95=frameIntervals.length?
+          Number(frameIntervals[Math.floor(frameIntervals.length*0.95)].toFixed(2)):null;
+        const measurement={map:item.id,epochs:soakEpochs,sampledTicks,
+          elapsedSeconds:Number(((Date.now()-started)/1000).toFixed(2)),
+          wasmHeapBytes:heaps,postWarmupHeapDeltaBytes:heapGrowth,
+          animationFrameSamples:frameIntervals.length,
+          animationFrameIntervalP95Ms:frameP95,
+          pageErrors:messages.filter(m=>m.startsWith("PAGE ERROR:")).length-pageErrorsBefore};
+        r20Metrics.maps.push(measurement);
         messages.push("PASS: R20 native WASM "+item.id+" "+soakEpochs+
           " restarts, "+sampledTicks+" live ticks, bounded events and IDs, "+
-          "heap delta "+heapGrowth+" bytes, "+Math.round((Date.now()-started)/1000)+
-          " elapsed seconds (memory budget pending maintainer approval)");
+          "allocated heap delta "+heapGrowth+" bytes, rAF interval p95 "+
+          frameP95+" ms/"+frameIntervals.length+" samples, "+
+          measurement.elapsedSeconds+" elapsed seconds (budgets pending approval)");
       }
     }
     // The integrated v3 scenario uses the real R03 combat system, not Courier
@@ -910,8 +941,7 @@ async function main() {
     assert(assetLog.includes("path lookup only"), "Engine must distinguish path check from asset integrity");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: synthetic file staging resolved through real engine CCFileClass search");
-
-
+    r20Metrics.status="complete";
   } catch (err) {
     messages.push("FAIL: " + (err.stack || err));
     // Print diagnostic log even when the test fails; CI should not require
@@ -922,6 +952,8 @@ async function main() {
   } finally {
     messages.push("PAGE LOG: " + await page.locator("#log").textContent().catch(() => "(unavailable)"));
     fs.writeFileSync(path.join(root, "browser-probe.log"), messages.join("\n") + "\n");
+    fs.writeFileSync(path.join(root, "r20-wasm-metrics.json"),
+      JSON.stringify(r20Metrics,null,2)+"\n");
     await browser.close();
   }
 }

@@ -92,6 +92,7 @@ jobs:
           node browser/engine/validate-maps.js
           node browser/engine/test-tactical-hud.js
           node browser/engine/test-simulation-bridge.js
+          node browser/engine/test-r20-metrics.js
           node tools/content/test-r18.js
           node browser/engine/test-rts-camera.js
           node browser/engine/test-package-alpha.js
@@ -180,6 +181,7 @@ jobs:
           path: |
             build/browser-engine/browser-probe.png
             build/browser-engine/browser-probe.log
+            build/browser-engine/r20-wasm-metrics.json
             build/browser-engine/r01-desktop.png
             build/browser-engine/r01-compact.png
             build/browser-engine/r05/gallery-proof.png

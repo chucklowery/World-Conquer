@@ -181,6 +181,29 @@ resource and projectile reveal/conceal; valid/invalid attack selection;
 no leaks in JSON, HUD, minimap or event history; restart/epoch/viewer switch;
 native deterministic replay; actual browser/WASM acceptance.
 
+### FND-009 decision proposal for maintainer review (not implemented)
+
+This table freezes concrete *questions and proposed defaults* for the R09
+entry review. No visibility capability is accepted by the existing v4 parser;
+the choices below are neither implemented nor approved.
+
+| Decision | Proposed rule to approve or amend | Required negative test |
+| --- | --- | --- |
+| Viewer authority | Require native `viewerHouseId` matching a live observing house. Compute sight per house at the end of each completed native tick, after movement/death and before event/snapshot publication. Allied houses share a union of current sight and discovered cells by canonical `teamId`; opposing teams never share. | Invalid/stale viewer, enemy team and restarted epochs cannot request unscoped v3 fallback. |
+| Terrain memory | Row-major `visibleNow`/`discovered` bitsets are bounded to the authored map; unknown cells have an explicit unknown sentinel. Remember terrain only. Never remember enemy entity instances, HP, orders or live resource amounts after they leave current sight. | Reveal, conceal and restart leave no hidden identity or live state in retained terrain, minimap or DOM. |
+| Sight evaluation | Native definitions specify integer radius and blocking terrain types. Use deterministic source-ID order and four-neighbor/rasterized line-of-sight decisions; remove a killed/moved source at the next completed visibility evaluation. | Equal input/replay creates identical bitsets and filtered payloads irrespective of observer query order. |
+| Hostile entity projection | Publish a hostile unit/structure/projectile ID and state only while `visibleNow` permits it. Friendly/allied actors remain visible by owner rule. Omit hidden entities entirely rather than provide IDs with placeholder coordinates. | Hidden IDs/HP/order/owner and projectile paths cannot be found by parsing raw JSON, events, HUD or minimap. |
+| Commands | Targeted hostile-ID commands and selection require native current visibility at admission and again on execution; previously seen IDs confer no authority. Ground attack-move to a valid tile is not an entity-target command. | Guessing a hidden stable ID, replaying a stale selection, or switching viewers never grants a target command. Rejection is atomic. |
+| Events/history | Filter events at the native producer using visibility at the event tick, retaining canonical order with permissible sequence gaps. For friendly damage from an unseen attacker, project only the friendly delta and redact the unknown hostile source; if the envelope cannot express redaction, omit the source field by an explicitly versioned event type. | Event source/target IDs cannot reveal hidden enemies, including across epochs, viewer switches and 256-entry history rotation. |
+| Economy + visibility | Negotiate only canonical `['visibility']` or `['economy','visibility']` in addition to existing `['economy']`; never degrade to v3. House credits and cargo are owner/allied-private, even if an enemy refinery is visible. Neutral resource amount is exposed only while currently visible; an undiscovered resource cannot be targeted for harvest. | Switch capabilities and viewers mid-session and verify no stale balance, resource amount, cargo, target or event survives in JS cache. |
+
+**Sign-off needed:** confirm allied sharing (especially credits), which terrain
+blocks sight, unit sight radii, unseen-attacker event encoding, terrain-memory
+serialization and whether discovered-but-not-currently-visible resources may
+be ordered to. R09 implementation must add independent native authorization,
+strict viewer-scoped JS parsing and real two-house Chromium acceptance; this
+table alone does not close FND-009.
+
 ## Performance and sign-off gates
 
 - Existing hard caps remain 16 houses, 256 entities, 4,096 cells and
@@ -200,6 +223,16 @@ native deterministic replay; actual browser/WASM acceptance.
   under 50 ms and heap increase under 16 MiB after warmup during a
   10-minute repeated-map soak. Gather baseline distributions over at
   least three final-SHA runs before enforcing the timing/memory thresholds.
+- The R20 browser runner now records a JSON measurement artifact per map:
+  sampled native ticks, elapsed time, allocated WASM heap size at every
+  restart, post-warmup allocated-heap delta and Chromium animation-frame
+  interval p95. The last two are **proxies**: WASM heap allocation is not
+  live-object memory and rAF interval is not native simulation-frame time.
+  Compare three independent successful **same-SHA** artifacts with
+  `node scripts/summarize-r20-metrics.js run1.json run2.json run3.json`;
+  it validates completeness/revision comparability but imposes no unapproved
+  threshold. A ten-minute sustained soak and actual simulation frame p95
+  still need their own acceptance evidence.
 - The maintainer must approve the v4 schema, resource-depletion footprint
   rules, R06 seeded-refinery exception, R09 viewer authorization policy,
   congestion expectations and measured budgets. R20 cannot close until
