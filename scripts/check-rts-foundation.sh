@@ -17,6 +17,7 @@ fi
 for suite in \
   test-simulation-contract \
   test-rts-world \
+  test-rts-economy \
   test-rts-world-ports \
   test-production-orders \
   test-rts-weapons \
@@ -43,5 +44,6 @@ for suite in \
 done
 
 node browser/engine/test-rts-world-bridge.js "$test_dir/test-rts-world"
+node browser/engine/test-rts-economy-bridge.js "$test_dir/test-rts-economy" "$test_dir/test-rts-live-match"
 node browser/engine/test-rts-live-bridge.js "$test_dir/test-rts-live-match"
 echo 'PASS: complete native/JS foundation gate'

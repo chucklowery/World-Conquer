@@ -11,7 +11,10 @@
 namespace rts {
 
 static const unsigned WORLD_SNAPSHOT_VERSION=3;
+static const unsigned WORLD_ECONOMY_SNAPSHOT_VERSION=4;
 static const unsigned DEFINITION_SCHEMA_VERSION=1;
+static const int WORLD_MAX_RESOURCE_AMOUNT=100000, WORLD_MAX_CREDITS=1000000000;
+static const int WORLD_HARVESTER_CAPACITY=20;
 static const size_t WORLD_MAX_HOUSES=16, WORLD_MAX_ENTITIES=256;
 static const size_t WORLD_MAX_COMMANDS=128, WORLD_MAX_EVENTS=256;
 static const int WORLD_MAX_WIDTH=128, WORLD_MAX_HEIGHT=128, WORLD_MAX_CELLS=4096;
@@ -22,12 +25,21 @@ static const uint16_t WORLD_MAX_EPOCH=(1u<<12)-1;
 enum class Role { Infantry, Vehicle, Structure, Resource };
 enum class Life { Alive, Dead, Despawned };
 enum class WorldAction { Spawn, Select, Move, Stop, Attack, Despawn, Kill,
-    AttackMove, Hold, Guard, Patrol };
+    AttackMove, Hold, Guard, Patrol, Harvest, ReturnCargo };
 enum class WorldCode { Accepted, InvalidEpoch, InvalidTick, DuplicateSequence,
     UnknownHouse, UnknownEntity, UnknownDefinition, NotOwned, BadTeam,
-    Dead, BadTarget, Blocked, Occupied, QueueFull, Capacity, WrongFaction, Unreachable };
+    Dead, BadTarget, Blocked, Occupied, QueueFull, Capacity, WrongFaction,
+    Unreachable, Empty, Full, Overflow };
 enum class WorldEventType { Command, Spawn, Selection, Order, Position,
-    Damage, Death, Despawn, Restart, Shot, Hit };
+    Damage, Death, Despawn, Restart, Shot, Hit, ResourceDelta, CargoDelta,
+    CreditsDelta, ResourceDepleted, HarvestState };
+enum class HarvestJob { Idle, Harvesting, Returning };
+inline const char* harvestJobName(HarvestJob j){
+    switch(j){case HarvestJob::Idle:return "idle";
+        case HarvestJob::Harvesting:return "harvesting";
+        case HarvestJob::Returning:return "returning";}
+    return "unknown";
+}
 
 inline const char* roleName(Role r){
     switch(r){case Role::Infantry:return "infantry";case Role::Vehicle:return "vehicle";
@@ -45,7 +57,9 @@ inline const char* actionName(WorldAction a){
         case WorldAction::Attack:return "attack";case WorldAction::Despawn:return "despawn";
         case WorldAction::Kill:return "kill";case WorldAction::AttackMove:return "attack_move";
         case WorldAction::Hold:return "hold";case WorldAction::Guard:return "guard";
-        case WorldAction::Patrol:return "patrol";}
+        case WorldAction::Patrol:return "patrol";
+        case WorldAction::Harvest:return "harvest";
+        case WorldAction::ReturnCargo:return "return_cargo";}
     return "unknown";
 }
 inline const char* codeName(WorldCode c){
@@ -65,7 +79,9 @@ inline const char* codeName(WorldCode c){
         case WorldCode::QueueFull:return "queue_full";
         case WorldCode::Capacity:return "capacity";
         case WorldCode::WrongFaction:return "wrong_faction";
-        case WorldCode::Unreachable:return "unreachable";}
+        case WorldCode::Unreachable:return "unreachable";
+        case WorldCode::Empty:return "empty";case WorldCode::Full:return "full";
+        case WorldCode::Overflow:return "overflow";}
     return "unknown";
 }
 inline const char* worldEventName(WorldEventType t){
@@ -74,8 +90,21 @@ inline const char* worldEventName(WorldEventType t){
         case WorldEventType::Order:return "order";case WorldEventType::Position:return "position";
         case WorldEventType::Damage:return "damage";case WorldEventType::Death:return "death";
         case WorldEventType::Despawn:return "despawn";case WorldEventType::Restart:return "restart";
-        case WorldEventType::Shot:return "shot";case WorldEventType::Hit:return "hit";}
+        case WorldEventType::Shot:return "shot";case WorldEventType::Hit:return "hit";
+        case WorldEventType::ResourceDelta:return "resource_delta";
+        case WorldEventType::CargoDelta:return "cargo_delta";
+        case WorldEventType::CreditsDelta:return "credits_delta";
+        case WorldEventType::ResourceDepleted:return "resource_depleted";
+        case WorldEventType::HarvestState:return "harvest_state";}
     return "unknown";
+}
+inline bool economyEvent(WorldEventType t){
+    return t==WorldEventType::ResourceDelta||t==WorldEventType::CargoDelta||
+           t==WorldEventType::CreditsDelta||t==WorldEventType::ResourceDepleted||
+           t==WorldEventType::HarvestState;
+}
+inline bool economyCode(WorldCode c){
+    return c==WorldCode::Empty||c==WorldCode::Full||c==WorldCode::Overflow;
 }
 inline bool safeKey(const std::string& s){
     if(s.empty()||s.size()>64)return false;
@@ -122,10 +151,14 @@ inline bool knownR05Visual(const std::string& key,const std::string& faction,
     static const VisualDefinition known[]={
         {"r05.aster.ranger","aster",Role::Infantry,1,1},
         {"r05.aster.rover","aster",Role::Vehicle,1,1},
+        {"r05.aster.harvester","aster",Role::Vehicle,1,1},
         {"r05.aster.hub","aster",Role::Structure,3,2},
+        {"r05.aster.refinery","aster",Role::Structure,2,2},
         {"r05.forge.ranger","forge",Role::Infantry,1,1},
         {"r05.forge.rover","forge",Role::Vehicle,1,1},
+        {"r05.forge.harvester","forge",Role::Vehicle,1,1},
         {"r05.forge.hub","forge",Role::Structure,3,2},
+        {"r05.forge.refinery","forge",Role::Structure,2,2},
         {"r05.world.crystal","neutral",Role::Resource,1,1}
     };
     for(const VisualDefinition& v:known)
@@ -201,6 +234,17 @@ struct House {
     HouseId id;
     TeamId team;
     std::string faction;
+    int credits;
+    House(HouseId i,TeamId t,const std::string& f,int balance=0):
+        id(i),team(t),faction(f),credits(balance){}
+};
+struct ResourceAccount {EntityId entityId;int remaining,maxAmount;};
+struct HarvesterAccount {
+    EntityId entityId;
+    int cargo,capacity;
+    EntityId resourceId,refineryId;
+    HarvestJob job;
+    uint64_t sequence;
 };
 struct WorldEntity {
     EntityId id;
@@ -230,7 +274,11 @@ struct WorldEvent {
     uint16_t weaponId;
     WorldCode code;
     int x,y,value;
+    HouseId ownerId;
 };
+inline bool legacyWorldEvent(const WorldEvent& e){
+    return !economyEvent(e.type)&&!economyCode(e.code);
+}
 struct WorldCommandState {
     EntityId entityId;
     std::string kind,status;
@@ -257,6 +305,8 @@ struct WorldSnapshot {
     EntityId selectedEntityId;
     std::vector<uint8_t> terrain;
     std::vector<House> houses;
+    std::vector<ResourceAccount> resources;
+    std::vector<HarvesterAccount> harvesters;
     std::vector<WorldEntity> entities;
     std::vector<Definition> definitions;
     std::vector<WorldEvent> events;
@@ -268,6 +318,9 @@ struct WorldSnapshot {
 class World {
     Catalog catalog_;
     std::vector<House> houses_;
+    std::vector<House> initialHouses_;
+    std::vector<ResourceAccount> resources_;
+    std::vector<HarvesterAccount> harvesters_;
     std::vector<WorldEntity> entities_;
     std::vector<uint8_t> terrain_;
     std::vector<WorldCommand> pending_;
@@ -290,6 +343,87 @@ class World {
     WorldEntity* mutableEntity(EntityId id){
         for(WorldEntity& e:entities_)if(e.id==id)return &e;
         return nullptr;
+    }
+    ResourceAccount* resource(EntityId id){
+        for(ResourceAccount& r:resources_)if(r.entityId==id)return &r;
+        return nullptr;
+    }
+    const ResourceAccount* resource(EntityId id)const{
+        for(const ResourceAccount& r:resources_)if(r.entityId==id)return &r;
+        return nullptr;
+    }
+    HarvesterAccount* harvester(EntityId id){
+        for(HarvesterAccount& h:harvesters_)if(h.entityId==id)return &h;
+        return nullptr;
+    }
+    const HarvesterAccount* harvester(EntityId id)const{
+        for(const HarvesterAccount& h:harvesters_)if(h.entityId==id)return &h;
+        return nullptr;
+    }
+    static bool isHarvester(const std::string& id){
+        return id=="game.aster.harvester"||id=="game.forge.harvester";
+    }
+    static bool isRefinery(const std::string& id){
+        return id=="game.aster.refinery"||id=="game.forge.refinery";
+    }
+    bool adjacent(const WorldEntity& actor,const WorldEntity& target)const{
+        const Definition* d=catalog_.find(target.definitionId);
+        if(!d)return false;
+        return actor.x>=target.x-1&&actor.x<=target.x+d->width&&
+               actor.y>=target.y-1&&actor.y<=target.y+d->height;
+    }
+    WorldCode validateEconomy(EntityId actorId,EntityId targetId,WorldAction action)const{
+        const WorldEntity* e=findInternal(actorId);
+        const WorldEntity* t=findInternal(targetId);
+        if(!e||!t||t->life!=Life::Alive||e->life!=Life::Alive)
+            return WorldCode::BadTarget;
+        const HarvesterAccount* h=harvester(actorId);
+        if(!h||!isHarvester(e->definitionId))return WorldCode::BadTarget;
+        if(action==WorldAction::Harvest){
+            const ResourceAccount* r=resource(targetId);
+            if(!r||t->owner!=0||!r->remaining)return WorldCode::BadTarget;
+            if(h->cargo==h->capacity)return WorldCode::Full;
+        }else{
+            if(!isRefinery(t->definitionId)||t->owner!=e->owner||!t->owner)
+                return WorldCode::BadTarget;
+            if(!h->cargo)return WorldCode::Empty;
+            const House* owner=house(e->owner);
+            if(!owner||owner->credits>WORLD_MAX_CREDITS-h->cargo)return WorldCode::Overflow;
+        }
+        // R20 admits only adjacent, already-reachable actions. R06 must
+        // navigate via R02 and revalidate on arrival before committing.
+        if(!adjacent(*e,*t))return WorldCode::Unreachable;
+        return WorldCode::Accepted;
+    }
+    void cancelHarvest(EntityId id,uint64_t sequence=0){
+        HarvesterAccount* h=harvester(id);
+        if(!h||h->job==HarvestJob::Idle)return;
+        h->job=HarvestJob::Idle;h->resourceId=0;h->refineryId=0;
+        h->sequence=0;
+        emit(WorldEventType::HarvestState,sequence,id,0,0,0);
+    }
+    void cancelDependents(EntityId target,uint64_t sequence=0){
+        for(const HarvesterAccount& h:harvesters_)
+            if(h.resourceId==target||h.refineryId==target){
+                WorldEntity* e=mutableEntity(h.entityId);
+                if(e){e->hasOrder=false;e->target=0;
+                    emit(WorldEventType::Order,sequence,e->id,e->x,e->y);}
+                cancelHarvest(h.entityId,sequence);
+            }
+    }
+    void endEconomicLifetime(EntityId id,uint64_t sequence=0){
+        cancelHarvest(id,sequence);cancelDependents(id,sequence);
+        HarvesterAccount* h=harvester(id);
+        if(h&&h->cargo){
+            emit(WorldEventType::CargoDelta,sequence,id,0,0,-h->cargo);
+            h->cargo=0;
+        }
+        ResourceAccount* r=resource(id);
+        if(r&&r->remaining){
+            emit(WorldEventType::ResourceDelta,sequence,id,0,0,-r->remaining);
+            r->remaining=0;
+            emit(WorldEventType::ResourceDepleted,sequence,id);
+        }
     }
     bool inside(int x,int y,int w=1,int h=1)const{
         return x>=0&&y>=0&&w>0&&h>0&&x<=width_-w&&y<=height_-h;
@@ -316,7 +450,9 @@ class World {
             if(oldest->type==WorldEventType::Restart)++oldest;
             events_.erase(oldest);
         }
-        events_.push_back({type,epoch_,tick_,seq,entity,source,weapon,code,x,y,value});
+        const WorldEntity* e=findInternal(entity);
+        events_.push_back({type,epoch_,tick_,seq,entity,source,weapon,code,x,y,value,
+                           static_cast<HouseId>(e?e->owner:0)});
     }
     WorldCode validate(const WorldCommand& c)const{
         if(!ready_||c.epoch!=epoch_)return WorldCode::InvalidEpoch;
@@ -329,7 +465,8 @@ class World {
             case WorldAction::Stop:case WorldAction::Attack:case WorldAction::Despawn:
             case WorldAction::Kill:case WorldAction::AttackMove:
             case WorldAction::Hold:case WorldAction::Guard:
-            case WorldAction::Patrol:break;
+            case WorldAction::Patrol:case WorldAction::Harvest:
+            case WorldAction::ReturnCargo:break;
             default:return WorldCode::BadTarget;
         }
         if(c.action==WorldAction::Spawn){
@@ -360,10 +497,17 @@ class World {
         if(c.action==WorldAction::Kill&&c.issuer!=0)return WorldCode::NotOwned;
         if(c.owner!=e->owner&&(c.issuer!=0||c.owner!=0))return WorldCode::BadTeam;
         if(e->life!=Life::Alive)return WorldCode::Dead;
+        if(c.action==WorldAction::Harvest||c.action==WorldAction::ReturnCargo){
+            if(c.issuer==0||c.target==0)return WorldCode::BadTarget;
+            const WorldEntity* target=findInternal(c.target);
+            if(!target||c.x!=target->x||c.y!=target->y)return WorldCode::BadTarget;
+            return validateEconomy(c.actor,c.target,c.action);
+        }
         if(c.action==WorldAction::Move||c.action==WorldAction::AttackMove||
            c.action==WorldAction::Patrol){
             const Definition* d=catalog_.find(e->definitionId);
-            if(!d||!inside(c.x,c.y,d->width,d->height))return WorldCode::BadTarget;
+            if(!d||(d->role!=Role::Infantry&&d->role!=Role::Vehicle)||
+               !inside(c.x,c.y,d->width,d->height))return WorldCode::BadTarget;
             if(!areaFree(c.x,c.y,*d,e->id))return WorldCode::Blocked;
         }else if(c.action==WorldAction::Attack){
             // Orders serialize their attack coordinates even when a target ID
@@ -400,6 +544,10 @@ class World {
                 if(!t||t->life!=Life::Alive||
                    (c.action==WorldAction::Attack?t->team==e->team:
                     t->team!=e->team))result=WorldCode::BadTarget;
+            }else if(c.action==WorldAction::Harvest||c.action==WorldAction::ReturnCargo){
+                const WorldEntity* target=findInternal(c.target);
+                result=(!target||c.x!=target->x||c.y!=target->y)?
+                    WorldCode::BadTarget:validateEconomy(c.actor,c.target,c.action);
             }
         }
         emit(WorldEventType::Command,c.sequence,c.actor,c.x,c.y,0,result);
@@ -410,6 +558,8 @@ class World {
             const EntityId id=(static_cast<EntityId>(epoch_)<<20)|nextId_++;
             entities_.push_back({id,c.definitionId,c.owner,static_cast<TeamId>(h?h->team:0),c.x,c.y,
                                  d->maxHp,Life::Alive,false,0,0,0});
+            if(isHarvester(c.definitionId))
+                harvesters_.push_back({id,0,WORLD_HARVESTER_CAPACITY,0,0,HarvestJob::Idle,0});
             emit(WorldEventType::Spawn,c.sequence,id,c.x,c.y);
         }else if(c.action==WorldAction::Select){
             selected_=c.actor;
@@ -417,16 +567,29 @@ class World {
         }else if(c.action==WorldAction::Move||c.action==WorldAction::Stop||
                  c.action==WorldAction::Attack||c.action==WorldAction::AttackMove||
                  c.action==WorldAction::Hold||c.action==WorldAction::Guard||
-                 c.action==WorldAction::Patrol){
+                 c.action==WorldAction::Patrol||c.action==WorldAction::Harvest||
+                 c.action==WorldAction::ReturnCargo){
             WorldEntity* e=mutableEntity(c.actor);
+            cancelHarvest(c.actor,c.sequence);
             e->hasOrder=c.action!=WorldAction::Stop;
             e->orderX=c.x;e->orderY=c.y;
-            e->target=(c.action==WorldAction::Attack||c.action==WorldAction::Guard)?c.target:0;
+            e->target=(c.action==WorldAction::Attack||c.action==WorldAction::Guard||
+                       c.action==WorldAction::Harvest||c.action==WorldAction::ReturnCargo)?c.target:0;
             emit(WorldEventType::Order,c.sequence,c.actor,c.x,c.y);
+            if(c.action==WorldAction::Harvest||c.action==WorldAction::ReturnCargo){
+                HarvesterAccount* account=harvester(c.actor);
+                account->job=c.action==WorldAction::Harvest?HarvestJob::Harvesting:HarvestJob::Returning;
+                account->resourceId=c.action==WorldAction::Harvest?c.target:0;
+                account->refineryId=c.action==WorldAction::ReturnCargo?c.target:0;
+                account->sequence=c.sequence;
+                emit(WorldEventType::HarvestState,c.sequence,c.actor,c.x,c.y,0,
+                     WorldCode::Accepted,c.target);
+            }
         }else if(c.action==WorldAction::Kill||c.action==WorldAction::Despawn){
             WorldEntity* e=mutableEntity(c.actor);
             e->life=c.action==WorldAction::Kill?Life::Dead:Life::Despawned;
             e->hasOrder=false;e->target=0;
+            endEconomicLifetime(e->id,c.sequence);
             if(c.action==WorldAction::Kill)e->hp=0;
             if(selected_==e->id){selected_=0;emit(WorldEventType::Selection,c.sequence,0);}
             for(WorldEntity& other:entities_)if(other.life==Life::Alive&&
@@ -459,14 +622,17 @@ public:
         for(uint8_t t:terrain)if(t>1)return false;
         std::set<HouseId> ids;
         for(const House& h:houses){
-            if(!h.id||!h.team||(h.faction!="aster"&&h.faction!="forge")||
+            if(!h.id||!h.team||h.credits<0||h.credits>WORLD_MAX_CREDITS||
+               (h.faction!="aster"&&h.faction!="forge")||
                !ids.insert(h.id).second)return false;
         }
         if(ready_&&epoch_>=WORLD_MAX_EPOCH)return false;
         const bool reconfiguring=ready_;
         const uint16_t nextEpoch=ready_?static_cast<uint16_t>(epoch_+1):1;
-        catalog_=catalog;houses_=houses;terrain_=terrain;width_=width;height_=height;
-        entities_.clear();pending_.clear();events_.clear();
+        catalog_=catalog;houses_=houses;initialHouses_=houses;
+        terrain_=terrain;width_=width;height_=height;
+        entities_.clear();resources_.clear();harvesters_.clear();
+        pending_.clear();events_.clear();
         epoch_=nextEpoch;nextId_=1;tick_=0;lastSequence_=0;selected_=0;ready_=true;
         if(reconfiguring)emit(WorldEventType::Restart,0,0);
         return true;
@@ -475,6 +641,71 @@ public:
         const WorldCode result=validate(c);
         if(result==WorldCode::Accepted){pending_.push_back(c);lastSequence_=c.sequence;}
         return result;
+    }
+    // R04 -> R18 handoff. Seeded amounts are native after the validated R18
+    // resource spawn; map metadata remains immutable and is never decremented.
+    bool seedResource(EntityId id,int amount){
+        const WorldEntity* e=findInternal(id);
+        const Definition* d=e?catalog_.find(e->definitionId):nullptr;
+        if(!e||e->life!=Life::Alive||e->owner!=0||!d||d->role!=Role::Resource||
+           resource(id)||amount<1||amount>WORLD_MAX_RESOURCE_AMOUNT)return false;
+        resources_.push_back({id,amount,amount});return true;
+    }
+    // These explicit R06 commit ports do no pathfinding, harvesting timer,
+    // production or auto-routing. R06 invokes them only after native arrival.
+    WorldCode commitHarvest(EntityId actor,EntityId source,int amount){
+        HarvesterAccount* h=harvester(actor);
+        ResourceAccount* r=resource(source);
+        if(!h||!r||h->job!=HarvestJob::Harvesting||h->resourceId!=source||amount<=0)
+            return WorldCode::BadTarget;
+        const WorldCode checked=validateEconomy(actor,source,WorldAction::Harvest);
+        if(checked!=WorldCode::Accepted)return checked;
+        if(amount>r->remaining||amount>h->capacity-h->cargo)return WorldCode::Capacity;
+        r->remaining-=amount;h->cargo+=amount;
+        emit(WorldEventType::ResourceDelta,h->sequence,source,0,0,-amount,
+             WorldCode::Accepted,actor);
+        emit(WorldEventType::CargoDelta,h->sequence,actor,0,0,amount,
+             WorldCode::Accepted,source);
+        if(r->remaining==0){
+            WorldEntity* depleted=mutableEntity(source);
+            depleted->life=Life::Despawned;depleted->hasOrder=false;depleted->target=0;
+            if(selected_==source){
+                selected_=0;
+                emit(WorldEventType::Selection,h->sequence,0);
+            }
+            emit(WorldEventType::ResourceDepleted,h->sequence,source,0,0,0,
+                 WorldCode::Accepted,actor);
+            emit(WorldEventType::Despawn,h->sequence,source);
+            cancelDependents(source,h->sequence);
+        }else if(h->cargo==h->capacity){
+            WorldEntity* e=mutableEntity(actor);
+            e->hasOrder=false;e->target=0;
+            emit(WorldEventType::Order,h->sequence,actor,e->x,e->y);
+            cancelHarvest(actor,h->sequence);
+        }
+        return WorldCode::Accepted;
+    }
+    WorldCode commitReturnCargo(EntityId actor,EntityId refinery){
+        HarvesterAccount* h=harvester(actor);
+        if(!h||h->job!=HarvestJob::Returning||h->refineryId!=refinery)
+            return WorldCode::BadTarget;
+        const WorldCode checked=validateEconomy(actor,refinery,WorldAction::ReturnCargo);
+        if(checked!=WorldCode::Accepted)return checked;
+        const WorldEntity* e=findInternal(actor);
+        for(House& owner:houses_)if(owner.id==e->owner){
+            owner.credits+=h->cargo;
+            emit(WorldEventType::CargoDelta,h->sequence,actor,0,0,-h->cargo,
+                 WorldCode::Accepted,refinery);
+            emit(WorldEventType::CreditsDelta,h->sequence,actor,0,0,h->cargo,
+                 WorldCode::Accepted,refinery);
+            h->cargo=0;
+            WorldEntity* mutableActor=mutableEntity(actor);
+            mutableActor->hasOrder=false;mutableActor->target=0;
+            emit(WorldEventType::Order,h->sequence,actor,e->x,e->y);
+            cancelHarvest(actor,h->sequence);
+            return WorldCode::Accepted;
+        }
+        return WorldCode::UnknownHouse;
     }
     bool process(uint64_t toTick){
         if(!ready_||toTick<tick_||toTick-tick_>WORLD_COMMAND_HORIZON)return false;
@@ -495,7 +726,9 @@ public:
     bool restart(){
         if(!ready_||epoch_>=WORLD_MAX_EPOCH)return false;
         ++epoch_;tick_=0;nextId_=1;lastSequence_=0;selected_=0;
-        entities_.clear();pending_.clear();events_.clear();
+        houses_=initialHouses_;
+        entities_.clear();resources_.clear();harvesters_.clear();
+        pending_.clear();events_.clear();
         emit(WorldEventType::Restart,0,0);return true;
     }
     // These are observation/commit ports. The production engine has already
@@ -504,7 +737,8 @@ public:
         WorldEntity* e=mutableEntity(id);
         if(!e||e->life!=Life::Alive)return false;
         const Definition* d=catalog_.find(e->definitionId);
-        if(!d||!areaFree(x,y,*d,id))return false;
+        if(!d||((d->role==Role::Resource||d->role==Role::Structure)&&
+                (x!=e->x||y!=e->y))||!areaFree(x,y,*d,id))return false;
         if(e->x==x&&e->y==y)return true;
         e->x=x;e->y=y;emit(WorldEventType::Position,0,id,x,y);return true;
     }
@@ -529,6 +763,7 @@ public:
                            WorldCode::Accepted,source,weapon);
         if(!e->hp){
             e->life=Life::Dead;e->hasOrder=false;e->target=0;
+            endEconomicLifetime(id);
             if(selected_==id){selected_=0;emit(WorldEventType::Selection,0,0);}
             for(WorldEntity& other:entities_)if(other.life==Life::Alive&&
                   other.hasOrder&&other.target==id){
@@ -565,15 +800,29 @@ public:
         s.phase="playing";
         return s;
     }
+    WorldSnapshot viewEconomy()const{
+        WorldSnapshot s=view();s.version=WORLD_ECONOMY_SNAPSHOT_VERSION;
+        s.resources=resources_;s.harvesters=harvesters_;
+        return s;
+    }
+    WorldSnapshot publishEconomy(){
+        WorldSnapshot s=viewEconomy();s.events.swap(events_);return s;
+    }
     WorldSnapshot publish(){
-        WorldSnapshot s=view();s.events.swap(events_);return s;
+        WorldSnapshot s=view();s.events.swap(events_);
+        s.events.erase(std::remove_if(s.events.begin(),s.events.end(),
+            [](const WorldEvent& event){return !legacyWorldEvent(event);}),s.events.end());
+        return s;
     }
 };
 
 inline std::string worldJson(const WorldSnapshot& s){
     // All catalog identifiers have already passed safeKey() validation.
     std::ostringstream o;
-    o<<"{\"version\":"<<s.version<<",\"definitionSchemaVersion\":"
+    const bool economy=s.version==WORLD_ECONOMY_SNAPSHOT_VERSION;
+    o<<"{\"version\":"<<s.version;
+    if(economy)o<<",\"capabilities\":[\"economy\"]";
+    o<<",\"definitionSchemaVersion\":"
      <<s.definitionSchemaVersion<<",\"epoch\":"<<s.epoch
      <<",\"tick\":"<<s.tick<<",\"map\":{\"width\":"<<s.width
      <<",\"height\":"<<s.height<<",\"terrain\":[";
@@ -611,7 +860,25 @@ inline std::string worldJson(const WorldSnapshot& s){
     for(size_t i=0;i<s.houses.size();i++){
         const House& h=s.houses[i];if(i)o<<',';
         o<<"{\"id\":"<<h.id<<",\"teamId\":"<<h.team
-         <<",\"faction\":\""<<h.faction<<"\"}";
+         <<",\"faction\":\""<<h.faction<<"\"";
+        if(economy)o<<",\"credits\":"<<h.credits;
+        o<<'}';
+    }
+    if(economy){
+        o<<"],\"resources\":[";
+        for(size_t i=0;i<s.resources.size();i++){
+            const ResourceAccount& r=s.resources[i];if(i)o<<',';
+            o<<"{\"entityId\":"<<r.entityId<<",\"remaining\":"<<r.remaining
+             <<",\"maxAmount\":"<<r.maxAmount<<'}';
+        }
+        o<<"],\"harvesters\":[";
+        for(size_t i=0;i<s.harvesters.size();i++){
+            const HarvesterAccount& h=s.harvesters[i];if(i)o<<',';
+            o<<"{\"entityId\":"<<h.entityId<<",\"cargo\":"<<h.cargo
+             <<",\"capacity\":"<<h.capacity<<",\"resourceId\":"<<h.resourceId
+             <<",\"refineryId\":"<<h.refineryId<<",\"jobState\":\""
+             <<harvestJobName(h.job)<<"\",\"sequence\":"<<h.sequence<<'}';
+        }
     }
     o<<"],\"definitions\":[";
     for(size_t i=0;i<s.definitions.size();i++){
@@ -639,14 +906,20 @@ inline std::string worldJson(const WorldSnapshot& s){
         o<<'}';
     }
     o<<"],\"events\":[";
+    bool firstEvent=true;
     for(size_t i=0;i<s.events.size();i++){
-        const WorldEvent& e=s.events[i];if(i)o<<',';
+        const WorldEvent& e=s.events[i];
+        if(!economy&&!legacyWorldEvent(e))continue;
+        if(!firstEvent)o<<',';
+        firstEvent=false;
         o<<"{\"type\":\""<<worldEventName(e.type)
          <<"\",\"epoch\":"<<e.epoch<<",\"tick\":"<<e.tick
          <<",\"sequence\":"<<e.sequence<<",\"entityId\":"<<e.entityId
          <<",\"sourceId\":"<<e.sourceId<<",\"weaponId\":"<<e.weaponId
          <<",\"x\":"<<e.x<<",\"y\":"<<e.y
-         <<",\"value\":"<<e.value<<",\"code\":\""<<codeName(e.code)<<"\"}";
+         <<",\"value\":"<<e.value<<",\"code\":\""<<codeName(e.code)<<"\"";
+        if(economy)o<<",\"ownerId\":"<<e.ownerId;
+        o<<'}';
     }
     o<<']';
     if(!s.commandStates.empty()){

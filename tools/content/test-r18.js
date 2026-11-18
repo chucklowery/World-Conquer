@@ -32,7 +32,11 @@ for(const d of definitions.values()){
   assert.deepEqual([d[2],d[3],d[4],d[5]],[v[2],v[3],v[4],v[5]]);
   assert(Number.isInteger(Number(d[7]))&&Number(d[7])>0);
 }
-assert.equal(visuals.size,7);
-assert.equal(definitions.size,7);
+assert.equal(visuals.size,11);
+assert.equal(definitions.size,11);
 assert(definitions.has("game.aster.ranger")&&definitions.has("game.forge.ranger"));
-console.log("PASS: R18 gameplay definitions match seven immutable, faction-correct R05 visual keys and footprints");
+for(const faction of ["aster","forge"]){
+  assert.deepEqual(definitions.get(`game.${faction}.harvester`).slice(3,6),["vehicle","1","1"]);
+  assert.deepEqual(definitions.get(`game.${faction}.refinery`).slice(3,6),["structure","2","2"]);
+}
+console.log("PASS: R18 gameplay definitions match eleven immutable, faction-correct R05 visual keys and footprints");
