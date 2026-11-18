@@ -24,7 +24,7 @@ int main(int argc,char** argv){
     rts::Catalog catalog;
     const std::string source=catalogText();
     assert(catalog.load(source));
-    assert(catalog.definitions().size()==7);
+    assert(catalog.definitions().size()==11);
     assert(catalog.find("game.aster.ranger")->visualKey=="r05.aster.ranger");
     // Failed schema reload is atomic, and art keys cannot act as gameplay IDs.
     std::string corrupt=source;

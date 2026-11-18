@@ -1,19 +1,21 @@
 # R20 native extension contracts — R06 economy and R09 visibility
 
-**Status: proposed for maintainer review, not yet approved or implemented.**
-This is a pre-R06/R09 interface freeze, not permission to begin either feature.
+**Status: FND-004/005 economy ports implemented for native/JS host review;
+maintainer approval and runtime acceptance pending. R09 visibility remains proposed.**
+This is a pre-R06/R09 interface gate, not permission to begin either feature.
 The accepted Courier v1, map v2 and world v3 snapshots must continue to work.
 R20 readiness is recorded in
 [`READINESS.md`](../rts-milestones/R20-foundation-stabilization/READINESS.md).
 
-## Existing native invariants (verified)
+## Pre-FND-004/005 v3 invariants (preserved)
 
 - `rts::World` owns instance identity, house/team ownership, lifecycle,
   commands and events. IDs encode an epoch; stale-epoch commands are rejected.
   `orders::Controller` and the combat system feed the same native world.
 - `LiveMatch::seed()` spawns one neutral `game.world.crystal` entity at each
   R04 map resource tile. Authored `map.resources` records retain finite
-  positive seed amounts, but **do not yet identify their R18 instance IDs**.
+  positive seed amounts, and the new native account maps them to R18 IDs;
+  **v3 map metadata intentionally still does not expose those IDs**.
   The R20 foundation stress test checks the one-to-one positional handoff
   across both maps and 24 load/epoch cycles.
 - Existing v3 `houses` contain `id`, `teamId` and `faction`, **not**
@@ -41,9 +43,63 @@ R20 readiness is recorded in
    deterministic event sequence are inherited from R00/R18. V4 rejects
    stale epochs/IDs and malformed nested data **atomically**. Replays,
    restarts and viewer switches may not retain unauthorized old history.
-4. This document proposes field names and invariants to review; production
-   parsers must validate them on **both** C++ and JavaScript sides before
-   any v4 runtime is enabled. No v4 implementation is claimed by this PR.
+4. The native v4 economy producer and strict JS economy parser now exist in
+   opt-in host ports. The `rts-live` runtime continues to publish **v3**;
+   visibility capability is reserved but **rejected**, not implemented.
+   Real-WASM v4 acceptance and maintainer schema approval remain mandatory.
+
+## FND-004/005 implemented entry interface (R20, not R06)
+
+- `World::seedResource(entityId, amount)` is the one-time validated R04→R18
+  handoff; `LiveMatch::seed()` binds each authored resource to its freshly
+  spawned neutral crystal ID. The immutable R04 amount is never decremented.
+  Active quantities belong to native `ResourceAccount`, with `1..100000`
+  initial units and `0..maxAmount` remaining. Zero tombstones/despawns the
+  entity, releases its native footprint, and keeps the old ID in the v4
+  snapshot for epoch-local history. R06 baseline has **no regrowth**; any
+  future regrowth gets a new R18 ID. Destroying a resource also zeroes its
+  account and emits depletion events.
+- House balances are native signed 32-bit nonnegative integers capped at
+  `1,000,000,000`. Configuration validates starting balances; epoch restart
+  restores the configured amounts, not the final earned amounts. An adjacent
+  return transfers *all* carried units at a fixed 1 credit/unit with checked
+  overflow. No spending, build price, or production rule is implemented here.
+- `game.{aster,forge}.harvester` are 1×1 R18 vehicles with native cargo
+  capacity **20**, job state `idle|harvesting|returning`, target IDs and
+  admitted command sequence. `game.{aster,forge}.refinery` are 2×2 R18
+  structures with the normal owner/team, HP, footprint and lifetime. These
+  gameplay IDs bind to the matching real `r05.*` roster visuals, not to JS
+  placeholders. No refinery or harvester is yet scenario-seeded in the live
+  runtime; R06 may seed a refinery until R07 placement exists.
+- `WorldAction::Harvest` and `ReturnCargo` use normal R18 queued tick/epoch,
+  issuer/owner, actor, target and sequence admission. Only **adjacent**
+  admitted targets may execute in this foundation port; wrong role, stale or
+  dead ID, enemy actor/refinery, empty/full cargo, spoofed coordinates, or
+  credit overflow fails without resource/cargo/balance mutation. R06 must
+  provide R02 navigation to a free adjacent approach tile and revalidate on
+  arrival; no remote target routing or timed pickup loop is claimed here.
+  `World::commitHarvest()` and `commitReturnCargo()` are explicit, atomic
+  native arrival/transfer ports. Stop, replacement, target loss and death
+  cancel jobs; death/despawn forfeits native cargo, and restart clears it.
+- V4 is emitted **only** through `viewEconomy()`/`publishEconomy()` (or a
+  `LiveMatch::snapshot(..., true)` host opt-in), never through v3 `view()` or
+  the current browser runtime. Its exact top-level capability list is
+  `["economy"]`. Fields added to otherwise unchanged v3 JSON are
+  `houses[].credits`, `resources[{entityId,remaining,maxAmount}]`,
+  `harvesters[{entityId,cargo,capacity,resourceId,refineryId,jobState,sequence}]`
+  and `events[].ownerId`; committed events add `resource_delta`, `cargo_delta`,
+  `credits_delta`, `resource_depleted`, `harvest_state`. The event `entityId`
+  is the changed instance, `sourceId` is its source/target, `ownerId` is its
+  canonical R18 owner and signed `value` is the delta. Acknowledgement events
+  precede native mutation events at the same sequence/tick; rejected commands
+  have no delta. JS requires explicit `{capabilities:["economy"]}` and rejects
+  unknown, combined or unapproved capabilities. V3 snapshots remain byte-shape
+  compatible; v4 history resets on epoch or version switch.
+
+**Host evidence:** `test-rts-economy.cpp`, `test-rts-economy-bridge.js`,
+`test-rts-world.cpp`, `test-rts-live-match.cpp`, `tools/content/test-r18.js`
+via `scripts/check-rts-foundation.sh`. These are implementation readiness
+checks, not proof of R06 harvesting in real Chromium or sign-off of R20.
 
 ## R06: resource, cargo and credit ownership
 
@@ -61,11 +117,11 @@ Proposed gameplay definition IDs are `game.aster.harvester`,
 `game.forge.harvester`, `game.aster.refinery` and
 `game.forge.refinery`. They remain separate from existing R05 art keys
 (`r05.aster.harvester`, `r05.forge.harvester`,
-`r05.aster.refinery`, `r05.forge.refinery`). R06 must extend the
-validated R18 gameplay catalog and JS schema together; R19 remains
-responsible for finished native art rendering.
+`r05.aster.refinery`, `r05.forge.refinery`). The R18 gameplay catalog
+and JS schema now include those IDs together; R19 remains responsible
+for finished native art rendering.
 
-### R06 commands and events to reserve
+### R06 follow-on command and event requirements
 
 - Native `Harvest(resourceId)`, `ReturnCargo(refineryId)` and `Stop`
   operate on the same R18 actor, issuer, epoch, tick and sequence ordering.

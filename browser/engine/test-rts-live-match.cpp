@@ -12,12 +12,21 @@ static std::string read(const std::string& name){
 }
 int main(int argc,char** argv){
     const bool json=argc==2&&std::string(argv[1])=="--json";
+    const bool economyJson=argc==2&&std::string(argv[1])=="--economy-json";
     const std::string defs=read("game/content/r18/definitions.rts");
     const std::string ridge=read("game/content/missions/ridge-pass.map");
     const std::string marsh=read("game/content/missions/marsh-border.map");
     rts::LiveMatch match;
     assert(!match.load("malformed map",defs));
     assert(match.load(ridge,defs));
+    if(economyJson){
+        std::cout<<rts::worldJson(match.snapshot(true,true))<<'\n';
+        assert(match.restart());
+        std::cout<<rts::worldJson(match.snapshot(true,true))<<'\n';
+        assert(match.load(marsh,defs));
+        std::cout<<rts::worldJson(match.snapshot(true,true))<<'\n';
+        return 0;
+    }
     assert(match.world().epoch()==1&&match.world().tick()==1);
     assert(match.actors().size()==6); // map-authored four plus two script starts
     assert(match.navigation().count()==6);

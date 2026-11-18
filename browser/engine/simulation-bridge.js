@@ -6,29 +6,41 @@
   if(typeof module==="object"&&module.exports)module.exports=api;
   else root.WCRTS=api;
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
-  const VERSION=1,MAP_VERSION=2,WORLD_VERSION=3;
+  const VERSION=1,MAP_VERSION=2,WORLD_VERSION=3,ECONOMY_VERSION=4;
   let current=null,listener=null,history=Object.freeze([]);
   const kinds=new Set(["infantry","vehicle","supply","extraction"]);
   const events=new Set(["command","selection","position","health","pickup","phase","restart",
     "shot","hit","damage","death"]);
   const worldEvents=new Set(["command","spawn","selection","order","position",
     "shot","hit","damage","death","despawn","restart"]);
+  const economyEvents=new Set(["resource_delta","cargo_delta","credits_delta",
+    "resource_depleted","harvest_state"]);
   const worldRoles=new Set(["infantry","vehicle","structure","resource"]);
   // Reviewed R05 asset bindings: visual keys describe artwork, not gameplay.
   // Keep this mirror in sync with native knownR05Visual() and the R05 roster.
   const worldVisuals=Object.freeze({
     "r05.aster.ranger":["aster","infantry",1,1],
     "r05.aster.rover":["aster","vehicle",1,1],
+    "r05.aster.harvester":["aster","vehicle",1,1],
     "r05.aster.hub":["aster","structure",3,2],
+    "r05.aster.refinery":["aster","structure",2,2],
     "r05.forge.ranger":["forge","infantry",1,1],
     "r05.forge.rover":["forge","vehicle",1,1],
+    "r05.forge.harvester":["forge","vehicle",1,1],
     "r05.forge.hub":["forge","structure",3,2],
+    "r05.forge.refinery":["forge","structure",2,2],
     "r05.world.crystal":["neutral","resource",1,1]
   });
   const worldCodes=new Set(["accepted","invalid_epoch","invalid_tick","duplicate_sequence",
     "unknown_house","unknown_entity","unknown_definition","not_owned","bad_team",
-    "dead","bad_target","blocked","occupied","queue_full","capacity","wrong_faction","unreachable"]);
-  function checkWorld(s){
+    "dead","bad_target","blocked","occupied","queue_full","capacity","wrong_faction","unreachable",
+    "empty","full","overflow"]);
+  function checkWorld(s,economy=false){
+    if(economy){
+      if(!Array.isArray(s.capabilities)||s.capabilities.length!==1||
+         s.capabilities[0]!=="economy")throw Error("Invalid native economy capabilities");
+    }else if(s.capabilities!==undefined||s.resources!==undefined||s.harvesters!==undefined)
+      throw Error("Economy fields require native world v4");
     if(!Number.isInteger(s.epoch)||s.epoch<1||s.epoch>4095||
        s.definitionSchemaVersion!==1||!Number.isSafeInteger(s.tick)||s.tick<0)
       throw Error("Invalid native world epoch or schema");
@@ -81,7 +93,9 @@
     for(const h of s.houses){
       if(!h||!Number.isInteger(h.id)||h.id<1||h.id>65535||
          !Number.isInteger(h.teamId)||h.teamId<1||h.teamId>65535||
-         !["aster","forge"].includes(h.faction)||houses.has(h.id))
+         !["aster","forge"].includes(h.faction)||houses.has(h.id)||
+         (economy?(!Number.isInteger(h.credits)||h.credits<0||h.credits>1000000000):
+           h.credits!==undefined))
         throw Error("Invalid native world house");
       houses.set(h.id,h);
     }
@@ -135,6 +149,58 @@
     }
     if(s.selectedEntityId!==0&&(!entities.has(s.selectedEntityId)||
        !entities.get(s.selectedEntityId).active))throw Error("Invalid world selection");
+    if(economy){
+      const resources=new Map(),harvesters=new Map();
+      if(!Array.isArray(s.resources)||s.resources.length>256||
+         !Array.isArray(s.harvesters)||s.harvesters.length>256)
+        throw Error("Invalid native economy state");
+      for(const r of s.resources){
+        const entity=entities.get(r?.entityId);
+        if(!entity||entity.kind!=="resource"||entity.ownerId!==0||
+           resources.has(r.entityId)||!Number.isInteger(r.maxAmount)||
+           r.maxAmount<1||r.maxAmount>100000||!Number.isInteger(r.remaining)||
+           r.remaining<0||r.remaining>r.maxAmount||entity.active!==(r.remaining>0))
+          throw Error("Invalid native economy resource");
+        resources.set(r.entityId,r);
+      }
+      if([...entities.values()].some(e=>e.kind==="resource"&&!resources.has(e.id)))
+        throw Error("Unregistered native economy resource");
+      if(map.id!==undefined){
+        if(map.resources.length!==resources.size)throw Error("Invalid map/resource identity parity");
+        for(const seed of map.resources){
+          const entries=[...resources.keys()].filter(id=>{
+            const e=entities.get(id);return e.x===seed.x&&e.y===seed.y;
+          });
+          if(entries.length!==1||resources.get(entries[0]).maxAmount!==seed.amount)
+            throw Error("Invalid map/resource identity parity");
+        }
+      }
+      for(const h of s.harvesters){
+        const e=entities.get(h?.entityId);
+        if(!e||!/^game\.(aster|forge)\.harvester$/.test(e.definitionId)||
+           harvesters.has(h.entityId)||!Number.isInteger(h.capacity)||h.capacity!==20||
+           !Number.isInteger(h.cargo)||h.cargo<0||h.cargo>h.capacity||
+           !Number.isInteger(h.resourceId)||h.resourceId<0||
+           !Number.isInteger(h.refineryId)||h.refineryId<0||
+           !Number.isSafeInteger(h.sequence)||h.sequence<0||
+           !["idle","harvesting","returning"].includes(h.jobState))
+          throw Error("Invalid native economy harvester");
+        if(h.jobState==="idle"?(h.resourceId!==0||h.refineryId!==0||h.sequence!==0):
+           (!e.active||!e.order||e.order.target!==
+             (h.jobState==="harvesting"?h.resourceId:h.refineryId)||h.sequence===0||
+             (h.jobState==="harvesting"?
+               (!resources.has(h.resourceId)||!entities.get(h.resourceId).active||
+                h.refineryId!==0||h.cargo===h.capacity):
+               (!h.cargo||h.resourceId!==0||
+                !entities.get(h.refineryId)?.active||
+                !/^game\.(aster|forge)\.refinery$/.test(entities.get(h.refineryId).definitionId)||
+                entities.get(h.refineryId).ownerId!==e.ownerId))))
+          throw Error("Invalid native economy job state");
+        harvesters.set(h.entityId,h);
+      }
+      if([...entities.values()].some(e=>/^game\.(aster|forge)\.harvester$/.test(e.definitionId)&&
+         !harvesters.has(e.id)))throw Error("Unregistered native economy harvester");
+    }
     if(s.commandStates!==undefined){
       const kinds=new Set(["move","attack_move","stop","hold","guard","patrol","attack"]);
       const statuses=new Set(["idle","moving","waiting","holding","guarding","patrolling","attacking","unreachable","dead"]);
@@ -162,7 +228,8 @@
       }
     }
     for(const event of s.events){
-      if(!event||!worldEvents.has(event.type)||event.epoch!==s.epoch||
+      if(!event||!(worldEvents.has(event.type)||(economy&&economyEvents.has(event.type)))||
+         event.epoch!==s.epoch||
          !Number.isSafeInteger(event.tick)||event.tick<0||event.tick>s.tick||
          !Number.isSafeInteger(event.sequence)||event.sequence<0||
          !Number.isInteger(event.entityId)||event.entityId<0||
@@ -171,8 +238,39 @@
          !Number.isInteger(event.x)||!Number.isInteger(event.y)||
          !Number.isInteger(event.value)||!worldCodes.has(event.code))
         throw Error("Invalid native world event");
+      if(economy){
+        if(!Number.isInteger(event.ownerId)||event.ownerId<0||event.ownerId>65535||
+           (event.ownerId!==0&&!houses.has(event.ownerId))||
+           (entities.has(event.entityId)&&
+            entities.get(event.entityId).ownerId!==event.ownerId)||
+           (economyEvents.has(event.type)&&
+            (!entities.has(event.entityId)||
+             Math.abs(event.value)>1000000000)))
+          throw Error("Invalid native economy event");
+        if(economyEvents.has(event.type)){
+          const changed=entities.get(event.entityId);
+          const source=entities.get(event.sourceId);
+          if((event.type==="resource_delta"&&
+                (changed.kind!=="resource"||event.value>=0))||
+             (event.type==="cargo_delta"&&
+                (!/^game\.(aster|forge)\.harvester$/.test(changed.definitionId)||
+                 event.value===0))||
+             (event.type==="credits_delta"&&
+                (!/^game\.(aster|forge)\.harvester$/.test(changed.definitionId)||
+                 !source||!/^game\.(aster|forge)\.refinery$/.test(source.definitionId)||
+                 source.ownerId!==changed.ownerId||event.value<=0))||
+             (event.type==="resource_depleted"&&
+                (changed.kind!=="resource"||event.value!==0||changed.active))||
+             (event.type==="harvest_state"&&
+                (!/^game\.(aster|forge)\.harvester$/.test(changed.definitionId)||
+                 event.value!==0))||
+             (event.sourceId!==0&&!source))
+            throw Error("Invalid native economy event identity or delta");
+        }
+      }else if(event.ownerId!==undefined||economyEvents.has(event.type))
+        throw Error("Economy events require native world v4");
     }
-    if(current&&current.version===WORLD_VERSION){
+    if(current&&[WORLD_VERSION,ECONOMY_VERSION].includes(current.version)){
       if(s.epoch<current.epoch||
          (s.epoch===current.epoch&&s.tick<current.tick)||
          (s.epoch>current.epoch&&
@@ -181,9 +279,15 @@
     }
     return s;
   }
-  function check(snapshot,allowWorldV3=false){
+  function check(snapshot,options={}){
+    if(snapshot?.version===ECONOMY_VERSION){
+      if(!Array.isArray(options.capabilities)||options.capabilities.length!==1||
+         options.capabilities[0]!=="economy")
+        throw Error("Native world v4 requires negotiated economy capability");
+      return checkWorld(snapshot,true);
+    }
     if(snapshot?.version===WORLD_VERSION){
-      if(!allowWorldV3)throw Error("Native world v3 requires negotiated consumer support");
+      if(options.allowWorldV3!==true)throw Error("Native world v3 requires negotiated consumer support");
       return checkWorld(snapshot);
     }
     if(!snapshot||![VERSION,MAP_VERSION].includes(snapshot.version)||!Number.isSafeInteger(snapshot.tick)||snapshot.tick<0)
@@ -270,10 +374,12 @@
   }
   function receive(serialized,options){
     // Runtime adapter passes a JSON string across the WASM boundary.
-    const next=check(typeof serialized==="string"?JSON.parse(serialized):serialized,
-      options?.allowWorldV3===true);
+    const next=check(typeof serialized==="string"?JSON.parse(serialized):serialized,options);
+    const resetHistory=current&&
+      (current.version!==next.version||
+       (next.version===ECONOMY_VERSION&&current.epoch!==next.epoch));
     current=freeze(next);
-    history=freeze([...history,...current.events].slice(-256));
+    history=freeze([...(resetHistory?[]:history),...current.events].slice(-256));
     if(listener)listener(current);
     return current;
   }
@@ -284,5 +390,5 @@
   function latest(){return current;}
   function eventHistory(){return history;}
   function clear(){current=null;history=Object.freeze([]);}
-  return {VERSION,MAP_VERSION,WORLD_VERSION,receive,subscribe,latest,eventHistory,clear};
+  return {VERSION,MAP_VERSION,WORLD_VERSION,ECONOMY_VERSION,receive,subscribe,latest,eventHistory,clear};
 });

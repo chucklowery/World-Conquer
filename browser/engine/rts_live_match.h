@@ -108,6 +108,12 @@ class LiveMatch {
             if(spawn(0,"game.world.crystal",resource.p)!=WorldCode::Accepted)return false;
         if(!world_.process(1))return false;
         if(world_.entities().size()!=starting.size()+authored_.resources.size())return false;
+        for(size_t i=0;i<authored_.resources.size();i++){
+            const WorldEntity& e=world_.entities()[starting.size()+i];
+            const courier::Resource& r=authored_.resources[i];
+            if(e.owner!=0||e.definitionId!="game.world.crystal"||
+               e.x!=r.p.x||e.y!=r.p.y||!world_.seedResource(e.id,r.amount))return false;
+        }
         for(size_t i=0;i<starting.size();i++){
             const WorldEntity& e=world_.entities()[i];
             if(e.life!=Life::Alive||e.owner!=starting[i].first)return false;
@@ -297,8 +303,9 @@ public:
         else if(!forge)phase_="won";
         return reconcileOrders();
     }
-    WorldSnapshot snapshot(bool drain=true){
-        WorldSnapshot s=drain?world_.publish():world_.view();
+    WorldSnapshot snapshot(bool drain=true,bool economy=false){
+        WorldSnapshot s=economy?(drain?world_.publishEconomy():world_.viewEconomy()):
+            (drain?world_.publish():world_.view());
         s.phase=phase_;
         WorldMapMetadata& m=s.mapMetadata;m.present=true;
         m.id=authored_.mapId;m.title=authored_.title;m.biome=authored_.biome;
