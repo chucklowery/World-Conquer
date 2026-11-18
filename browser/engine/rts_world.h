@@ -98,6 +98,14 @@ inline const char* worldEventName(WorldEventType t){
         case WorldEventType::HarvestState:return "harvest_state";}
     return "unknown";
 }
+inline bool economyEvent(WorldEventType t){
+    return t==WorldEventType::ResourceDelta||t==WorldEventType::CargoDelta||
+           t==WorldEventType::CreditsDelta||t==WorldEventType::ResourceDepleted||
+           t==WorldEventType::HarvestState;
+}
+inline bool economyCode(WorldCode c){
+    return c==WorldCode::Empty||c==WorldCode::Full||c==WorldCode::Overflow;
+}
 inline bool safeKey(const std::string& s){
     if(s.empty()||s.size()>64)return false;
     for(char c:s)if(!((c>='a'&&c<='z')||(c>='0'&&c<='9')||c=='.'||c=='-'))
@@ -268,6 +276,9 @@ struct WorldEvent {
     int x,y,value;
     HouseId ownerId;
 };
+inline bool legacyWorldEvent(const WorldEvent& e){
+    return !economyEvent(e.type)&&!economyCode(e.code);
+}
 struct WorldCommandState {
     EntityId entityId;
     std::string kind,status;
@@ -658,6 +669,10 @@ public:
         if(r->remaining==0){
             WorldEntity* depleted=mutableEntity(source);
             depleted->life=Life::Despawned;depleted->hasOrder=false;depleted->target=0;
+            if(selected_==source){
+                selected_=0;
+                emit(WorldEventType::Selection,h->sequence,0);
+            }
             emit(WorldEventType::ResourceDepleted,h->sequence,source,0,0,0,
                  WorldCode::Accepted,actor);
             emit(WorldEventType::Despawn,h->sequence,source);
@@ -794,7 +809,10 @@ public:
         WorldSnapshot s=viewEconomy();s.events.swap(events_);return s;
     }
     WorldSnapshot publish(){
-        WorldSnapshot s=view();s.events.swap(events_);return s;
+        WorldSnapshot s=view();s.events.swap(events_);
+        s.events.erase(std::remove_if(s.events.begin(),s.events.end(),
+            [](const WorldEvent& event){return !legacyWorldEvent(event);}),s.events.end());
+        return s;
     }
 };
 
@@ -888,8 +906,12 @@ inline std::string worldJson(const WorldSnapshot& s){
         o<<'}';
     }
     o<<"],\"events\":[";
+    bool firstEvent=true;
     for(size_t i=0;i<s.events.size();i++){
-        const WorldEvent& e=s.events[i];if(i)o<<',';
+        const WorldEvent& e=s.events[i];
+        if(!economy&&!legacyWorldEvent(e))continue;
+        if(!firstEvent)o<<',';
+        firstEvent=false;
         o<<"{\"type\":\""<<worldEventName(e.type)
          <<"\",\"epoch\":"<<e.epoch<<",\"tick\":"<<e.tick
          <<",\"sequence\":"<<e.sequence<<",\"entityId\":"<<e.entityId

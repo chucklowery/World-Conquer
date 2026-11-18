@@ -50,11 +50,21 @@ invalid(s=>{s.resources[0].entityId=s.entities[0].id;},/resource/);
 invalid(s=>{s.resources[0].maxAmount=100001;},/resource/);
 invalid(s=>{s.harvesters[0].cargo=21;},/harvester/);
 invalid(s=>{s.harvesters[0].capacity=200;},/harvester/);
+invalid(s=>{
+  s.entities[0].lifecycle="despawned";
+  s.entities[0].active=false;
+  s.harvesters[0].cargo=1;
+},/harvester/);
 invalid(s=>{s.harvesters[0].resourceId=s.entities[2].id;},/job state/);
 invalid(s=>{s.harvesters[0].jobState="harvesting";},/job state/);
 invalid(s=>{s.houses[0].credits="1";},/house/);
 invalid(s=>{s.events.push({...depleted.events[3],ownerId:1});},/event/);
 invalid(s=>{s.events.push({...returned.events[4],value:1000000001});},/event/);
+invalid(s=>{s.events.push({...depleted.events[0],entityId:2*1048576+1});},/event/);
+invalid(s=>{s.events.push({...depleted.events[0],entityId:1234567});},/event/);
+invalid(s=>{s.events.push({...depleted.events[0],sourceId:2*1048576+1});},/event/);
+invalid(s=>{s.events.push({...depleted.events[0],sourceId:1234567});},/event/);
+invalid(s=>{s.events.push({...depleted.events[0],entityId:0,ownerId:1});},/event/);
 invalid(s=>{s.version=3;},/negotiated/);
 bridge.clear();
 const disguised=JSON.parse(JSON.stringify(initial));
@@ -68,6 +78,15 @@ assert.equal(bridge.latest().tick,initial.tick);
 bridge.receive(depleted,opts);
 assert.throws(()=>bridge.receive(initial,opts),/epoch/);
 assert.equal(bridge.latest().tick,depleted.tick);
+// Real v3 output must remain consumable after economy operations; ordinary
+// selection and despawn events survive while economy-only events do not.
+bridge.clear();
+const legacy=JSON.parse(execFileSync(binary,["--v3-compat-json"],{encoding:"utf8"}));
+assert.equal(legacy.version,3);
+assert(legacy.events.some(e=>e.type==="despawn"));
+assert(legacy.events.some(e=>e.type==="selection"&&e.entityId===0));
+assert(!legacy.events.some(e=>e.type.includes("delta")||e.type==="resource_depleted"));
+assert.equal(bridge.receive(legacy,{allowWorldV3:true}).version,3);
 // The actual R04 map seed path keeps a one-to-one native identity/amount
 // contract across both authored maps and epoch reloads.
 const liveBinary=process.argv[3];

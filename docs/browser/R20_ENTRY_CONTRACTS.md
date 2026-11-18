@@ -92,7 +92,11 @@ R20 readiness is recorded in
   is the changed instance, `sourceId` is its source/target, `ownerId` is its
   canonical R18 owner and signed `value` is the delta. Acknowledgement events
   precede native mutation events at the same sequence/tick; rejected commands
-  have no delta. JS requires explicit `{capabilities:["economy"]}` and rejects
+  have no delta. V3 publication filters economy-only events/result codes but
+  preserves ordinary selection/death/despawn events; resource depletion also
+  clears any selection pointing at that instance. V4 rejects stale/unknown
+  event entity/source IDs and inactive harvesters carrying cargo. JS requires
+  explicit `{capabilities:["economy"]}` and rejects
   unknown, combined or unapproved capabilities. V3 snapshots remain byte-shape
   compatible; v4 history resets on epoch or version switch.
 

@@ -21,6 +21,7 @@ static rts::EntityId spawn(rts::World& world,uint64_t sequence,rts::HouseId owne
 }
 int main(int argc,char** argv){
     const bool json=argc==2&&std::string(argv[1])=="--json";
+    const bool compatJson=argc==2&&std::string(argv[1])=="--v3-compat-json";
     std::ifstream file("game/content/r18/definitions.rts");assert(file);
     const std::string text((std::istreambuf_iterator<char>(file)),
                             std::istreambuf_iterator<char>());
@@ -148,5 +149,48 @@ int main(int argc,char** argv){
     assert(concurrent.process(concurrent.tick()+1));
     assert(concurrent.commitReturnCargo(one,receiver)==rts::WorldCode::BadTarget);
     assert(concurrent.viewEconomy().harvesters[0].cargo==20);
-    if(!json)std::cout<<"PASS: FND-004/005 native identity, depletion, credit/cargo, admission, overflow and restart\n";
+
+    // Depletion of a selected neutral resource must clear selection, and
+    // the legacy v3 producer must keep its ordinary despawn/selection events
+    // without leaking economy-only event types into v3 consumers.
+    rts::World selected;
+    assert(selected.configure(catalog,16,10,std::vector<uint8_t>(160,0),
+                              {{1,1,"aster"},{2,2,"forge"}}));
+    const rts::EntityId picker=spawn(selected,1,1,"game.aster.harvester",4,5);
+    const rts::EntityId deposit=spawn(selected,2,0,"game.world.crystal",5,5);
+    assert(selected.seedResource(deposit,1));selected.publish();
+    assert(selected.enqueue(command(selected,3,0,deposit,0,
+        rts::WorldAction::Select,0,0))==rts::WorldCode::Accepted);
+    assert(selected.process(selected.tick()+1));
+    assert(selected.view().selectedEntityId==deposit);
+    assert(selected.enqueue(command(selected,4,1,picker,deposit,
+        rts::WorldAction::Harvest,5,5))==rts::WorldCode::Accepted);
+    assert(selected.process(selected.tick()+1));
+    assert(selected.commitHarvest(picker,deposit,1)==rts::WorldCode::Accepted);
+    assert(selected.view().selectedEntityId==0);
+    const rts::WorldSnapshot legacy=selected.publish();
+    bool sawSelection=false,sawDespawn=false;
+    for(const rts::WorldEvent& event:legacy.events){
+        assert(rts::legacyWorldEvent(event));
+        if(event.type==rts::WorldEventType::Selection&&event.entityId==0)
+            sawSelection=true;
+        if(event.type==rts::WorldEventType::Despawn&&event.entityId==deposit)
+            sawDespawn=true;
+    }
+    assert(sawSelection&&sawDespawn);
+    const std::string legacyJson=rts::worldJson(legacy);
+    assert(legacyJson.find("resource_delta")==std::string::npos);
+    assert(legacyJson.find("resource_depleted")==std::string::npos);
+    // The defensive JSON serializer also filters economy-only event codes
+    // if given a manually assembled v3 snapshot.
+    rts::WorldSnapshot injected=legacy;
+    injected.events.push_back({rts::WorldEventType::Command,selected.epoch(),
+        selected.tick(),5,picker,0,0,rts::WorldCode::Empty,0,0,0,1});
+    injected.events.push_back({rts::WorldEventType::ResourceDelta,selected.epoch(),
+        selected.tick(),5,deposit,picker,0,rts::WorldCode::Accepted,0,0,-1,0});
+    const std::string sanitized=rts::worldJson(injected);
+    assert(sanitized==legacyJson);
+    if(compatJson)std::cout<<sanitized<<'\n';
+    if(!json&&!compatJson)
+        std::cout<<"PASS: FND-004/005 native identity, depletion, credit/cargo, admission, overflow and restart\n";
 }

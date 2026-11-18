@@ -180,6 +180,7 @@
         if(!e||!/^game\.(aster|forge)\.harvester$/.test(e.definitionId)||
            harvesters.has(h.entityId)||!Number.isInteger(h.capacity)||h.capacity!==20||
            !Number.isInteger(h.cargo)||h.cargo<0||h.cargo>h.capacity||
+           (!e.active&&h.cargo!==0)||
            !Number.isInteger(h.resourceId)||h.resourceId<0||
            !Number.isInteger(h.refineryId)||h.refineryId<0||
            !Number.isSafeInteger(h.sequence)||h.sequence<0||
@@ -241,8 +242,10 @@
       if(economy){
         if(!Number.isInteger(event.ownerId)||event.ownerId<0||event.ownerId>65535||
            (event.ownerId!==0&&!houses.has(event.ownerId))||
-           (entities.has(event.entityId)&&
-            entities.get(event.entityId).ownerId!==event.ownerId)||
+           (event.entityId===0?event.ownerId!==0:
+             (!entities.has(event.entityId)||
+              entities.get(event.entityId).ownerId!==event.ownerId))||
+           (event.sourceId!==0&&!entities.has(event.sourceId))||
            (economyEvents.has(event.type)&&
             (!entities.has(event.entityId)||
              Math.abs(event.value)>1000000000)))
