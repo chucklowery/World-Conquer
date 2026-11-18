@@ -941,6 +941,11 @@ async function main() {
     assert(assetLog.includes("path lookup only"), "Engine must distinguish path check from asset integrity");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: synthetic file staging resolved through real engine CCFileClass search");
+    // Per-map pageErrors count only the soak window. An exception while
+    // launching a map, between maps, or in a later runtime probe must also
+    // invalidate the complete artifact rather than count as a clean run.
+    assert.equal(messages.filter(m=>m.startsWith("PAGE ERROR:")).length,0,
+                 "Browser page error occurred outside or during R20 soak");
     r20Metrics.status="complete";
   } catch (err) {
     messages.push("FAIL: " + (err.stack || err));
@@ -951,6 +956,9 @@ async function main() {
     throw err;
   } finally {
     messages.push("PAGE LOG: " + await page.locator("#log").textContent().catch(() => "(unavailable)"));
+    // A late-arriving pageerror during final log collection still invalidates
+    // the artifact; never serialize a complete run with logged JS exceptions.
+    if(messages.some(m=>m.startsWith("PAGE ERROR:")))r20Metrics.status="incomplete";
     fs.writeFileSync(path.join(root, "browser-probe.log"), messages.join("\n") + "\n");
     fs.writeFileSync(path.join(root, "r20-wasm-metrics.json"),
       JSON.stringify(r20Metrics,null,2)+"\n");

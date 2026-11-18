@@ -18,6 +18,17 @@ static std::array<bool,orders::CELLS> terrain(){
 static std::array<Point,orders::COUNT> starts(){
     return {{{1,2},{2,3},{1,4},{2,5}}};
 }
+struct FailureObservation {
+    bool called,activeOnFailure,laterInFlight;
+    FailureObservation():called(false),activeOnFailure(false),laterInFlight(false){}
+};
+static void observeFailure(const orders::Controller& controller,int actor,void* context){
+    FailureObservation& observed=*static_cast<FailureObservation*>(context);
+    assert(actor==0&&!observed.called);
+    observed.called=true;
+    observed.activeOnFailure=controller.unit(0).hasOrder;
+    observed.laterInFlight=controller.unit(1).inFlight;
+}
 static void run(orders::Controller& controller,int ticks){
     for(int t=1;t<=ticks;t++){
         const std::vector<orders::Move> moves=controller.step(t);
@@ -124,6 +135,27 @@ int main(){
     for(const orders::Feedback& f:c.takeFeedback())
         if(f.code==orders::Code::Blocked&&f.sequence==0)blockedFeedback=true;
     assert(blockedFeedback);
+
+    // Terminal diagnostics must run before order cleanup AND before a later
+    // actor's waypoint reservation; observing after step()/update() would
+    // describe different occupancy from the failure transition.
+    orders::Controller observedController;
+    std::vector<uint8_t> twoActorTerrain(8*8,0);
+    assert(observedController.resetDynamic(8,8,twoActorTerrain,{{1,1},{4,1}}));
+    assert(observedController.enqueue(request(0,orders::Kind::Move,{6,1},28))==
+           orders::Code::Accepted);
+    assert(!observedController.step(1).empty()); // activate actor 0 before blocking its goal
+    twoActorTerrain[1*8+6]=1;
+    assert(observedController.updateTerrainDynamic(twoActorTerrain));
+    assert(observedController.enqueue(request(1,orders::Kind::Move,{4,2},29,
+                                             false,-1,2))==orders::Code::Accepted);
+    FailureObservation observation;
+    const std::vector<orders::Move> pendingMoves=observedController.step(
+        3,observeFailure,&observation); // fairness rotation visits actor 0 first
+    assert(observation.called&&observation.activeOnFailure&&
+           !observation.laterInFlight);
+    assert(observedController.unit(0).status==orders::Status::Unreachable&&
+           observedController.unit(1).inFlight&&!pendingMoves.empty());
 
     // Final R02 integration: dynamic roster and a 12x8 R04-style cost map.
     // Weighted A* detours around expensive (but passable) rough terrain.
