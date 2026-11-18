@@ -89,6 +89,50 @@ R19, not a reason to begin that work in R20. In addition, FND-009 below
 requires an R09 visibility/serialization entry contract before joint
 R06/R09 maintainer sign-off.
 
+## Current integrated checkpoint after PR #28 (2026-11-17 UTC)
+
+**Current candidate:** `vanilla` merge
+[`54bfa5c`](https://github.com/chucklowery/World-Conquer/commit/54bfa5c280f3c649dacfe208d04739fb75ec6094)
+([PR #28](https://github.com/chucklowery/World-Conquer/pull/28)).
+This supersedes the earlier **post-PR #24** snapshot above for current-state
+decisions, but preserves its observations as historical evidence. R20 remains
+**IN PROGRESS / NOT READY**; R06/R09 remain **planned**.
+
+| Change / concern | Current evidence | Disposition for R20 |
+| --- | --- | --- |
+| [PR #25](https://github.com/chucklowery/World-Conquer/pull/25) audit | Foundation regular/sanitizer CI and Linux/Windows/MinGW release publishing separated and green on the earlier merged candidate; baseline evidence and R09 leakage finding recorded | Historical checkpoint, not final sign-off |
+| FND-003, [PR #26](https://github.com/chucklowery/World-Conquer/pull/26) | 24 native actors, 480 ticks/map, deterministic repeat, collision and two-search/tick budget checks; Marsh Border 24/24 arrived; Ridge Pass 21/24 arrived, three explicitly unreachable under dense reciprocal targets. Also 24-epoch R04 resource-to-neutral-instance positional parity | **Partial:** classify the three unreachable outcomes, approve congestion expectations and measured budgets |
+| FND-004/005/009, [entry contracts](../../browser/R20_ENTRY_CONTRACTS.md) | Proposed native v4 economy/visibility capability negotiation, stable R18 resource IDs, house credits, harvester/refinery and viewer-scoped fog/event authority. PR #26 verifies seed-time map-to-neutral-world parity, **not** mutable economy ports or an approved v4 schema | **Open:** formal owner review/sign-off, native resource/house extension design and version/authorization tests before R06/R09 |
+| FND-006, [PR #27](https://github.com/chucklowery/World-Conquer/pull/27) | Browser CI exercises both native maps with 12 repeated WASM epochs per map and at least 960 sampled ticks; runtime enforces heap, epoch, command/history and owner invariants | **Partial:** calibrate budgets and obtain at least three comparable candidate runs; no claim of an approved 10-minute steady-state threshold |
+| FND-002, [PR #28](https://github.com/chucklowery/World-Conquer/pull/28) | Integrated R01 camera, pan/zoom, drag/Shift multi-selection, local groups and native R18 per-actor commands; desktop/narrow R01 browser tests and two-map real Chromium/WASM path pass at PR head `a4a30d8` | **Implemented, review pending:** maintainer verifies live controls and approves the future harvester/return UI pattern; existing Courier path is retained |
+| FND-001, final-SHA verification | [PR #28 browser workflow](https://github.com/chucklowery/World-Conquer/actions/runs/43997540753) completed successfully; PR check summary: 36 successes, four expected skipped publishing jobs. The [merged-head workflows](https://github.com/chucklowery/World-Conquer/commit/54bfa5c280f3c649dacfe208d04739fb75ec6094/checks) include native Apple Silicon presets and independent browser/foundation jobs | **Pending:** verify post-merge conclusions and release publishing, not merely PR checks |
+| FND-007 | Gallery-only art is an explicit R19 boundary | Deferred to R19, as approved |
+| FND-008 | `vanilla` still reports `protected: false` immediately after PR #28 merge; no required-branch-check enforcement has been demonstrated | **Open owner action:** configure required foundation regular/sanitizer and browser checks, branch protection and reviews; test enforcement with a PR |
+
+### Outstanding approval and measurement work
+
+1. **FND-004/005:** turn the provisional R04 resource/R18 house contract
+   into reviewed native interfaces with identity, depletion, state ownership,
+   overflow/restart behavior and R02 harvest/return admission rules. Do not
+   implement economy in R20 or pretend proposed v4 fields exist.
+2. **FND-009:** approve viewer-scoped publication, visibility, hidden-target
+   rejection and no-leak rules for R09, including cross-capability behavior
+   with R06. The v3 full-information snapshot must not be sold as fog-safe.
+3. **FND-003/006:** classify the three Ridge Pass unreachable outcomes,
+   measure and ratify host/WASM p95, backlog and memory bounds over repeated
+   candidate runs; include deterministic replay and malformed-input guards.
+4. **FND-001/008:** review all six post-merge platform/foundation/browser
+   conclusions on `54bfa5c`, including macOS arm64 and publishing; configure
+   `vanilla` branch protection and verify enforced required checks.
+5. **Maintainer:** visually confirm integrated R01 controls and sign off the
+   R06/R09 interface and acceptance budgets. Only then re-evaluate every R20
+   exit checkbox and the manifest status. No earlier milestone statuses change.
+
+**Interpretation of the original tables below:** their evidence/finding
+columns document why each issue was opened at the PR #25 checkpoint. Use this
+current section for the post-PR #28 dispositions; do not read an older
+`Open` or `six actors only` entry as denying later PR #26–#28 evidence.
+
 ## Requirement traceability and decisions
 
 Legend: **Verified** means the named narrow behavior has evidence, not that
