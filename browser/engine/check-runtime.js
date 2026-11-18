@@ -660,7 +660,33 @@ async function main() {
       assert.equal(next.selectedEntityId,0);
       assert.notEqual(next.entities[0].id,first,"Restart reused a stable entity ID");
       assert.equal(next.entities[0].x,1);
+      // FND-004/005: cross the actual compiled WASM -> JS boundary with the
+      // opt-in economy producer. No R06 harvester is seeded in this scenario.
+      const economy=await page.evaluate(()=>{
+        if(Module._Browser_Live_World_Economy_Probe()!==1)
+          throw Error("Native v4 economy probe was unavailable");
+        const raw=window.__r20EconomyProbe;
+        const snapshot=JSON.parse(raw);
+        if(snapshot.version!==4||snapshot.capabilities?.join()!=="economy")
+          throw Error("Native v4 producer did not negotiate economy");
+        // This test intentionally replaces bridge state only immediately
+        // before the next map reload; gameplay always publishes v3.
+        const validated=WCRTS.receive(raw,{capabilities:["economy"]});
+        return {version:validated.version,epoch:validated.epoch,
+          resources:validated.resources.map(r=>({id:r.entityId,
+            remaining:r.remaining,max:r.maxAmount})),
+          houses:validated.houses.map(h=>({id:h.id,credits:h.credits})),
+          harvesters:validated.harvesters.length};
+      });
+      assert.equal(economy.version,4);
+      assert.equal(economy.epoch,next.epoch);
+      assert.equal(economy.resources.length,2);
+      assert(economy.resources.every(r=>r.id>0&&r.remaining===r.max&&r.max>0));
+      assert.deepEqual(economy.houses.map(h=>h.id),[1,2]);
+      assert(economy.houses.every(h=>h.credits===0));
+      assert.equal(economy.harvesters,0);
       messages.push(`PASS: ${item.id} R18 v3 world, six true InfantryClass actors, R02 movement parity, R04 terrain, ownership and epoch restart`);
+      messages.push(`PASS: ${item.id} real-WASM opt-in v4 economy resource/house schema and strict JS bridge`);
     }
     // R20: repeated real-WASM epochs on both native RTS maps. This runs
     // inside the compiled VanillaTD module, not the host-only fixture.
