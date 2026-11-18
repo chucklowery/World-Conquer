@@ -47,7 +47,85 @@ struct Result {
     uint64_t hash;
     int moved, arrived, unreachable, waiting, searches, expansions;
     uint64_t p95Microseconds;
+    // Capture the first terminal replan failure, not just its final status.
+    // The scheduler hook captures occupancy before cleanup, subsequent
+    // reservations or test-harness movement commits can change the answer.
+    struct Failure {
+        int actor;
+        uint64_t tick;
+        Point position, goal;
+        bool staticRoute, dynamicRoute, goalOccupied;
+    };
+    std::vector<Failure> failures;
 };
+
+static bool routeExists(const std::vector<uint8_t>& blocked, int width,
+                        int height, Point start, Point goal,
+                        const orders::Controller& nav, int actor,
+                        bool avoidActors) {
+    const int cells = width * height;
+    std::vector<uint8_t> visited(cells, 0);
+    std::vector<Point> queue;
+    queue.push_back(start);
+    visited[start.y * width + start.x] = 1;
+    for (size_t head = 0; head < queue.size(); ++head) {
+        const Point p = queue[head];
+        if (p == goal) return true;
+        const Point directions[] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        for (const Point delta : directions) {
+            const Point next{p.x + delta.x, p.y + delta.y};
+            if (next.x < 0 || next.y < 0 || next.x >= width || next.y >= height)
+                continue;
+            const int cell = next.y * width + next.x;
+            if (blocked[cell] || visited[cell]) continue;
+            if (avoidActors) {
+                bool occupied = false;
+                for (size_t i = 0; i < nav.count(); ++i) {
+                    if (static_cast<int>(i) == actor || !nav.unit(i).alive)
+                        continue;
+                    if (nav.unit(i).position == next ||
+                        (nav.unit(i).inFlight && nav.unit(i).waypoint == next)) {
+                        occupied = true;
+                        break;
+                    }
+                }
+                if (occupied) continue;
+            }
+            visited[cell] = 1;
+            queue.push_back(next);
+        }
+    }
+    return false;
+}
+
+struct FailureContext {
+    const std::vector<uint8_t>* blocked;
+    const std::vector<Point>* destinations;
+    int width, height;
+    std::vector<Result::Failure>* failures;
+};
+
+static void captureFailure(const orders::Controller& nav, int actor,
+                           void* context) {
+    const FailureContext& data = *static_cast<const FailureContext*>(context);
+    assert(actor >= 0 && static_cast<size_t>(actor) < nav.count());
+    const orders::Unit& unit = nav.unit(actor);
+    const Point goal = (*data.destinations)[actor];
+    for (const Result::Failure& previous : *data.failures)
+        assert(previous.actor != actor);
+    bool goalOccupied = false;
+    for (size_t i = 0; i < nav.count(); ++i) {
+        if (static_cast<int>(i) == actor || !nav.unit(i).alive) continue;
+        if (nav.unit(i).position == goal ||
+            (nav.unit(i).inFlight && nav.unit(i).waypoint == goal))
+            goalOccupied = true;
+    }
+    data.failures->push_back({actor,nav.tick(),unit.position,goal,
+        routeExists(*data.blocked,data.width,data.height,unit.position,
+                    goal,nav,actor,false),
+        routeExists(*data.blocked,data.width,data.height,unit.position,
+                    goal,nav,actor,true),goalOccupied});
+}
 
 static Result run(const std::string& mapSource) {
     courier::State map;
@@ -92,10 +170,13 @@ static Result run(const std::string& mapSource) {
 
     uint64_t hash = 1469598103934665603ULL;
     int moved = 0, searches = 0, expansions = 0;
+    std::vector<Result::Failure> failures;
+    FailureContext failureContext{&blocked,&destinations,width,height,&failures};
     std::vector<uint64_t> tickMicros;
     for (int tick = 1; tick <= 480; ++tick) {
         const auto start = std::chrono::steady_clock::now();
-        const std::vector<orders::Move> moves = nav.step(tick);
+        const std::vector<orders::Move> moves = nav.step(
+            tick,captureFailure,&failureContext);
         assert(nav.budget().searches <= orders::MAX_SEARCHES_PER_TICK);
         assert(nav.budget().expansions <=
                orders::MAX_SEARCHES_PER_TICK * std::min(width * height, 512));
@@ -130,7 +211,7 @@ static Result run(const std::string& mapSource) {
         else if (nav.unit(i).status == orders::Status::Waiting) ++waiting;
     std::sort(tickMicros.begin(), tickMicros.end());
     return {hash, moved, arrived, unreachable, waiting, searches, expansions,
-            tickMicros[(tickMicros.size() * 95) / 100]};
+            tickMicros[(tickMicros.size() * 95) / 100], failures};
 }
 
 int main() {
@@ -141,6 +222,21 @@ int main() {
         assert(a.hash == b.hash);
         assert(a.moved == b.moved && a.arrived == b.arrived &&
                a.unreachable == b.unreachable && a.waiting == b.waiting);
+        assert(a.failures.size() == b.failures.size());
+        assert(static_cast<int>(a.failures.size()) == a.unreachable);
+        for (size_t i = 0; i < a.failures.size(); ++i) {
+            const Result::Failure& f = a.failures[i];
+            const Result::Failure& replay = b.failures[i];
+            assert(f.actor == replay.actor && f.tick == replay.tick &&
+                   f.position == replay.position &&
+                   f.goal == replay.goal && f.staticRoute == replay.staticRoute &&
+                   f.dynamicRoute == replay.dynamicRoute &&
+                   f.goalOccupied == replay.goalOccupied);
+            // A static topology failure here would contradict the admitted
+            // move order. A dynamically reachable target timed out would
+            // instead indicate an R02 fairness/replan regression.
+            assert(f.staticRoute && !f.dynamicRoute);
+        }
         assert(a.moved >= 24 && a.arrived >= 20);
         // Under tight reciprocal target packing, an actor may receive
         // explicit Unreachable feedback. It must not wait forever or vanish;
@@ -157,5 +253,12 @@ int main() {
                   << " expanded cells; hash " << a.hash
                   << "; p95 host tick " << a.p95Microseconds
                   << " us (informational)\n";
+        for (const Result::Failure& f : a.failures)
+            std::cout << "  unreachable actor " << f.actor << " at tick "
+                      << f.tick << " from ("
+                      << f.position.x << ',' << f.position.y << ") to ("
+                      << f.goal.x << ',' << f.goal.y << "): static-route="
+                      << f.staticRoute << " dynamic-route=" << f.dynamicRoute
+                      << " goal-occupied=" << f.goalOccupied << '\n';
     }
 }

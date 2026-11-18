@@ -41,6 +41,31 @@ while R20 is `in_progress` or `blocked`.
   (`macos-15`, arm64). R20 completion still requires full-matrix arm64 evidence
   on the final candidate revision. Intel PR checks do not substitute for it.
 
+## Active checkpoint after PR #30 (2026-11-18 UTC)
+
+**Latest merged candidate:** `vanilla`
+[`166f008`](https://github.com/chucklowery/World-Conquer/commit/166f008752581ac16775fa2b97aba796334f7cbf)
+([PR #30](https://github.com/chucklowery/World-Conquer/pull/30)).
+This supersedes the PR #28 checkpoint *for current-state decisions*. R20 is
+still **IN PROGRESS / NOT READY**; R06 and R09 are still gated. Work proposed
+after this checkpoint must rerun all applicable final-SHA checks.
+
+| Gate | Verified on `166f008` | Still required |
+| --- | --- | --- |
+| FND-001 foundation and browser | [Regular + ASan/UBSan](https://github.com/chucklowery/World-Conquer/actions/runs/44397006654) both passed; [real Chromium/WASM browser](https://github.com/chucklowery/World-Conquer/actions/runs/44397007058) passed; [roadmap](https://github.com/chucklowery/World-Conquer/actions/runs/44397007197) passed | Repeat checks on the ultimate R20 candidate SHA, including real browser input/economy capability scope as claimed |
+| FND-001 platforms/publishing | [Linux](https://github.com/chucklowery/World-Conquer/actions/runs/44397006627), [Windows](https://github.com/chucklowery/World-Conquer/actions/runs/44397007108) and [MinGW](https://github.com/chucklowery/World-Conquer/actions/runs/44397006722) matrix jobs and separate `publish-release` jobs passed | [macOS arm64](https://github.com/chucklowery/World-Conquer/actions/runs/44397007000) remains non-green: `release` and `internal` cancelled, `testing` and `nonet` queued when inspected. Do not treat pending/cancelled hosted-runner capacity as a build failure *or* successful arm64 verification |
+| FND-004/005 | PR #30 merged native resource depletion and R18 economy accounts, harvester/refinery identities, adjacent harvest/return ports and strict opt-in v4 `economy` JS schema; local foundation suite passes | Maintainer approves schema/depletion/seed policy; confirm final CI and real-WASM v4 before claiming gameplay; R06 still owns remote routing and UI |
+| FND-003 | Instrumented two-map 24-actor native stress at this source revision still repeats identical hashes with no overlaps or waiting at 480 ticks | Ridge Pass's three terminal failures now have **static routes but no dynamic route at failure time**: actors 16, 18 and 4. Actor 16's goal is occupied; the other two have dynamically blocked corridors with unoccupied goals. This is deterministic congestion/timeout classification, not an approved unreachable policy or full 24/24 arrival. Review timeout/replanning expectations and budgets |
+| FND-006 | The existing browser runner passes 12 real-WASM restarts/map with 40+ sampled ticks each | New candidate instrumentation records per-map JSON allocated-WASM-memory and rAF cadence, with a fail-closed three-artifact same-SHA comparator. Gather at least three completed runs, approve measurable limits, and still verify sustained duration/true native-frame timing and leak behavior. No approved threshold is claimed |
+| FND-009 | [Entry contract](../../browser/R20_ENTRY_CONTRACTS.md) includes a concrete reviewer decision table for native visibility, hidden-target rejection, filtered events and combined economy scope | Maintainer explicitly accepts or revises decisions; native visibility implementation and browser no-leak tests belong to R09, not this R20 checkpoint |
+| FND-008 | [`vanilla` branch API](https://api.github.com/repos/chucklowery/World-Conquer/branches/vanilla) still reports `protected: false`; repository rulesets API reports none | Owner enables required foundation regular/sanitizer and browser checks and review, then verifies enforcement on a PR |
+
+The FND-003 classification and FND-006 measurement capture above are
+**working-branch tests**, not checks already attached to `166f008` or proof
+of final-SHA acceptance. A future PR must provide its own green CI links.
+Retain all eight exit boxes unchecked until the corresponding scope, budgets,
+branch rules and maintainer reviews have actually been accepted.
+
 ## Post-merge exit-gate assessment (2026-11-16)
 
 **Candidate:** `vanilla` merge `6faaf47640a5080f66fad34776e496a2df4f59b8`

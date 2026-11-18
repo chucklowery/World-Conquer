@@ -76,6 +76,12 @@ struct Budget {
 struct Move {int actor;courier::Point waypoint;};
 
 class Controller {
+public:
+    // Optional diagnostic hook. Called at the exact terminal transition,
+    // before order cleanup and before the scheduler visits later actors.
+    // It exposes only a const view and is inert in production when omitted.
+    typedef void (*TerminalFailureObserver)(const Controller&,int,void*);
+private:
     int width_,height_,cells_;
     std::vector<uint8_t> terrain_;
     std::vector<uint8_t> costs_;
@@ -306,7 +312,9 @@ public:
     void cancelActor(int actor){
         if(actor>=0&&static_cast<size_t>(actor)<units_.size())clearOrder(units_[actor]);
     }
-    std::vector<Move> step(uint64_t tick){
+    std::vector<Move> step(uint64_t tick,
+                           TerminalFailureObserver observeFailure=nullptr,
+                           void* failureContext=nullptr){
         tick_=tick;budget_=Budget();
         std::stable_sort(pending_.begin(),pending_.end(),[](const Request& a,const Request& b){
             if(a.tick!=b.tick)return a.tick<b.tick;
@@ -366,6 +374,7 @@ public:
                 continue;
             }
             if(!clear(goal)){
+                if(observeFailure)observeFailure(*this,static_cast<int>(i),failureContext);
                 clearOrder(u,Status::Unreachable);
                 feedback_.push_back({0,static_cast<int>(i),Code::Blocked});continue;
             }
@@ -374,6 +383,7 @@ public:
                 u.inFlight=false;u.path.clear();u.stalled=0;
                 u.blocked+=STALLED_TICKS;
                 if(u.blocked>=BLOCKED_TICKS){
+                    if(observeFailure)observeFailure(*this,static_cast<int>(i),failureContext);
                     clearOrder(u,Status::Unreachable);
                     feedback_.push_back({0,static_cast<int>(i),Code::Unreachable});continue;
                 }
@@ -391,6 +401,7 @@ public:
                 // this unit's destination is unreachable. Count only actual
                 // failed replans toward its timeout.
                 if(searched&&++u.blocked>=BLOCKED_TICKS){
+                    if(observeFailure)observeFailure(*this,static_cast<int>(i),failureContext);
                     clearOrder(u,Status::Unreachable);
                     feedback_.push_back({0,static_cast<int>(i),Code::Unreachable});
                 }
