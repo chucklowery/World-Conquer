@@ -5,6 +5,7 @@
 #include "rts_live_match.h"
 #include <SDL2/SDL.h>
 #include <emscripten/emscripten.h>
+#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -20,6 +21,9 @@ HouseClass* houseForge=nullptr;
 Uint32 lastStep=0;
 rts::EntityId selected=0;
 orders::Kind clickKind=orders::Kind::Move;
+// Bounded native tick-duration telemetry. This measures the synchronous
+// simulation step (including publication), not the browser rAF interval.
+std::vector<double> tickDurationsUs;
 
 bool readFile(const char* path,size_t limit,std::string& data){
     FILE* file=std::fopen(path,"rb");
@@ -110,6 +114,7 @@ void sync(){
     }
 }
 void tick(){
+    const Uint64 tickStarted=SDL_GetPerformanceCounter();
     sync();
     const std::vector<orders::Move> moves=match.plan();
     for(size_t i=0;i<live.size();i++){
@@ -150,6 +155,10 @@ void tick(){
                     b.searches,b.expansions,b.issued);
     }
     publish();
+    if(tickDurationsUs.size()<4096)
+        tickDurationsUs.push_back(1000000.0*static_cast<double>(
+            SDL_GetPerformanceCounter()-tickStarted)/
+            static_cast<double>(SDL_GetPerformanceFrequency()));
 }
 void paint(int x,int y,int w,int h,Uint8 r,Uint8 g,Uint8 b){
     const SDL_Rect rect={x,y,w,h};
@@ -264,6 +273,16 @@ extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Command(int kind,
     return static_cast<int>(result);
 }
 extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Restart(){return restart()?1:0;}
+extern "C" EMSCRIPTEN_KEEPALIVE unsigned Browser_Live_Tick_Timing_Count(){
+    // Only retained durations contribute to the exported percentile.
+    return static_cast<unsigned>(tickDurationsUs.size());
+}
+extern "C" EMSCRIPTEN_KEEPALIVE double Browser_Live_Tick_Timing_P95_Us(){
+    if(tickDurationsUs.empty())return -1.0;
+    std::vector<double> sorted=tickDurationsUs;
+    std::sort(sorted.begin(),sorted.end());
+    return sorted[static_cast<size_t>((sorted.size()-1)*0.95)];
+}
 
 // R20 contract probe only. Normal gameplay continues publishing v3; this
 // explicit opt-in exposes the native v4 producer to Chromium acceptance tests
@@ -276,6 +295,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Economy_Probe(){
 }
 
 int Browser_Live_RTS_Match(const char*){
+    tickDurationsUs.clear();
     std::string source,definitions;
     if(!readFile("/COURIER.MAP",65536,source)||
        !readFile("/RTS.DEFS",16384,definitions)||

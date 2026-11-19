@@ -13,7 +13,7 @@ const messages = [];
 // Upload comparable per-map measurements alongside the browser probe. A
 // requestAnimationFrame interval is UI responsiveness telemetry, not the
 // duration of a native simulation tick or an approved performance budget.
-const r20Metrics = {schemaVersion:1, sha:process.env.GITHUB_SHA||"local",
+const r20Metrics = {schemaVersion:2, sha:process.env.GITHUB_SHA||"local",
   runId:process.env.GITHUB_RUN_ID||"local",
   runAttempt:Number(process.env.GITHUB_RUN_ATTEMPT||0),
   status:"incomplete", maps:[]};
@@ -771,6 +771,14 @@ async function main() {
                      pageErrorsBefore,"Browser page error during native R20 soak");
         const heapGrowth=heaps.length>1?
           Math.max(...heaps.slice(1))-Math.min(...heaps.slice(1)):0;
+        const nativeTiming=await page.evaluate(()=>({
+          count:Module._Browser_Live_Tick_Timing_Count(),
+          p95Us:Module._Browser_Live_Tick_Timing_P95_Us()
+        }));
+        assert(nativeTiming.count>=soakEpochs*40&&nativeTiming.count<=4096,
+               "Native simulation timing did not capture each soak epoch");
+        assert(Number.isFinite(nativeTiming.p95Us)&&nativeTiming.p95Us>=0,
+               "Native simulation p95 timing missing");
         const frameIntervals=await page.evaluate(()=>window.__r20StopFrameSampling());
         frameIntervals.sort((a,b)=>a-b);
         const frameP95=frameIntervals.length?
@@ -780,12 +788,15 @@ async function main() {
           wasmHeapBytes:heaps,postWarmupHeapDeltaBytes:heapGrowth,
           animationFrameSamples:frameIntervals.length,
           animationFrameIntervalP95Ms:frameP95,
+          nativeTickTimingSamples:nativeTiming.count,
+          nativeTickP95Us:Number(nativeTiming.p95Us.toFixed(2)),
           pageErrors:messages.filter(m=>m.startsWith("PAGE ERROR:")).length-pageErrorsBefore};
         r20Metrics.maps.push(measurement);
         messages.push("PASS: R20 native WASM "+item.id+" "+soakEpochs+
           " restarts, "+sampledTicks+" live ticks, bounded events and IDs, "+
           "allocated heap delta "+heapGrowth+" bytes, rAF interval p95 "+
-          frameP95+" ms/"+frameIntervals.length+" samples, "+
+          frameP95+" ms/"+frameIntervals.length+" samples, native tick p95 "+
+          measurement.nativeTickP95Us+" us/"+nativeTiming.count+" ticks, "+
           measurement.elapsedSeconds+" elapsed seconds (budgets pending approval)");
       }
     }
