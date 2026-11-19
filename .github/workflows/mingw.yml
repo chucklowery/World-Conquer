@@ -40,13 +40,21 @@ jobs:
         path: .ci-cache/mingw
         key: mingw-sdl2-2.0.12-openal-1.21.0-v1
 
-    # Restore the installed MinGW toolchain instead of repeating slow APT
-    # downloads on every runner. The first cache miss provisions packages.
-    - name: Restore or provision MinGW toolchain
-      uses: awalsh128/cache-apt-pkgs-action@2c09a5e66da6c8016428a2172bd76e5e4f14bb17 # v1.5.3
-      with:
-        packages: ninja-build mingw-w64 imagemagick
-        version: mingw-ubuntu-22.04-native-v1
+    # MinGW uses Debian update-alternatives links for its compiler frontends.
+    # Restoring only cached package files did not recreate those links on
+    # fresh runners, so install missing packages through APT itself.
+    - name: Provision MinGW toolchain
+      run: |
+        packages=(ninja-build mingw-w64 imagemagick)
+        missing=()
+        for package in "${packages[@]}"; do
+          dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed' || missing+=("$package")
+        done
+        if (( ${#missing[@]} )); then
+          echo "Installing missing MinGW packages: ${missing[*]}"
+          timeout 900s sudo apt-get update -qq -o Acquire::Retries=3
+          timeout 600s sudo apt-get install -qq -y -o Acquire::Retries=3 "${missing[@]}"
+        fi
 
     - name: Verify MinGW toolchain
       run: |
