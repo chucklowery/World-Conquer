@@ -5,9 +5,16 @@ budget or R20 sign-off. Use the **same full `vanilla` candidate SHA** for all
 three runs. Record the candidate before dispatching: a moving branch ref is
 not sufficient evidence that the resulting artifacts have the same source.
 
+Ordinary pull-request browser CI uses the runtime driver's fast functional
+scenario with `R20_WASM_SOAK_EPOCHS=0`. It is **not** FND-006 measurement
+evidence and cannot replace a full R20 candidate-SHA acceptance run. Pushes
+to `vanilla` and explicit `workflow_dispatch` runs still execute 12 epochs
+per map. Before R20 approval, dispatch the full workflow on the exact
+candidate commit (or an immutable ref to it) and verify the artifact SHA.
+
 1. Open [Browser VanillaTD engine compile](https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml)
    and dispatch it on the candidate branch **three separate times**. Wait for
-   each run to finish. The existing workflow uses 12 R20 WASM epochs per map.
+   each run to finish. Manual dispatch uses 12 R20 WASM epochs per map.
    Do not count reruns of the same workflow run ID as independent, even when
    GitHub assigns a different attempt number.
 2. Confirm that all three runs passed, including real Chromium acceptance,
