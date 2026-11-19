@@ -66,9 +66,9 @@ jobs:
   vanilla_win_msvc:
     runs-on: windows-2022
     strategy:
-      matrix:
-        preset: [release, internal, testing, nonet]
-        arch: [{win: Win32, lin: i686, cmd: x86}, {win: Win64, lin: x86_64, cmd: x64}]
+      # PRs exercise both architectures with different presets; release
+      # builds still verify the complete eight-combination matrix.
+      matrix: ${{ fromJSON(github.event_name == 'pull_request' && '{"include":[{"preset":"release","arch":{"win":"Win64","lin":"x86_64","cmd":"x64"}},{"preset":"testing","arch":{"win":"Win32","lin":"i686","cmd":"x86"}}]}' || '{"preset":["release","internal","testing","nonet"],"arch":[{"win":"Win32","lin":"i686","cmd":"x86"},{"win":"Win64","lin":"x86_64","cmd":"x64"}]}') }}
 
     steps:
     - uses: actions/checkout@v4
