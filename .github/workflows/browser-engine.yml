@@ -166,13 +166,21 @@ jobs:
             build/browser-engine/wireframes/files/terrain/WF-0256.SHP \
             build/browser-engine/wireframes/files/effect/WF-0072.SHP \
             build/browser-engine/wireframes/files/building/FACTMAKE.SHP
+      - name: Restore Chromium browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-1.56.1-${{ runner.os }}
       - name: Install headless browser tooling
         run: |
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install --with-deps chromium
+      # The runtime driver already executes the complete functional browser
+      # scenario without a soak. Full R20 measurement evidence remains a
+      # separate 12-epoch gate on vanilla pushes and manual dispatches.
       - name: Test actual engine in headless Chromium
         env:
-          R20_WASM_SOAK_EPOCHS: '12'
+          R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'pull_request' && '0' || '12' }}
         run: |
           node browser/engine/check-r01-ui.js
           node browser/engine/check-runtime.js
