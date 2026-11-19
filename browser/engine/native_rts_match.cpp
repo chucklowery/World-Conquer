@@ -24,7 +24,6 @@ orders::Kind clickKind=orders::Kind::Move;
 // Bounded native tick-duration telemetry. This measures the synchronous
 // simulation step (including publication), not the browser rAF interval.
 std::vector<double> tickDurationsUs;
-unsigned tickDurationCount=0;
 
 bool readFile(const char* path,size_t limit,std::string& data){
     FILE* file=std::fopen(path,"rb");
@@ -156,7 +155,6 @@ void tick(){
                     b.searches,b.expansions,b.issued);
     }
     publish();
-    ++tickDurationCount;
     if(tickDurationsUs.size()<4096)
         tickDurationsUs.push_back(1000000.0*static_cast<double>(
             SDL_GetPerformanceCounter()-tickStarted)/
@@ -276,7 +274,8 @@ extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Command(int kind,
 }
 extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Restart(){return restart()?1:0;}
 extern "C" EMSCRIPTEN_KEEPALIVE unsigned Browser_Live_Tick_Timing_Count(){
-    return tickDurationCount;
+    // Only retained durations contribute to the exported percentile.
+    return static_cast<unsigned>(tickDurationsUs.size());
 }
 extern "C" EMSCRIPTEN_KEEPALIVE double Browser_Live_Tick_Timing_P95_Us(){
     if(tickDurationsUs.empty())return -1.0;
@@ -296,7 +295,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Economy_Probe(){
 }
 
 int Browser_Live_RTS_Match(const char*){
-    tickDurationsUs.clear();tickDurationCount=0;
+    tickDurationsUs.clear();
     std::string source,definitions;
     if(!readFile("/COURIER.MAP",65536,source)||
        !readFile("/RTS.DEFS",16384,definitions)||

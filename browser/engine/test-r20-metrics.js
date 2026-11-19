@@ -43,6 +43,9 @@ try {
   bad.maps[0].nativeTickTimingSamples = 0;
   fs.writeFileSync(files[2], JSON.stringify(bad));
   assert.throws(() => summarize(files), /native simulation tick timing/);
+  bad.maps[0].nativeTickTimingSamples = 5000;
+  fs.writeFileSync(files[2], JSON.stringify(bad));
+  assert.throws(() => summarize(files), /native simulation tick timing/);
   console.log("PASS: R20 same-SHA three-run metrics and fail-closed validation");
 } finally {
   fs.rmSync(temp, {recursive:true, force:true});

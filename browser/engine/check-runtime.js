@@ -775,7 +775,7 @@ async function main() {
           count:Module._Browser_Live_Tick_Timing_Count(),
           p95Us:Module._Browser_Live_Tick_Timing_P95_Us()
         }));
-        assert(nativeTiming.count>=soakEpochs*40,
+        assert(nativeTiming.count>=soakEpochs*40&&nativeTiming.count<=4096,
                "Native simulation timing did not capture each soak epoch");
         assert(Number.isFinite(nativeTiming.p95Us)&&nativeTiming.p95Us>=0,
                "Native simulation p95 timing missing");

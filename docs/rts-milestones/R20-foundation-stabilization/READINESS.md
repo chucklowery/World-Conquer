@@ -14,8 +14,11 @@ three-artifact same-SHA comparator requires the new timing fields (schema 2)
 and rejects incomplete timing. This closes a *measurement instrumentation gap*
 under FND-006, not the requirement to collect three independent runs, prove
 sustained behavior, approve budgets, or pass final-SHA CI. Tick timing includes
-native planning/AI/combat/publication but excludes browser rendering and event
-loop scheduling. No exit checklist item is checked by this change alone.
+native planning/AI/combat and synchronous bridge/HUD DOM updates (through
+publication), but excludes SDL scene drawing, browser compositing and event-loop
+scheduling. Up to 4,096 durations contribute to p95; the exported sample count
+reports only those retained durations. No exit checklist item is checked by this
+change alone.
 
 **Post-PR #31 follow-up (proposed, not yet accepted):** `vanilla` now includes
 [PR #31](https://github.com/chucklowery/World-Conquer/pull/31) at `2733b83`,
