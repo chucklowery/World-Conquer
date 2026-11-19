@@ -149,6 +149,17 @@ async function main() {
                                undefined,{timeout:15000});
     assert.equal(await page.locator("body").getAttribute("data-mode"),"native-slice");
     messages.push("PASS: original-content tactical mission moves and restarts inside real VanillaTD WASM executable");
+    // Fast PR tier: prove the compiled WASM engine starts, renders and handles
+    // real SDL input and native mission movement. The full native world,
+    // combat, bridge, restart and R20 measurement scenarios run on vanilla
+    // pushes and explicit release/candidate validation.
+    if (process.env.BROWSER_CI_FAST === "1") {
+      assert.equal(messages.filter(m=>m.startsWith("PAGE ERROR:")).length,0,
+                   "Browser page error during quick WASM smoke");
+      r20Metrics.status="smoke"; // Explicitly ineligible for FND-006 comparison.
+      messages.push("PASS: quick PR WASM browser smoke; full acceptance deferred");
+      return;
+    }
     // Separately allocate one real production house and E1 infantry in limbo.
     // This intentionally avoids Unlimbo/AI while the complete theater lifecycle
     // is being integrated; do not run on the already-started Courier instance.

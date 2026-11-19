@@ -180,6 +180,7 @@ jobs:
       # separate 12-epoch gate on vanilla pushes and manual dispatches.
       - name: Test actual engine in headless Chromium
         env:
+          BROWSER_CI_FAST: ${{ github.event_name == 'pull_request' && '1' || '0' }}
           R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'pull_request' && '0' || '12' }}
         run: |
           node browser/engine/check-r01-ui.js

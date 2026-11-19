@@ -18,9 +18,9 @@ jobs:
   vanilla_win_gcc:
     runs-on: ubuntu-22.04
     strategy:
-      matrix:
-        arch: [{win: Win32, lin: i686}, {win: Win64, lin: x86_64}]
-        preset: [release, internal, nonet]
+      # Retain architecture coverage on PRs; keep all six release variants
+      # for pushes, tags and manually dispatched workflows.
+      matrix: ${{ fromJSON(github.event_name == 'pull_request' && '{"include":[{"arch":{"win":"Win32","lin":"i686"},"preset":"release"},{"arch":{"win":"Win64","lin":"x86_64"},"preset":"internal"}]}' || '{"arch":[{"win":"Win32","lin":"i686"},{"win":"Win64","lin":"x86_64"}],"preset":["release","internal","nonet"]}') }}
         
     steps:
     - uses: actions/checkout@v4
