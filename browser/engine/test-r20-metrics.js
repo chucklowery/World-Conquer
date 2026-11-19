@@ -46,6 +46,24 @@ try {
   bad.maps[0].nativeTickTimingSamples = 5000;
   fs.writeFileSync(files[2], JSON.stringify(bad));
   assert.throws(() => summarize(files), /native simulation tick timing/);
+  const reject = (change, message) => {
+    const invalid = sample("3");
+    change(invalid);
+    fs.writeFileSync(files[2], JSON.stringify(invalid));
+    assert.throws(() => summarize(files), message);
+  };
+  reject(run => { run.runId = 3; }, /Missing GitHub run identity/);
+  reject(run => { run.runId = "0"; }, /Missing GitHub run identity/);
+  reject(run => { run.runAttempt = 1.5; }, /Missing GitHub run identity/);
+  reject(run => { run.maps.push(map("ridge-pass")); }, /Exactly two map/);
+  reject(run => { run.maps[1].map = "ridge-pass"; }, /deep-equal/);
+  reject(run => { run.maps[0].epochs = 13; }, /Incomparable epoch/);
+  reject(run => { run.maps[0].sampledTicks = 479; }, /Insufficient sampled/);
+  reject(run => { run.maps[0].wasmHeapBytes[2] = -1; }, /Missing WASM allocation/);
+  reject(run => { run.maps[0].animationFrameIntervalP95Ms = -1; }, /animation-frame/);
+  reject(run => { run.maps[0].elapsedSeconds = 0; }, /elapsed time/);
+  reject(run => { run.maps[0].nativeTickP95Us = null; }, /native simulation tick timing/);
+  reject(run => { run.maps[0].pageErrors = 1; }, /Browser page errors/);
   console.log("PASS: R20 same-SHA three-run metrics and fail-closed validation");
 } finally {
   fs.rmSync(temp, {recursive:true, force:true});
