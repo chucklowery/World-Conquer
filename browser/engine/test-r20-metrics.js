@@ -34,7 +34,10 @@ try {
   bad.sha = sha;
   bad.runId = "2";
   fs.writeFileSync(files[2], JSON.stringify(bad));
-  assert.throws(() => summarize(files), /Repeated artifact/);
+  assert.throws(() => summarize(files), /Repeated workflow run ID/);
+  bad.runAttempt = 2;
+  fs.writeFileSync(files[2], JSON.stringify(bad));
+  assert.throws(() => summarize(files), /Repeated workflow run ID/);
   bad.runId = "3";
   bad.status = "incomplete";
   fs.writeFileSync(files[2], JSON.stringify(bad));

@@ -8,7 +8,8 @@ not sufficient evidence that the resulting artifacts have the same source.
 1. Open [Browser VanillaTD engine compile](https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml)
    and dispatch it on the candidate branch **three separate times**. Wait for
    each run to finish. The existing workflow uses 12 R20 WASM epochs per map.
-   Do not count reruns with the same run ID and attempt twice.
+   Do not count reruns of the same workflow run ID as independent, even when
+   GitHub assigns a different attempt number.
 2. Confirm that all three runs passed, including real Chromium acceptance,
    Courier/R05 regression checks, and evidence upload. Record the three run
    URLs, attempt numbers, commit SHAs and any unrelated platform failures.
