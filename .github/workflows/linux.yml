@@ -33,17 +33,22 @@ jobs:
       id: gitinfo
       run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Install dependencies
+    # Cache the installed APT file set, not just downloaded .deb archives.
+    # Cache keys are isolated by Ubuntu image version. A cold cache installs
+    # once; subsequent jobs restore headers/libraries without apt-get update.
+    - name: Restore or provision native build dependencies
+      uses: awalsh128/cache-apt-pkgs-action@2c09a5e66da6c8016428a2172bd76e5e4f14bb17 # v1.5.3
+      with:
+        packages: clang-format-14 libsdl2-dev libopenal-dev ninja-build
+        version: linux-${{ matrix.os }}-native-v1
+    - name: Verify provisioned native build dependencies
       run: |
-        packages=(clang-format-14 libsdl2-dev libopenal-dev ninja-build)
-        missing=()
-        for package in "${packages[@]}"; do
-          dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed' || missing+=("$package")
-        done
-        if (( ${#missing[@]} )); then
-          sudo apt-get update -qq -o Acquire::Retries=3 > /dev/null
-          sudo apt-get install -qq -y -o Acquire::Retries=3 "${missing[@]}" > /dev/null
-        fi
+        command -v clang-format-14
+        command -v ninja
+        test -f /usr/include/SDL2/SDL.h
+        test -f /usr/include/AL/al.h
+        test -e /usr/lib/x86_64-linux-gnu/libopenal.so
+        pkg-config --exists sdl2
     
     - name: Build Vanilla Conquer
       env:
