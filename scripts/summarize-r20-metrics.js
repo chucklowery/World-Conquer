@@ -10,7 +10,8 @@ function summarize(files) {
   const runs = files.map(file => JSON.parse(fs.readFileSync(file, "utf8")));
   const sha = runs[0].sha;
   assert(/^[a-f0-9]{40}$/.test(sha), "A full GitHub candidate SHA is required");
-  const attempts = new Set();
+  // A rerun of one workflow is a retry, not an independent browser run.
+  const runIds = new Set();
   const epochs = runs[0].maps?.[0]?.epochs;
   assert(Number.isInteger(epochs) && epochs >= 12,
          "Expected at least 12 WASM restart epochs per map");
@@ -22,9 +23,8 @@ function summarize(files) {
            Number.isSafeInteger(Number(run.runId)) &&
            Number.isSafeInteger(run.runAttempt) &&
            run.runAttempt >= 1, "Missing GitHub run identity");
-    const attempt = run.runId + ":" + run.runAttempt;
-    assert(!attempts.has(attempt), "Repeated artifact from one workflow attempt");
-    attempts.add(attempt);
+    assert(!runIds.has(run.runId), "Repeated workflow run ID (reruns are not independent)");
+    runIds.add(run.runId);
     assert(Array.isArray(run.maps) && run.maps.length === 2,
            "Exactly two map measurements are required");
     assert.deepEqual(run.maps.map(map => map.map).sort(),
