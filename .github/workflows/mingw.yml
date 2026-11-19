@@ -33,14 +33,32 @@ jobs:
       id: gitinfo
       run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+    - name: Restore MinGW dependency downloads
+      uses: actions/cache@v4
+      with:
+        path: .ci-cache/mingw
+        key: mingw-sdl2-2.0.12-openal-1.21.0-v1
+
     - name: Install Dependencies
       run: |
-        sudo apt-get update -qq > /dev/null
-        sudo apt-get install -qq -y ninja-build mingw-w64 imagemagick > /dev/null
-        wget -q https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
-        wget -q --no-check-certificate https://openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
-        tar -xf SDL2-devel-2.0.12-mingw.tar.gz -C /tmp
-        unzip -qq openal-soft-1.21.0-bin.zip -d /tmp
+        packages=(ninja-build mingw-w64 imagemagick)
+        missing=()
+        for package in "${packages[@]}"; do
+          dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed' || missing+=("$package")
+        done
+        if (( ${#missing[@]} )); then
+          sudo apt-get update -qq -o Acquire::Retries=3 > /dev/null
+          sudo apt-get install -qq -y -o Acquire::Retries=3 "${missing[@]}" > /dev/null
+        fi
+        mkdir -p .ci-cache/mingw
+        if [[ ! -s .ci-cache/mingw/SDL2-devel-2.0.12-mingw.tar.gz ]]; then
+          wget -q -O .ci-cache/mingw/SDL2-devel-2.0.12-mingw.tar.gz https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
+        fi
+        if [[ ! -s .ci-cache/mingw/openal-soft-1.21.0-bin.zip ]]; then
+          wget -q --no-check-certificate -O .ci-cache/mingw/openal-soft-1.21.0-bin.zip https://openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
+        fi
+        tar -xf .ci-cache/mingw/SDL2-devel-2.0.12-mingw.tar.gz -C /tmp
+        unzip -qq .ci-cache/mingw/openal-soft-1.21.0-bin.zip -d /tmp
         mv /tmp/openal-soft-1.21.0-bin/bin/${{ matrix.arch.win }}/soft_oal.dll /tmp/openal-soft-1.21.0-bin/bin/${{ matrix.arch.win }}/OpenAL32.dll
 
     - name: Build Vanilla Conquer
