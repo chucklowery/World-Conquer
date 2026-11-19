@@ -17,6 +17,7 @@ concurrency:
 jobs:
   vanilla_win_gcc:
     runs-on: ubuntu-22.04
+    timeout-minutes: 25
     strategy:
       # Retain architecture coverage on PRs; keep all six release variants
       # for pushes, tags and manually dispatched workflows.
@@ -39,23 +40,31 @@ jobs:
         path: .ci-cache/mingw
         key: mingw-sdl2-2.0.12-openal-1.21.0-v1
 
-    - name: Install Dependencies
+    # Restore the installed MinGW toolchain instead of repeating slow APT
+    # downloads on every runner. The first cache miss provisions packages.
+    - name: Restore or provision MinGW toolchain
+      uses: awalsh128/cache-apt-pkgs-action@2c09a5e66da6c8016428a2172bd76e5e4f14bb17 # v1.5.3
+      with:
+        packages: ninja-build mingw-w64 imagemagick
+        version: mingw-ubuntu-22.04-native-v1
+
+    - name: Verify MinGW toolchain
       run: |
-        packages=(ninja-build mingw-w64 imagemagick)
-        missing=()
-        for package in "${packages[@]}"; do
-          dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed' || missing+=("$package")
-        done
-        if (( ${#missing[@]} )); then
-          sudo apt-get update -qq -o Acquire::Retries=3 > /dev/null
-          sudo apt-get install -qq -y -o Acquire::Retries=3 "${missing[@]}" > /dev/null
-        fi
+        command -v ninja
+        command -v i686-w64-mingw32-g++
+        command -v x86_64-w64-mingw32-g++
+        command -v convert
+
+    - name: Stage cached SDL2 and OpenAL SDKs
+      run: |
         mkdir -p .ci-cache/mingw
         if [[ ! -s .ci-cache/mingw/SDL2-devel-2.0.12-mingw.tar.gz ]]; then
-          wget -q -O .ci-cache/mingw/SDL2-devel-2.0.12-mingw.tar.gz https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
+          echo 'Downloading SDL2 MinGW SDK (bounded retry)'
+          wget -q --timeout=20 --tries=3 --waitretry=2 -O .ci-cache/mingw/SDL2-devel-2.0.12-mingw.tar.gz https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
         fi
         if [[ ! -s .ci-cache/mingw/openal-soft-1.21.0-bin.zip ]]; then
-          wget -q --no-check-certificate -O .ci-cache/mingw/openal-soft-1.21.0-bin.zip https://openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
+          echo 'Downloading OpenAL Soft MinGW SDK (bounded retry)'
+          wget -q --no-check-certificate --timeout=20 --tries=3 --waitretry=2 -O .ci-cache/mingw/openal-soft-1.21.0-bin.zip https://openal-soft.org/openal-binaries/openal-soft-1.21.0-bin.zip
         fi
         tar -xf .ci-cache/mingw/SDL2-devel-2.0.12-mingw.tar.gz -C /tmp
         unzip -qq .ci-cache/mingw/openal-soft-1.21.0-bin.zip -d /tmp
