@@ -669,8 +669,10 @@ async function main() {
         const snapshot=JSON.parse(raw);
         if(snapshot.version!==4||snapshot.capabilities?.join()!=="economy")
           throw Error("Native v4 producer did not negotiate economy");
-        // This test intentionally replaces bridge state only immediately
-        // before the next map reload; gameplay always publishes v3.
+        // The live v3 HUD subscriber rejects v4. Detach it for this
+        // diagnostic receive only; the next page reload restores the normal
+        // v3 HUD subscription and gameplay publication path.
+        WCRTS.subscribe(null);
         const validated=WCRTS.receive(raw,{capabilities:["economy"]});
         return {version:validated.version,epoch:validated.epoch,
           resources:validated.resources.map(r=>({id:r.entityId,
