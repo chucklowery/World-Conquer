@@ -10,20 +10,23 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: linux-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   vanilla-linux:
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        compiler: [{cc: clang, cxx: clang++}, {cc: gcc, cxx: g++}]
-        preset: [release, internal, testing, nonet]
-        os: [ubuntu-22.04, ubuntu-24.04]
+      # PRs cover both compilers, Ubuntu versions and all four presets with
+      # four builds. Pushes/tags/manual runs retain the complete 16-build matrix.
+      matrix: ${{ fromJSON(github.event_name == 'pull_request' && '{"include":[{"compiler":{"cc":"gcc","cxx":"g++"},"preset":"release","os":"ubuntu-24.04"},{"compiler":{"cc":"clang","cxx":"clang++"},"preset":"testing","os":"ubuntu-24.04"},{"compiler":{"cc":"gcc","cxx":"g++"},"preset":"internal","os":"ubuntu-22.04"},{"compiler":{"cc":"clang","cxx":"clang++"},"preset":"nonet","os":"ubuntu-22.04"}]}' || '{"compiler":[{"cc":"clang","cxx":"clang++"},{"cc":"gcc","cxx":"g++"}],"preset":["release","internal","testing","nonet"],"os":["ubuntu-22.04","ubuntu-24.04"]}') }}
 
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'true'
-        fetch-depth: 0
+        fetch-depth: 1
         ref: ${{ github.event.pull_request.head.sha }}
         
     - name: Set Git Info
@@ -32,8 +35,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get update -qq > /dev/null
-        sudo apt-get install -qq -y clang-format-14 libsdl2-dev libopenal-dev ninja-build > /dev/null
+        packages=(clang-format-14 libsdl2-dev libopenal-dev ninja-build)
+        missing=()
+        for package in "${packages[@]}"; do
+          dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed' || missing+=("$package")
+        done
+        if (( ${#missing[@]} )); then
+          sudo apt-get update -qq -o Acquire::Retries=3 > /dev/null
+          sudo apt-get install -qq -y -o Acquire::Retries=3 "${missing[@]}" > /dev/null
+        fi
     
     - name: Build Vanilla Conquer
       env:
