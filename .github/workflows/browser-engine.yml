@@ -42,7 +42,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install Ninja
-        run: sudo apt-get update -qq && sudo apt-get install -y ninja-build
+        run: |
+          if ! command -v ninja >/dev/null 2>&1; then
+            sudo apt-get update -qq -o Acquire::Retries=3
+            sudo apt-get install -y -o Acquire::Retries=3 ninja-build
+          fi
       - name: Install Emscripten SDK
         uses: mymindstorm/setup-emsdk@v15
         with:
@@ -169,12 +173,21 @@ jobs:
       - name: Restore Chromium browser cache
         uses: actions/cache@v4
         with:
-          path: ~/.cache/ms-playwright
+          path: |
+            ~/.cache/ms-playwright
+            ~/.npm
           key: playwright-chromium-1.56.1-${{ runner.os }}
       - name: Install headless browser tooling
         run: |
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
-          npm exec --prefix browser/engine -- playwright install --with-deps chromium
+          # Avoid an unconditional apt update/install: hosted runners often
+          # already have Chromium's native libraries. Probe a real launch and
+          # install system dependencies only when that probe fails.
+          npm exec --prefix browser/engine -- playwright install chromium
+          if ! node -e 'const {chromium}=require("./browser/engine/node_modules/playwright"); chromium.launch({headless:true,args:["--no-sandbox"]}).then(browser=>browser.close()).catch(err=>{console.error(err.message);process.exitCode=1;})'; then
+            npm exec --prefix browser/engine -- playwright install-deps chromium
+            node -e 'const {chromium}=require("./browser/engine/node_modules/playwright"); chromium.launch({headless:true,args:["--no-sandbox"]}).then(browser=>browser.close()).catch(err=>{console.error(err);process.exitCode=1;})'
+          fi
       # The runtime driver already executes the complete functional browser
       # scenario without a soak. Full R20 measurement evidence remains a
       # separate 12-epoch gate on vanilla pushes and manual dispatches.
