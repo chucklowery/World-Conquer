@@ -18,16 +18,20 @@ function summarize(files) {
     assert.equal(run.schemaVersion, 2, "Unsupported measurement format");
     assert.equal(run.status, "complete", "Incomplete browser scenario");
     assert.equal(run.sha, sha, "Measurements use different candidate revisions");
-    assert(/^\d+$/.test(run.runId) && Number.isInteger(run.runAttempt) &&
+    assert(typeof run.runId === "string" && /^[1-9]\d*$/.test(run.runId) &&
+           Number.isSafeInteger(Number(run.runId)) &&
+           Number.isSafeInteger(run.runAttempt) &&
            run.runAttempt >= 1, "Missing GitHub run identity");
     const attempt = run.runId + ":" + run.runAttempt;
     assert(!attempts.has(attempt), "Repeated artifact from one workflow attempt");
     attempts.add(attempt);
+    assert(Array.isArray(run.maps) && run.maps.length === 2,
+           "Exactly two map measurements are required");
     assert.deepEqual(run.maps.map(map => map.map).sort(),
                      ["marsh-border", "ridge-pass"]);
     for (const map of run.maps) {
       assert.equal(map.epochs, epochs, "Incomparable epoch counts");
-      assert(Number.isInteger(map.sampledTicks) && map.sampledTicks >= epochs * 40,
+      assert(Number.isSafeInteger(map.sampledTicks) && map.sampledTicks >= epochs * 40,
              "Insufficient sampled native ticks");
       assert(Array.isArray(map.wasmHeapBytes) && map.wasmHeapBytes.length === epochs &&
              map.wasmHeapBytes.every(n => Number.isSafeInteger(n) && n > 0),
@@ -36,13 +40,13 @@ function summarize(files) {
                    Math.max(...map.wasmHeapBytes.slice(1)) -
                    Math.min(...map.wasmHeapBytes.slice(1)),
                    "Post-warmup allocation delta is inconsistent");
-      assert(Number.isInteger(map.animationFrameSamples) && map.animationFrameSamples > 0 &&
+      assert(Number.isSafeInteger(map.animationFrameSamples) && map.animationFrameSamples > 0 &&
              Number.isFinite(map.animationFrameIntervalP95Ms) &&
              map.animationFrameIntervalP95Ms >= 0,
              "Missing animation-frame interval samples");
       assert(Number.isFinite(map.elapsedSeconds) && map.elapsedSeconds > 0,
              "Missing elapsed time");
-      assert(Number.isInteger(map.nativeTickTimingSamples) &&
+      assert(Number.isSafeInteger(map.nativeTickTimingSamples) &&
              map.nativeTickTimingSamples >= epochs * 40 &&
              map.nativeTickTimingSamples <= 4096 &&
              Number.isFinite(map.nativeTickP95Us) && map.nativeTickP95Us >= 0,
