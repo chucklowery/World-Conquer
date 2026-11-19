@@ -15,7 +15,7 @@ function summarize(files) {
   assert(Number.isInteger(epochs) && epochs >= 12,
          "Expected at least 12 WASM restart epochs per map");
   for (const run of runs) {
-    assert.equal(run.schemaVersion, 1, "Unsupported measurement format");
+    assert.equal(run.schemaVersion, 2, "Unsupported measurement format");
     assert.equal(run.status, "complete", "Incomplete browser scenario");
     assert.equal(run.sha, sha, "Measurements use different candidate revisions");
     assert(/^\d+$/.test(run.runId) && Number.isInteger(run.runAttempt) &&
@@ -42,6 +42,10 @@ function summarize(files) {
              "Missing animation-frame interval samples");
       assert(Number.isFinite(map.elapsedSeconds) && map.elapsedSeconds > 0,
              "Missing elapsed time");
+      assert(Number.isInteger(map.nativeTickTimingSamples) &&
+             map.nativeTickTimingSamples >= epochs * 40 &&
+             Number.isFinite(map.nativeTickP95Us) && map.nativeTickP95Us >= 0,
+             "Missing native simulation tick timing");
       assert.equal(map.pageErrors, 0, "Browser page errors occurred");
     }
   }
@@ -52,10 +56,12 @@ function summarize(files) {
     return {map:id, epochs, sampledTicks:range("sampledTicks"),
       elapsedSeconds:range("elapsedSeconds"),
       frameIntervalP95Ms:range("animationFrameIntervalP95Ms"),
+      nativeTickP95Us:range("nativeTickP95Us"),
+      nativeTickTimingSamples:range("nativeTickTimingSamples"),
       allocatedWasmHeapDeltaBytes:range("postWarmupHeapDeltaBytes")};
   });
   return {sha, independentRuns:runs.length, maps,
-    interpretation:"Observed ranges only: rAF intervals are not native simulation-frame durations, and allocated WASM memory is not live-object memory. No performance thresholds have been approved."};
+    interpretation:"Observed ranges only: native tick p95 measures synchronous simulation steps, not full browser frame cost; rAF intervals capture presentation cadence, and allocated WASM memory is not live-object memory. No performance thresholds have been approved."};
 }
 
 if (require.main === module) {

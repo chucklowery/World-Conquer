@@ -7,6 +7,16 @@ while R20 is `in_progress` or `blocked`.
 
 ## Verified baseline and scope
 
+**Next candidate measurement work (pending CI):** The R20 browser soak now
+captures a bounded native simulation-step p95 using SDL's performance counter
+in compiled WASM, alongside rAF intervals and allocated heap size. The
+three-artifact same-SHA comparator requires the new timing fields (schema 2)
+and rejects incomplete timing. This closes a *measurement instrumentation gap*
+under FND-006, not the requirement to collect three independent runs, prove
+sustained behavior, approve budgets, or pass final-SHA CI. Tick timing includes
+native planning/AI/combat/publication but excludes browser rendering and event
+loop scheduling. No exit checklist item is checked by this change alone.
+
 **Post-PR #31 follow-up (proposed, not yet accepted):** `vanilla` now includes
 [PR #31](https://github.com/chucklowery/World-Conquer/pull/31) at `2733b83`,
 which supersedes the `166f008` candidate for future final-SHA decisions.
