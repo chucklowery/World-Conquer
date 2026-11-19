@@ -7,6 +7,18 @@ while R20 is `in_progress` or `blocked`.
 
 ## Verified baseline and scope
 
+**Post-PR #31 follow-up (proposed, not yet accepted):** `vanilla` now includes
+[PR #31](https://github.com/chucklowery/World-Conquer/pull/31) at `2733b83`,
+which supersedes the `166f008` candidate for future final-SHA decisions.
+This follow-up adds a deliberately opt-in real-WASM v4 economy publication
+probe to both Chromium map/restart scenarios. It verifies the strict JS
+consumer against native resource accounts and house balances while leaving
+normal gameplay on v3. The browser workflow must pass at the follow-up SHA;
+this is not R06 harvesting gameplay or a maintainer approval. FND-003/006
+still need reviewed congestion/performance budgets and repeated run evidence;
+FND-008 still requires owner-enforced branch protection. All exit boxes
+remain unchecked.
+
 - Individual completion evidence is preserved in the [manifest](../MANIFEST.md).
 - On the baseline commit, native C++11 host suites for contracts, world,
   world ports, pathfinding, weapons, map pipeline and integrated live match

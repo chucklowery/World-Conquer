@@ -46,7 +46,10 @@ R20 readiness is recorded in
 4. The native v4 economy producer and strict JS economy parser now exist in
    opt-in host ports. The `rts-live` runtime continues to publish **v3**;
    visibility capability is reserved but **rejected**, not implemented.
-   Real-WASM v4 acceptance and maintainer schema approval remain mandatory.
+   An explicit R20 diagnostic export supplies a non-draining v4 snapshot to
+   Chromium for strict schema validation on both maps after restart. This
+   does **not** seed harvesters/refineries, exercise harvest commands, or
+   enable v4 HUD/gameplay. Maintainer schema approval remains mandatory.
 
 ## FND-004/005 implemented entry interface (R20, not R06)
 
@@ -104,6 +107,14 @@ R20 readiness is recorded in
 `test-rts-world.cpp`, `test-rts-live-match.cpp`, `tools/content/test-r18.js`
 via `scripts/check-rts-foundation.sh`. These are implementation readiness
 checks, not proof of R06 harvesting in real Chromium or sign-off of R20.
+
+**Browser contract check:** `check-runtime.js` calls the explicit
+`Browser_Live_World_Economy_Probe` export on both loaded maps, parses the
+compiled native v4 payload through the negotiated JS bridge, and verifies
+epoch, resource account identities/amounts and house balances. The probe
+does not drain native events or change regular v3 publication; the test
+reloads the page before further gameplay. The browser workflow must pass
+on the candidate SHA before treating this as verified real-WASM evidence.
 
 ## R06: resource, cargo and credit ownership
 

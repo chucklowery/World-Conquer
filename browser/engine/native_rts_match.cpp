@@ -265,6 +265,16 @@ extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Command(int kind,
 }
 extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Restart(){return restart()?1:0;}
 
+// R20 contract probe only. Normal gameplay continues publishing v3; this
+// explicit opt-in exposes the native v4 producer to Chromium acceptance tests
+// without replacing the live HUD snapshot or enabling R06 gameplay.
+extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Live_World_Economy_Probe(){
+    if(match.world().epoch()==0)return 0;
+    const std::string json=rts::worldJson(match.snapshot(false,true));
+    EM_ASM({window.__r20EconomyProbe= UTF8ToString($0);},json.c_str());
+    return 1;
+}
+
 int Browser_Live_RTS_Match(const char*){
     std::string source,definitions;
     if(!readFile("/COURIER.MAP",65536,source)||
