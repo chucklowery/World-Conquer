@@ -5,6 +5,13 @@
 ledger, not a claim that the prior milestones failed. Do not begin R06/R09
 while R20 is `in_progress` or `blocked`.
 
+**Measurement follow-up after PR #33:** `vanilla` merged native WASM tick
+timing at `dd2f167` on 2026-11-19 UTC. The next R20 evidence batch must use
+the [three-run collection procedure](METRICS-RUNBOOK.md) on one final candidate
+SHA. The comparator's input validation and malformed-artifact regression
+coverage are being strengthened; this does not supply three browser runs,
+an approved timing/memory budget, or any additional exit-checklist pass.
+
 ## Verified baseline and scope
 
 **Next candidate measurement work (pending CI):** The R20 browser soak now
