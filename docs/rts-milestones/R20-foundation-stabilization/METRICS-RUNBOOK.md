@@ -5,9 +5,12 @@ budget or R20 sign-off. Use the **same full `vanilla` candidate SHA** for all
 three runs. Record the candidate before dispatching: a moving branch ref is
 not sufficient evidence that the resulting artifacts have the same source.
 
-Ordinary pull-request browser CI uses the runtime driver's fast functional
-scenario with `R20_WASM_SOAK_EPOCHS=0`. It is **not** FND-006 measurement
-evidence and cannot replace a full R20 candidate-SHA acceptance run. Pushes
+Ordinary pull-request browser CI uses `BROWSER_CI_FAST=1` and
+`R20_WASM_SOAK_EPOCHS=0`: it proves real compiled WASM startup, SDL
+mouse/keyboard events and a native tactical mission, but skips deeper world,
+combat, bridge and repeated-soak acceptance. Its metrics status is `smoke`,
+not `complete`. It is **not** FND-006 measurement evidence and cannot replace
+a full R20 candidate-SHA acceptance run. Pushes
 to `vanilla` and explicit `workflow_dispatch` runs still execute 12 epochs
 per map. Before R20 approval, dispatch the full workflow on the exact
 candidate commit (or an immutable ref to it) and verify the artifact SHA.
