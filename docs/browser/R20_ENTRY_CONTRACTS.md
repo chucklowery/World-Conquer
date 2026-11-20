@@ -224,10 +224,14 @@ table alone does not close FND-009.
   to verify stable state hashes and absence of overlapping live actors.
 - Observed on the host during R20 development: 24 actors all arrive on
   Marsh Border; 21 of 24 arrive on Ridge Pass under densely packed
-  reciprocal destinations, with three explicit unreachable responses
-  requiring further classification. These are **not** full browser
-  performance or collision acceptance results; record and review the
-  target-packing policy before closing FND-003.
+  reciprocal destinations, with three dynamic congestion terminals (one
+  occupied goal and two occupancy-blocked corridors). The scheduler now
+  reports `congested` command status instead of claiming a statically
+  unreachable target; the public result remains the existing `blocked` code.
+  A temporary-blockage regression verifies that replanning can recover before
+  timeout. These are **not** three successful arrivals or full browser
+  performance/collision acceptance; the maintainer must approve the bounded
+  terminal policy or request further deadlock resolution before FND-003 closes.
 - **Proposed, not yet approved budgets:** a 24-actor Ubuntu CI host p95
   navigation tick under 5 ms and no growth in reachable actor backlog
   between repeated 480-tick runs; real Chromium/WASM p95 simulation frame
