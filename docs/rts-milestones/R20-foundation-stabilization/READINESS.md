@@ -5,6 +5,20 @@
 ledger, not a claim that the prior milestones failed. Do not begin R06/R09
 while R20 is `in_progress` or `blocked`.
 
+**FND-003 congestion classification follow-up (proposed, pending CI/review):**
+The native order scheduler now distinguishes a statically disconnected target
+(`unreachable`) from a reachable target whose dynamic occupancy prevented
+progress through the bounded retry window (`congested`). The latter is a
+terminal order result, mapped to the existing public `blocked` result code;
+native/JS command-state consumers recognize the `congested` status. A focused
+one-cell corridor regression proves temporary blockage recovery and persistent
+congestion classification. The repeated 24-actor Ridge Pass scenario should
+therefore report 21 arrivals, **three congested**, and zero topology-unreachable
+outcomes; Marsh Border remains 24/24. These are the same three unsatisfied
+orders, not three newly successful arrivals. Maintainer review of whether
+terminal congestion is acceptable, whether retry/reissue is required, and
+the budget remains an explicit FND-003 gate. No exit checkbox is checked.
+
 **Measurement follow-up after PR #33:** `vanilla` merged native WASM tick
 timing at `dd2f167` on 2026-11-19 UTC. The next R20 evidence batch must use
 the [three-run collection procedure](METRICS-RUNBOOK.md) on one final candidate
