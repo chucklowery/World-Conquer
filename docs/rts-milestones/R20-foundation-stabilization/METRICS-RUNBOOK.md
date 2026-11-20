@@ -10,7 +10,7 @@ The regular browser workflow provides three distinct tiers:
   but without a 10-minute minimum; not eligible for sustained acceptance.
 - Explicit **workflow_dispatch**: sustained acceptance. At least **300 seconds
   of advancing native simulation per map** (Ridge Pass and Marsh Border,
-  600 seconds total), at least 12 restart epochs/map, and enforced budgets.
+  600 seconds total), 48 restart epochs/map, and enforced budgets.
 
 The sustained test issues a native move command every epoch, observes native
 ticks advance rather than sleeping without simulation work, checks v3 entities,
@@ -52,7 +52,7 @@ represented as a 24-unit browser stress test.
 | Native simulation tick p95 | at most 50,000 microseconds | C++ tick + bridge/HUD publication, excludes SDL drawing/compositor |
 | Allocated WASM heap post-warmup spread | at most 16,777,216 bytes | Allocation proxy, **not** proof of leak-freedom |
 | Real duration | at least 300 seconds/map | Minimum 600 seconds total, both maps |
-| Restart epochs | at least 12/map | Fresh IDs and bounded command/event state |
+| Restart epochs | 48/map | Fresh IDs and bounded command/event state |
 | Page errors | zero | Includes errors outside the soak interval |
 | Independent runs | three distinct GitHub run IDs | Exactly one SHA; retries do not count |
 
