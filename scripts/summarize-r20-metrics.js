@@ -16,7 +16,7 @@ function summarize(files) {
   assert(Number.isInteger(epochs) && epochs >= 12,
          "Expected at least 12 WASM restart epochs per map");
   for (const run of runs) {
-    assert.equal(run.schemaVersion, 2, "Unsupported measurement format");
+    assert.equal(run.schemaVersion, 3, "Unsupported measurement format");
     assert.equal(run.status, "complete", "Incomplete browser scenario");
     assert.equal(run.sha, sha, "Measurements use different candidate revisions");
     assert(typeof run.runId === "string" && /^[1-9]\d*$/.test(run.runId) &&
@@ -31,7 +31,17 @@ function summarize(files) {
                      ["marsh-border", "ridge-pass"]);
     for (const map of run.maps) {
       assert.equal(map.epochs, epochs, "Incomparable epoch counts");
-      assert(Number.isSafeInteger(map.sampledTicks) && map.sampledTicks >= epochs * 40,
+      assert.equal(map.requiredSustainedSeconds, runs[0].maps[0].requiredSustainedSeconds,
+                   "Incomparable soak duration requirements");
+      assert(Number.isSafeInteger(map.requiredSustainedSeconds) &&
+             map.requiredSustainedSeconds>=300,
+             "Not a sustained five-minute-per-map measurement");
+      assert(Number.isSafeInteger(map.requiredTicksPerEpoch) &&
+             map.requiredTicksPerEpoch>=40,
+             "Missing sustained native tick target");
+      assert(map.elapsedSeconds>=map.requiredSustainedSeconds,
+             "Native scenario did not run for the required elapsed duration");
+      assert(Number.isSafeInteger(map.sampledTicks) && map.sampledTicks >= epochs * map.requiredTicksPerEpoch,
              "Insufficient sampled native ticks");
       assert(Array.isArray(map.wasmHeapBytes) && map.wasmHeapBytes.length === epochs &&
              map.wasmHeapBytes.every(n => Number.isSafeInteger(n) && n > 0),
@@ -47,7 +57,7 @@ function summarize(files) {
       assert(Number.isFinite(map.elapsedSeconds) && map.elapsedSeconds > 0,
              "Missing elapsed time");
       assert(Number.isSafeInteger(map.nativeTickTimingSamples) &&
-             map.nativeTickTimingSamples >= epochs * 40 &&
+             map.nativeTickTimingSamples >= epochs * map.requiredTicksPerEpoch &&
              map.nativeTickTimingSamples <= 4096 &&
              Number.isFinite(map.nativeTickP95Us) && map.nativeTickP95Us >= 0,
              "Missing native simulation tick timing");
@@ -58,7 +68,9 @@ function summarize(files) {
     const samples = runs.map(run => run.maps.find(map => map.map === id));
     const range = key => [Math.min(...samples.map(m => m[key])),
                           Math.max(...samples.map(m => m[key]))];
-    return {map:id, epochs, sampledTicks:range("sampledTicks"),
+    return {map:id, epochs,
+      requiredSustainedSeconds:samples[0].requiredSustainedSeconds,
+      sampledTicks:range("sampledTicks"),
       elapsedSeconds:range("elapsedSeconds"),
       frameIntervalP95Ms:range("animationFrameIntervalP95Ms"),
       nativeTickP95Us:range("nativeTickP95Us"),
@@ -66,7 +78,7 @@ function summarize(files) {
       allocatedWasmHeapDeltaBytes:range("postWarmupHeapDeltaBytes")};
   });
   return {sha, independentRuns:runs.length, maps,
-    interpretation:"Observed ranges only: native tick p95 includes synchronous simulation, bridge and HUD DOM work, but excludes SDL scene drawing, browser compositing and event-loop scheduling; up to 4096 durations are retained. rAF intervals capture presentation cadence, and allocated WASM memory is not live-object memory. No performance thresholds have been approved."};
+    interpretation:"Sustained wall-clock and advancing native ticks are required for both maps. Observed ranges only: native tick p95 includes synchronous simulation, bridge and HUD DOM work, but excludes SDL scene drawing, browser compositing and event-loop scheduling; up to 4096 durations are retained. rAF intervals capture presentation cadence, and allocated WASM memory is not live-object memory. No performance thresholds have been approved."};
 }
 
 if (require.main === module) {
