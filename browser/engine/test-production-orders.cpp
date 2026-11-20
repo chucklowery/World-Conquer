@@ -183,6 +183,36 @@ int main(){
         if(f.code==orders::Code::Congested&&f.sequence==0)congestionFeedback=true;
     assert(congestionFeedback);
 
+    // Friendly idle scatter, but never force an enemy or an actor with an
+    // active Hold order out of the way. Preserve the bounded search budget.
+    std::vector<uint8_t> yieldLane(64,1);
+    for(int x=1;x<=6;x++)yieldLane[3*8+x]=0;
+    yieldLane[4*8+3]=0;
+    auto trafficCase=[&](int blockerTeam,bool hold){
+        orders::Controller nav;
+        assert(nav.resetDynamic(8,8,yieldLane,{{1,3},{3,3}}));
+        assert(nav.setTeam(0,1)&&nav.setTeam(1,blockerTeam));
+        if(hold)assert(nav.enqueue(request(1,orders::Kind::Hold,{3,3},30))==
+                       orders::Code::Accepted);
+        assert(nav.enqueue(request(0,orders::Kind::Move,{4,3},31))==
+               orders::Code::Accepted);
+        bool reached=false;
+        for(int t=1;t<=145;t++){
+            for(const orders::Move& m:nav.step(t))nav.update(m.actor,m.waypoint,true);
+            assert(nav.budget().searches<=orders::MAX_SEARCHES_PER_TICK);
+            if(nav.unit(0).position==Point({4,3}))reached=true;
+        }
+        if(blockerTeam==1&&!hold){
+            assert(reached&&!(nav.unit(1).position==Point({3,3})));
+        }else{
+            assert(!reached&&nav.unit(1).position==Point({3,3}));
+            assert(nav.unit(0).status==orders::Status::Congested);
+        }
+    };
+    trafficCase(1,false);
+    trafficCase(2,false);
+    trafficCase(1,true);
+
     // Final R02 integration: dynamic roster and a 12x8 R04-style cost map.
     // Weighted A* detours around expensive (but passable) rough terrain.
     orders::Controller dynamic;
