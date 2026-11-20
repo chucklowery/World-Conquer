@@ -38,7 +38,7 @@ displacement policy, or final performance budgets. No exit checkbox is checked.
 **FND-006 sustained WASM acceptance implementation (proposed, pending CI):**
 The browser acceptance driver now requires at least five real minutes of
 advancing compiled-WASM simulation **on each native map** when manually
-dispatched, including 12 restarts/map, live move commands, epoch/ownership
+dispatched, including 48 short restarts/map, live move commands, epoch/ownership
 invariants, command/history checks, and browser page-error rejection.
 Schema 3 rejects short artifacts and validates the native tick count.
 The manual workflow tier enforces provisional native tick p95 <= 50 ms and
