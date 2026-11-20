@@ -7,6 +7,7 @@ const http = require("node:http");
 const path = require("node:path");
 const assert = require("node:assert/strict");
 const {chromium} = require("playwright");
+const {waitForNativeTicks} = require("./r20-soak-wait");
 
 const root = path.resolve(__dirname, "../../build/browser-engine");
 const messages = [];
@@ -759,10 +760,8 @@ async function main() {
           assert.equal(await page.evaluate(({id,goal})=>
             Module._Browser_Live_World_Command(1,1,id,goal[0],goal[1],0,0),
             {id:before.actorId,goal:item.goal}),0,"Soak move was rejected");
-          await page.waitForFunction(({epoch,tick})=>WCRTS.latest()?.epoch===epoch&&
-            WCRTS.latest().tick>=tick+requiredTicks,
-            {epoch:before.epoch,tick:before.tick,requiredTicks:ticksPerEpoch},
-            {timeout:Math.max(25000,Math.ceil(ticksPerEpoch*180*3))});
+          await waitForNativeTicks(page,before.epoch,before.tick,ticksPerEpoch,
+            Math.max(25000,Math.ceil(ticksPerEpoch*180*3)));
           const after=await page.evaluate(id=>{
             const s=WCRTS.latest(),actor=s.entities.find(e=>e.id===id);
             return {epoch:s.epoch,tick:s.tick,map:s.map.id,

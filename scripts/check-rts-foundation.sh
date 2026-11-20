@@ -38,6 +38,7 @@ for suite in \
   browser/engine/validate-maps.js \
   browser/engine/test-mission-pack.js \
   browser/engine/test-r20-metrics.js \
+  browser/engine/test-r20-soak-wait.js \
   tools/content/test-r18.js \
   tools/content/test-r05.js; do
   echo "[foundation] $suite"

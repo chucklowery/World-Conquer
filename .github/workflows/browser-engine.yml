@@ -103,6 +103,7 @@ jobs:
           node browser/engine/test-tactical-hud.js
           node browser/engine/test-simulation-bridge.js
           node browser/engine/test-r20-metrics.js
+          node browser/engine/test-r20-soak-wait.js
           node tools/content/test-r18.js
           node browser/engine/test-rts-camera.js
           node browser/engine/test-package-alpha.js
