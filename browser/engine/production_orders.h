@@ -22,8 +22,8 @@ inline bool fixedTerrain(const courier::State& source,std::array<bool,CELLS>& ou
     return true;
 }
 enum class Kind { Move,AttackMove,Stop,Hold,Guard,Patrol,Attack };
-enum class Status { Idle,Moving,Waiting,Holding,Guarding,Patrolling,Attacking,Unreachable,Dead };
-enum class Code { Accepted,BadActor,Dead,BadTarget,Blocked,Unreachable,QueueFull };
+enum class Status { Idle,Moving,Waiting,Holding,Guarding,Patrolling,Attacking,Unreachable,Dead,Congested };
+enum class Code { Accepted,BadActor,Dead,BadTarget,Blocked,Unreachable,QueueFull,Congested };
 inline const char* name(Kind k) {
     switch(k){case Kind::Move:return "move";case Kind::AttackMove:return "attack_move";
         case Kind::Stop:return "stop";case Kind::Hold:return "hold";
@@ -36,14 +36,15 @@ inline const char* name(Status s) {
         case Status::Waiting:return "waiting";case Status::Holding:return "holding";
         case Status::Guarding:return "guarding";case Status::Patrolling:return "patrolling";
         case Status::Attacking:return "attacking";
-        case Status::Unreachable:return "unreachable";case Status::Dead:return "dead";}
+        case Status::Unreachable:return "unreachable";case Status::Dead:return "dead";
+        case Status::Congested:return "congested";}
     return "unknown";
 }
 inline const char* name(Code c) {
     switch(c){case Code::Accepted:return "accepted";case Code::BadActor:return "bad_actor";
         case Code::Dead:return "dead";case Code::BadTarget:return "bad_target";
         case Code::Blocked:return "blocked";case Code::Unreachable:return "unreachable";
-        case Code::QueueFull:return "queue_full";}
+        case Code::QueueFull:return "queue_full";case Code::Congested:return "congested";}
     return "unknown";
 }
 struct Order {
@@ -170,6 +171,16 @@ private:
             }
         }
         return false;
+    }
+    void failPath(int actor,courier::Point goal,
+                  TerminalFailureObserver observer,void* context){
+        // An occupied corridor/goal is not a topology failure. Keep the
+        // terminal result deterministic without falsely reporting that the
+        // map itself has become unreachable since command admission.
+        const bool terrainRoute=connected(actor,goal);
+        if(observer)observer(*this,actor,context);
+        clearOrder(units_[actor],terrainRoute?Status::Congested:Status::Unreachable);
+        feedback_.push_back({0,actor,terrainRoute?Code::Congested:Code::Unreachable});
     }
     void clearOrder(Unit& u,Status status=Status::Idle){
         u.hasOrder=false;u.inFlight=false;u.path.clear();u.queued.clear();
@@ -383,9 +394,7 @@ public:
                 u.inFlight=false;u.path.clear();u.stalled=0;
                 u.blocked+=STALLED_TICKS;
                 if(u.blocked>=BLOCKED_TICKS){
-                    if(observeFailure)observeFailure(*this,static_cast<int>(i),failureContext);
-                    clearOrder(u,Status::Unreachable);
-                    feedback_.push_back({0,static_cast<int>(i),Code::Unreachable});continue;
+                    failPath(static_cast<int>(i),goal,observeFailure,failureContext);continue;
                 }
             }
             if(!u.path.empty()&&(!clear(u.path.front())||
@@ -401,9 +410,7 @@ public:
                 // this unit's destination is unreachable. Count only actual
                 // failed replans toward its timeout.
                 if(searched&&++u.blocked>=BLOCKED_TICKS){
-                    if(observeFailure)observeFailure(*this,static_cast<int>(i),failureContext);
-                    clearOrder(u,Status::Unreachable);
-                    feedback_.push_back({0,static_cast<int>(i),Code::Unreachable});
+                    failPath(static_cast<int>(i),goal,observeFailure,failureContext);
                 }
                 continue;
             }
