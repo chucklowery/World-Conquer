@@ -190,12 +190,12 @@ jobs:
           fi
       # Pull requests use a fast smoke; branch pushes run short functional
       # regression. Manual workflow_dispatch is the FND-006 evidence tier:
-      # 12 epochs/map, minimum 300 elapsed seconds/map, enforced tick/heap
+      # 48 epochs/map, minimum 300 elapsed seconds/map, enforced tick/heap
       # thresholds, and retained raw JSON for three independent SHA-matched runs.
       - name: Test actual engine in headless Chromium
         env:
           BROWSER_CI_FAST: ${{ github.event_name == 'pull_request' && '1' || '0' }}
-          R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'pull_request' && '0' || '12' }}
+          R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'pull_request' && '0' || github.event_name == 'workflow_dispatch' && '48' || '12' }}
           # Manual candidate runs require at least 5 real minutes *per map*;
           # short vanilla-push runs remain regression-only, not FND-006 evidence.
           R20_WASM_SOAK_SECONDS_PER_MAP: ${{ github.event_name == 'workflow_dispatch' && '300' || '0' }}
