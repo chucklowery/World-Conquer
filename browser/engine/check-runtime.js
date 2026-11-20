@@ -13,7 +13,7 @@ const messages = [];
 // Upload comparable per-map measurements alongside the browser probe. A
 // requestAnimationFrame interval is UI responsiveness telemetry, not the
 // duration of a native simulation tick or an approved performance budget.
-const r20Metrics = {schemaVersion:2, sha:process.env.GITHUB_SHA||"local",
+const r20Metrics = {schemaVersion:3, sha:process.env.GITHUB_SHA||"local",
   runId:process.env.GITHUB_RUN_ID||"local",
   runAttempt:Number(process.env.GITHUB_RUN_ATTEMPT||0),
   status:"incomplete", maps:[]};
@@ -707,6 +707,18 @@ async function main() {
     const soakEpochs=Number(process.env.R20_WASM_SOAK_EPOCHS||0);
     assert(Number.isInteger(soakEpochs)&&soakEpochs>=0&&soakEpochs<=24,
            "R20_WASM_SOAK_EPOCHS must be an integer between 0 and 24");
+    const sustainedSecondsPerMap=Number(process.env.R20_WASM_SOAK_SECONDS_PER_MAP||0);
+    assert(Number.isInteger(sustainedSecondsPerMap)&&
+           (sustainedSecondsPerMap===0||
+            (sustainedSecondsPerMap>=300&&sustainedSecondsPerMap<=900)),
+           "R20_WASM_SOAK_SECONDS_PER_MAP must be 0 or 300..900");
+    assert(!sustainedSecondsPerMap||soakEpochs>=12,
+           "Sustained R20 acceptance requires 12 or more epochs per map");
+    // At a nominal 180ms native game tick, include a margin for rounding.
+    // Actual wall-clock duration is checked independently below; long tests
+    // must exercise advancing native state, never just sleep in Chromium.
+    const ticksPerEpoch=sustainedSecondsPerMap?
+      Math.ceil(sustainedSecondsPerMap*1000/(soakEpochs*180))+2:40;
     if(soakEpochs){
       for(const item of [
         {id:"ridge-pass",goal:[6,2]},
@@ -724,7 +736,7 @@ async function main() {
           let previous=null,stopped=false;
           function sample(now){
             if(stopped)return;
-            if(previous!==null&&intervals.length<15000)intervals.push(now-previous);
+            if(previous!==null&&intervals.length<60000)intervals.push(now-previous);
             previous=now;
             requestAnimationFrame(sample);
           }
@@ -748,8 +760,9 @@ async function main() {
             Module._Browser_Live_World_Command(1,1,id,goal[0],goal[1],0,0),
             {id:before.actorId,goal:item.goal}),0,"Soak move was rejected");
           await page.waitForFunction(({epoch,tick})=>WCRTS.latest()?.epoch===epoch&&
-            WCRTS.latest().tick>=tick+40,
-            {epoch:before.epoch,tick:before.tick},{timeout:25000});
+            WCRTS.latest().tick>=tick+requiredTicks,
+            {epoch:before.epoch,tick:before.tick,requiredTicks:ticksPerEpoch},
+            {timeout:Math.max(25000,Math.ceil(ticksPerEpoch*180*3))});
           const after=await page.evaluate(id=>{
             const s=WCRTS.latest(),actor=s.entities.find(e=>e.id===id);
             return {epoch:s.epoch,tick:s.tick,map:s.map.id,
@@ -780,13 +793,17 @@ async function main() {
         }
         assert.equal(messages.filter(m=>m.startsWith("PAGE ERROR:")).length,
                      pageErrorsBefore,"Browser page error during native R20 soak");
+        const elapsedSeconds=(Date.now()-started)/1000;
+        if(sustainedSecondsPerMap)
+          assert(elapsedSeconds>=sustainedSecondsPerMap,
+                 "Sustained WASM scenario ended before required real elapsed duration");
         const heapGrowth=heaps.length>1?
           Math.max(...heaps.slice(1))-Math.min(...heaps.slice(1)):0;
         const nativeTiming=await page.evaluate(()=>({
           count:Module._Browser_Live_Tick_Timing_Count(),
           p95Us:Module._Browser_Live_Tick_Timing_P95_Us()
         }));
-        assert(nativeTiming.count>=soakEpochs*40&&nativeTiming.count<=4096,
+        assert(nativeTiming.count>=soakEpochs*ticksPerEpoch&&nativeTiming.count<=4096,
                "Native simulation timing did not capture each soak epoch");
         assert(Number.isFinite(nativeTiming.p95Us)&&nativeTiming.p95Us>=0,
                "Native simulation p95 timing missing");
@@ -795,20 +812,31 @@ async function main() {
         const frameP95=frameIntervals.length?
           Number(frameIntervals[Math.floor(frameIntervals.length*0.95)].toFixed(2)):null;
         const measurement={map:item.id,epochs:soakEpochs,sampledTicks,
-          elapsedSeconds:Number(((Date.now()-started)/1000).toFixed(2)),
+          requiredSustainedSeconds:sustainedSecondsPerMap,
+          requiredTicksPerEpoch:ticksPerEpoch,
+          elapsedSeconds:Number(elapsedSeconds.toFixed(2)),
           wasmHeapBytes:heaps,postWarmupHeapDeltaBytes:heapGrowth,
           animationFrameSamples:frameIntervals.length,
           animationFrameIntervalP95Ms:frameP95,
           nativeTickTimingSamples:nativeTiming.count,
           nativeTickP95Us:Number(nativeTiming.p95Us.toFixed(2)),
           pageErrors:messages.filter(m=>m.startsWith("PAGE ERROR:")).length-pageErrorsBefore};
+        const maxTickP95Us=Number(process.env.R20_WASM_MAX_TICK_P95_US||0);
+        const maxHeapDeltaBytes=Number(process.env.R20_WASM_MAX_HEAP_DELTA_BYTES||0);
+        assert(Number.isFinite(maxTickP95Us)&&maxTickP95Us>=0&&
+               Number.isFinite(maxHeapDeltaBytes)&&maxHeapDeltaBytes>=0,
+               "Invalid R20 acceptance performance budgets");
+        if(maxTickP95Us)assert(measurement.nativeTickP95Us<=maxTickP95Us,
+          "Native tick p95 exceeded accepted limit for "+item.id);
+        if(maxHeapDeltaBytes)assert(measurement.postWarmupHeapDeltaBytes<=maxHeapDeltaBytes,
+          "Allocated WASM heap post-warmup spread exceeded limit for "+item.id);
         r20Metrics.maps.push(measurement);
         messages.push("PASS: R20 native WASM "+item.id+" "+soakEpochs+
           " restarts, "+sampledTicks+" live ticks, bounded events and IDs, "+
           "allocated heap delta "+heapGrowth+" bytes, rAF interval p95 "+
           frameP95+" ms/"+frameIntervals.length+" samples, native tick p95 "+
           measurement.nativeTickP95Us+" us/"+nativeTiming.count+" ticks, "+
-          measurement.elapsedSeconds+" elapsed seconds (budgets pending approval)");
+          measurement.elapsedSeconds+" elapsed seconds (configured budgets enforced when provided)");
       }
     }
     // The integrated v3 scenario uses the real R03 combat system, not Courier
