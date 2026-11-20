@@ -232,6 +232,12 @@ table alone does not close FND-009.
   timeout. These are **not** three successful arrivals or full browser
   performance/collision acceptance; the maintainer must approve the bounded
   terminal policy or request further deadlock resolution before FND-003 closes.
+  A follow-up opt-in-to-explicit-team native scheduler change now performs
+  bounded deterministic idle-friendly scatter (up to four requests per
+  obstructed order, depth-two chains). The Ridge Pass host regression records
+  24/24 completed destinations and 19/24 final parking after allies yield.
+  This is Westwood-style clearance, not preservation of completed parking
+  orders, and still requires explicit maintainer and real-WASM approval.
 - **Proposed, not yet approved budgets:** a 24-actor Ubuntu CI host p95
   navigation tick under 5 ms and no growth in reachable actor backlog
   between repeated 480-tick runs; real Chromium/WASM p95 simulation frame
