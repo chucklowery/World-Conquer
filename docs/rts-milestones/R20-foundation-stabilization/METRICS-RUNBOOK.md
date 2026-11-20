@@ -1,50 +1,67 @@
-# R20 repeated browser/WASM measurement procedure
+# R20 sustained real-browser/WASM performance acceptance
 
-This is an evidence-collection procedure for FND-006, not a performance
-budget or R20 sign-off. Use the **same full `vanilla` candidate SHA** for all
-three runs. Record the candidate before dispatching: a moving branch ref is
-not sufficient evidence that the resulting artifacts have the same source.
+**Status: implementation proposed for review. Real 10-minute GitHub-hosted
+runs, approval of budgets, and final-SHA sign-off remain required.**
 
-Ordinary pull-request browser CI uses `BROWSER_CI_FAST=1` and
-`R20_WASM_SOAK_EPOCHS=0`: it proves real compiled WASM startup, SDL
-mouse/keyboard events and a native tactical mission, but skips deeper world,
-combat, bridge and repeated-soak acceptance. Its metrics status is `smoke`,
-not `complete`. It is **not** FND-006 measurement evidence and cannot replace
-a full R20 candidate-SHA acceptance run. Pushes
-to `vanilla` and explicit `workflow_dispatch` runs still execute 12 epochs
-per map. Before R20 approval, dispatch the full workflow on the exact
-candidate commit (or an immutable ref to it) and verify the artifact SHA.
+The regular browser workflow provides three distinct tiers:
 
-1. Open [Browser VanillaTD engine compile](https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml)
-   and dispatch it on the candidate branch **three separate times**. Wait for
-   each run to finish. Manual dispatch uses 12 R20 WASM epochs per map.
-   Do not count reruns of the same workflow run ID as independent, even when
-   GitHub assigns a different attempt number.
-2. Confirm that all three runs passed, including real Chromium acceptance,
-   Courier/R05 regression checks, and evidence upload. Record the three run
-   URLs, attempt numbers, commit SHAs and any unrelated platform failures.
-3. Download each run's `vanillatd-browser-probe` artifact and extract its
-   `r20-wasm-metrics.json` to **different** local filenames. Preserve the
-   originals as linked CI artifacts. Do not merge, edit or synthesize samples.
-4. Run `node scripts/summarize-r20-metrics.js run1.json run2.json run3.json`
-   from the repository root. The comparator rejects incomplete scenarios,
-   mismatched revisions, duplicate workflow attempts, missing maps, invalid
-   heap or frame measurements, and absent native tick latency. Attach its
-   JSON output with the source artifact URLs to the R20 readiness ledger.
-5. Inspect the individual screenshots/logs as well as the aggregate ranges.
-   Review failure/retry histories, sampled tick counts, elapsed time, native
-   tick p95, rAF p95, and allocated-WASM-heap post-warmup spread **per map**.
-   A passing comparator is measurement integrity, not a performance pass.
+- Pull requests: fast real-WASM smoke only; metrics status `smoke`.
+- `vanilla` pushes: complete functional integration and 12 epochs per map,
+  but without a 10-minute minimum; not eligible for sustained acceptance.
+- Explicit **workflow_dispatch**: sustained acceptance. At least **300 seconds
+  of advancing native simulation per map** (Ridge Pass and Marsh Border,
+  600 seconds total), 48 restart epochs/map, and enforced budgets.
 
-**Interpretation:** `nativeTickP95Us` measures the synchronous native
-simulation/bridge/HUD publication path; it excludes drawing and scheduling.
-`animationFrameIntervalP95Ms` reflects browser presentation cadence.
-`postWarmupHeapDeltaBytes` measures the span of allocated WASM memory, not
-live-object retention, and does not establish absence of leaks. The browser
-scenario is a bounded multi-epoch soak, not yet a sustained ten-minute run.
+The sustained test issues a native move command every epoch, observes native
+ticks advance rather than sleeping without simulation work, checks v3 entities,
+command acknowledgement, epoch ID rollover, bounded history, map/resource
+parity and real page errors, and samples native SDL tick duration, browser rAF
+intervals, and allocated-WASM heap after each epoch. The existing full browser
+scenario also covers combat, win/loss, native input, Courier and R05.
+The 24-unit crowding path-budget/collision fixture remains a **separate native
+host test**. This browser soak uses the live six-actor match and must not be
+represented as a 24-unit browser stress test.
 
-**Acceptance remains blocked** until the maintainer approves numeric budgets,
-the candidate meets those budgets across independent runs, sanitizer/leak
-CI and all applicable platform/real-browser checks pass on the final SHA,
-and the other R20 exit gates are explicitly reviewed. If the source changes,
-restart the three-run set; do not combine artifacts from different commits.
+## Release-candidate evidence collection
+
+1. Freeze the R20 candidate commit SHA. Use
+   [Browser VanillaTD engine compile](https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml)
+   and manually dispatch the workflow on an immutable ref (or verify
+   `r20-wasm-metrics.json.sha` is the identical 40-character SHA on every run).
+   Trigger **three separate workflow runs**, not three attempts of one run ID.
+   A PR smoke or ordinary push is not acceptable.
+2. Verify each workflow finishes successfully. Download the
+   `vanillatd-browser-probe` artifact's `r20-wasm-metrics.json`.
+   Preserve run IDs, attempts, commit SHA, CI links, and unmodified JSON.
+3. Run `node scripts/summarize-r20-metrics.js run1.json run2.json run3.json`.
+   Schema 3 rejects missing or duplicate workflow run IDs, mixed revisions,
+   incomplete runs, fewer than 300 elapsed seconds/map, fewer than the
+   required advancing native ticks, malformed telemetry or browser errors.
+4. Inspect all three runs and the summary. Record p95 native tick duration,
+   rAF frame pacing, post-warmup allocated WASM heap spread, event/state
+   checks, collision/path-budget host evidence, sanitizer leak results and
+   platform CI links on the **same final candidate SHA**.
+5. Maintainer approves or revises the numerical budgets, then verifies
+   the workflow actually enforces them. If approved budgets differ, update
+   workflow limits **before** re-running the three final-SHA measurements.
+
+## Provisional enforced acceptance limits (manual dispatch only)
+
+| Metric | Limit | Interpretation |
+| --- | --- | --- |
+| Native simulation tick p95 | at most 50,000 microseconds | C++ tick + bridge/HUD publication, excludes SDL drawing/compositor |
+| Allocated WASM heap post-warmup spread | at most 16,777,216 bytes | Allocation proxy, **not** proof of leak-freedom |
+| Real duration | at least 300 seconds/map | Minimum 600 seconds total, both maps |
+| Restart epochs | 48/map | Fresh IDs and bounded command/event state |
+| Page errors | zero | Includes errors outside the soak interval |
+| Independent runs | three distinct GitHub run IDs | Exactly one SHA; retries do not count |
+
+The heap bound compares the range of allocated heap sizes after the first
+epoch; it cannot detect all live-object leaks. CI ASan/UBSan with leak
+detection, event backlog validation, and repeated restarts remain independent
+acceptance checks. rAF p95 is telemetry, not native tick latency.
+
+**R20 FND-006 is not complete** until the actual three sustained runs pass
+on the final SHA, maintainer-approved budgets are in force and the readiness
+ledger links the successful evidence. Changing code after collection invalidates
+the final-SHA run set.
