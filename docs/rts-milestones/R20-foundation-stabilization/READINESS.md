@@ -35,6 +35,20 @@ the commanded tile at least once, not permanent occupancy. This host fixture
 still does not establish real InfantryClass/WASM behavior, an approved idle
 displacement policy, or final performance budgets. No exit checkbox is checked.
 
+**FND-006 sustained WASM acceptance implementation (proposed, pending CI):**
+The browser acceptance driver now requires at least five real minutes of
+advancing compiled-WASM simulation **on each native map** when manually
+dispatched, including 12 restarts/map, live move commands, epoch/ownership
+invariants, command/history checks, and browser page-error rejection.
+Schema 3 rejects short artifacts and validates the native tick count.
+The manual workflow tier enforces provisional native tick p95 <= 50 ms and
+allocated WASM post-warmup spread <= 16 MiB; these still require maintainer
+approval and actual GitHub evidence. Ordinary PR smoke and push regression
+runs cannot qualify as sustained acceptance. This does **not** supply
+three independent runs or constitute FND-006 approval. The native 24-actor
+stress remains separate from this six-actor real-WASM scenario.
+No R20 exit checkbox is checked.
+
 **Measurement follow-up after PR #33:** `vanilla` merged native WASM tick
 timing at `dd2f167` on 2026-11-19 UTC. The next R20 evidence batch must use
 the [three-run collection procedure](METRICS-RUNBOOK.md) on one final candidate
