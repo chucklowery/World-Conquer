@@ -45,7 +45,7 @@ static std::vector<Point> sideCells(const std::vector<uint8_t>& blocked,
 
 struct Result {
     uint64_t hash;
-    int moved, arrived, unreachable, waiting, searches, expansions;
+    int moved, arrived, unreachable, congested, waiting, searches, expansions;
     uint64_t p95Microseconds;
     // Capture the first terminal replan failure, not just its final status.
     // The scheduler hook captures occupancy before cleanup, subsequent
@@ -204,13 +204,14 @@ static Result run(const std::string& mapSource) {
                 std::chrono::steady_clock::now() - start).count()));
     }
     int arrived = 0;
-    int unreachable = 0, waiting = 0;
+    int unreachable = 0, congested = 0, waiting = 0;
     for (int i = 0; i < 24; ++i)
         if (nav.unit(i).position == destinations[i]) ++arrived;
         else if (nav.unit(i).status == orders::Status::Unreachable) ++unreachable;
+        else if (nav.unit(i).status == orders::Status::Congested) ++congested;
         else if (nav.unit(i).status == orders::Status::Waiting) ++waiting;
     std::sort(tickMicros.begin(), tickMicros.end());
-    return {hash, moved, arrived, unreachable, waiting, searches, expansions,
+    return {hash, moved, arrived, unreachable, congested, waiting, searches, expansions,
             tickMicros[(tickMicros.size() * 95) / 100], failures};
 }
 
@@ -221,9 +222,10 @@ int main() {
         const Result a = run(source), b = run(source);
         assert(a.hash == b.hash);
         assert(a.moved == b.moved && a.arrived == b.arrived &&
-               a.unreachable == b.unreachable && a.waiting == b.waiting);
+               a.unreachable == b.unreachable && a.congested == b.congested &&
+               a.waiting == b.waiting);
         assert(a.failures.size() == b.failures.size());
-        assert(static_cast<int>(a.failures.size()) == a.unreachable);
+        assert(static_cast<int>(a.failures.size()) == a.unreachable + a.congested);
         for (size_t i = 0; i < a.failures.size(); ++i) {
             const Result::Failure& f = a.failures[i];
             const Result::Failure& replay = b.failures[i];
@@ -238,23 +240,25 @@ int main() {
             assert(f.staticRoute && !f.dynamicRoute);
         }
         assert(a.moved >= 24 && a.arrived >= 20);
-        // Under tight reciprocal target packing, an actor may receive
-        // explicit Unreachable feedback. It must not wait forever or vanish;
-        // R20 still requires review of how much congestion is acceptable.
-        assert(a.waiting == 0 && a.arrived + a.unreachable == 24);
+        // A dynamic blockage must not masquerade as disconnected terrain.
+        // Congestion remains a terminal order failure until the maintainer
+        // approves a policy for occupied destinations and reciprocal traffic.
+        assert(a.waiting == 0 && a.unreachable == 0 &&
+               a.arrived + a.congested == 24);
         if (source.find("id marsh-border\n") != std::string::npos)
-            assert(a.arrived == 24 && a.unreachable == 0);
+            assert(a.arrived == 24 && a.congested == 0);
+        else assert(a.arrived == 21 && a.congested == 3);
         std::cout << "PASS: 24-actor R02 congestion on " << path
                   << ", 480 ticks, " << a.moved << " moves, "
                   << a.arrived << "/24 arrivals, "
-                  << a.unreachable << " unreachable, "
+                  << a.unreachable << " unreachable, " << a.congested << " congested, "
                   << a.waiting << " waiting, "
                   << a.searches << " searches, " << a.expansions
                   << " expanded cells; hash " << a.hash
                   << "; p95 host tick " << a.p95Microseconds
                   << " us (informational)\n";
         for (const Result::Failure& f : a.failures)
-            std::cout << "  unreachable actor " << f.actor << " at tick "
+            std::cout << "  congested actor " << f.actor << " at tick "
                       << f.tick << " from ("
                       << f.position.x << ',' << f.position.y << ") to ("
                       << f.goal.x << ',' << f.goal.y << "): static-route="
