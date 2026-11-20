@@ -33,6 +33,7 @@ class LiveMatch {
             case orders::Code::BadTarget:return WorldCode::BadTarget;
             case orders::Code::Blocked:return WorldCode::Blocked;
             case orders::Code::Unreachable:return WorldCode::Unreachable;
+            case orders::Code::Congested:return WorldCode::Blocked;
             case orders::Code::QueueFull:return WorldCode::QueueFull;
         }
         return WorldCode::BadTarget;
