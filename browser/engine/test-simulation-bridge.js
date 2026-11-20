@@ -35,6 +35,10 @@ commandSnapshot.commandStates=[{entityId:1001,kind:"patrol",status:"patrolling",
 bridge.receive(commandSnapshot);
 assert(Object.isFrozen(bridge.latest().commandStates[0]));
 assert.equal(bridge.latest().commandStates[0].queued,2);
+// Native terminal congestion is distinct from a statically unreachable map.
+bridge.receive({...commandSnapshot,commandStates:[{
+  entityId:1001,kind:"stop",status:"congested",x:14,y:8,queued:0}]});
+assert.equal(bridge.latest().commandStates[0].status,"congested");
 assert.throws(()=>bridge.receive({...commandSnapshot,commandStates:[{...commandSnapshot.commandStates[0],kind:"teleport"}]}),/command state/);
 const hud=HUD.create();
 HUD.applySnapshot(hud,bridge.latest());
@@ -56,7 +60,7 @@ HUD.applySnapshot(hud,bridge.latest());
 assert.equal(hud.inspect,null);
 assert.equal(hud.lastCombat,null);
 assert.equal(hud.cargo,0);
-assert.equal(calls,4);
+assert.equal(calls,5);
 bridge.clear();
 assert.equal(bridge.latest(),null);
 assert.equal(bridge.eventHistory().length,0);
