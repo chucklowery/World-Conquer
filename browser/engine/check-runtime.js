@@ -705,8 +705,8 @@ async function main() {
     // inside the compiled VanillaTD module, not the host-only fixture.
     // Keep the normal smoke test fast when no explicit soak is requested.
     const soakEpochs=Number(process.env.R20_WASM_SOAK_EPOCHS||0);
-    assert(Number.isInteger(soakEpochs)&&soakEpochs>=0&&soakEpochs<=24,
-           "R20_WASM_SOAK_EPOCHS must be an integer between 0 and 24");
+    assert(Number.isInteger(soakEpochs)&&soakEpochs>=0&&soakEpochs<=64,
+           "R20_WASM_SOAK_EPOCHS must be an integer between 0 and 64");
     const sustainedSecondsPerMap=Number(process.env.R20_WASM_SOAK_SECONDS_PER_MAP||0);
     assert(Number.isInteger(sustainedSecondsPerMap)&&
            (sustainedSecondsPerMap===0||
@@ -718,7 +718,7 @@ async function main() {
     // Actual wall-clock duration is checked independently below; long tests
     // must exercise advancing native state, never just sleep in Chromium.
     const ticksPerEpoch=sustainedSecondsPerMap?
-      Math.ceil(sustainedSecondsPerMap*1000/(soakEpochs*180))+2:40;
+      Math.max(40,Math.ceil(sustainedSecondsPerMap*1000/(soakEpochs*180))+2):40;
     if(soakEpochs){
       for(const item of [
         {id:"ridge-pass",goal:[6,2]},
