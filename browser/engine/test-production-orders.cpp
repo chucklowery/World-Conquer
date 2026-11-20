@@ -157,6 +157,32 @@ int main(){
     assert(observedController.unit(0).status==orders::Status::Unreachable&&
            observedController.unit(1).inFlight&&!pendingMoves.empty());
 
+    // A transiently occupied one-cell corridor is not unreachable terrain.
+    // The same command must recover if its blocker moves before timeout; a
+    // persistent reservation receives an explicit congestion result instead.
+    std::vector<uint8_t> choke(8*8,1);
+    for(int x=1;x<=6;x++)choke[3*8+x]=0;
+    orders::Controller traffic;
+    assert(traffic.resetDynamic(8,8,choke,{{1,3},{3,3}}));
+    assert(traffic.enqueue(request(0,orders::Kind::Move,{6,3},30))==orders::Code::Accepted);
+    for(int t=1;t<=15;t++)traffic.step(t);
+    assert(traffic.unit(0).hasOrder&&traffic.unit(0).status==orders::Status::Waiting);
+    traffic.update(1,traffic.unit(1).position,false);
+    for(int t=16;t<=35;t++)for(const orders::Move& m:traffic.step(t))
+        traffic.update(m.actor,m.waypoint,true);
+    assert(traffic.unit(0).position==Point({6,3})&&
+           traffic.unit(0).status==orders::Status::Idle);
+
+    assert(traffic.resetDynamic(8,8,choke,{{1,3},{3,3}}));
+    assert(traffic.enqueue(request(0,orders::Kind::Move,{6,3},31))==orders::Code::Accepted);
+    for(int t=1;t<=120;t++)traffic.step(t);
+    assert(traffic.unit(0).status==orders::Status::Congested&&
+           !traffic.unit(0).hasOrder);
+    bool congestionFeedback=false;
+    for(const orders::Feedback& f:traffic.takeFeedback())
+        if(f.code==orders::Code::Congested&&f.sequence==0)congestionFeedback=true;
+    assert(congestionFeedback);
+
     // Final R02 integration: dynamic roster and a 12x8 R04-style cost map.
     // Weighted A* detours around expensive (but passable) rough terrain.
     orders::Controller dynamic;
