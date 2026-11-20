@@ -40,6 +40,7 @@ rts::ResultCode code(orders::Code value){
     case orders::Code::BadTarget:return rts::ResultCode::BadTarget;
     case orders::Code::Blocked:return rts::ResultCode::Blocked;
     case orders::Code::Unreachable:return rts::ResultCode::Unreachable;
+    case orders::Code::Congested:return rts::ResultCode::Blocked;
     case orders::Code::QueueFull:return rts::ResultCode::Blocked;
     }
     return rts::ResultCode::BadTarget;
