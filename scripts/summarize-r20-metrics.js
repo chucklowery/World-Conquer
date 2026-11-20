@@ -31,11 +31,11 @@ function summarize(files) {
                      ["marsh-border", "ridge-pass"]);
     for (const map of run.maps) {
       assert.equal(map.epochs, epochs, "Incomparable epoch counts");
-      assert.equal(map.requiredSustainedSeconds, runs[0].maps[0].requiredSustainedSeconds,
-                   "Incomparable soak duration requirements");
       assert(Number.isSafeInteger(map.requiredSustainedSeconds) &&
              map.requiredSustainedSeconds>=300,
              "Not a sustained five-minute-per-map measurement");
+      assert.equal(map.requiredSustainedSeconds, runs[0].maps[0].requiredSustainedSeconds,
+                   "Incomparable soak duration requirements");
       assert(Number.isSafeInteger(map.requiredTicksPerEpoch) &&
              map.requiredTicksPerEpoch>=40,
              "Missing sustained native tick target");
