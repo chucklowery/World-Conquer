@@ -128,6 +128,10 @@ class LiveMatch {
             navigationTerrain_[resource.p.y*authored_.width+resource.p.x]=1;
         if(!navigation_.resetDynamic(authored_.width,authored_.height,
                                      navigationTerrain_,positions))return false;
+        for(size_t i=0;i<actors_.size();i++){
+            const WorldEntity* actor=world_.entity(actors_[i].id);
+            if(!actor||!navigation_.setTeam(static_cast<int>(i),actor->team))return false;
+        }
         std::vector<uint8_t> costs;
         for(size_t i=0;i<authored_.terrain.size();i++)
             costs.push_back(navigationTerrain_[i]?0:

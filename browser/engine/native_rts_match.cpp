@@ -121,7 +121,7 @@ void tick(){
         const rts::WorldEntity* entity=match.world().entity(match.actors()[i].id);
         if(!entity||entity->life!=rts::Life::Alive||live[i]->IsInLimbo)continue;
         const orders::Unit& order=match.navigation().unit(static_cast<int>(i));
-        if(!order.hasOrder||order.status==orders::Status::Waiting||
+        if((!order.hasOrder&&!order.inFlight)||order.status==orders::Status::Waiting||
            order.current.kind==orders::Kind::Hold||
            (order.current.kind==orders::Kind::Guard&&
             order.status==orders::Status::Guarding&&!order.inFlight)){

@@ -19,6 +19,22 @@ orders, not three newly successful arrivals. Maintainer review of whether
 terminal congestion is acceptable, whether retry/reissue is required, and
 the budget remains an explicit FND-003 gate. No exit checkbox is checked.
 
+**FND-003 bounded friendly-yield follow-up (proposed, pending CI/review):**
+Building on the merged classification, the native scheduler may request up to
+four deterministic scatter assists per obstructed order, with a chain depth
+of at most two idle allied blockers. Team identity is bound from the native
+world; unknown-team, hostile, in-flight, and actively ordered units cannot be
+displaced. Each scatter uses a reserved native waypoint, rejects occupied or
+active-goal cells, and remains subject to the usual collision and movement
+checks. This follows the original Westwood temporary-friendly-blocker scatter
+pattern without randomized direction choice. In the host 24-actor fixture,
+both maps now record **24/24 completed arrivals**, zero terminal congestion,
+and deterministic replay. Ridge Pass has **19/24 final parking** because five
+already-completed units subsequently moved aside; completion means reaching
+the commanded tile at least once, not permanent occupancy. This host fixture
+still does not establish real InfantryClass/WASM behavior, an approved idle
+displacement policy, or final performance budgets. No exit checkbox is checked.
+
 **Measurement follow-up after PR #33:** `vanilla` merged native WASM tick
 timing at `dd2f167` on 2026-11-19 UTC. The next R20 evidence batch must use
 the [three-run collection procedure](METRICS-RUNBOOK.md) on one final candidate

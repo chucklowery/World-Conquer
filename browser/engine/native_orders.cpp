@@ -136,7 +136,7 @@ void tick(){
     for(int i=0;i<orders::COUNT;i++){
         const orders::Unit& u=controller.unit(i);
         if(!u.alive)continue;
-        if(!u.hasOrder||u.status==orders::Status::Waiting||
+        if((!u.hasOrder&&!u.inFlight)||u.status==orders::Status::Waiting||
            u.current.kind==orders::Kind::Hold||
            (u.current.kind==orders::Kind::Guard&&u.status==orders::Status::Guarding&&!u.inFlight))
             cancelNative(i);
@@ -178,6 +178,7 @@ bool restart(){
     --ScenarioInit;
     if(!valid)return false;
     controller.reset(blocked,spawns);selected=0;sequence=1;frameNumber=0;
+    for(int i=0;i<orders::COUNT;i++)controller.setTeam(i,1);
     for(int i=0;i<orders::COUNT;i++)previous[i]=spawns[i];
     events.clear();emit(rts::EventKind::Restart,0);
     std::puts("[r02] restarted production units");
@@ -285,6 +286,7 @@ int Browser_Production_Orders(const char*){
         for(int j=0;j<i;j++)if(spawns[i]==spawns[j])return 7;
     }
     controller.reset(blocked,spawns);
+    for(int i=0;i<orders::COUNT;i++)controller.setTeam(i,1);
     if(!place())return 8;
     for(int i=0;i<orders::COUNT;i++)previous[i]=spawns[i];
     std::puts("[r02] navigation=bounded-A* movement=InfantryClass::AI terrain=MapClass");

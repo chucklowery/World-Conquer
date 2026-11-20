@@ -65,10 +65,11 @@ struct Unit {
     std::vector<Queued> queued;
     std::vector<courier::Point> path;
     int stalled,blocked;
+    int team,yieldsRequested;
     uint64_t activeSequence;
     Unit():position{0,0},alive(true),hasOrder(false),inFlight(false),
         waypoint{0,0},patrolStart{0,0},current{Kind::Stop,{0,0},-1},
-        status(Status::Idle),stalled(0),blocked(0),activeSequence(0){}
+        status(Status::Idle),stalled(0),blocked(0),team(0),yieldsRequested(0),activeSequence(0){}
 };
 struct Budget {
     int searches,expansions,maxOpen,issued;
@@ -172,6 +173,84 @@ private:
         }
         return false;
     }
+    bool activeGoal(courier::Point p) const {
+        for(const Unit& u:units_)if(u.alive&&u.hasOrder&&
+            (u.current.kind==Kind::Move||u.current.kind==Kind::AttackMove)&&
+            u.current.target==p)return true;
+        return false;
+    }
+    // Find one safe scatter waypoint, optionally making a single preceding
+    // idle ally yield. Never reserve two waypoints in the same call: the
+    // scheduler will re-evaluate actual occupancy on the following tick.
+    bool scatterIdle(int index,int team,courier::Point requesterPosition,
+                     int depth,std::vector<uint8_t>& visited,std::vector<Move>& moves){
+        if(depth>2||visited[index])return false;
+        Unit& u=units_[index];
+        if(!u.alive||u.team!=team||u.hasOrder||u.inFlight)return false;
+        visited[index]=1;
+        const courier::Point dirs[]={{1,0},{0,1},{-1,0},{0,-1}};
+        for(courier::Point d:dirs){
+            const courier::Point spare{u.position.x+d.x,u.position.y+d.y};
+            if(!clear(spare)||spare==requesterPosition||activeGoal(spare))continue;
+            int occupant=-1;
+            for(size_t j=0;j<units_.size();j++)if(static_cast<int>(j)!=index&&
+                units_[j].alive&&(units_[j].position==spare||
+                (units_[j].inFlight&&units_[j].waypoint==spare))){
+                occupant=static_cast<int>(j);break;
+            }
+            if(occupant>=0){
+                if(depth<2&&scatterIdle(occupant,team,requesterPosition,
+                                       depth+1,visited,moves))return true;
+                continue;
+            }
+            u.waypoint=spare;u.inFlight=true;u.status=Status::Moving;u.stalled=0;
+            moves.push_back({index,spare});++budget_.issued;
+            return true;
+        }
+        return false;
+    }
+    // Westwood-style, bounded friendly scatter. Only explicitly teamed idle
+    // units can yield: never displace opponents, active orders, or unknown
+    // ownership. The blocker receives a native waypoint reservation and the
+    // regular movement adapter commits its actual position.
+    bool requestYield(int actor,courier::Point goal,std::vector<Move>& moves){
+        const Unit& requester=units_[actor];
+        if(requester.team<=0||requester.yieldsRequested>=4||budget_.issued>=2)return false;
+        std::vector<int> previous(cells_,-1),queue(cells_);
+        int head=0,tail=0;
+        const int origin=cell(requester.position),destination=cell(goal);
+        queue[tail++]=origin;previous[origin]=origin;
+        const courier::Point dirs[]={{1,0},{0,1},{-1,0},{0,-1}};
+        while(head<tail&&previous[destination]<0){
+            const int n=queue[head++];const courier::Point p{n%width_,n/width_};
+            for(courier::Point d:dirs){
+                const courier::Point next{p.x+d.x,p.y+d.y};
+                if(!clear(next)||previous[cell(next)]>=0)continue;
+                previous[cell(next)]=n;queue[tail++]=cell(next);
+            }
+        }
+        if(previous[destination]<0)return false;
+        std::vector<int> route;
+        for(int n=destination;n!=origin;n=previous[n])route.push_back(n);
+        std::reverse(route.begin(),route.end());
+        for(int n:route){
+            const courier::Point blockedCell{n%width_,n/width_};
+            for(size_t i=0;i<units_.size();i++){
+                if(static_cast<int>(i)==actor)continue;
+                Unit& blocker=units_[i];
+                if(!blocker.alive||blocker.team!=requester.team||
+                   blocker.hasOrder||blocker.inFlight||!(blocker.position==blockedCell))
+                    continue;
+                std::vector<uint8_t> visited(units_.size(),0);
+                if(scatterIdle(static_cast<int>(i),requester.team,
+                               requester.position,0,visited,moves)){
+                    ++units_[actor].yieldsRequested;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     void failPath(int actor,courier::Point goal,
                   TerminalFailureObserver observer,void* context){
         // An occupied corridor/goal is not a topology failure. Keep the
@@ -184,12 +263,12 @@ private:
     }
     void clearOrder(Unit& u,Status status=Status::Idle){
         u.hasOrder=false;u.inFlight=false;u.path.clear();u.queued.clear();
-        u.stalled=u.blocked=0;u.status=status;u.activeSequence=0;
+        u.stalled=u.blocked=u.yieldsRequested=0;u.status=status;u.activeSequence=0;
     }
     void activate(int actor,const Order& o,uint64_t sequence){
         Unit& u=units_[actor];
         u.current=o;u.hasOrder=true;u.inFlight=false;u.path.clear();u.activeSequence=sequence;
-        u.stalled=u.blocked=0;
+        u.stalled=u.blocked=u.yieldsRequested=0;
         if(o.kind==Kind::Patrol)u.patrolStart=u.position;
         u.status=o.kind==Kind::Hold?Status::Holding:
             o.kind==Kind::Guard?Status::Guarding:
@@ -200,7 +279,7 @@ private:
     void complete(int actor){
         Unit& u=units_[actor];
         u.hasOrder=false;u.inFlight=false;u.path.clear();
-        u.stalled=u.blocked=0;
+        u.stalled=u.blocked=u.yieldsRequested=0;
         if(!u.queued.empty()){
             const Queued next=u.queued.front();u.queued.erase(u.queued.begin());
             activate(actor,next.order,next.sequence);
@@ -272,6 +351,10 @@ public:
         Unit unit;unit.position=position;units_.push_back(unit);return true;
     }
     const Unit& unit(int index) const {return units_[index];}
+    bool setTeam(int index,int team){
+        if(index<0||static_cast<size_t>(index)>=units_.size()||team<1||team>16)return false;
+        units_[index].team=team;return true;
+    }
     const Budget& budget() const {return budget_;}
     uint64_t tick() const {return tick_;}
     bool passable(courier::Point p) const {return clear(p);}
@@ -305,6 +388,7 @@ public:
         u.position=position;
         if(u.inFlight&&u.waypoint==position){
             u.inFlight=false;u.stalled=0;u.blocked=0;
+            if(!u.hasOrder)u.status=Status::Idle;
             if(!u.path.empty()&&u.path.front()==position)u.path.erase(u.path.begin());
         }
     }
@@ -406,6 +490,10 @@ public:
             }
             if(u.path.empty()){
                 u.status=Status::Waiting;
+                if(searched&&u.blocked>=6&&tick%8==0&&
+                   requestYield(static_cast<int>(i),goal,moves)){
+                    u.blocked=0;continue;
+                }
                 // Exhausting the global search budget is not evidence that
                 // this unit's destination is unreachable. Count only actual
                 // failed replans toward its timeout.
