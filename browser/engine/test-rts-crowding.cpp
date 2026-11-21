@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstdlib>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -46,6 +47,7 @@ static std::vector<Point> sideCells(const std::vector<uint8_t>& blocked,
 struct Result {
     uint64_t hash;
     int moved, arrived, settled, unreachable, congested, waiting, searches, expansions;
+    int maxPending, pendingAt240, pendingAt480, peakSearches, peakExpansions;
     uint64_t p95Microseconds;
     // Capture the first terminal replan failure, not just its final status.
     // The scheduler hook captures occupancy before cleanup, subsequent
@@ -171,6 +173,7 @@ static Result run(const std::string& mapSource) {
 
     uint64_t hash = 1469598103934665603ULL;
     int moved = 0, searches = 0, expansions = 0;
+    int maxPending=0, pendingAt240=0, pendingAt480=0, peakSearches=0, peakExpansions=0;
     std::vector<Result::Failure> failures;
     FailureContext failureContext{&blocked,&destinations,width,height,&failures};
     std::vector<uint64_t> tickMicros;
@@ -184,6 +187,8 @@ static Result run(const std::string& mapSource) {
                orders::MAX_SEARCHES_PER_TICK * std::min(width * height, 512));
         searches += nav.budget().searches;
         expansions += nav.budget().expansions;
+        peakSearches = std::max(peakSearches, nav.budget().searches);
+        peakExpansions = std::max(peakExpansions, nav.budget().expansions);
         moved += static_cast<int>(moves.size());
         for (const orders::Move& move : moves) {
             assert(move.actor >= 0 && move.actor < 24);
@@ -191,7 +196,9 @@ static Result run(const std::string& mapSource) {
             nav.update(move.actor, move.waypoint, true);
         }
         std::set<int> occupied;
+        int pending=0;
         for (int i = 0; i < 24; ++i) {
+            if (nav.unit(i).hasOrder) ++pending;
             const Point p = nav.unit(i).position;
             if(p==destinations[i]&&!nav.unit(i).hasOrder)reached[i]=1;
             assert(nav.passable(p));
@@ -200,6 +207,9 @@ static Result run(const std::string& mapSource) {
             hash = mix(hash, static_cast<uint64_t>(nav.unit(i).status));
             hash = mix(hash, nav.unit(i).activeSequence);
         }
+        maxPending = std::max(maxPending, pending);
+        if (tick == 240) pendingAt240 = pending;
+        if (tick == 480) pendingAt480 = pending;
         hash = mix(hash, nav.budget().searches);
         hash = mix(hash, nav.budget().expansions);
         tickMicros.push_back(static_cast<uint64_t>(
@@ -217,10 +227,16 @@ static Result run(const std::string& mapSource) {
     std::sort(tickMicros.begin(), tickMicros.end());
     for(int i=0;i<24;i++)if(nav.unit(i).position==destinations[i])++settled;
     return {hash, moved, arrived, settled, unreachable, congested, waiting, searches, expansions,
+            maxPending, pendingAt240, pendingAt480, peakSearches, peakExpansions,
             tickMicros[(tickMicros.size() * 95) / 100], failures};
 }
 
 int main() {
+    struct Measurement {
+        std::string map;
+        Result first, replay;
+    };
+    std::vector<Measurement> measurements;
     for (const char* path : {"game/content/missions/ridge-pass.map",
                              "game/content/missions/marsh-border.map"}) {
         const std::string source = read(path);
@@ -228,7 +244,10 @@ int main() {
         assert(a.hash == b.hash);
         assert(a.moved == b.moved && a.arrived == b.arrived && a.settled == b.settled &&
                a.unreachable == b.unreachable && a.congested == b.congested &&
-               a.waiting == b.waiting);
+               a.waiting == b.waiting && a.maxPending == b.maxPending &&
+               a.pendingAt240 == b.pendingAt240 && a.pendingAt480 == b.pendingAt480 &&
+               a.searches == b.searches && a.expansions == b.expansions &&
+               a.peakSearches == b.peakSearches && a.peakExpansions == b.peakExpansions);
         assert(a.failures.size() == b.failures.size());
         assert(static_cast<int>(a.failures.size()) == a.unreachable + a.congested);
         for (size_t i = 0; i < a.failures.size(); ++i) {
@@ -251,6 +270,8 @@ int main() {
         if (source.find("id marsh-border\n") != std::string::npos)
             assert(a.arrived == 24 && a.congested == 0);
         else assert(a.arrived == 24);
+        measurements.push_back({source.find("id marsh-border\n") != std::string::npos ?
+            "marsh-border" : "ridge-pass", a, b});
         std::cout << "PASS: 24-actor R02 congestion on " << path
                   << ", 480 ticks, " << a.moved << " moves, "
                   << a.arrived << "/24 arrivals, "
@@ -260,7 +281,8 @@ int main() {
                   << a.searches << " searches, " << a.expansions
                   << " expanded cells; hash " << a.hash
                   << "; p95 host tick " << a.p95Microseconds
-                  << " us (informational)\n";
+                  << " us (informational); pending at 240/480 "
+                  << a.pendingAt240 << "/" << a.pendingAt480 << "\n";
         for (const Result::Failure& f : a.failures)
             std::cout << "  congested actor " << f.actor << " at tick "
                       << f.tick << " from ("
@@ -268,5 +290,40 @@ int main() {
                       << f.goal.x << ',' << f.goal.y << "): static-route="
                       << f.staticRoute << " dynamic-route=" << f.dynamicRoute
                       << " goal-occupied=" << f.goalOccupied << '\n';
+    }
+    // Opt-in evidence. Durations are host observations, not a portable or
+    // maintainer-approved performance acceptance threshold. Fail closed on
+    // invalid artifact paths rather than silently losing measurement data.
+    const char* evidencePath = std::getenv("R20_CROWDING_METRICS_PATH");
+    if (evidencePath && *evidencePath) {
+        std::ofstream out(evidencePath, std::ios::binary | std::ios::trunc);
+        assert(out && "Unable to create R20 congestion evidence");
+        out << "{\n  \"schemaVersion\": 1,\n  \"scenario\": \"R20-24-actor-native\","
+            << "\n  \"maps\": [\n";
+        for (size_t i = 0; i < measurements.size(); ++i) {
+            const Measurement& m = measurements[i];
+            const Result& a = m.first;
+            out << "    {\"map\": \"" << m.map << "\", \"actors\": 24,"
+                << " \"ticks\": 480, \"replays\": 2,"
+                << " \"deterministicHash\": \"" << a.hash << "\","
+                << " \"arrived\": " << a.arrived
+                << ", \"finallyParked\": " << a.settled
+                << ", \"unreachable\": " << a.unreachable
+                << ", \"congested\": " << a.congested
+                << ", \"waitingAtEnd\": " << a.waiting
+                << ", \"peakPendingOrders\": " << a.maxPending
+                << ", \"pendingAt240\": " << a.pendingAt240
+                << ", \"pendingAt480\": " << a.pendingAt480
+                << ", \"peakSearchesPerTick\": " << a.peakSearches
+                << ", \"peakExpandedCellsPerTick\": " << a.peakExpansions
+                << ", \"totalSearches\": " << a.searches
+                << ", \"totalExpandedCells\": " << a.expansions
+                << ", \"p95HostTickUs\": [" << a.p95Microseconds
+                << ", " << m.replay.p95Microseconds << "]}"
+                << (i + 1 == measurements.size() ? "\n" : ",\n");
+        }
+        out << "  ],\n  \"hostTimingIsAcceptance\": false\n}\n";
+        out.flush();
+        assert(out.good() && "Unable to write complete R20 congestion evidence");
     }
 }
