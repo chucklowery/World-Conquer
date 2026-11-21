@@ -1,7 +1,17 @@
 # R20 sustained real-browser/WASM performance acceptance
 
-**Status: implementation proposed for review. Real 10-minute GitHub-hosted
-runs, approval of budgets, and final-SHA sign-off remain required.**
+**Status: FND-006 repeated-browser candidate measurement ACCEPTED on
+`5b14f9a5256eb09fac2587fe3c6509e02cbc0184` (2026-11-20).**
+The maintainer approved the 50,000 µs native tick p95 and 16 MiB allocated
+WASM heap-spread ceilings. Three independent passing manual dispatches:
+[44837361446](https://github.com/chucklowery/World-Conquer/actions/runs/44837361446),
+[44843780414](https://github.com/chucklowery/World-Conquer/actions/runs/44843780414),
+and [44846120668](https://github.com/chucklowery/World-Conquer/actions/runs/44846120668).
+Each has two maps at >=300 elapsed seconds and 48 epochs/map; tick p95
+ranges: Ridge Pass 2,000–2,600 µs, Marsh Border 2,400–3,300 µs;
+allocated heap spread and page errors both zero in all six map measurements.
+See [READINESS.md](READINESS.md) for individual measurements and remaining R20 gates.
+Acceptance applies only to that exact measured code SHA.
 
 The regular browser workflow provides three distinct tiers:
 
@@ -45,7 +55,7 @@ represented as a 24-unit browser stress test.
    the workflow actually enforces them. If approved budgets differ, update
    workflow limits **before** re-running the three final-SHA measurements.
 
-## Provisional enforced acceptance limits (manual dispatch only)
+## Maintainer-approved enforced acceptance limits (manual dispatch only)
 
 | Metric | Limit | Interpretation |
 | --- | --- | --- |
@@ -61,7 +71,8 @@ epoch; it cannot detect all live-object leaks. CI ASan/UBSan with leak
 detection, event backlog validation, and repeated restarts remain independent
 acceptance checks. rAF p95 is telemetry, not native tick latency.
 
-**R20 FND-006 is not complete** until the actual three sustained runs pass
-on the final SHA, maintainer-approved budgets are in force and the readiness
-ledger links the successful evidence. Changing code after collection invalidates
-the final-SHA run set.
+**FND-006 performance/repetition evidence has passed for `5b14f9a`.**
+Do not conflate that narrow acceptance with full R20 milestone completion,
+leak freedom, or authorization to begin R06/R09. A later gameplay revision
+requires renewed final-SHA evidence and the remaining R20 exit gates must
+still be accepted.

@@ -5,6 +5,62 @@
 ledger, not a claim that the prior milestones failed. Do not begin R06/R09
 while R20 is `in_progress` or `blocked`.
 
+## Accepted FND-006 sustained-WASM evidence — 2026-11-20
+
+**Decision: ACCEPT the FND-006 three-run sustained-WASM performance gate**
+on the frozen code candidate
+[`5b14f9a5256eb09fac2587fe3c6509e02cbc0184`](https://github.com/chucklowery/World-Conquer/commit/5b14f9a5256eb09fac2587fe3c6509e02cbc0184).
+The maintainer explicitly approved the previously provisional
+**native simulation tick p95 <= 50,000 µs** and **allocated-WASM heap
+post-warmup spread <= 16,777,216 bytes (16 MiB)** thresholds on
+2026-11-20. The manual-dispatch workflow enforced these budgets during the
+measurements; this is no longer merely a proposed performance budget.
+
+Three independent, successful `workflow_dispatch` runs at the **same
+full source SHA**, each with attempt 1 and `r20-wasm-metrics.json` schema 3
+`status: complete`:
+
+| GitHub run / preserved artifact | Ridge Pass: elapsed / p95 native tick | Marsh Border: elapsed / p95 native tick | Restarts / native ticks per map | Allocated heap spread / page errors |
+| --- | --- | --- | --- | --- |
+| [44837361446](https://github.com/chucklowery/World-Conquer/actions/runs/44837361446) | 351.99 s / 2,100 µs | 351.99 s / 2,500 µs | 48 / 1,920 | 0 bytes / 0 |
+| [44843780414](https://github.com/chucklowery/World-Conquer/actions/runs/44843780414) | 352.22 s / 2,600 µs | 352.04 s / 3,300 µs | 48 / 1,920 | 0 bytes / 0 |
+| [44846120668](https://github.com/chucklowery/World-Conquer/actions/runs/44846120668) | 351.98 s / 2,000 µs | 351.99 s / 2,400 µs | 48 / 1,920 | 0 bytes / 0 |
+
+For all six map measurements, browser frame interval p95 was 16.7 ms.
+All three `wasm-vanillatd` jobs succeeded, including the actual browser
+checks. The distinct workflow IDs are independent—not rerun attempts.
+The three original artifact archives, not fabricated samples, are retained
+with their GitHub workflows. `node scripts/summarize-r20-metrics.js` is the
+fail-closed schema comparator for subsequent candidate sets.
+
+**Scope and limitation:** These are six-actor live-browser workouts; 24-actor
+congestion proof comes from the separate native foundation fixture. Zero
+spread in allocated WASM heap is not live-object leak proof. Native timing
+excludes browser composition. The three completed runs establish the
+accepted FND-006 performance/repetition gate **on `5b14f9a` only**;
+any later code revision requires new final-SHA acceptance when closing R20.
+The documentation-only evidence PR itself is not a new measured runtime SHA.
+
+**Other candidate-SHA verification:** All **45** GitHub check runs reported
+`success` at `5b14f9a`, including `foundation (regular)`,
+`foundation (asan-ubsan)`, `wasm-vanillatd`, macOS arm64
+release/testing/internal/nonet, Linux, Windows, MinGW and publishing. This
+confirms check-run conclusions, not independent inspection of every release
+artifact or maintainer UX review.
+
+**Next gating issue: [FND-008 owner-enforced branch protection](https://github.com/chucklowery/World-Conquer/issues/48).** On
+2026-11-20, GitHub's `/branches/vanilla` reported `protected: false`
+and the repository rulesets list was empty. The repository owner must
+enable a ruleset targeting `vanilla` with pull-request review and required
+`foundation (regular)`, `foundation (asan-ubsan)`, and `wasm-vanillatd`
+checks, then demonstrate enforcement on a real PR. Required checks should
+be configured only after their names/source and trigger conditions are
+verified. The companion workflow change in this acceptance PR removes the
+browser pull-request path filter so that documentation-only PRs still receive
+the required `wasm-vanillatd` check; native foundation already runs on all PRs. This integration cannot edit repository admin settings.
+**R20 stays `in_progress`; R06/R09 stay blocked** until the other exit
+gates and owner approval are resolved.
+
 **FND-003 congestion classification follow-up (proposed, pending CI/review):**
 The native order scheduler now distinguishes a statically disconnected target
 (`unreachable`) from a reachable target whose dynamic occupancy prevented
@@ -315,8 +371,10 @@ This is a **design/sign-off gate**, not an implementation of fog:
 - [ ] Courier extraction and original R05 gallery regressions pass on that SHA
 - [ ] Linux, Windows, macOS, MinGW build/test evidence is distinguishable from
       release-publishing and genuinely green (no hidden or unexplained failures)
-- [ ] Repeated candidate runs show no unexplained flaky tests, crashes or
-      memory growth; performance thresholds documented and met
+- [x] Repeated candidate runs show no unexplained flaky tests, crashes or
+      allocated-WASM heap growth; maintainer-approved performance thresholds
+      documented and met on candidate `5b14f9a` ([FND-006 evidence above](#accepted-fnd-006-sustained-wasm-evidence--2026-11-20)).
+      This is not proof of live-object leak freedom or R20 final sign-off.
 - [ ] Pre-R06 resource/house/harvester/refinery/bridge contract reviewed
 - [ ] Maintainer signs off R06/R09 entry; R20 `completed` with PR/commit/CI
       evidence in the manifest
