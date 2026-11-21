@@ -5,6 +5,27 @@
 ledger, not a claim that the prior milestones failed. Do not begin R06/R09
 while R20 is `in_progress` or `blocked`.
 
+## FND-003 host navigation evidence follow-up (proposed)
+
+The new foundation-gate telemetry addition records one JSON artifact per
+regular/sanitizer CI job for **both native 24-actor congestion maps**, with
+two deterministic replays/map, 480 ticks/map, arrived/final parking,
+unresolved/terminal orders, pending-order backlog at 240 and 480 ticks,
+peak concurrent pending orders, peak A* search/expansion budgets, a state
+hash and two observed host tick p95 measurements. A strict Node validator
+fails the foundation test for missing/malformed output, collision/backlog
+or path-budget invariants, but does **not** enforce an unapproved portable
+host latency threshold. The native fixture remains separate from the
+six-actor browser/WASM soak.
+
+Once CI generates the artifacts, use the regular (not sanitizer) Ubuntu
+measurements to consider the **proposed** <=5 ms native-host tick p95
+and zero unresolved orders at tick 480. Sanitized timing must not be
+compared directly to optimized host timing. Owner approval of both the
+idle-friendly yield/goal-parking semantics and host timing policy is still
+required in [issue #50](https://github.com/chucklowery/World-Conquer/issues/50).
+No R20 completion claim is made by adding instrumentation.
+
 ## Current checkpoint after PR #49 merge — 2026-11-20
 
 **Current integration SHA:** [`2e80eedba2efd8cd7def17de4be6c8b7fa7bdffb`](https://github.com/chucklowery/World-Conquer/commit/2e80eedba2efd8cd7def17de4be6c8b7fa7bdffb).

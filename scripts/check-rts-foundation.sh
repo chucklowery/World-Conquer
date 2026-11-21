@@ -27,7 +27,15 @@ for suite in \
   test-rts-foundation-stress; do
   echo "[foundation] $suite"
   "${CXX:-g++}" "${flags[@]}" "browser/engine/$suite.cpp" -o "$test_dir/$suite"
-  "$test_dir/$suite"
+  if [[ "$suite" == test-rts-crowding ]]; then
+    # Persist evidence when CI provides a path, or validate a temporary
+    # artifact locally. Never gate on host p95 until a budget is approved.
+    crowding_metrics="${R20_CROWDING_METRICS_PATH:-$test_dir/r20-crowding.json}"
+    R20_CROWDING_METRICS_PATH="$crowding_metrics" "$test_dir/$suite"
+    node browser/engine/test-r20-crowding-metrics.js "$crowding_metrics"
+  else
+    "$test_dir/$suite"
+  fi
 done
 
 for suite in \
