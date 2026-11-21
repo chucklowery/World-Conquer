@@ -5,6 +5,26 @@
 ledger, not a claim that the prior milestones failed. Do not begin R06/R09
 while R20 is `in_progress` or `blocked`.
 
+## Current checkpoint after PR #49 merge — 2026-11-20
+
+**Current integration SHA:** [`2e80eedba2efd8cd7def17de4be6c8b7fa7bdffb`](https://github.com/chucklowery/World-Conquer/commit/2e80eedba2efd8cd7def17de4be6c8b7fa7bdffb).
+[PR #49](https://github.com/chucklowery/World-Conquer/pull/49)
+merged the accepted FND-006 evidence and removed the browser PR path
+filter in preparation for required checks. The underlying measured runtime
+SHA remains `5b14f9a`; no newer gameplay revision is accepted merely by
+a documentation/CI-trigger merge.
+
+**R20 still `in_progress` / R06 and R09 still `planned`.**
+Outstanding owner decisions:
+[FND-008 protected-branch rule enforcement (#48)](https://github.com/chucklowery/World-Conquer/issues/48)
+and [native movement/economy/visibility interface acceptance (#50)](https://github.com/chucklowery/World-Conquer/issues/50).
+At this checkpoint, GitHub reports `vanilla protected:false` and no
+rulesets. The post-PR #49 merged-head platform and foundation checks were
+still in progress when inspected, and must not be called passing yet.
+All older proposed/pending findings below are historical snapshots;
+the accepted FND-006 decision immediately below supersedes their prior
+measurement-pending claims.
+
 ## Accepted FND-006 sustained-WASM evidence — 2026-11-20
 
 **Decision: ACCEPT the FND-006 three-run sustained-WASM performance gate**
@@ -91,7 +111,7 @@ the commanded tile at least once, not permanent occupancy. This host fixture
 still does not establish real InfantryClass/WASM behavior, an approved idle
 displacement policy, or final performance budgets. No exit checkbox is checked.
 
-**FND-006 sustained WASM acceptance implementation (proposed, pending CI):**
+**Historical FND-006 implementation checkpoint (superseded by acceptance above):**
 The browser acceptance driver now requires at least five real minutes of
 advancing compiled-WASM simulation **on each native map** when manually
 dispatched, including 48 short restarts/map, live move commands, epoch/ownership
