@@ -14,17 +14,10 @@ on:
       - 'common/**'
       - 'cmake/**'
       - '.github/workflows/browser-engine.yml'
+  # Always create the browser smoke check on every PR. It is a candidate
+  # required branch-protection check; path-filtered PRs would otherwise leave
+  # "wasm-vanillatd" permanently pending on documentation-only changes.
   pull_request:
-    paths:
-      - 'CMakeLists.txt'
-      - 'tiberiandawn/**'
-      - 'browser/engine/**'
-      - 'scripts/summarize-r20-metrics.js'
-      - 'game/content/**'
-      - 'tools/content/**'
-      - 'common/**'
-      - 'cmake/**'
-      - '.github/workflows/browser-engine.yml'
 
 permissions:
   contents: read
