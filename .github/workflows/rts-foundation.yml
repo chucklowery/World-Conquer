@@ -26,7 +26,6 @@ jobs:
       RTS_SANITIZE: ${{ matrix.mode == 'asan-ubsan' && '1' || '0' }}
       ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
-      R20_CROWDING_METRICS_PATH: ${{ runner.temp }}/r20-crowding-${{ matrix.mode }}.json
     steps:
       - uses: actions/checkout@v4
       - name: Toolchain versions
@@ -34,6 +33,8 @@ jobs:
           g++ --version
           node --version
       - name: Check native simulation, bridge, content and replay determinism
+        env:
+          R20_CROWDING_METRICS_PATH: ${{ runner.temp }}/r20-crowding-${{ matrix.mode }}.json
         run: bash scripts/check-rts-foundation.sh
       - name: Upload R20 host crowding evidence
         if: always()
