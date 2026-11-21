@@ -48,15 +48,16 @@ release/testing/internal/nonet, Linux, Windows, MinGW and publishing. This
 confirms check-run conclusions, not independent inspection of every release
 artifact or maintainer UX review.
 
-**Next gating issue: FND-008 owner-enforced branch protection.** On
+**Next gating issue: [FND-008 owner-enforced branch protection](https://github.com/chucklowery/World-Conquer/issues/48).** On
 2026-11-20, GitHub's `/branches/vanilla` reported `protected: false`
 and the repository rulesets list was empty. The repository owner must
 enable a ruleset targeting `vanilla` with pull-request review and required
 `foundation (regular)`, `foundation (asan-ubsan)`, and `wasm-vanillatd`
 checks, then demonstrate enforcement on a real PR. Required checks should
 be configured only after their names/source and trigger conditions are
-verified; path-filtered workflows must not create unmergeable PRs when
-required. This integration cannot edit repository admin settings.
+verified. The companion workflow change in this acceptance PR removes the
+browser pull-request path filter so that documentation-only PRs still receive
+the required `wasm-vanillatd` check; native foundation already runs on all PRs. This integration cannot edit repository admin settings.
 **R20 stays `in_progress`; R06/R09 stay blocked** until the other exit
 gates and owner approval are resolved.
 
