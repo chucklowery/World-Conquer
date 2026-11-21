@@ -5,6 +5,45 @@
 ledger, not a claim that the prior milestones failed. Do not begin R06/R09
 while R20 is `in_progress` or `blocked`.
 
+## FND-003: verified native congestion artifacts after PR #54
+
+**Workflow-definition repair:** [PR #54](https://github.com/chucklowery/World-Conquer/pull/54)
+merged as `eba7afd27fce19f20229210a91e1b0f4deab8067`, moving the
+`runner.temp` metric path from the unsupported job-level expression to
+the supported test-step `env`. Both jobs passed on PR head
+[workflow 44919252453](https://github.com/chucklowery/World-Conquer/actions/runs/44919252453).
+Both uploaded native `r20-crowding-regular` and
+`r20-crowding-asan-ubsan` JSON artifacts; the underlying original artifacts
+were downloaded and inspected.
+
+| Map | Arrivals / final parking | Regular host p95, 2 replays | ASan/UBSan host p95, 2 replays | Deterministic native hash |
+| --- | --- | --- | --- | --- |
+| Ridge Pass | 24/24; 19/24 | 64 / 63 µs | 493 / 457 µs | `17751253231807266373` |
+| Marsh Border | 24/24; 24/24 | 135 / 135 µs | 809 / 806 µs | `10242189516108515513` |
+
+In all map records: 24 actors, 480 ticks per replay, zero terminal
+`unreachable`/`congested`/waiting orders, zero orders pending at tick 240
+or 480, and bounded A* work (peak 2 searches/tick). Peak expanded cells
+were 242 on Ridge Pass and 578 on Marsh Border, within the 2×map-cell
+budgets. Each map's deterministic hash matches between the regular and
+sanitizer jobs. Sanitized host timings are reported separately rather than
+used as optimized-performance acceptance numbers.
+
+**Merged-revision follow-up:** the regular foundation job on
+[workflow 44919631683](https://github.com/chucklowery/World-Conquer/actions/runs/44919631683)
+passed at `eba7afd` and uploaded its regular crowding artifact. The
+merged-revision sanitizer job had not yet completed at the previous check.
+The [missing-evidence issue #53](https://github.com/chucklowery/World-Conquer/issues/53)
+tracks confirming this remaining result.
+
+**Decision remains pending:** regular host p95 is well below the *proposed*
+5,000 µs limit, but this does not itself approve that host budget.
+The 24/24 arrival definition is first arrival, not permanent parking:
+five Ridge Pass units subsequently yield to allied movement. The
+maintainer must approve or amend these FND-003 movement semantics and the
+host latency budget in [issue #50](https://github.com/chucklowery/World-Conquer/issues/50).
+The separate R20 milestone remains in progress.
+
 ## FND-003 host navigation evidence follow-up (proposed)
 
 The new foundation-gate telemetry addition records one JSON artifact per
