@@ -1,7 +1,11 @@
 # R20 native extension contracts — R06 economy and R09 visibility
 
-**Status: FND-004/005 economy ports implemented for native/JS host review;
-maintainer approval and runtime acceptance pending. R09 visibility remains proposed.**
+**Status: FND-004/005 native/JS host economy ports and opt-in real-WASM
+publication are implemented; maintainer approval of the contract is pending.
+R09 visibility remains proposed and unimplemented.** The explicit owner
+decision checklist is [R20 issue #50](https://github.com/chucklowery/World-Conquer/issues/50).
+FND-006 sustained-WASM measurement budgets were separately approved at
+`5b14f9a`, but that does not approve economy or visibility semantics.
 This is a pre-R06/R09 interface gate, not permission to begin either feature.
 The accepted Courier v1, map v2 and world v3 snapshots must continue to work.
 R20 readiness is recorded in
@@ -238,22 +242,17 @@ table alone does not close FND-009.
   24/24 completed destinations and 19/24 final parking after allies yield.
   This is Westwood-style clearance, not preservation of completed parking
   orders, and still requires explicit maintainer and real-WASM approval.
-- **Proposed, not yet approved budgets:** a 24-actor Ubuntu CI host p95
-  navigation tick under 5 ms and no growth in reachable actor backlog
-  between repeated 480-tick runs; real Chromium/WASM p95 simulation frame
-  under 50 ms and heap increase under 16 MiB after warmup during a
-  10-minute repeated-map soak. Gather baseline distributions over at
-  least three final-SHA runs before enforcing the timing/memory thresholds.
-- The R20 browser runner now records a JSON measurement artifact per map:
-  sampled native ticks, elapsed time, allocated WASM heap size at every
-  restart, post-warmup allocated-heap delta and Chromium animation-frame
-  interval p95. The last two are **proxies**: WASM heap allocation is not
-  live-object memory and rAF interval is not native simulation-frame time.
-  Compare three independent successful **same-SHA** artifacts with
-  `node scripts/summarize-r20-metrics.js run1.json run2.json run3.json`;
-  it validates completeness/revision comparability but imposes no unapproved
-  threshold. A ten-minute sustained soak and actual simulation frame p95
-  still need their own acceptance evidence.
+- **Accepted FND-006 browser budget (2026-11-20):** native tick p95
+  at most 50,000 µs and post-warmup allocated-WASM heap spread at most
+  16 MiB. The [three independent real-browser runs](../rts-milestones/R20-foundation-stabilization/READINESS.md#accepted-fnd-006-sustained-wasm-evidence--2026-11-20)
+  on candidate SHA `5b14f9a` each covered >=300 seconds per authored map,
+  48 restart epochs/map and 1,920 advancing native ticks/map, with zero
+  browser errors. This is not a live-object leak test, and later gameplay
+  changes require new final-SHA verification.
+- **Still proposed for FND-003 host navigation:** 24-actor Ubuntu CI
+  p95 navigation tick below 5 ms and no unexplained growth in the
+  reachable-actor backlog. These are distinct from the accepted FND-006
+  browser budgets and require trace review and maintainer approval.
 - The maintainer must approve the v4 schema, resource-depletion footprint
   rules, R06 seeded-refinery exception, R09 viewer authorization policy,
   congestion expectations and measured budgets. R20 cannot close until
