@@ -24,15 +24,15 @@ Started: 2026-11-22
 | Phase | Status | Evidence / open work |
 | --- | --- | --- |
 | 0 | partial | Setup and branch done; original local baseline cannot be reproduced without a checkout/toolchain |
-| 1 | done in CI | Asset audit + fatal reporting; native WC_ASSET_AUDIT ON/OFF checks added and awaiting latest CI |
+| 1 | done | Audit and fatal reporting; native WC_ASSET_AUDIT ON/OFF builds pass in CI |
 | 2 | partial | 40-file source inventory present; empty-MEMFS failure run not captured |
 | 3 | partial | Cooperative yields and watchdog; optional movie/dialog paths remain unexercised |
 | 4 | done in CI | Verified pack manifest, hashes and browser delivery; IDBFS configured |
 | 5 | done in CI | Deterministic original boot pack, native MIX tool and host decoder test |
 | 6 | done for exit gate | Original stock engine reaches menu in Chromium; additional dialog paths unverified |
 | 7 | done for menu gate | Three viewport widths and mouse/keyboard regression checks; scenario edge-scroll deferred to M2 |
-| 8 | done on preceding CI head | 2026-11-22 run 45072600919 passed; stricter audit and 60s metrics awaiting new CI |
-| 9 | partial | Owner instructions written; roadmap evidence and PR ready state pending latest CI |
+| 8 | done | Strict stock-engine run 45074464722 passed on 96c6738; all six workflow groups green |
+| 9 | done for M1 exit gate | Owner instructions and docs written, roadmap evidence updated; PR can be marked ready |
 
 ## Phase 1 — partial (2026-11-22)
 
@@ -85,3 +85,17 @@ Commits through `e95273335dd1b8dcca6805529a30783be94ffbc5` on the milestone bran
 - All Linux, Windows, MinGW, macOS, browser and legacy regression workflow groups passed on that head.
 - Added stricter asset-miss basename/case normalization, 60s heap sample and end-of-soak assertions in subsequent commits. Added native audit ON/OFF compile checks. **The latest HEAD must pass before completing Phase 8/9.**
 - This CI gate does not prove locally owned external game data/mission gameplay; that owner-only check is intentionally separate. Additional modal dialogs and empty-data startup remain documented follow-ups.
+
+## Final strict CI acceptance — 2026-11-22
+
+- Verified commit: `96c6738f0d403a6d41671930ca776f9cff2c81a1`
+- CI: https://github.com/chucklowery/World-Conquer/actions/runs/45074464722
+- Browser: Chromium 141.0.7390.37 using Emscripten SDK 3.1.68.
+- `stock-engine`: **PASS**. Original pack verified; stock `main()` entered its real menu, frame nonblank, input changed frame at three viewport widths; no page errors, fatal markers or required boot/menu misses; post-startup max watchdog stall below 1000ms.
+- Viewport 480: time to menu 787ms; frame p50 16.7ms, p95 100.0ms; maximum stall 0ms.
+- Viewport 1100: time to menu 835ms; frame p50 16.7ms, p95 33.4ms; maximum stall 0ms.
+- Viewport 1600: time to menu 854ms; frame p50 16.7ms, p95 116.7ms; maximum stall 350.1ms.
+- Menu heap 17,235,968 bytes at the menu and after 60s in all three cases; no enforced metrics budgets.
+- CI also passed native audit ON/OFF compile checks, original pack generation, host decoder harness, browser runtime/legacy demos, and the Linux, Windows, MinGW and macOS build groups.
+- Full M1 **original-data CI exit gate met**. The owner-only proprietary-data mission-1 smoke is intentionally not run by an agent. Empty-MEMFS inventory proof and some optional dialogs/VQA loops remain partial and are tracked above; scenario and map-edge scrolling wait for M2.
+- Post-evidence commits update only docs and log. If their PR CI fails, revert status to partial before merging.
