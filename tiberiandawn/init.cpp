@@ -314,6 +314,10 @@ bool Init_Game(int, char*[])
         sprintf(buffer, "Command & Conquer is unable to detect your mouse driver.");
 #endif
 #endif
+#ifdef __EMSCRIPTEN__
+        printf("[browser-game] fatal=mouse initialization failed\n");
+        fflush(stdout);
+#endif
         WWMessageBox().Process(buffer, TXT_OK);
         Prog_End();
         exit(1);
