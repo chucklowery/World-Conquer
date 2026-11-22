@@ -434,3 +434,26 @@ archives. Loose SCG01EA.INI is optional because missions may be packed.
 Reload, stage legally acquired assets, then select New Game -> GDI
 in experimental game mode. Instrumentation logs startup, menu and
 scenario stages. A working first mission is NOT yet verified.
+
+## M1: stock engine and original boot pack (in development)
+
+The first launcher panel supports **Play (original boot pack)** alongside the
+older user-provided-file **Launch experimental game** option. The new action
+fetches `data/pack.json`, rejects illegal paths, checks declared byte lengths
+and SHA-256 digests, stages the files at `/game`, then calls the unmodified
+`Module.callMain([])`. Its input is generated locally or in CI by
+`node tools/content/boot-pack.js build build/browser-engine/data`, which
+requires the native `vanillamix` tool.
+
+In DevTools, `window.WCAssetAudit` collects `hits`, `misses` and `fatal`;
+`window.WCWatchdog.maxStallMs` tracks gaps in the browser's animation-frame
+heartbeat. The stock canvas is CSS-scaled without modifying SDL's native
+back buffer. It receives keyboard focus on click, suppresses browser scrolling
+while focused, and has an optional pointer-lock control (off by default).
+
+The `stock-engine` GitHub Actions job must pass against original data before
+M1 is declared complete. Refer to
+[the build guide](../../docs/browser/BUILD.md) for exact build, staging and
+verification commands and
+[the M1 owner checklist](../../docs/browser/M1_OWNER_CHECK.md) for the
+optional local verification using legally owned files.
