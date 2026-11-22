@@ -757,8 +757,12 @@ int Main_Menu(unsigned int timeout)
     Keyboard->Clear();
 
     Fancy_Text_Print(TXT_NONE, 0, 0, CC_GREEN, TBLACK, TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
-    while (Get_Mouse_State() > 0)
+    while (Get_Mouse_State() > 0) {
         Show_Mouse();
+#ifdef __EMSCRIPTEN__
+        Call_Back();
+#endif
+    }
 
     /*
     **	Main Processing Loop.
