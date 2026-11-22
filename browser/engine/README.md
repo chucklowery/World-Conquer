@@ -1,5 +1,12 @@
 # VanillaTD browser runtime bootstrap
 
+> **Direction (2026-11-22, ADR-0003):** the stock VanillaTD engine is the game.
+> The launcher's first panel starts it on locally supplied data. Every other
+> mode described below (Courier, R02 orders, the R02/R03/R04 live match, R03
+> drill, standalone JS slice) is a **frozen legacy demo** on the earlier
+> parallel world layer: kept working, but receiving no new features. See
+> [`docs/ROADMAP.md`](../../docs/ROADMAP.md).
+
 R02 adds an opt-in **four production-unit orders** mode alongside Courier.
 It uses live `InfantryClass::AI` / `MapClass` and bounded C++ pathfinding,
 with command state in the R00 snapshot/HUD. See

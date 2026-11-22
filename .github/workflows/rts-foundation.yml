@@ -1,4 +1,4 @@
-name: RTS foundation regression gate
+name: Legacy RTS demo regression
 
 on:
   pull_request:
@@ -21,7 +21,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [regular, asan-ubsan]
+        # Legacy R00-R20 demo regression (ADR-0003). The sanitizer leg is
+        # optional: it runs only on manual dispatch until milestone M7.
+        mode: ${{ fromJSON(github.event_name == 'workflow_dispatch' && '["regular","asan-ubsan"]' || '["regular"]') }}
     env:
       RTS_SANITIZE: ${{ matrix.mode == 'asan-ubsan' && '1' || '0' }}
       ASAN_OPTIONS: detect_leaks=1:halt_on_error=1

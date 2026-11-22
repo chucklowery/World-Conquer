@@ -100,12 +100,28 @@ body.hud-active{overflow:hidden}
 </style>
 </head>
 <body data-runtime="loading" data-mode="idle">
-<div class="eyebrow">World-Conquer · Original-content WebAssembly game</div>
-<h1>World-Conquer Tactical Alpha 0.1</h1>
-<p>Command a two-person squad through hostile territory, recover both supply crates, and reach the Courier aircraft. Powered by native VanillaTD movement, with original project-owned artwork and mission content.</p>
+<div class="eyebrow">World-Conquer · VanillaTD engine in WebAssembly</div>
+<h1>World-Conquer</h1>
+<p>The stock VanillaTD engine running in your browser. An original, shippable data pack is in progress (roadmap milestone M2); until then the engine needs compatible game data you legally own. The earlier tactical demos are kept below, frozen, for reference.</p>
 <div class="status" role="status" aria-live="polite" id="runtime-state">Loading engine runtime…</div>
 <div class="grid">
 <section class="panel">
+<h2>Play: stock VanillaTD engine</h2>
+<p class="note">Choose compatible game data that you legally own. Files stay in this browser tab's memory and are never sent to a server.</p>
+<label class="pick" for="select-files">Choose files</label>
+<input type="file" id="select-files" multiple>
+<label class="pick" for="select-folder">Choose folder</label>
+<input type="file" id="select-folder" webkitdirectory multiple>
+<p id="file-count" aria-live="polite">No files staged</p>
+<p id="asset-status" class="note" role="status" aria-live="polite">Core game files not verified.</p>
+<button type="button" id="run-asset-probe" disabled>Verify native engine file lookup</button>
+<button type="button" id="run-game" disabled>Launch experimental game</button>
+<p class="note warning">First GDI mission test: select <strong>New Game</strong>, choose <strong>GDI</strong>, then watch for <code>[browser-game] scenario</code> in the log. Launch is experimental; missing media or unsupported game data may still fail. Reload to retry.</p>
+<p class="note">Choose an installed game folder and, where available, original <code>gdi</code> CD contents. Root assets go to <code>/game</code>; GDI disc assets to <code>/game/gdi</code>. The original lower-case disc directory is preserved; files are uppercased. Imported data stays local and is cleared on reload.</p>
+</section>
+<section class="panel" aria-labelledby="legacy-demos-title">
+<h2 id="legacy-demos-title">Legacy demos (frozen)</h2>
+<p class="note">These modes run on the earlier parallel R00–R20 world layer, not the stock engine game loop. They are kept working for reference but receive no new features; see <code>docs/ROADMAP.md</code> and ADR-0003.</p>
 <div class="alpha-banner">
 <div class="eyebrow">Operation Courier Extraction</div>
 <h2>Your squad. Your mission.</h2>
@@ -156,20 +172,6 @@ body.hud-active{overflow:hidden}
 <p class="note">The wireframe roster diagnostic separately loads six verified, original-art placeholder SHPs from <code>wireframes/</code>, stages them in memory, then checks real C++ resource lookup and <code>CC_Draw_Shape()</code> for infantry, vehicle, aircraft, building, terrain and effect. Their final game-state frame layouts are not yet validated.</p>
 <h2>Runtime log</h2>
 <pre id="log" aria-live="polite"></pre>
-</section>
-<section class="panel">
-<h2>Game data &amp; first GDI mission</h2>
-<p class="note">Choose compatible game data that you legally own. Files stay in this browser tab's memory and are never sent to a server.</p>
-<label class="pick" for="select-files">Choose files</label>
-<input type="file" id="select-files" multiple>
-<label class="pick" for="select-folder">Choose folder</label>
-<input type="file" id="select-folder" webkitdirectory multiple>
-<p id="file-count" aria-live="polite">No files staged</p>
-<p id="asset-status" class="note" role="status" aria-live="polite">Core game files not verified.</p>
-<button type="button" id="run-asset-probe" disabled>Verify native engine file lookup</button>
-<button type="button" id="run-game" disabled>Launch experimental game</button>
-<p class="note warning">First GDI mission test: select <strong>New Game</strong>, choose <strong>GDI</strong>, then watch for <code>[browser-game] scenario</code> in the log. Launch is experimental; missing media or unsupported game data may still fail. Reload to retry.</p>
-<p class="note">Choose an installed game folder and, where available, original <code>gdi</code> CD contents. Root assets go to <code>/game</code>; GDI disc assets to <code>/game/gdi</code>. The original lower-case disc directory is preserved; files are uppercased. Imported data stays local and is cleared on reload.</p>
 </section>
 </div>
 <div id="tactical-hud" class="hud-shell" hidden aria-label="World-Conquer tactical command interface">

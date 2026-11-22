@@ -60,12 +60,17 @@ and that is recorded as one evidence line (see "Evidence").
 ### M0: Reset and consolidation (1–2 weeks)
 
 - [x] Adopt ADR-0003 and this roadmap; mark the earlier roadmaps as superseded.
-- [ ] Put the legacy tactical demos behind a "Demos" launcher entry; the
-      default launch path becomes the stock engine.
-- [ ] Reduce required CI to: native build matrix, WASM build, one headless
-      Chromium smoke test (engine boots to its first frame without page
-      errors). Keep the R20 soak and sanitizer jobs as optional/manual.
-- [ ] Update `BROWSER_PORT.md` and `browser/engine/README.md` to match.
+- [x] The launcher's first panel is the stock engine; the tactical demos
+      are grouped under "Legacy demos (frozen)". (Element IDs are unchanged,
+      so the existing browser tests still drive them.)
+- [x] Make the R20 WASM soak and the ASan/UBSan foundation leg run only on
+      manual dispatch; per-PR CI keeps the native matrix, WASM build, the
+      legacy demo regression and the headless Chromium check.
+- [ ] Add a stock-engine headless smoke test (engine boots to its first frame
+      without page errors) and make it the primary browser check. This needs
+      a data source, so it lands with the first M2 data slice.
+- [x] Update `BROWSER_PORT.md` and `browser/engine/README.md` to match.
+- [ ] Close the open R20 gate issues (#48, #50) as superseded.
 
 **Exit gate:** one roadmap, no contradictory status documents, and a green
 minimal CI on `vanilla`.

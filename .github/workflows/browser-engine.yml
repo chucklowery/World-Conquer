@@ -182,16 +182,17 @@ jobs:
             npm exec --prefix browser/engine -- playwright install-deps chromium
             node -e 'const {chromium}=require("./browser/engine/node_modules/playwright"); chromium.launch({headless:true,args:["--no-sandbox"]}).then(browser=>browser.close()).catch(err=>{console.error(err);process.exitCode=1;})'
           fi
-      # Pull requests use a fast smoke; branch pushes run short functional
-      # regression. Manual workflow_dispatch is the FND-006 evidence tier:
+      # Pull requests use a fast smoke; branch pushes run the functional
+      # regression without a soak (ADR-0003: soak budgets move to M4).
+      # Manual workflow_dispatch is the optional FND-006 soak tier:
       # 48 epochs/map, minimum 300 elapsed seconds/map, enforced tick/heap
       # thresholds, and retained raw JSON for three independent SHA-matched runs.
       - name: Test actual engine in headless Chromium
         env:
           BROWSER_CI_FAST: ${{ github.event_name == 'pull_request' && '1' || '0' }}
-          R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'pull_request' && '0' || github.event_name == 'workflow_dispatch' && '48' || '12' }}
+          R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'workflow_dispatch' && '48' || '0' }}
           # Manual candidate runs require at least 5 real minutes *per map*;
-          # short vanilla-push runs remain regression-only, not FND-006 evidence.
+          # vanilla-push runs are regression-only, not soak evidence.
           R20_WASM_SOAK_SECONDS_PER_MAP: ${{ github.event_name == 'workflow_dispatch' && '300' || '0' }}
           R20_WASM_MAX_TICK_P95_US: ${{ github.event_name == 'workflow_dispatch' && '50000' || '0' }}
           R20_WASM_MAX_HEAP_DELTA_BYTES: ${{ github.event_name == 'workflow_dispatch' && '16777216' || '0' }}

@@ -19,14 +19,15 @@ This project adapts the existing Vanilla Conquer C++ engine for desktop web brow
 1. Preserve Tiberian Dawn gameplay in C++ instead of rewriting the simulation in TypeScript.
 2. Isolate Emscripten-only changes so native Linux/Windows builds still work.
 3. First compile a **separate** SDL2 browser test; then compile the real game engine.
-4. Support player-provided, legally acquired assets; never commit, bundle, or upload copyrighted game data to CI.
+4. Ship an original, CI-built data pack (roadmap M2). Until it exists, support player-provided, legally acquired assets for development only; never commit, bundle, or upload copyrighted game data to CI.
 5. Make every milestone measurable. A produced WASM file is not evidence the actual game runs.
+6. The stock engine is the sole gameplay authority; do not build parallel simulation layers (ADR-0003).
 
 ## First playable acceptance criteria
 
 - Chrome or Edge loads the actual VanillaTD WebAssembly binary without a browser hang.
 - Local files can be imported into a virtual filesystem without server upload.
-- First GDI mission loads; selection, movement, combat and win/loss progression function.
+- A skirmish runs on the original data pack; harvesting, construction, production, combat, AI and win/loss all function through the engine (roadmap M3).
 - CI publishes reproducible browser HTML, JavaScript and WASM artifacts.
 - Build/test results include commit SHA, compiler and browser versions, and observed limitations.
 
