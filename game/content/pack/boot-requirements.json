@@ -112,6 +112,20 @@
       }
     },
     {
+      "name": "CONQUER.ENG",
+      "container": "CONQUER.MIX|loose",
+      "format": "ENG",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:291",
+        "tiberiandawn/conquer.cpp:1361"
+      ],
+      "contract": {
+        "entryCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
       "name": "CONQUER.INI",
       "container": "unverified",
       "format": "INI",
@@ -294,6 +308,19 @@
       "contract": {
         "size": "unverified",
         "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "HTITLE.PCX",
+      "container": "loose|GENERAL.MIX",
+      "format": "PCX",
+      "requiredFor": "menu",
+      "referencedAt": [
+        "tiberiandawn/globals.cpp:939"
+      ],
+      "contract": {
+        "size": "unverified",
         "source": "unverified"
       }
     },
@@ -511,6 +538,19 @@
       }
     },
     {
+      "name": "TITLE.CPS",
+      "container": "loose|GENERAL.MIX",
+      "format": "CPS",
+      "requiredFor": "menu",
+      "referencedAt": [
+        "tiberiandawn/globals.cpp:939"
+      ],
+      "contract": {
+        "size": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
       "name": "TRANSIT.MIX",
       "container": "loose",
       "format": "MIX",
@@ -593,20 +633,6 @@
       "contract": {
         "size": "unverified",
         "frameCount": "unverified",
-        "source": "unverified"
-      }
-    },
-    {
-      "name": "CONQUER.ENG",
-      "container": "CONQUER.MIX|loose",
-      "format": "ENG",
-      "requiredFor": "boot",
-      "referencedAt": [
-        "tiberiandawn/init.cpp:291",
-        "tiberiandawn/conquer.cpp:1361"
-      ],
-      "contract": {
-        "entryCount": "unverified",
         "source": "unverified"
       }
     }
