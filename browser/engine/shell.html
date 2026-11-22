@@ -334,6 +334,9 @@ body.hud-active{overflow:hidden}
   const unitProbe = document.getElementById("run-unit-probe");
   const game = document.getElementById("run-game");
   const stockPlay = document.getElementById("play-stock");
+  const assetProbe = document.getElementById("run-asset-probe");
+  const assetStatus = document.getElementById("asset-status");
+  const canvas = document.getElementById("canvas");
   const pointerToggle = document.getElementById("pointer-lock-stock");
   // Keep the SDL back buffer at the engine's own resolution. Only its CSS
   // presentation is scaled, so native hit-testing uses the standard SDL path.
@@ -380,10 +383,6 @@ body.hud-active{overflow:hidden}
     if (document.hidden && document.body.dataset.mode === "game")
       report("[browser-game] tab hidden; no stock pause API exposed; audio disabled in M1");
   });
-
-  const assetProbe = document.getElementById("run-asset-probe");
-  const assetStatus = document.getElementById("asset-status");
-  const canvas = document.getElementById("canvas");
   const count = document.getElementById("file-count");
   const tacticalHUD = document.getElementById("tactical-hud");
   const hudPlayfield = document.getElementById("hud-playfield");
