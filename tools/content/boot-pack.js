@@ -6,6 +6,7 @@ const {encodePalette}=require("./encode-palette.js");
 const {encodeShape}=require("./encode-shape.js");
 const {encodeFont,verifyFont}=require("./encode-font.js");
 const {encodeCPS,decodeCPS}=require("./encode-cps.js");
+const {encodePCX,verifyPCX}=require("./encode-pcx.js");
 const ROOT=path.resolve(__dirname,"../..");
 const REQUIREMENTS=path.join(ROOT,"game/content/pack/boot-requirements.json");
 function stringTable() {
@@ -63,6 +64,7 @@ function build(outdir) {
     i===0?"#000000":i%2?"#74DCC3":"#25374A")});
   const font=encodeFont();verifyFont(font);
   const cps=encodeCPS();if(decodeCPS(cps).length!==64000)throw Error("CPS round-trip failed");
+  const pcx=encodePCX();verifyPCX(pcx);
   const mouse=shape(16,16,16,15),texture=shape(64,20,20,10);
   const strings=stringTable();
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
@@ -72,22 +74,26 @@ function build(outdir) {
   write(stage,"MOUSE.SHP",mouse);
   write(stage,"BTEXTURE.SHP",texture);
   write(stage,"PREPICK.CPS",cps);
+  write(stage,"TITLE.CPS",cps);
+  write(stage,"HTITLE.PCX",pcx);
   write(stage,"CONQUER.ENG",strings);
   write(stage,"WCBOOT.DAT",Buffer.from("World-Conquer original boot placeholder\n"));
   const tool=nativeMixer();
   archive(tool,stage,game,"CCLOCAL.MIX",fonts);
   archive(tool,stage,game,"LOCAL.MIX",fonts);
   archive(tool,stage,game,"CONQUER.MIX",["MOUSE.SHP","CONQUER.ENG"]);
-  archive(tool,stage,game,"GENERAL.MIX",["BTEXTURE.SHP","PREPICK.CPS"]);
+  archive(tool,stage,game,"GENERAL.MIX",["BTEXTURE.SHP","PREPICK.CPS","TITLE.CPS","HTITLE.PCX"]);
   archive(tool,stage,game,"SOUNDS.MIX",["WCBOOT.DAT"]);
   write(game,"TEMPERAT.PAL",palette);
   write(game,"CONQUER.ENG",strings);
   // Loose decoder fixtures are also usable by the stock engine's fallback lookup.
   write(game,"8POINT.FNT",font);
   write(game,"PREPICK.CPS",cps);
+  write(game,"TITLE.CPS",cps);
+  write(game,"HTITLE.PCX",pcx);
   // Original file names inside a MIX are supplied by the generated archive.
   const provided=new Set(["CCLOCAL.MIX","LOCAL.MIX","CONQUER.MIX","GENERAL.MIX","SOUNDS.MIX",
-    "TEMPERAT.PAL","CONQUER.ENG",...fonts,"MOUSE.SHP","BTEXTURE.SHP","PREPICK.CPS"]);
+    "TEMPERAT.PAL","CONQUER.ENG",...fonts,"MOUSE.SHP","BTEXTURE.SHP","PREPICK.CPS","TITLE.CPS","HTITLE.PCX"]);
   for(const req of requirements.files){
     if(["boot","menu"].includes(req.requiredFor)&&!provided.has(req.name))
       throw Error("Missing boot requirement: "+req.name);
