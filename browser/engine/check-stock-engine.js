@@ -20,6 +20,8 @@ const server=http.createServer((req,res)=>{
 });
 const logs=[],errors=[];
 const target=path.join(root,"stock-engine-metrics.json");
+// The stock engine's logical game resolution (Settings.Video.WindowWidth/Height).
+const GAME_W=640,GAME_H=400;
 function percentile(v,p){const a=[...v].sort((a,b)=>a-b);return a[Math.min(a.length-1,Math.floor(p*(a.length-1)))];}
 function sizes(){
   return [480,1100,1600];
@@ -39,6 +41,15 @@ async function main(){
       const page=await browser.newPage({viewport:{width,height:980}});
       page.on("console",m=>logs.push(m.type()+": "+m.text()));
       page.on("pageerror",e=>errors.push(String(e.stack||e)));
+      // Pointer lock must stay opt-in: count every request made without the toggle.
+      await page.addInitScript(()=>{
+        window.WCPointerLockRequests=0;
+        const original=Element.prototype.requestPointerLock;
+        Element.prototype.requestPointerLock=function(...args){
+          window.WCPointerLockRequests++;
+          return original.apply(this,args);
+        };
+      });
       const t0=Date.now();
       await page.goto(origin,{waitUntil:"domcontentloaded",timeout:90000});
       await page.waitForFunction(()=>document.body.dataset.runtime==="ready",null,{timeout:90000});
@@ -61,8 +72,25 @@ async function main(){
       const menu=await canvas.screenshot();
       await page.screenshot({path:path.join(root,"stock-menu-"+width+".png")});
       assert(menu.length>1000,"Menu image is too small or blank");
-      await canvas.click({position:{x:Math.max(3,Math.floor((await canvas.boundingBox()).width/2)),
-        y:Math.max(3,Math.floor((await canvas.boundingBox()).height/2))}});
+      // Clicks must reach the engine at the matching game position. The points
+      // lie on the menu background, outside the dialog, so no button fires.
+      const box=await canvas.boundingBox();
+      const clicks=[];
+      for(const [fx,fy] of [[0.1,0.2],[0.9,0.85],[0.15,0.9]]){
+        const marker=await page.evaluate(()=>document.getElementById("log").textContent.length);
+        await canvas.click({position:{x:fx*box.width,y:fy*box.height}});
+        await page.waitForFunction(m=>/\[browser-input\] mouse-down x=-?\d+ y=-?\d+/.test(
+          document.getElementById("log").textContent.slice(m)),marker,{timeout:5000});
+        const line=await page.evaluate(m=>document.getElementById("log").textContent.slice(m)
+          .match(/\[browser-input\] mouse-down x=(-?\d+) y=(-?\d+)/),marker);
+        const got={x:Number(line[1]),y:Number(line[2])},want={x:fx*GAME_W,y:fy*GAME_H};
+        clicks.push({fx,fy,got});
+        assert(Math.abs(got.x-want.x)<=GAME_W*0.03&&Math.abs(got.y-want.y)<=GAME_H*0.03,
+          "Click at canvas fraction "+fx+","+fy+" reached the engine at "+got.x+","+got.y+
+          ", expected about "+Math.round(want.x)+","+Math.round(want.y)+" (width "+width+")");
+      }
+      const pointerLocks=await page.evaluate(()=>window.WCPointerLockRequests);
+      assert.equal(pointerLocks,0,"Pointer lock was requested without the opt-in toggle");
       await page.keyboard.press("ArrowDown");
       await page.waitForTimeout(400);
       const after=await canvas.screenshot();
@@ -96,7 +124,7 @@ async function main(){
       assert.deepEqual(finalAudit.misses.filter(name=>required.has(assetName(name))),[],
         "Boot/menu asset misses during menu soak");
       assert(finalAudit.maxStallMs<=1000,"Main-thread stall exceeded 1000ms during menu soak");
-      metrics.sizes.push({width,timeToMenuMs,stallMs:audit.watchdog.maxStallMs,
+      metrics.sizes.push({width,clicks,timeToMenuMs,stallMs:audit.watchdog.maxStallMs,
         frameP50Ms:percentile(timings,0.5),frameP95Ms:percentile(timings,0.95),
         heapBytesAtMenu:audit.heapBytes,heapBytesAtEnd:endHeap});
       await page.close();

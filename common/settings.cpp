@@ -33,6 +33,17 @@ SettingsClass::SettingsClass()
     Video.Scaler = "nearest";
     Video.Driver = "default";
     Video.PixelFormat = "default";
+
+#ifdef __EMSCRIPTEN__
+    /*
+    ** Browser builds draw into a page canvas. Fullscreen mode and raw input
+    ** would switch SDL to relative mouse mode, which requests pointer lock
+    ** without a user gesture and moves the cursor by deltas instead of to the
+    ** clicked position. Pointer lock stays an explicit opt-in in the launcher.
+    */
+    Mouse.RawInput = false;
+    Video.Windowed = true;
+#endif
 }
 
 void SettingsClass::Load(INIClass& ini)
