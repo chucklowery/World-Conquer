@@ -59,6 +59,17 @@ jobs:
             -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF
       - name: Compile actual VanillaTD engine
         run: cmake --build build/browser-engine --target VanillaTD --parallel 2
+      - name: Generate original M1 boot data
+        run: |
+          cmake -S . -B build/native -G Ninja \
+            -DBUILD_VANILLATD=OFF -DBUILD_VANILLARA=OFF \
+            -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
+            -DOPENAL=OFF -DSDL2=OFF -DNETWORKING=OFF \
+            -DBUILD_TOOLS=ON -DBUILD_TESTS=OFF
+          cmake --build build/native --target vanillamix --parallel 2
+          build/native/tools/mixtool/vanillamix --help
+          node tools/content/test-boot-pack.js
+          node tools/content/boot-pack.js build build/browser-engine/data
       - name: Verify compiled WebAssembly bundle
         run: |
           test -s build/browser-engine/vanillatd.html
@@ -231,6 +242,14 @@ jobs:
             build/browser-engine/mission-pack.js
             build/browser-engine/missions/**
           if-no-files-found: error
+      - name: Upload original M1 boot pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-conquer-boot-pack
+          path: |
+            build/browser-engine/data/**
+          if-no-files-found: ignore
       - name: Upload engine HTML/JS/WASM artifacts
         uses: actions/upload-artifact@v4
         with:
