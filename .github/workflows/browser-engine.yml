@@ -68,6 +68,12 @@ jobs:
             -DBUILD_TOOLS=ON -DBUILD_TESTS=OFF
           cmake --build build/native --target vanillamix --parallel 2
           build/native/vanillamix --help
+          # Phase 1: verify the shared file layer compiles both with and without
+          # asset auditing enabled; the default native configuration is OFF.
+          cmake -S . -B build/native -DWC_ASSET_AUDIT=ON
+          cmake --build build/native --target common --parallel 2
+          cmake -S . -B build/native -DWC_ASSET_AUDIT=OFF
+          cmake --build build/native --target common --parallel 2
           node tools/content/test-boot-pack.js
           node tools/content/boot-pack.js build build/browser-engine/data
           g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
