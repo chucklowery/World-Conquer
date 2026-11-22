@@ -53,7 +53,8 @@
 // Repeated misses are deliberately retained to show retry/loop behavior.
 static void WC_Log_Asset(const char* name, const char* source)
 {
-    if (!name || !*name) return;
+    if (!name || !*name)
+        return;
     if (!source) {
         std::printf("[asset-miss] %s\n", name);
         std::fflush(stdout);
@@ -66,7 +67,6 @@ static void WC_Log_Asset(const char* name, const char* source)
     }
 }
 #endif
-
 
 /***********************************************************************************************
  * CCFileClass::CCFileClass -- Filename based constructor for C&C file.                        *
