@@ -67,7 +67,7 @@ jobs:
             -DOPENAL=OFF -DSDL2=OFF -DNETWORKING=OFF \
             -DBUILD_TOOLS=ON -DBUILD_TESTS=OFF
           cmake --build build/native --target vanillamix --parallel 2
-          build/native/tools/mixtool/vanillamix --help
+          build/native/vanillamix --help
           node tools/content/test-boot-pack.js
           node tools/content/boot-pack.js build build/browser-engine/data
           g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
