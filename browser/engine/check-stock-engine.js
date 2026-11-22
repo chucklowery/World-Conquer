@@ -76,15 +76,26 @@ async function main(){
       assert.equal(audit.audit.fatal,null,"Engine fatal: "+audit.audit.fatal);
       assert(audit.watchdog.maxStallMs<=1000,"Main-thread stall exceeded 1000ms");
       const req=JSON.parse(fs.readFileSync(path.join(root,"data/boot-requirements.json"),"utf8"));
-      const required=new Set(req.files.filter(x=>["boot","menu"].includes(x.requiredFor)).map(x=>x.name));
-      const bad=audit.audit.misses.filter(name=>required.has(name));
+      // The native lookup layer may report lower-case names or absolute MEMFS paths.
+      const assetName=name=>String(name).replace(/\\\\/g,"/").split("/").pop().toUpperCase();
+      const required=new Set(req.files.filter(x=>["boot","menu"].includes(x.requiredFor)).map(x=>assetName(x.name)));
+      const bad=audit.audit.misses.filter(name=>required.has(assetName(name)));
       assert.deepEqual(bad,[],"Boot/menu asset misses");
       const timings=await page.evaluate(()=>new Promise(resolve=>{
         const deltas=[];let prev=performance.now(),start=prev;
         function tick(now){deltas.push(now-prev);prev=now;if(now-start>=30000)resolve(deltas);
           else requestAnimationFrame(tick);}requestAnimationFrame(tick);
       }));
+      // Frame timing samples 30s; memory is sampled a full 60s after menu entry.
+      await page.waitForTimeout(30000);
       const endHeap=await page.evaluate(()=>(window.Module&&window.Module.HEAPU8&&window.Module.HEAPU8.length)||null);
+      assert.equal(errors.length,0,"Page errors during 60s menu soak: "+errors.join("\\n"));
+      const finalAudit=await page.evaluate(()=>({fatal:window.WCAssetAudit.fatal,misses:window.WCAssetAudit.misses,
+        maxStallMs:window.WCWatchdog.maxStallMs}));
+      assert.equal(finalAudit.fatal,null,"Engine fatal during menu soak: "+finalAudit.fatal);
+      assert.deepEqual(finalAudit.misses.filter(name=>required.has(assetName(name))),[],
+        "Boot/menu asset misses during menu soak");
+      assert(finalAudit.maxStallMs<=1000,"Main-thread stall exceeded 1000ms during menu soak");
       metrics.sizes.push({width,timeToMenuMs,stallMs:audit.watchdog.maxStallMs,
         frameP50Ms:percentile(timings,0.5),frameP95Ms:percentile(timings,0.95),
         heapBytesAtMenu:audit.heapBytes,heapBytesAtEnd:endHeap});
