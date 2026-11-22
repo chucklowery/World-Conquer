@@ -77,7 +77,7 @@ minimal CI on `vanilla`.
 
 ### M1: Stock engine runs in the browser (2–4 weeks)
 
-Agent work packages: [`docs/milestones/`](milestones/README.md) (M1-A … M1-F, interleaved with M2).
+Agent instructions: [`docs/milestones/M1-engine-in-browser.md`](milestones/M1-engine-in-browser.md) (a single-session plan).
 
 Finishes the old P2/P3 work.
 
@@ -92,11 +92,14 @@ Finishes the old P2/P3 work.
 - [ ] Display scaling to the canvas, HiDPI, focus/blur pause, pointer
       capture, and edge scrolling.
 - [ ] Measure frame time, WASM size and memory; record the baselines.
+- [ ] A generated, original placeholder boot pack and a `stock-engine` CI job
+      that boots the unmodified engine to its main menu.
 
-**Exit gate:** in Chromium, the unmodified engine shows its main menu, starts
-a scenario, and renders the map, sidebar and radar using the engine's own
-renderer. Selection, movement, building and harvesting all respond, at a
-steady frame rate.
+**Exit gate:** in Chromium on CI, the unmodified engine loads the original
+boot pack, reaches and renders its main menu with its own renderer, responds
+to mouse and keyboard, and never stalls the page for more than 1 s.
+Starting and playing a scenario (map, sidebar, radar, selection, building,
+harvesting) needs M2's data and is verified by M2's exit gate.
 
 ### M2: Minimum original data pack (4–8 weeks; overlaps M1)
 
@@ -121,7 +124,9 @@ The highest-risk milestone. It turns the repository into a game we can ship.
 
 **Exit gate:** the unmodified engine plays a full skirmish start (base,
 harvester, production) on **100% original data**, with zero missing-asset
-lookups, built entirely by CI.
+lookups, built entirely by CI. The map, sidebar and radar render; selection,
+movement, scrolling, building and harvesting respond; and the page never
+stalls for more than 1 s.
 
 ### M3: First playable skirmish (2–4 weeks)
 

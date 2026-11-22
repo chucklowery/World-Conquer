@@ -71,7 +71,7 @@ decoder (pattern: `tests/test-original-shape.cpp`).
 
 ## M2-A: Asset requirements inventory
 
-**Needs:** M1-A (asset audit log) for the dynamic part.
+**Needs:** M1 completed (its asset audit log and `boot-requirements.json`).
 
 Tasks:
 
@@ -85,9 +85,10 @@ Tasks:
      `<NAME>ICON.SHP` (or the engine's actual naming, so verify it); and
      `sprintf` patterns in `init.cpp`, `display.cpp`, `sidebar.cpp`,
      `radar.cpp` and `*data.cpp`.
-2. **Dynamic pass:** run the stock engine through the M1-A audit with an
-   empty `/game`, then with each partial pack as you build it. Every new miss
-   is a requirement.
+2. **Dynamic pass:** start from M1's `game/content/pack/boot-requirements.json`
+   (its `requiredFor:"scenario"` entries are the misses M1 observed). Run
+   the stock engine with each partial pack as you build it; the M1 asset
+   audit log reports every new miss, and each one is a requirement.
 3. Write `game/content/pack/requirements.json`: one entry per file, with
    `name`, `container` (loose or which MIX), `format`, `requiredFor`
    (`boot|menu|scenario|gameplay|optional`), `referencedAt`
@@ -112,7 +113,7 @@ Tasks:
    (built in the same CI job), and writes:
    - `<outDir>/game/…`: the exact `/game` tree the engine expects (loose
      files plus MIX archives);
-   - `<outDir>/pack.json`: the M1-C manifest (`schema`, `packVersion` = git
+   - `<outDir>/pack.json`: the M1 pack-loader manifest (`schema`, `packVersion` = git
      SHA, `files[{path,bytes,sha256}]`);
    - `<outDir>/PROVENANCE.json`: per output file, its sources, creator,
      license and revision.
@@ -120,8 +121,10 @@ Tasks:
    inputs, fixed MIX ordering.
 3. Add a CI job (in `browser-engine.yml` or a new workflow) that builds the
    pack and uploads it as artifact `world-conquer-data-pack`. The
-   `stock-engine` browser job (M1-D) downloads it.
-4. Choose a content license. Default to **CC BY 4.0** for art and data
+   `stock-engine` browser job (from M1) uses it in place of M1's boot pack.
+4. Absorb M1's `tools/content/boot-pack.js` and its encoders into this
+   pipeline rather than keeping two generators.
+5. Choose a content license. Default to **CC BY 4.0** for art and data
    unless the owner says otherwise, record it in `game/content/pack/LICENSE.md`,
    and fail the build when any source lacks attribution.
 
@@ -132,7 +135,8 @@ provenance).
 
 ## M2-C: Boot pack (engine reaches the main menu)
 
-**Needs:** M2-A and M2-B. This unblocks M1-D's menu check.
+**Needs:** M2-A and M2-B. M1's placeholder boot pack already reaches the
+menu; this package replaces it with proper art and the full pipeline.
 
 Tasks:
 
@@ -249,15 +253,21 @@ through the engine's reader.
 
 ## M2-G: Missing-asset gate and end-to-end check
 
-**Needs:** M1-D's `check-stock-engine.js`.
+**Needs:** M1's `check-stock-engine.js` and `stock-engine` CI job. This
+package also completes the scenario part of the roadmap's original M1 gate
+(map scrolling, the scenario-time loops M1 marked "reviewed, unexercised",
+and scenario frame-time metrics).
 
 Tasks:
 
 1. Extend `check-stock-engine.js` with a scripted session on `WCS01`.
-   Through real mouse input on the engine's sidebar, it builds a power plant,
+   Verify map scrolling (keyboard and edge scroll) and that the M1
+   watchdog reports no stall over 1,000 ms during play. Through real mouse
+   input on the engine's sidebar, it builds a power plant,
    lets the harvester complete one round trip (assert the credits display
    changes), produces one infantry unit and one vehicle, and orders them to
-   move and attack. Then it idles for 2 minutes of game time.
+   move and attack. Then it idles for 2 minutes of game time and adds
+   scenario frame-time p50/p95 to `stock-engine-metrics.json`.
 2. Fail on any `[asset-miss]` whose name is marked
    `boot|menu|scenario|gameplay` in `requirements.json`. Report optional
    misses as warnings.

@@ -118,6 +118,9 @@ by the **build** jobs.
 
 ## 5. Workflow for each work package
 
+**Exception for M1:** M1 is a single-session milestone with one branch and
+one PR. Follow its "Session contract" instead of steps 1 and 5 below.
+
 1. Branch from the latest `vanilla`: `git checkout -b m<N>/<wp-id>-<slug>`.
 2. Read the files the work package names. Confirm its prerequisites are
    merged. If they are not, stop and report the work package as blocked.
