@@ -101,7 +101,7 @@ to mouse and keyboard, and never stalls the page for more than 1 s.
 Starting and playing a scenario (map, sidebar, radar, selection, building,
 harvesting) needs M2's data and is verified by M2's exit gate.
 
-Evidence: 2026-11-22 · `96c6738f0d403a6d41671930ca776f9cff2c81a1` · [stock-engine CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45074464722) · Chromium 141.0.7390.37 · menu reached on original boot pack; mouse/keyboard input responsive at 480/1100/1600 px; boot/menu asset misses and fatals zero; max post-startup stall 350.1 ms; 60s heap steady at 17,235,968 bytes.
+Evidence: 2026-11-22 · `f43de4d5433f7fc6c768b45424540addde92070c` · [stock-engine CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45077613546) · headless Chromium (Playwright 1.56.1) · menu reached on original boot pack in 832/855/862 ms at 480/1100/1600 px; three background clicks per width reach the engine at the matching game position (within 3%); keyboard changes the menu selection; no pointer-lock request; zero page errors, fatals and boot/menu misses; max post-startup stall 0 ms; frame p95 16.7 ms; 60 s heap steady at 17,235,968 bytes.
 
 **Deferred validation:** owner-only external-data mission check (not part of M1's original-data CI exit gate), remaining modal loop audit and scenario-only edge scrolling are not marked complete.
 

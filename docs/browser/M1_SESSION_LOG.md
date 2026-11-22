@@ -99,3 +99,24 @@ Commits through `e95273335dd1b8dcca6805529a30783be94ffbc5` on the milestone bran
 - CI also passed native audit ON/OFF compile checks, original pack generation, host decoder harness, browser runtime/legacy demos, and the Linux, Windows, MinGW and macOS build groups.
 - Full M1 **original-data CI exit gate met**. The owner-only proprietary-data mission-1 smoke is intentionally not run by an agent. Empty-MEMFS inventory proof and some optional dialogs/VQA loops remain partial and are tracked above; scenario and map-edge scrolling wait for M2.
 - Post-evidence commits update only docs and log. If their PR CI fails, revert status to partial before merging.
+
+## Review fix: absolute mouse input — 2026-11-22
+
+- Independent review rebuilt the branch locally (Emscripten 3.1.68,
+  Chromium) and found that clicks did not reach the engine at the clicked
+  position. The engine defaulted to fullscreen with raw input, so SDL used
+  relative mouse mode: it requested pointer lock without a user gesture
+  (a page error in newer Chromium) and moved the cursor by deltas. The
+  previous test only checked that the frame changed, so CI stayed green.
+- Fix `f43de4d`: Emscripten builds default to windowed mode with raw input
+  off (`common/settings.cpp`, also seeded in `shell.html`); browser builds
+  log `[browser-input] mouse-down x= y=`; `check-stock-engine.js` clicks
+  three background points per width, requires the engine position to match
+  within 3%, and fails on any pointer-lock request without the toggle.
+- Verified: without the settings fix the new test fails (a click at
+  x=0.1 reached x=271, expected 64); with it, all clicks land within 1 px
+  locally. CI run 45077613546 passed all six workflow groups; frame p95 fell
+  from 33–117 ms to 16.7 ms at every width.
+- Phase 7 mouse mapping and the M1 exit gate are now met. Still open, as
+  before: the empty-data capture (Phase 2), modal/VQA loop exercise
+  (Phase 3), and the owner-only licensed-data check.
