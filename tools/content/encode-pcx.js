@@ -1,7 +1,8 @@
 "use strict";
+const {rgbPalette}=require("./boot-colors.js");
 // Original 8-bit PCX background for high-resolution title mode.
 // Header fields follow common/filepcx.h; RLE follows common/filepcx.cpp.
-function encodePCX(width=640,height=400,index=5){
+function encodePCX(width=640,height=400,index=5,colors=rgbPalette()){
   if(!Number.isInteger(width)||width<1||width>65535||
      !Number.isInteger(height)||height<1||height>65535||
      !Number.isInteger(index)||index<0||index>255)throw Error("Invalid PCX dimensions");
@@ -22,11 +23,14 @@ function encodePCX(width=640,height=400,index=5){
       remaining-=length;
     }
   }
+  if(!Array.isArray(colors)||colors.length!==256)
+    throw Error("PCX requires a 256-entry original indexed palette");
   const palette=Buffer.alloc(769);palette[0]=12;
   for(let i=0;i<256;i++){
-    palette[1+i*3]=i===0?0:37;
-    palette[2+i*3]=i===0?0:80;
-    palette[3+i*3]=i===0?0:100;
+    const rgb=colors[i];
+    if(!Array.isArray(rgb)||rgb.length!==3||rgb.some(x=>!Number.isInteger(x)||x<0||x>255))
+      throw Error("Invalid PCX palette index: "+i);
+    for(let channel=0;channel<3;channel++)palette[1+i*3+channel]=rgb[channel];
   }
   return Buffer.concat([head,Buffer.from(bytes),palette]);
 }
