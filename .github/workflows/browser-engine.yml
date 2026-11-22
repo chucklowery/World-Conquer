@@ -66,6 +66,7 @@ jobs:
           test -s build/browser-engine/vanillatd.wasm
           test -s browser/engine/asset-import.js
           cp browser/engine/asset-import.js build/browser-engine/asset-import.js
+          cp browser/engine/asset-audit.js build/browser-engine/asset-audit.js
           cp browser/engine/original-asset.js build/browser-engine/original-asset.js
           cp browser/engine/wireframe-asset.js build/browser-engine/wireframe-asset.js
           cp browser/engine/cargo-hd.js build/browser-engine/cargo-hd.js
@@ -86,6 +87,7 @@ jobs:
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
       - name: Verify asset loader with synthetic data
         run: |
+          node browser/engine/test-asset-audit.js
           node browser/engine/test-asset-import.js
           node browser/engine/test-original-asset.js
           node browser/engine/test-wireframe-asset.js
