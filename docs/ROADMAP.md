@@ -77,6 +77,8 @@ minimal CI on `vanilla`.
 
 ### M1: Stock engine runs in the browser (2–4 weeks)
 
+Agent work packages: [`docs/milestones/`](milestones/README.md) (M1-A … M1-F, interleaved with M2).
+
 Finishes the old P2/P3 work.
 
 - [ ] Audit every remaining blocking loop and dialog path not covered by the
@@ -97,6 +99,8 @@ renderer. Selection, movement, building and harvesting all respond, at a
 steady frame rate.
 
 ### M2: Minimum original data pack (4–8 weeks; overlaps M1)
+
+Agent work packages: [`docs/milestones/`](milestones/README.md) (M2-A … M2-G).
 
 The highest-risk milestone. It turns the repository into a game we can ship.
 
