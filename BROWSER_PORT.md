@@ -1,13 +1,13 @@
 # Browser Port: Tiberian Dawn (Vanilla Conquer)
 
-> STATUS: Project scaffold and independent SDL2 WebAssembly smoke test only. The real VanillaTD engine is NOT yet compiled for WebAssembly.
+> STATUS (2026-11-22): The real VanillaTD engine compiles to WebAssembly in CI. Playing a scenario in the browser is not yet verified. The authoritative plan is [docs/ROADMAP.md](docs/ROADMAP.md) (ADR-0003: the engine is the RTS, content is an original data pack).
 
 This project adapts the existing Vanilla Conquer C++ engine for desktop web browsers using Emscripten, SDL2, and a browser-compatible lifecycle. Preserve game behavior and keep native builds working.
 
 - Upstream: https://github.com/TheAssemblyArmada/Vanilla-Conquer (branch: vanilla)
 - Starting fork: https://github.com/chucklowery/World-Conquer
 - Plan created: 2026-10-24
-- Roadmap: docs/browser/ROADMAP.md
+- Roadmap: docs/ROADMAP.md (earlier docs/browser/ROADMAP.md is superseded)
 - Architecture: docs/browser/ARCHITECTURE.md
 - Build and verification: docs/browser/BUILD.md
 - Decisions: docs/browser/DECISIONS.md

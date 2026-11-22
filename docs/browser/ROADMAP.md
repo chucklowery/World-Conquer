@@ -1,5 +1,9 @@
 # Browser Port Roadmap
 
+> **SUPERSEDED (2026-11-22):** see [`docs/ROADMAP.md`](../ROADMAP.md) and ADR-0003 in
+> [`DECISIONS.md`](DECISIONS.md). Unfinished P1–P3 items continue as milestone M1.
+> This file is kept as a historical record.
+
 STATUS: Planning. Only check milestones after test evidence is recorded.
 
 ## P0: Fork, native baseline and SDL2 smoke artifact (initial priority)

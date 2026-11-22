@@ -1,5 +1,10 @@
 # World-Conquer RTS execution roadmap
 
+> **SUPERSEDED (2026-11-22):** the R00–R20 roadmap is archived. The authoritative
+> plan is [`docs/ROADMAP.md`](../ROADMAP.md), per ADR-0003 in
+> [`docs/browser/DECISIONS.md`](../browser/DECISIONS.md). Do not start new
+> R-milestones; the prompts and evidence below are kept as historical records.
+
 This directory is a set of **independently executable milestone briefs**, not a
 claim that the full RTS already exists. Start with [MANIFEST.md](MANIFEST.md).
 Each `Rxx-*/PROMPT.md` can be pasted into a fresh coding-agent context without

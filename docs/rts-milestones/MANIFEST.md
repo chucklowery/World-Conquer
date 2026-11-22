@@ -1,5 +1,9 @@
 # Full RTS milestone manifest
 
+> **SUPERSEDED (2026-11-22):** archived register. See [`docs/ROADMAP.md`](../ROADMAP.md)
+> ("Disposition of prior work") for how each R-milestone maps to M0–M7.
+> Statuses below are frozen as recorded and are no longer updated.
+
 **Project:** World-Conquer / browser-native VanillaTD-derived RTS
 
 **Status as of:** 2026-11-16
