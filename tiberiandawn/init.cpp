@@ -43,6 +43,7 @@
 #include "function.h"
 #ifdef __EMSCRIPTEN__
 #include <cstdio>
+#include <emscripten.h>
 #endif
 #include "loaddlg.h"
 #include "common/gitinfo.h"
@@ -280,6 +281,9 @@ bool Init_Game(int, char*[])
     do {
         CCDebugString("C&C95 - About to call Keyboard->Check\n");
         Keyboard->Check();
+#ifdef __EMSCRIPTEN__
+        emscripten_sleep(0); // browser callbacks need a turn while focus is absent
+#endif
     } while (!GameInFocus);
     AllSurfaces.SurfacesRestored = false;
 
