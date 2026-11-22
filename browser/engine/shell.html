@@ -238,6 +238,7 @@ body.hud-active{overflow:hidden}
   </div>
   <footer class="hud-footer"><div id="hud-status-slot"></div><span class="hud-shortcuts">Shift add · Shift+1–9 groups · M/A orders · +/- zoom · R restart</span></footer>
 </div>
+<script src="asset-audit.js"></script>
 <script src="asset-import.js"></script>
 <script src="original-asset.js"></script>
 <script src="wireframe-asset.js"></script>
@@ -540,8 +541,12 @@ body.hud-active{overflow:hidden}
     updateAlphaStatus();
   });
 
+  window.WCAssetAudit = WCAssetAuditParser.create();
+
   function report(message, isError) {
     const value = String(message);
+    WCAssetAuditParser.collect(window.WCAssetAudit, value);
+    if (window.WCAssetAudit.fatal) status("Engine fatal: " + window.WCAssetAudit.fatal, "error");
     log.textContent += (isError ? "[error] " : "") + value + "\n";
     log.scrollTop = log.scrollHeight;
     (isError ? console.error : console.log)(value);
