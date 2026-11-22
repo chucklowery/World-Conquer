@@ -82,6 +82,9 @@ function build(outdir) {
   archive(tool,stage,game,"SOUNDS.MIX",["WCBOOT.DAT"]);
   write(game,"TEMPERAT.PAL",palette);
   write(game,"CONQUER.ENG",strings);
+  // Loose decoder fixtures are also usable by the stock engine's fallback lookup.
+  write(game,"8POINT.FNT",font);
+  write(game,"PREPICK.CPS",cps);
   // Original file names inside a MIX are supplied by the generated archive.
   const provided=new Set(["CCLOCAL.MIX","LOCAL.MIX","CONQUER.MIX","GENERAL.MIX","SOUNDS.MIX",
     "TEMPERAT.PAL","CONQUER.ENG",...fonts,"MOUSE.SHP","BTEXTURE.SHP","PREPICK.CPS"]);
