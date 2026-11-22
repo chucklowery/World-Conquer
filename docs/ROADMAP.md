@@ -70,7 +70,7 @@ and that is recorded as one evidence line (see "Evidence").
       without page errors) and make it the primary browser check. This needs
       a data source, so it lands with the first M2 data slice.
 - [x] Update `BROWSER_PORT.md` and `browser/engine/README.md` to match.
-- [ ] Close the open R20 gate issues (#48, #50) as superseded.
+- [x] Close the open R20 gate issues (#48, #50) as superseded.
 
 **Exit gate:** one roadmap, no contradictory status documents, and a green
 minimal CI on `vanilla`.
