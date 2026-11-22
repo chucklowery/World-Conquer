@@ -87,6 +87,10 @@ Existing checks you must keep passing:
   headless Chromium. Playwright is installed under `browser/engine/node_modules`
   by the workflow.
 
+- `browser/engine/check-stock-engine.js` (CI job `stock-engine`, added in
+  M1): the unmodified engine reaches its menu on generated data, and clicks
+  land at the right game position.
+
 **Known pre-existing CI failure:** the `publish-release` job in the Linux,
 Windows, MinGW and macOS workflows fails with "file_count limited to 1000
 assets per release". It is not caused by your change. Judge platform health
@@ -118,8 +122,9 @@ by the **build** jobs.
 
 ## 5. Workflow for each work package
 
-**Exception for M1:** M1 is a single-session milestone with one branch and
-one PR. Follow its "Session contract" instead of steps 1 and 5 below.
+**Exception for M1 and M2:** each is a single-session milestone with one
+branch and one PR. Follow its "Session contract" instead of steps 1 and 5
+below.
 
 1. Branch from the latest `vanilla`: `git checkout -b m<N>/<wp-id>-<slug>`.
 2. Read the files the work package names. Confirm its prerequisites are

@@ -107,7 +107,7 @@ Evidence: 2026-11-22 · `f43de4d5433f7fc6c768b45424540addde92070c` · [stock-eng
 
 ### M2: Minimum original data pack (4–8 weeks; overlaps M1)
 
-Agent work packages: [`docs/milestones/`](milestones/README.md) (M2-A … M2-G).
+Agent instructions: [`docs/milestones/M2-original-data-pack.md`](milestones/M2-original-data-pack.md) (a single-session plan).
 
 The highest-risk milestone. It turns the repository into a game we can ship.
 

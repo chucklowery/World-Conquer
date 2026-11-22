@@ -13,7 +13,7 @@ never freezes the tab, reports missing files precisely, and is checked by a
 new `stock-engine` CI job.
 
 Starting and playing a scenario is **not** part of M1. It needs terrain,
-units and a scenario file, which M2 produces; M2's final work package (M2-G)
+units and a scenario file, which M2 produces; M2's end-to-end phase
 extends this milestone's CI job to cover it.
 
 ## Session contract (read before starting)
@@ -197,7 +197,7 @@ TODO row with the reason, and continue.
 
 **Purpose:** the smallest set of **original, generated** files that lets the
 stock engine reach its main menu. Ugly is fine: flat colors and simple
-bitmap glyphs. M2-C later replaces this with real art in the full pipeline.
+bitmap glyphs. M2 absorbs this generator into its full pack pipeline.
 
 1. Add `tools/content/boot-pack.js build <outDir>`. Driven by
    `boot-requirements.json`, it writes `<outDir>/game/…` (loose files and
@@ -344,9 +344,9 @@ build jobs stay green.
 ## Handed to M2
 
 - `boot-requirements.json`, including `requiredFor:"scenario"` entries
-  observed in Phase 6 → becomes M2-A's `requirements.json`.
-- `boot-pack.js` and its encoders → absorbed into M2-B's pack pipeline.
-- `check-stock-engine.js` → extended in M2-G to start `WCS01` and play.
+  observed in Phase 6 → becomes M2's `requirements.json`.
+- `boot-pack.js` and its encoders → absorbed into M2's pack pipeline (`tools/content/pack.js`).
+- `check-stock-engine.js` → shared with M2's `check-stock-scenario.js`, which starts a match and plays.
 - Loops marked "reviewed, unexercised" → verified when a scenario runs.
 
 ## Out of scope for M1
