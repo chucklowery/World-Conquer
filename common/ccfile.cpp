@@ -46,12 +46,13 @@
 #include "ccfile.h"
 #ifdef WC_ASSET_AUDIT
 #include <cstdio>
+#include <cstring>
 #include <set>
 #include <string>
 
 // The common file layer is used by both loose-file and registered MIX lookups.
 // Repeated misses are deliberately retained to show retry/loop behavior.
-static void WC_Log_Asset(const char* name, const char* source)
+void WC_Log_Asset(const char* name, const char* source)
 {
     if (!name || !*name)
         return;
@@ -62,7 +63,8 @@ static void WC_Log_Asset(const char* name, const char* source)
     }
     static std::set<std::string> reported;
     if (reported.insert(name).second) {
-        std::printf("[asset-hit] %s %s\n", name, source);
+        const char* base = std::strrchr(source, '/');
+        std::printf("[asset-hit] %s %s\n", name, base ? base + 1 : source);
         std::fflush(stdout);
     }
 }
