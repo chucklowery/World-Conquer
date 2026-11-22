@@ -7,24 +7,70 @@ const {encodeShape}=require("./encode-shape.js");
 const {encodeFont,verifyFont}=require("./encode-font.js");
 const {encodeCPS,decodeCPS}=require("./encode-cps.js");
 const {encodePCX,verifyPCX}=require("./encode-pcx.js");
+const {rgbPalette,toHex}=require("./boot-colors.js");
 const ROOT=path.resolve(__dirname,"../..");
 const REQUIREMENTS=path.join(ROOT,"game/content/pack/boot-requirements.json");
+// Generate a placeholder for every stock TXT_* index from compiled headers,
+// not from proprietary language files. All human-facing words are original.
+function originalText(name) {
+  const labels={
+    TXT_NONE:"",
+    TXT_CREDIT_FORMAT:"Credits: %d",
+    TXT_START_NEW_GAME:"New Game",
+    TXT_LOAD_MISSION:"Load Game",
+    TXT_SAVE_MISSION:"Save Game",
+    TXT_MULTIPLAYER_GAME:"Multiplayer",
+    TXT_INTRO:"Replay Intro",
+    TXT_JUST_INTRO:"Replay Intro",
+    TXT_EXIT_GAME:"Exit",
+    TXT_NEW_MISSIONS:"Extra Missions",
+    TXT_BONUS_MISSIONS:"Extra Missions",
+    TXT_OK:"OK",
+    TXT_CANCEL:"Cancel",
+    TXT_YES:"Yes",
+    TXT_NO:"No",
+    TXT_GDI:"Aster",
+    TXT_NOD:"Forge",
+    TXT_CHOOSE_SIDE:"Choose a Faction",
+    TXT_OPTIONS:"Options",
+    TXT_GAME_CONTROLS:"Controls",
+    TXT_SOUND_CONTROLS:"Audio",
+    TXT_VISUAL_CONTROLS:"Video",
+    TXT_QUIT_MISSION:"Quit Mission",
+    TXT_RESUME_MISSION:"Resume Mission",
+    TXT_FAME:"Records",
+    TXT_SCENARIO_WON:"Victory",
+    TXT_SCENARIO_LOST:"Defeat",
+    TXT_TIBERIUM:"Crystal",
+    TXT_TIBERIUM_ON:"Crystal On",
+    TXT_TIBERIUM_OFF:"Crystal Off"
+  };
+  if(Object.prototype.hasOwnProperty.call(labels,name))return labels[name];
+  return name.slice(4).split("_").map(part=>({
+    GDI:"Aster",NOD:"Forge",TIB:"Crystal",TIBERIUM:"Crystal",
+    CNC:"World",CONQUER:"World",WESTWOOD:"Studio",EA:"World",
+    CHOAM:"Market",JURASSIC:"Ancient"
+  }[part]||part.toLowerCase().replace(/^./,letter=>letter.toUpperCase()))).join(" ");
+}
 function stringTable() {
-  // Extract_String uses the first uint16 offset as the number of entries * 2.
-  // The final index range is reserved for the engine's own InternetTxt table.
-  const count=4567;
-  const pieces=Array.from({length:count},(_,i)=>{
-    const value=i%2?"ASTER":"FORGE";
-    return Buffer.from(value+"\0","ascii");
-  });
+  const header=fs.readFileSync(path.join(ROOT,"tiberiandawn/conquer.h"),"utf8");
+  const definitions=[...header.matchAll(/^\\s*#define\\s+(TXT_[A-Z0-9_]+)\\s+(\\d+)\\b/gm)];
+  if(definitions.length<500)throw Error("Stock TXT_* table is missing or incomplete");
+  const count=Math.max(...definitions.map(match=>Number(match[2])))+1;
+  if(count*2>=65536)throw Error("Stock string offset table exceeds 16-bit limits");
+  const words=Array.from({length:count},()=>"?");
+  for(const [,name,index] of definitions)words[Number(index)]=originalText(name);
+  const pieces=words.map(value=>Buffer.from(value+"\\0","ascii"));
   const table=Buffer.alloc(count*2);
   let offset=table.length;
   for(let i=0;i<count;i++){
+    if(offset>0xFFFF)throw Error("Stock string table exceeds 16-bit offsets");
     table.writeUInt16LE(offset,i*2);
     offset+=pieces[i].length;
   }
   return Buffer.concat([table,...pieces]);
 }
+
 function shape(frames,width,height,color) {
   const pixels=Array.from({length:width*height},(_,i)=>{
     const x=i%width,y=Math.floor(i/width);
@@ -67,11 +113,11 @@ function build(outdir) {
   const game=path.join(outdir,"game"),stage=path.join(outdir,"_m1stage");
   fs.mkdirSync(game,{recursive:true});
   fs.mkdirSync(stage,{recursive:true});
-  const palette=encodePalette({colors:Array.from({length:256},(_,i)=>
-    i===0?"#000000":i%2?"#74DCC3":"#25374A")});
+  const indexedColors=rgbPalette();
+  const palette=encodePalette({colors:indexedColors.map(toHex)});
   const font=encodeFont();verifyFont(font);
   const cps=encodeCPS();if(decodeCPS(cps).length!==64000)throw Error("CPS round-trip failed");
-  const pcx=encodePCX();verifyPCX(pcx);
+  const pcx=encodePCX(640,400,5,indexedColors);verifyPCX(pcx);
   const mouse=shape(16,16,16,15),texture=shape(64,20,20,10);
   const strings=stringTable();
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
