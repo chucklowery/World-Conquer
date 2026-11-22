@@ -45,8 +45,17 @@ async function main(){
       const canvas=page.locator("#canvas");
       await page.screenshot({path:path.join(root,"stock-pre-"+width+".png")});
       await page.locator("#play-stock").click();
-      await page.waitForFunction(()=>document.getElementById("log").textContent.includes("[browser-game] menu.enter"),
-        null,{timeout:120000});
+      try {
+        await page.waitForFunction(()=>document.getElementById("log").textContent.includes("[browser-game] menu.enter"),
+          null,{timeout:45000});
+      } catch (error) {
+        const details=await page.evaluate(()=>({
+          status:document.getElementById("runtime-state").textContent,
+          audit:window.WCAssetAudit,
+          recentLog:document.getElementById("log").textContent.slice(-5000)
+        }));
+        throw Error("Stock menu not reached: "+JSON.stringify(details)+"; "+error.message);
+      }
       const timeToMenuMs=Date.now()-t0;
       await page.evaluate(()=>{window.WCWatchdog.maxStallMs=0;window.WCWatchdog.stalls=[];});
       const menu=await canvas.screenshot();
