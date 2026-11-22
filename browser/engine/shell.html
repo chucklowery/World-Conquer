@@ -824,13 +824,41 @@ body.hud-active{overflow:hidden}
   document.getElementById("select-folder").addEventListener("change", e => stage(e.target.files));
   window.addEventListener("error", e => report(e.message || "Browser error", true));
   window.addEventListener("unhandledrejection", e => report(e.reason || "Unhandled rejection", true));
+  // IDBFS only owns /game/user; generated and imported assets remain ephemeral.
+  function syncUser(populate) {
+    return new Promise((resolve, reject) => {
+      try { Module.FS.syncfs(populate, err => err ? reject(err) : resolve()); }
+      catch (error) { reject(error); }
+    });
+  }
+  async function mountUser() {
+    const fs = Module.FS;
+    try {
+      if (!fs.analyzePath("/game").exists) fs.mkdir("/game");
+      if (!fs.analyzePath("/game/user").exists) fs.mkdir("/game/user");
+      const backend = fs.filesystems && fs.filesystems.IDBFS;
+      if (!backend) throw new Error("IDBFS unavailable");
+      fs.mount(backend, {}, "/game/user");
+      await syncUser(true);
+      report("[browser-game] user settings restored from IDBFS");
+      setInterval(() => syncUser(false).catch(error =>
+        report("[browser-game] user settings sync: " + error.message, true)), 15000);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) syncUser(false).catch(error =>
+          report("[browser-game] user settings sync: " + error.message, true));
+      });
+    } catch (error) {
+      report("[browser-game] user persistence unavailable: " + error.message, true);
+    }
+  }
   window.Module = {
     canvas,
     print: (...args) => report(args.join(" ")),
     printErr: (...args) => report(args.join(" "), true),
     setStatus: message => { if (!ready) status(message || "Loading engine…", "loading"); },
     onAbort: reason => { status("Engine aborted", "error"); report(reason, true); },
-    onRuntimeInitialized: () => {
+    onRuntimeInitialized: async () => {
+      await mountUser();
       ready = true;
       status("Runtime ready; select a mode", "ready");
       report("[browser] Real VanillaTD WASM runtime ready; game main() deferred.");
