@@ -116,6 +116,7 @@ body.hud-active{overflow:hidden}
 <p id="asset-status" class="note" role="status" aria-live="polite">Core game files not verified.</p>
 <button type="button" id="run-asset-probe" disabled>Verify native engine file lookup</button>
 <button type="button" id="play-stock" disabled>Play (original boot pack)</button>
+<button type="button" id="pointer-lock-stock" disabled aria-pressed="false">Pointer lock: off</button>
 <button type="button" id="run-game" disabled>Launch experimental game</button>
 <p class="note warning">First GDI mission test: select <strong>New Game</strong>, choose <strong>GDI</strong>, then watch for <code>[browser-game] scenario</code> in the log. Launch is experimental; missing media or unsupported game data may still fail. Reload to retry.</p>
 <p class="note">Choose an installed game folder and, where available, original <code>gdi</code> CD contents. Root assets go to <code>/game</code>; GDI disc assets to <code>/game/gdi</code>. The original lower-case disc directory is preserved; files are uppercased. Imported data stays local and is cleared on reload.</p>
@@ -333,6 +334,53 @@ body.hud-active{overflow:hidden}
   const unitProbe = document.getElementById("run-unit-probe");
   const game = document.getElementById("run-game");
   const stockPlay = document.getElementById("play-stock");
+  const pointerToggle = document.getElementById("pointer-lock-stock");
+  // Keep the SDL back buffer at the engine's own resolution. Only its CSS
+  // presentation is scaled, so native hit-testing uses the standard SDL path.
+  canvas.style.imageRendering = "pixelated";
+  function sizeStockCanvas() {
+    if (document.body.dataset.mode !== "game") return;
+    canvas.style.width = "100%";
+    canvas.style.height = "auto";
+    if (canvas.width && canvas.height)
+      canvas.style.aspectRatio = canvas.width + " / " + canvas.height;
+    canvas.dataset.devicePixelRatio = String(window.devicePixelRatio || 1);
+  }
+  window.addEventListener("resize", sizeStockCanvas);
+  canvas.addEventListener("contextmenu", event => event.preventDefault());
+  canvas.addEventListener("click", () => canvas.focus());
+  window.addEventListener("keydown", event => {
+    if (document.activeElement === canvas &&
+        ["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," "].includes(event.key))
+      event.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener("mouseleave", event => {
+    if (document.body.dataset.mode !== "game") return;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.min(rect.right - 1, Math.max(rect.left + 1, event.clientX));
+    const y = Math.min(rect.bottom - 1, Math.max(rect.top + 1, event.clientY));
+    canvas.dispatchEvent(new MouseEvent("mousemove", {
+      bubbles: true, clientX: x, clientY: y, buttons: event.buttons
+    }));
+  });
+  pointerToggle.addEventListener("click", async () => {
+    if (document.pointerLockElement === canvas) {
+      document.exitPointerLock();
+    } else {
+      try { await canvas.requestPointerLock(); }
+      catch (error) { report("[browser-game] pointer lock: " + error.message, true); }
+    }
+  });
+  document.addEventListener("pointerlockchange", () => {
+    const locked = document.pointerLockElement === canvas;
+    pointerToggle.textContent = "Pointer lock: " + (locked ? "on" : "off");
+    pointerToggle.setAttribute("aria-pressed", String(locked));
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && document.body.dataset.mode === "game")
+      report("[browser-game] tab hidden; no stock pause API exposed; audio disabled in M1");
+  });
+
   const assetProbe = document.getElementById("run-asset-probe");
   const assetStatus = document.getElementById("asset-status");
   const canvas = document.getElementById("canvas");
@@ -596,6 +644,7 @@ body.hud-active{overflow:hidden}
     unitProbe.disabled = !ready || started;
     game.disabled = !ready || started || loadingAssets || !assetReady;
     stockPlay.disabled = !ready || started || loadingAssets;
+    pointerToggle.disabled = !started || document.body.dataset.mode !== "game";
     assetProbe.disabled = !ready || started || loadingAssets || imported === 0;
   }
   function run(args, mode) {
@@ -603,6 +652,10 @@ body.hud-active{overflow:hidden}
     started = true;
     controls();
     document.body.dataset.mode = mode;
+    if (mode === "game") {
+      sizeStockCanvas();
+      requestAnimationFrame(sizeStockCanvas);
+    }
     const names={"native-slice":"Playing native C++ tactical mission","engine-courier":"Playing engine-owned Courier mission",
       "r02-orders":"Playing native production-unit commands",
       "rts-live":"Playing integrated native RTS match",probe:"SDL2 probe running",
