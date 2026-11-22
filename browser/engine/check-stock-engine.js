@@ -77,7 +77,7 @@ async function main(){
       assert(audit.watchdog.maxStallMs<=1000,"Main-thread stall exceeded 1000ms");
       const req=JSON.parse(fs.readFileSync(path.join(root,"data/boot-requirements.json"),"utf8"));
       // The native lookup layer may report lower-case names or absolute MEMFS paths.
-      const assetName=name=>String(name).replace(/\\\\/g,"/").split("/").pop().toUpperCase();
+      const assetName=name=>String(name).replaceAll(String.fromCharCode(92),"/").split("/").pop().toUpperCase();
       const required=new Set(req.files.filter(x=>["boot","menu"].includes(x.requiredFor)).map(x=>assetName(x.name)));
       const bad=audit.audit.misses.filter(name=>required.has(assetName(name)));
       assert.deepEqual(bad,[],"Boot/menu asset misses");
