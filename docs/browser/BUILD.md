@@ -156,3 +156,37 @@ validate path mapping and native engine file lookup, not functional MIX
 archives, the actual menu or campaign gameplay. If real assets cannot
 be provided privately in a local browser, real-game acceptance stays
 open. The importer caps each file at 512 MiB and each selection at 1 GiB.
+
+## M1: Original boot-pack build and stock-engine launcher (in development)
+
+M1 uses the historical VanillaTD `main()` without browser-mode flags; the
+legacy tactical demos remain frozen. The generated pack contains only original
+CC0 placeholder media; no commercial game assets are required by CI.
+
+After installing and activating emsdk **3.1.68**, build VanillaTD with the
+Emscripten command above. For placeholder archive generation, configure the
+native MIX tool separately:
+
+```bash
+cmake -S . -B build/native -G Ninja \\
+  -DBUILD_VANILLATD=OFF -DBUILD_VANILLARA=OFF \\
+  -DOPENAL=OFF -DSDL2=OFF -DNETWORKING=OFF -DBUILD_TOOLS=ON
+cmake --build build/native --target vanillamix --parallel 2
+node tools/content/test-boot-pack.js
+node tools/content/boot-pack.js build build/browser-engine/data
+cp game/content/pack/boot-requirements.json build/browser-engine/data/boot-requirements.json
+cp browser/engine/asset-audit.js browser/engine/pack-loader.js browser/engine/asset-import.js build/browser-engine/
+python3 -m http.server 8080 --directory build/browser-engine
+```
+
+Open `http://localhost:8080/vanillatd.html` and click **Play (original boot
+pack)**. The pack loader checks each file's size and SHA-256 before writing it
+to MEMFS. Missing/invalid packs fail visibly; users with legally owned files
+can still use **Choose folder** and **Launch experimental game**. Settings
+under `/game/user` use IDBFS when browser storage is available.
+
+Acceptance is `node browser/engine/check-stock-engine.js`: actual
+`[browser-game] menu.enter`, real renderer, responsive mouse/keyboard at
+three sizes and max stall 1,000 ms after startup. A successful build alone
+is **not** acceptance. The separate `stock-engine` CI job uploads screenshots,
+audit logs and metrics. Its result determines M1's status.
