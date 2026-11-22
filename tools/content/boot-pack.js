@@ -38,8 +38,8 @@ function write(dir,name,bytes) {
 function nativeMixer() {
   const guesses=[
     process.env.WC_MIXTOOL,
-    path.join(ROOT,"build/native/tools/mixtool/vanillamix"),
-    path.join(ROOT,"build/native/tools/mixtool/vanillamix.exe")
+    path.join(ROOT,"build/native/vanillamix"),
+    path.join(ROOT,"build/native/vanillamix.exe")
   ].filter(Boolean);
   const tool=guesses.find(p=>fs.existsSync(p));
   if(!tool)throw Error("vanillamix not built; build native tools first or set WC_MIXTOOL");
