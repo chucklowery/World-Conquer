@@ -829,6 +829,16 @@ body.hud-active{overflow:hidden}
       });
       report("[browser-game] verified pack version=" + loaded.manifest.packVersion +
              " files=" + loaded.count);
+      // On a clean profile the stock engine defaults Intro.PlayIntro to true,
+      // sending users directly into the first-run cinematic/scenario branch.
+      // The original boot pack has no movies or scenarios; select the engine's
+      // normal menu through its own configuration, without bypassing main().
+      // Never replace previously restored user settings.
+      const userConfig = "/game/user/conquer.ini";
+      if (!Module.FS.analyzePath(userConfig).exists) {
+        Module.FS.writeFile(userConfig, "[Intro]\\nPlayIntro=no\\n");
+        report("[browser-game] initialized original boot-pack user settings");
+      }
       assetReady = true;
       loadingAssets = false;
       run([], "game");
