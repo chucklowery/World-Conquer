@@ -70,6 +70,7 @@ jobs:
           build/native/tools/mixtool/vanillamix --help
           node tools/content/test-boot-pack.js
           node tools/content/boot-pack.js build build/browser-engine/data
+          cp game/content/pack/boot-requirements.json build/browser-engine/data/boot-requirements.json
       - name: Verify compiled WebAssembly bundle
         run: |
           test -s build/browser-engine/vanillatd.html
@@ -259,6 +260,8 @@ jobs:
             build/browser-engine/vanillatd.js
             build/browser-engine/vanillatd.wasm
             build/browser-engine/asset-import.js
+            build/browser-engine/asset-audit.js
+            build/browser-engine/pack-loader.js
             build/browser-engine/original-asset.js
             build/browser-engine/wireframe-asset.js
             build/browser-engine/cargo-hd.js
@@ -283,3 +286,39 @@ jobs:
           path: build/tactical-alpha-site/**
           include-hidden-files: true
           if-no-files-found: error
+
+
+  stock-engine:
+    name: stock-engine
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    needs: wasm-vanillatd
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve built stock engine
+        uses: actions/download-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: build/browser-engine
+      - name: Retrieve original boot pack
+        uses: actions/download-artifact@v4
+        with:
+          name: world-conquer-boot-pack
+          path: build/browser-engine/data
+      - name: Install headless Chromium
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install chromium
+          npm exec --prefix browser/engine -- playwright install-deps chromium
+      - name: Test unmodified main path to stock menu
+        run: node browser/engine/check-stock-engine.js
+      - name: Publish stock-engine evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-engine-evidence
+          path: |
+            build/browser-engine/stock-*.png
+            build/browser-engine/stock-engine-metrics.json
+            build/browser-engine/stock-engine-audit.log
+          if-no-files-found: ignore
