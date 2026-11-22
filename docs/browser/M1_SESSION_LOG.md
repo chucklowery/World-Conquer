@@ -1,4 +1,4 @@
-# M1 session log
+| 9 | partial | see commits | Owner checklist and build/runtime docs; exit evidence pending || 8 | partial | see commits | stock-engine CI job and metrics driver; not yet green || 7 | partial | see commits | Canvas scaling, focus, pointer and keyboard handling; Chromium checks pending || 6 | not started | see commits | Stock menu has not been observed; not started || 5 | partial | see commits | FNT/CPS/font/shape/palette/ENG boot generator plus host harness; CI pending || 4 | partial | see commits | Pack loader, SHA tests, IDBFS and launcher; browser verification pending || 3 | partial | see commits | Watchdog, guarded yields and VQA skip; Chromium stall gate unverified || 2 | partial | see commits | Static inventory created (40 candidates); empty-data run not observed |# M1 session log
 
 Milestone: `docs/milestones/M1-engine-in-browser.md`
 Branch: `m1/stock-engine-in-browser`
@@ -45,3 +45,33 @@ Commits through `e95273335dd1b8dcca6805529a30783be94ffbc5` on the milestone bran
 - Added fatal diagnostics for browser startup exits via `Prog_End(...,true)`, `Print_Error_Exit`, `Print_Error_End_Exit`, and the mouse initialization failure.
 - Tests: **not run**; repository checkout and Emscripten/Chromium unavailable in the execution environment.
 - Open work: inspect MIX retrieval-only paths for lookup completeness, test `WC_ASSET_AUDIT=ON/OFF` on native builds, run JS parser tests, run pinned WASM build, validate startup fatal coverage and verify launcher behavior in Chromium. Do not mark Phase 1 done until verification.
+
+## Continued session — 2026-11-22
+
+- Phase 1: instrumented MIX lookup/retrieval paths and refined the audit logger.
+  The initial WASM/legacy suite passed on commit `675fb20` and the Linux
+  formatting failure was fixed; verification for later changes is pending.
+- Phase 2: wrote `game/content/pack/boot-requirements.json` with 40
+  candidates. Empty-data Chromium run still unavailable.
+- Phase 3: added requestAnimationFrame watchdog and guarded browser yields in
+  startup focus, menu mouse and gameplay focus loops; missing optional VQA
+  files return immediately. Wrote `M1_PLATFORM_AUDIT.md`.
+- Phase 4: added SHA-256 verifying, path-validating pack loader, Play action,
+  Cache API fallback, IDBFS mount/sync and Node tests.
+- Phase 5: wrote original FNT/CPS encoders, a deterministic MIX/ENG/SHP/PAL
+  placeholder generator, Node determinism test and host LCW decoder harness.
+  CI builds `vanillamix`, stages the original pack, and uploads its files.
+- Phase 7: added responsive aspect scaling, focus, keyboard prevention,
+  contextmenu suppression, edge-pointer clamping and opt-in pointer lock.
+- Phase 8: added `stock-engine` Chromium driver and separate workflow job.
+  Must prove actual `menu.enter` with original data; it has **not** passed yet.
+- Phase 9: wrote owner-only check and updated BUILD/README; roadmap evidence
+  deliberately not ticked before a successful stock CI run.
+- PR: https://github.com/chucklowery/World-Conquer/pull/56 (draft).
+- Commands executed locally in this continuation: none; source changes were
+  committed through the GitHub connector. CI observations include the
+  previously green WASM and legacy jobs and a Linux formatting failure that
+  was fixed. Later checks are pending; no unobserved result is reported green.
+- Open blockers: native audit ON/OFF verification, exact boot requirements,
+  screenshot/input proof, no-fatal/no-miss criterion, watchdog max ≤ 1000 ms,
+  complete frame/heap metrics and green native/legacy CI on the PR head.
