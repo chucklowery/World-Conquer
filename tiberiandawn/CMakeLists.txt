@@ -256,6 +256,7 @@ if(BUILD_VANILLATD)
             "-sASYNCIFY_STACK_SIZE=262144"
             "-sEXPORTED_RUNTIME_METHODS=FS,callMain"
             "-sFORCE_FILESYSTEM=1"
+            "-lidbfs.js"
             "-sALLOW_MEMORY_GROWTH=1"
             "-sASSERTIONS=1"
         )

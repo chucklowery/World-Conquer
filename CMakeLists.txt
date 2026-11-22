@@ -22,6 +22,8 @@ project(VanillaConquer C CXX)
 option(BUILD_REMASTERTD "Build Tiberian Dawn remaster dll." OFF)
 option(BUILD_REMASTERRA "Build Red Alert remaster dll." OFF)
 option(BUILD_VANILLATD "Build Tiberian Dawn executable." ON)
+# Audit stock engine file lookups in browser builds by default.
+option(WC_ASSET_AUDIT "Log stock engine asset hits and misses." ${EMSCRIPTEN})
 option(BUILD_VANILLARA "Build Red Alert executable." ON)
 option(MAP_EDITORTD "Include internal scenario editor in Tiberian Dawn build." OFF)
 option(MAP_EDITORRA "Include internal scenario editor in Red Alert build." OFF)

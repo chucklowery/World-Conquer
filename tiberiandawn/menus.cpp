@@ -35,6 +35,9 @@
 
 #include "function.h"
 #include "common/framelimit.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /*****************************
 **	Function prototypes
@@ -454,6 +457,9 @@ int Do_Menu(char const** strings, bool blue)
  *=========================================================================*/
 int Main_Menu(unsigned int timeout)
 {
+#ifdef __EMSCRIPTEN__
+    std::printf("[browser-game] menu.stage=entered\n");
+#endif
     int scale_factor = Get_Resolution_Factor() + 1;
 
     int D_DIALOG_W = 152 * scale_factor, D_DIALOG_H = 136 * scale_factor, D_DIALOG_X = 85 * scale_factor,
@@ -757,8 +763,19 @@ int Main_Menu(unsigned int timeout)
     Keyboard->Clear();
 
     Fancy_Text_Print(TXT_NONE, 0, 0, CC_GREEN, TBLACK, TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
-    while (Get_Mouse_State() > 0)
+#ifdef __EMSCRIPTEN__
+    std::printf("[browser-game] menu.stage=buttons-initialized\n");
+#endif
+    while (Get_Mouse_State() > 0) {
         Show_Mouse();
+#ifdef __EMSCRIPTEN__
+        Call_Back();
+#endif
+    }
+
+#ifdef __EMSCRIPTEN__
+    std::printf("[browser-game] menu.stage=mouse-ready\n");
+#endif
 
     /*
     **	Main Processing Loop.
@@ -795,7 +812,9 @@ int Main_Menu(unsigned int timeout)
         **	Refresh display if needed.
         */
         if (display) {
-
+#ifdef __EMSCRIPTEN__
+            std::printf("[browser-game] menu.stage=draw-background\n");
+#endif
             /*
             **	Load the background picture.
             */
@@ -807,6 +826,9 @@ int Main_Menu(unsigned int timeout)
             */
             Set_Logic_Page(HidPage);
             Dialog_Box(D_DIALOG_X, D_DIALOG_Y, D_DIALOG_W, D_DIALOG_H);
+#ifdef __EMSCRIPTEN__
+            std::printf("[browser-game] menu.stage=dialog-drawn\n");
+#endif
             Draw_Caption(TXT_NONE, D_DIALOG_X, D_DIALOG_Y, D_DIALOG_W);
 
             Version_Number();
@@ -828,6 +850,9 @@ int Main_Menu(unsigned int timeout)
 
             Set_Logic_Page(SeenBuff);
             startbtn.Draw_All();
+#ifdef __EMSCRIPTEN__
+            std::printf("[browser-game] menu.stage=buttons-drawn\n");
+#endif
             if (ScreenWidth == 320) {
                 // ST - 1/2/2019 5:27PM
                 // ModeX_Blit (SeenBuff.Get_Graphic_Buffer());

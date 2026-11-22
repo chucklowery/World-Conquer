@@ -2174,6 +2174,11 @@ void Play_Movie(char const* name, ThemeType theme, bool clrscrn)
         char palname[_MAX_FNAME + _MAX_EXT];
 
         _makepath(fullname, NULL, NULL, name, ".VQA");
+#ifdef __EMSCRIPTEN__
+        // Missing optional cinematic archives must not stall the stock menu.
+        if (!CCFileClass(fullname).Is_Available())
+            return;
+#endif
         _makepath(palname, NULL, NULL, name, ".VQP");
 #ifdef CHEAT_KEYS
         Mono_Set_Cursor(0, 0);
@@ -2974,6 +2979,9 @@ int VQ_Call_Back(unsigned char*, int)
         while (!GameInFocus) {
             Keyboard->Check();
             Check_For_Focus_Loss();
+#ifdef __EMSCRIPTEN__
+            Call_Back();
+#endif
         }
     }
 #endif

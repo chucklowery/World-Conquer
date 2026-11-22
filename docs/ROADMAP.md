@@ -66,7 +66,7 @@ and that is recorded as one evidence line (see "Evidence").
 - [x] Make the R20 WASM soak and the ASan/UBSan foundation leg run only on
       manual dispatch; per-PR CI keeps the native matrix, WASM build, the
       legacy demo regression and the headless Chromium check.
-- [ ] Add a stock-engine headless smoke test (engine boots to its first frame
+- [x] Add a stock-engine headless smoke test (engine boots to its first frame
       without page errors) and make it the primary browser check. This needs
       a data source, so it lands with the first M2 data slice.
 - [x] Update `BROWSER_PORT.md` and `browser/engine/README.md` to match.
@@ -83,7 +83,7 @@ Finishes the old P2/P3 work.
 
 - [ ] Audit every remaining blocking loop and dialog path not covered by the
       Asyncify yield points in `Call_Back()`, `Frame_Limiter()` and sleeps.
-- [ ] Mount data into MEMFS (later OPFS) before `main()`, with
+- [x] Mount data into MEMFS (later OPFS) before `main()`, with
       case-insensitive lookup.
 - [ ] **Developer-only check:** load a locally owned, legally acquired TD data
       set (never committed or uploaded to CI) to prove the full menu →
@@ -91,8 +91,8 @@ Finishes the old P2/P3 work.
       bugs before M2.
 - [ ] Display scaling to the canvas, HiDPI, focus/blur pause, pointer
       capture, and edge scrolling.
-- [ ] Measure frame time, WASM size and memory; record the baselines.
-- [ ] A generated, original placeholder boot pack and a `stock-engine` CI job
+- [x] Measure frame time, WASM size and memory; record the baselines.
+- [x] A generated, original placeholder boot pack and a `stock-engine` CI job
       that boots the unmodified engine to its main menu.
 
 **Exit gate:** in Chromium on CI, the unmodified engine loads the original
@@ -100,6 +100,10 @@ boot pack, reaches and renders its main menu with its own renderer, responds
 to mouse and keyboard, and never stalls the page for more than 1 s.
 Starting and playing a scenario (map, sidebar, radar, selection, building,
 harvesting) needs M2's data and is verified by M2's exit gate.
+
+Evidence: 2026-11-22 · `f43de4d5433f7fc6c768b45424540addde92070c` · [stock-engine CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45077613546) · headless Chromium (Playwright 1.56.1) · menu reached on original boot pack in 832/855/862 ms at 480/1100/1600 px; three background clicks per width reach the engine at the matching game position (within 3%); keyboard changes the menu selection; no pointer-lock request; zero page errors, fatals and boot/menu misses; max post-startup stall 0 ms; frame p95 16.7 ms; 60 s heap steady at 17,235,968 bytes.
+
+**Deferred validation:** owner-only external-data mission check (not part of M1's original-data CI exit gate), remaining modal loop audit and scenario-only edge scrolling are not marked complete.
 
 ### M2: Minimum original data pack (4–8 weeks; overlaps M1)
 

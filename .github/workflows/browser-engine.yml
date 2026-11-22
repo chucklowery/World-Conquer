@@ -59,6 +59,28 @@ jobs:
             -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF
       - name: Compile actual VanillaTD engine
         run: cmake --build build/browser-engine --target VanillaTD --parallel 2
+      - name: Generate original M1 boot data
+        run: |
+          cmake -S . -B build/native -G Ninja \
+            -DBUILD_VANILLATD=OFF -DBUILD_VANILLARA=OFF \
+            -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
+            -DOPENAL=OFF -DSDL2=OFF -DNETWORKING=OFF \
+            -DBUILD_TOOLS=ON -DBUILD_TESTS=OFF
+          cmake --build build/native --target vanillamix --parallel 2
+          build/native/vanillamix --help
+          # Phase 1: verify the shared file layer compiles both with and without
+          # asset auditing enabled; the default native configuration is OFF.
+          cmake -S . -B build/native -DWC_ASSET_AUDIT=ON
+          cmake --build build/native --target common --parallel 2
+          cmake -S . -B build/native -DWC_ASSET_AUDIT=OFF
+          cmake --build build/native --target common --parallel 2
+          node tools/content/test-boot-pack.js
+          node tools/content/boot-pack.js build build/browser-engine/data
+          g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
+          build/native/test-m1-boot-data \
+            build/browser-engine/data/game/8POINT.FNT \
+            build/browser-engine/data/game/PREPICK.CPS
+          cp game/content/pack/boot-requirements.json build/browser-engine/data/boot-requirements.json
       - name: Verify compiled WebAssembly bundle
         run: |
           test -s build/browser-engine/vanillatd.html
@@ -66,6 +88,8 @@ jobs:
           test -s build/browser-engine/vanillatd.wasm
           test -s browser/engine/asset-import.js
           cp browser/engine/asset-import.js build/browser-engine/asset-import.js
+          cp browser/engine/asset-audit.js build/browser-engine/asset-audit.js
+          cp browser/engine/pack-loader.js build/browser-engine/pack-loader.js
           cp browser/engine/original-asset.js build/browser-engine/original-asset.js
           cp browser/engine/wireframe-asset.js build/browser-engine/wireframe-asset.js
           cp browser/engine/cargo-hd.js build/browser-engine/cargo-hd.js
@@ -86,6 +110,8 @@ jobs:
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
       - name: Verify asset loader with synthetic data
         run: |
+          node browser/engine/test-asset-audit.js
+          node browser/engine/test-pack-loader.js
           node browser/engine/test-asset-import.js
           node browser/engine/test-original-asset.js
           node browser/engine/test-wireframe-asset.js
@@ -227,6 +253,14 @@ jobs:
             build/browser-engine/mission-pack.js
             build/browser-engine/missions/**
           if-no-files-found: error
+      - name: Upload original M1 boot pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-conquer-boot-pack
+          path: |
+            build/browser-engine/data/**
+          if-no-files-found: ignore
       - name: Upload engine HTML/JS/WASM artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -236,6 +270,8 @@ jobs:
             build/browser-engine/vanillatd.js
             build/browser-engine/vanillatd.wasm
             build/browser-engine/asset-import.js
+            build/browser-engine/asset-audit.js
+            build/browser-engine/pack-loader.js
             build/browser-engine/original-asset.js
             build/browser-engine/wireframe-asset.js
             build/browser-engine/cargo-hd.js
@@ -260,3 +296,39 @@ jobs:
           path: build/tactical-alpha-site/**
           include-hidden-files: true
           if-no-files-found: error
+
+
+  stock-engine:
+    name: stock-engine
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    needs: wasm-vanillatd
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve built stock engine
+        uses: actions/download-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: build/browser-engine
+      - name: Retrieve original boot pack
+        uses: actions/download-artifact@v4
+        with:
+          name: world-conquer-boot-pack
+          path: build/browser-engine/data
+      - name: Install headless Chromium
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install chromium
+          npm exec --prefix browser/engine -- playwright install-deps chromium
+      - name: Test unmodified main path to stock menu
+        run: node browser/engine/check-stock-engine.js
+      - name: Publish stock-engine evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-engine-evidence
+          path: |
+            build/browser-engine/stock-*.png
+            build/browser-engine/stock-engine-metrics.json
+            build/browser-engine/stock-engine-audit.log
+          if-no-files-found: ignore

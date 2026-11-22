@@ -19,6 +19,7 @@
 #include "sdl_keymap.h"
 #include "settings.h"
 #include <cmath>
+#include <cstdio>
 #include <SDL.h>
 
 void Focus_Loss();
@@ -81,6 +82,13 @@ void WWKeyboardClassSDL2::Fill_Buffer_From_System(void)
                 y = event.button.y / scale_y;
             }
 
+#ifdef __EMSCRIPTEN__
+            if (event.type == SDL_MOUSEBUTTONDOWN) {
+                // Lets browser tests verify that a click maps to the matching game position.
+                printf("[browser-input] mouse-down x=%d y=%d\n", x, y);
+                fflush(stdout);
+            }
+#endif
             Put_Mouse_Message(key, x, y, event.type == SDL_MOUSEBUTTONDOWN ? false : true);
         } break;
         case SDL_WINDOWEVENT:

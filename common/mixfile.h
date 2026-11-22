@@ -38,6 +38,9 @@
 void Prog_End(const char*, bool);
 bool Force_CD_Available(int);
 void Emergency_Exit(int);
+#ifdef WC_ASSET_AUDIT
+void WC_Log_Asset(const char* name, const char* source);
+#endif
 extern int RequiredCD;
 extern bool RunningAsDLL;
 
@@ -500,7 +503,11 @@ MixFileClass<T, TCRC>::MixFileClass(char const* filename, PKey const* key)
 template <class T, class TCRC> void const* MixFileClass<T, TCRC>::Retrieve(char const* filename)
 {
     void* ptr = 0;
-    Offset(filename, &ptr);
+    const bool found = Offset(filename, &ptr);
+#ifdef WC_ASSET_AUDIT
+    if (!found)
+        WC_Log_Asset(filename, NULL);
+#endif
     return (ptr);
 };
 
@@ -752,7 +759,15 @@ bool MixFileClass<T, TCRC>::Offset(char const* filename, void** realptr, MixFile
     strupr(filename_upper);
     int32_t crc = Calculate_CRC<TCRC>(strupr(filename_upper), int(strlen(filename_upper)));
 
-    return Offset(crc, realptr, mixfile, offset, size);
+    MixFileClass* found = NULL;
+    const bool exists = Offset(crc, realptr, mixfile ? mixfile : &found, offset, size);
+#ifdef WC_ASSET_AUDIT
+    if (exists) {
+        const MixFileClass* archive = mixfile ? *mixfile : found;
+        WC_Log_Asset(filename, archive && archive->Filename ? archive->Filename : "MIX");
+    }
+#endif
+    return exists;
 }
 
 template <class T, class TCRC>

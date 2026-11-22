@@ -44,6 +44,31 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 #include <errno.h>
 #include "ccfile.h"
+#ifdef WC_ASSET_AUDIT
+#include <cstdio>
+#include <cstring>
+#include <set>
+#include <string>
+
+// The common file layer is used by both loose-file and registered MIX lookups.
+// Repeated misses are deliberately retained to show retry/loop behavior.
+void WC_Log_Asset(const char* name, const char* source)
+{
+    if (!name || !*name)
+        return;
+    if (!source) {
+        std::printf("[asset-miss] %s\n", name);
+        std::fflush(stdout);
+        return;
+    }
+    static std::set<std::string> reported;
+    if (reported.insert(name).second) {
+        const char* base = std::strrchr(source, '/');
+        std::printf("[asset-hit] %s %s\n", name, base ? base + 1 : source);
+        std::fflush(stdout);
+    }
+}
+#endif
 
 /***********************************************************************************************
  * CCFileClass::CCFileClass -- Filename based constructor for C&C file.                        *
@@ -321,24 +346,26 @@ int CCFileClass::Size(void)
  *=============================================================================================*/
 int CCFileClass::Is_Available(int)
 {
-    /*
-    **	A file that is open is presumed available.
-    */
-    if (Is_Open())
-        return (true);
-
-    /*
-    **	A file that is part of a mixfile is also presumed available.
-    */
-    if (MixFileClass<CCFileClass>::Offset(File_Name())) {
+    if (Is_Open()) {
+#ifdef WC_ASSET_AUDIT
+        WC_Log_Asset(File_Name(), "loose");
+#endif
         return (true);
     }
 
-    /*
-    **	Otherwise a manual check of the file system is required to
-    **	determine if the file is actually available.
-    */
-    return (CDFileClass::Is_Available());
+    MixFileClass<CCFileClass>* mixfile = NULL;
+    if (MixFileClass<CCFileClass>::Offset(File_Name(), NULL, &mixfile)) {
+#ifdef WC_ASSET_AUDIT
+        WC_Log_Asset(File_Name(), mixfile && mixfile->Filename ? mixfile->Filename : "MIX");
+#endif
+        return (true);
+    }
+
+    const int available = CDFileClass::Is_Available();
+#ifdef WC_ASSET_AUDIT
+    WC_Log_Asset(File_Name(), available ? "loose" : NULL);
+#endif
+    return available;
 }
 
 /***********************************************************************************************
@@ -422,7 +449,15 @@ int CCFileClass::Open(int rights)
     **	upgrade files to work.
     */
     if ((rights & WRITE) || CDFileClass::Is_Available()) {
-        return (CDFileClass::Open(rights));
+        const int result = CDFileClass::Open(rights);
+#ifdef WC_ASSET_AUDIT
+        if (rights & WRITE) {
+            // Writing an output file is not a required asset lookup.
+        } else {
+            WC_Log_Asset(File_Name(), result ? "loose" : NULL);
+        }
+#endif
+        return result;
     }
 
     /*
@@ -436,6 +471,9 @@ int CCFileClass::Open(int rights)
     if (MixFileClass<CCFileClass>::Offset(File_Name(), &pointer, &mixfile, &start, &length)) {
 
         assert(mixfile != NULL);
+#ifdef WC_ASSET_AUDIT
+        WC_Log_Asset(File_Name(), mixfile && mixfile->Filename ? mixfile->Filename : "MIX");
+#endif
 
         /*
         **	If the mixfile is located on disk, then fake out the file system to read from
@@ -469,7 +507,11 @@ int CCFileClass::Open(int rights)
         **	The file cannot be found in any mixfile, so it must reside as
         ** an individual file on the disk. Or else it is just plain missing.
         */
-        return (CDFileClass::Open(rights));
+        const int result = CDFileClass::Open(rights);
+#ifdef WC_ASSET_AUDIT
+        WC_Log_Asset(File_Name(), result ? "loose" : NULL);
+#endif
+        return result;
     }
     return (true);
 }
