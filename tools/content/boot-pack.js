@@ -52,12 +52,14 @@ function archive(tool,workdir,game,name,entries) {
   const run=cp.spawnSync(tool,args,{encoding:"utf8"});
   if(run.error||run.status!==0)throw Error("MIX create "+name+": "+(run.error||run.stderr||run.stdout));
   // RawFileClass inside vanillamix normalizes the output basename to
-  // lowercase on POSIX. The browser manifest and MEMFS require uppercase.
+  // lowercase on POSIX. Ask vanillamix to list it *before* renaming because
+  // its reader applies the same normalization to its path argument.
   const emitted=path.join(game,name.toLowerCase());
-  if(!fs.existsSync(dest)&&fs.existsSync(emitted))fs.renameSync(emitted,dest);
-  if(!fs.existsSync(dest))throw Error("MIX output not found: "+name);
-  const listing=cp.spawnSync(tool,["--list",dest],{encoding:"utf8"});
+  const source=fs.existsSync(emitted)?emitted:dest;
+  if(!fs.existsSync(source))throw Error("MIX output not found: "+name);
+  const listing=cp.spawnSync(tool,["--list",source],{encoding:"utf8"});
   if(listing.error||listing.status!==0)throw Error("MIX list "+name+" failed");
+  if(source!==dest)fs.renameSync(source,dest);
 }
 function build(outdir) {
   const requirements=JSON.parse(fs.readFileSync(REQUIREMENTS,"utf8"));
