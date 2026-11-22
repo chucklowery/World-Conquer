@@ -70,6 +70,10 @@ jobs:
           build/native/tools/mixtool/vanillamix --help
           node tools/content/test-boot-pack.js
           node tools/content/boot-pack.js build build/browser-engine/data
+          g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
+          build/native/test-m1-boot-data \
+            build/browser-engine/data/game/8POINT.FNT \
+            build/browser-engine/data/game/PREPICK.CPS
           cp game/content/pack/boot-requirements.json build/browser-engine/data/boot-requirements.json
       - name: Verify compiled WebAssembly bundle
         run: |
