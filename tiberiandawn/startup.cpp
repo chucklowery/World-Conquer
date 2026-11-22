@@ -593,6 +593,10 @@ void Prog_End(const char* why, bool fatal) // Added why and fatal parameters. ST
         GlyphX_Debug_Print(why);
     }
     if (fatal) {
+#ifdef __EMSCRIPTEN__
+        printf("[browser-game] fatal=%s\n", why ? why : "engine shutdown");
+        fflush(stdout);
+#endif
         *((int*)0) = 0;
     }
 
@@ -620,6 +624,10 @@ void Prog_End(const char* why, bool fatal) // Added why and fatal parameters. ST
 
 void Print_Error_End_Exit(char* string)
 {
+#ifdef __EMSCRIPTEN__
+    printf("[browser-game] fatal=%s\n", string ? string : "startup error");
+    fflush(stdout);
+#endif
     printf("%s\n", string);
     Keyboard->Get();
     Prog_End();
@@ -631,6 +639,10 @@ void Print_Error_End_Exit(char* string)
 
 void Print_Error_Exit(char* string)
 {
+#ifdef __EMSCRIPTEN__
+    printf("[browser-game] fatal=%s\n", string ? string : "startup error");
+    fflush(stdout);
+#endif
     printf("%s\n", string);
     if (!RunningAsDLL) {
         exit(1);
