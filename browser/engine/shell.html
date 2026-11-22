@@ -836,7 +836,7 @@ body.hud-active{overflow:hidden}
       // Never replace previously restored user settings.
       const userConfig = "/game/user/conquer.ini";
       if (!Module.FS.analyzePath(userConfig).exists) {
-        Module.FS.writeFile(userConfig, "[Intro]\\nPlayIntro=no\\n");
+        Module.FS.writeFile(userConfig, "[Intro]\nPlayIntro=no\n");
         report("[browser-game] initialized original boot-pack user settings");
       }
       assetReady = true;
