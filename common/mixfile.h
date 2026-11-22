@@ -503,9 +503,10 @@ MixFileClass<T, TCRC>::MixFileClass(char const* filename, PKey const* key)
 template <class T, class TCRC> void const* MixFileClass<T, TCRC>::Retrieve(char const* filename)
 {
     void* ptr = 0;
-    Offset(filename, &ptr);
+    const bool found = Offset(filename, &ptr);
 #ifdef WC_ASSET_AUDIT
-    if (!ptr) WC_Log_Asset(filename, NULL);
+    if (!found)
+        WC_Log_Asset(filename, NULL);
 #endif
     return (ptr);
 };
