@@ -25,7 +25,7 @@ assert.equal(wordAt(64),"Exit");
 assert.equal(wordAt(33),"Aster");
 assert.equal(wordAt(34),"Forge");
 assert.equal(wordAt(210),"Multiplayer");
-assert.doesNotMatch(eng.toString("ascii"),/\\b(?:GDI|Nod|Tiberium|Command & Conquer)\\b/i);
+assert.doesNotMatch(eng.toString("ascii"),/\b(?:GDI|Nod|Tiberium|Command & Conquer)\b/i);
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"wc-m1-"));
 try{
   const a=build(path.join(tmp,"first")),b=build(path.join(tmp,"second"));
