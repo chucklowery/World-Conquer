@@ -54,13 +54,13 @@ function originalText(name) {
 }
 function stringTable() {
   const header=fs.readFileSync(path.join(ROOT,"tiberiandawn/conquer.h"),"utf8");
-  const definitions=[...header.matchAll(/^\\s*#define\\s+(TXT_[A-Z0-9_]+)\\s+(\\d+)\\b/gm)];
+  const definitions=[...header.matchAll(/^\s*#define\s+(TXT_[A-Z0-9_]+)\s+(\d+)\b/gm)];
   if(definitions.length<500)throw Error("Stock TXT_* table is missing or incomplete");
   const count=Math.max(...definitions.map(match=>Number(match[2])))+1;
   if(count*2>=65536)throw Error("Stock string offset table exceeds 16-bit limits");
   const words=Array.from({length:count},()=>"?");
   for(const [,name,index] of definitions)words[Number(index)]=originalText(name);
-  const pieces=words.map(value=>Buffer.from(value+"\\0","ascii"));
+  const pieces=words.map(value=>Buffer.from(value+"\0","ascii"));
   const table=Buffer.alloc(count*2);
   let offset=table.length;
   for(let i=0;i<count;i++){
