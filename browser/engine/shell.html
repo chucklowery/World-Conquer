@@ -542,6 +542,22 @@ body.hud-active{overflow:hidden}
   });
 
   window.WCAssetAudit = WCAssetAuditParser.create();
+  // Main-thread heartbeat: gaps expose synchronous engine loops that Asyncify
+  // has not yet made cooperative. Keep the maximum for Chromium acceptance.
+  window.WCWatchdog = { maxStallMs: 0, stalls: [] };
+  let lastFrame = performance.now();
+  function watchdogTick(now) {
+    const gap = now - lastFrame;
+    if (gap > 250) {
+      window.WCWatchdog.maxStallMs = Math.max(window.WCWatchdog.maxStallMs, gap);
+      window.WCWatchdog.stalls.push(gap);
+      report("[browser-watchdog] stall=" + Math.round(gap));
+    }
+    lastFrame = now;
+    requestAnimationFrame(watchdogTick);
+  }
+  requestAnimationFrame(watchdogTick);
+
 
   function report(message, isError) {
     const value = String(message);
@@ -558,8 +574,9 @@ body.hud-active{overflow:hidden}
     }
   }
   function status(message, kind) {
-    state.textContent = message;
-    document.body.dataset.runtime = kind;
+    state.textContent = window.WCAssetAudit.fatal && kind !== "error"
+      ? "Engine fatal: " + window.WCAssetAudit.fatal : message;
+    document.body.dataset.runtime = window.WCAssetAudit.fatal ? "error" : kind;
   }
   function controls() {
     mapChoice.disabled=started||preparingCourier;
