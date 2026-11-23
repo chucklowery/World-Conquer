@@ -2,6 +2,11 @@ name: Browser VanillaTD engine compile
 
 on:
   workflow_dispatch:
+    inputs:
+      legacy_soak:
+        description: Run the frozen legacy demo soak (5 minutes per map) in wasm-vanillatd
+        type: boolean
+        default: true
   push:
     branches: [vanilla]
     paths:
@@ -228,13 +233,15 @@ jobs:
       # thresholds, and retained raw JSON for three independent SHA-matched runs.
       - name: Test actual engine in headless Chromium
         env:
-          BROWSER_CI_FAST: ${{ github.event_name == 'pull_request' && '1' || '0' }}
-          R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'workflow_dispatch' && '48' || '0' }}
+          # Manual runs soak the frozen legacy demos unless legacy_soak is off
+          # (then they run in the fast mode used on pull requests).
+          BROWSER_CI_FAST: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && !inputs.legacy_soak)) && '1' || '0' }}
+          R20_WASM_SOAK_EPOCHS: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '48' || '0' }}
           # Manual candidate runs require at least 5 real minutes *per map*;
           # vanilla-push runs are regression-only, not soak evidence.
-          R20_WASM_SOAK_SECONDS_PER_MAP: ${{ github.event_name == 'workflow_dispatch' && '300' || '0' }}
-          R20_WASM_MAX_TICK_P95_US: ${{ github.event_name == 'workflow_dispatch' && '50000' || '0' }}
-          R20_WASM_MAX_HEAP_DELTA_BYTES: ${{ github.event_name == 'workflow_dispatch' && '16777216' || '0' }}
+          R20_WASM_SOAK_SECONDS_PER_MAP: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '300' || '0' }}
+          R20_WASM_MAX_TICK_P95_US: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '50000' || '0' }}
+          R20_WASM_MAX_HEAP_DELTA_BYTES: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '16777216' || '0' }}
         run: |
           node browser/engine/check-r01-ui.js
           node browser/engine/check-runtime.js
