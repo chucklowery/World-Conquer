@@ -24,18 +24,24 @@ function validate(input){
     throw Error("Invalid temperate map bounds");
   if(!input.terrain||![0,1].includes(input.terrain.fill)||!Array.isArray(input.terrain.cells))
     throw Error("Invalid terrain grid");
+  const inMap=at=>{
+    const index=cell(at),[x,y]=at,{map}=input;
+    if(x<map.x||y<map.y||x>=map.x+map.width||y>=map.y+map.height)
+      throw Error("Feature outside playable map bounds at cell "+index);
+    return index;
+  };
   if(!Array.isArray(input.waypoints)||input.waypoints.length<2||!Array.isArray(input.overlays)||
      !Array.isArray(input.trees)||!Array.isArray(input.units))throw Error("Invalid scenario features");
   input.terrain.cells.forEach(e=>{
-    cell(e.at);
+    inMap(e.at);
     if(![0,1].includes(e.template)||!Number.isInteger(e.icon)||e.icon<0||e.icon>255)
       throw Error("Invalid terrain template/icon");
   });
   for(const e of [...input.overlays,...input.trees]){
-    cell(e.at);identifier(e.type);
+    inMap(e.at);identifier(e.type);
   }
-  input.waypoints.forEach((p,i)=>{cell(p);if(i>=8)throw Error("Waypoints limited to 8");});
-  input.units.forEach(u=>{cell(u.at);identifier(u.house);identifier(u.type);});
+  input.waypoints.forEach((p,i)=>{inMap(p);if(i>=8)throw Error("Waypoints limited to 8");});
+  input.units.forEach(u=>{inMap(u.at);identifier(u.house);identifier(u.type);});
   return input;
 }
 function generate(input){
