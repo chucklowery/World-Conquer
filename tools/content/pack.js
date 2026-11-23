@@ -12,7 +12,7 @@ function build(outdir){
   fs.mkdirSync(outdir,{recursive:true});
   buildBoot(outdir);
   const wireframeStage=path.join(outdir,"_wireframes");
-  require("./wireframes.js").build(wireframeStage);
+  require("./wireframes.js").build(wireframeStage,undefined,true);
   const generated=JSON.parse(fs.readFileSync(path.join(wireframeStage,"manifest.json"),"utf8")).assets;
   // One name may belong to several engine types. Select the largest frame
   // contract so a smaller placeholder cannot hide an out-of-range lookup.
