@@ -281,7 +281,8 @@ function build(destination, selectedIds, houseRemap=false) {
       for(let i=0;i<a.provisionalFrameCount;i++)frames.push({width:a.width,height:a.height,pixels:paint(a,i)});
       provenance={creator:"World-Conquer project",license:"CC0-1.0",source:"procedural wireframe",revision:"1"};
     }
-    if(houseRemap)frames=frames.map((f,i)=>({...f,pixels:paintHouseBand(a,f.pixels,i)}));
+    // Finished art owns its palette mapping; add procedural house-band only to placeholders.
+    if(houseRemap&&!fs.existsSync(finalDir))frames=frames.map((f,i)=>({...f,pixels:paintHouseBand(a,f.pixels,i)}));
     const bytes=encodeTacticalShape({frames});
     const relative=`${a.category}/${a.id}.SHP`;
     const file=path.join(dir,"files",relative);
@@ -319,7 +320,7 @@ function build(destination, selectedIds, houseRemap=false) {
       frames=Array.from({length:spec.frames},(_,frame)=>({width:spec.width,height:spec.height,pixels:factory(frame,true,spec.frames)}));
       provenance={creator:"World-Conquer project",license:"CC0-1.0",source:"procedural buildup animation",revision:"1"};
     }
-    if(houseRemap)frames=frames.map((f,i)=>({...f,pixels:paintHouseBand(
+    if(houseRemap&&!fs.existsSync(finalDir))frames=frames.map((f,i)=>({...f,pixels:paintHouseBand(
       {category:"building",width:spec.width,height:spec.height},f.pixels,i)}));
     const bytes=encodeTacticalShape({frames}), relative="building/FACTMAKE.SHP";
     fs.writeFileSync(path.join(dir,"files",relative),bytes);
