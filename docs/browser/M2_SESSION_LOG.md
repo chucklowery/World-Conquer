@@ -26,3 +26,12 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - CI: https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml (PR #57 run pending at this checkpoint).
 - Path decision: **provisional Skirmish**, pending a successful click-path observation. Multiplayer scenario scanning uses `SCM*EA.INI` (initial M1 audit names `scm94ea.ini`–`scm99ea.ini`). New Game and `SCG01EA` remain the prescribed fallback only after runtime evidence.
 - Open issues: probe audit not yet inspected; building/production/credits hooks need WASM compilation verification; scenario files are intentionally absent from M1 boot pack, and no generated map has been created in M2a.
+
+### Phase 2 — unified pack build
+
+- Status: **partial** (generator, deterministic-build test and CI wiring committed; CI results and Phase 1 audit not yet available).
+- Commit SHA: `02882304998080b6bde204f56e7f703434359a6b` (implementation checkpoint; log commit follows).
+- Commands/results: `node tools/content/test-pack.js` and `node tools/content/pack.js build build/browser-engine/data` added to `wasm-vanillatd`; `world-conquer-data-pack` is the new shared artifact used by `stock-engine` and `stock-scenario`. Local tests unavailable without the native `vanillamix` binary. Determinism/provenance checks execute in CI.
+- CI: https://github.com/chucklowery/World-Conquer/pull/57/checks (pending).
+- Coverage: `coverage.json` reports produced/required totals by boot, menu, scenario, gameplay and missing names. Requirements were copied from the M1 inventory as the first stage; scenario-path misses will be added after the probe audit is available.
+- Open issues: `boot-pack.js` remains a compatibility generator used by `pack.js`; phase 3 still needs object placeholders and additional loader contracts.
