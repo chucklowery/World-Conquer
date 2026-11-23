@@ -35,3 +35,21 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - CI: https://github.com/chucklowery/World-Conquer/pull/57/checks (pending).
 - Coverage: `coverage.json` reports produced/required totals by boot, menu, scenario, gameplay and missing names. Requirements were copied from the M1 inventory as the first stage; scenario-path misses will be added after the probe audit is available.
 - Open issues: `boot-pack.js` remains a compatibility generator used by `pack.js`; phase 3 still needs object placeholders and additional loader contracts.
+
+### Phase 3 — universal engine placeholders
+
+- Status: **partial** (source implementation committed, but no completed CI/audit result yet).
+- Commit SHA: `bdc18832422b31762fb358ab3ba1d104cadc0c90` (latest phase implementation checkpoint; log commit follows).
+- Commands/results: `pack.js` now invokes `wireframes.js` with house remapping, chooses the greatest frame count for shared filenames, copies source-generated `.SHP` shapes into the pack, and adds a CC0 skirmish-picker probe INI `SCM94EA.INI`. `requirements.json` now includes 219 unique provisional tactical-shape contracts plus the scenario picker fixture. JavaScript source syntax checks passed via V8. Runtime/binary tests remain pending in CI.
+- CI: https://github.com/chucklowery/World-Conquer/pull/57/checks (unconfirmed at this checkpoint).
+- Remap indices: `tiberiandawn/const.cpp` `RemapGold` versus `RemapRed` differ at palette indices **176–191**. The pack-only wireframe generator paints a nontransparent central band with indices in this range for building, unit, infantry and aircraft placeholders.
+- Open issues: no confirmed Chromium `scenario.request` observation; no verified non-SHP theater/icon-set encoder (Phase 4, M2b); not all runtime-demanded UI and effect assets can be classified without the probe audit.
+
+### M2a handoff (provisional; gate not yet established)
+
+- Path: **Skirmish** is the default and is wired through `Select_MPlayer_Game`, `Com_Scenario_Dialog`, and the original `SCM94EA.INI` picker fixture. The runtime still must confirm this choice; only fall back to New Game if Skirmish is unfixably blocked using allowed guarded changes.
+- Scenario names: `SCM94EA.INI` is the source-owned dialog fixture. `SCM*EA.INI` is scanned by `mplayer.cpp:640-673`; M2b must replace the stub with a valid generated multiplayer scenario and BIN.
+- Remaining misses by kind: **theater** — TEMPERAT icon/MIX contracts not yet generated; **roster** — shapes supplied provisionally, exact slice frame contracts unverified; **UI** — names not yet classified by a successful audit; **effects** — engine-named shape placeholders supplied, runtime coverage unverified; **other** — optional audio/movie omitted, extra scenario requests unknown.
+- Format gaps: theater icon-set remains scheduled for M2b Phase 4; absent cinematics/audio must remain non-fatal; no proprietary content used.
+- Engine behavior: multiplayer scenario picker scans scenario numbers 0–99, requires the corresponding INI to list its `[Basic] Name`; the initial boot inventory contained no scenario-path files. Browser hooks are restricted to test instrumentation.
+- Critical next check: get a completed `wasm-vanillatd`, `stock-engine`, and `stock-scenario` run on the final M2a head; inspect its uploaded `stock-scenario-audit.json` before claiming the M2a gate. Do not start M2b while the M2a gate is unverified.
