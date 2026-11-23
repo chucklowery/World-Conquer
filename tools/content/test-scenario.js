@@ -25,13 +25,18 @@ for(const field of ["cells","overlays","trees","waypoints","units"]){
     {...source,[field]:[first,...base.slice(1)]};
   assert.throws(()=>generate(broken),/Cell must lie/,"grid bounds: "+field);
 }
-const enclosed={...source,map:{...source.map,x:10,y:10,width:20,height:20}};
+// Isolate each feature category so an unrelated invalid feature cannot mask it.
+const enclosed={...source,map:{...source.map,x:10,y:10,width:20,height:20},
+  terrain:{...source.terrain,cells:[]},waypoints:[[12,12],[13,13]],
+  overlays:[],trees:[],units:[]};
+assert.doesNotThrow(()=>generate(enclosed));
 for(const field of ["cells","overlays","trees","waypoints","units"]){
-  const value=field==="cells"?source.terrain.cells:source[field];
-  if(!value.length)continue;
-  const moved=field==="waypoints"?[53,53]:{...value[0],at:[53,53]};
-  const invalid=field==="cells"?{...enclosed,terrain:{...source.terrain,cells:[moved]}}:
-    {...enclosed,[field]:[moved,...value.slice(1)]};
+  const changed=field==="waypoints"?[12,53]:{at:[12,53],type:"TI1",template:0,icon:0,house:"GoodGuy"};
+  const invalid=field==="cells"?
+    {...enclosed,terrain:{...enclosed.terrain,cells:[changed]}}:
+    field==="waypoints"?
+      {...enclosed,waypoints:[[12,12],changed]}:
+      {...enclosed,[field]:[changed]};
   assert.throws(()=>generate(invalid),/outside playable map/,"map bounds: "+field);
 }
 assert.deepEqual(generate(source),generate(source),"generator must be deterministic");
