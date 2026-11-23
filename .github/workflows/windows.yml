@@ -148,6 +148,15 @@ jobs:
           pattern: vanilla-conquer-*
           path: artifact
           merge-multiple: true
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          path: ci-scripts
+      - name: Remove superseded builds from the rolling release
+        if: ${{ github.ref == 'refs/heads/vanilla' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ci-scripts/.github/scripts/prune-release-assets.sh latest "${{ github.sha }}" artifact
       - uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref == 'refs/heads/vanilla' && 'Development Build' || github.ref_name }}
