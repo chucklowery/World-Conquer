@@ -1410,7 +1410,7 @@ bool Select_Game(bool fade)
         Special.IsFromInstall = 0;
         CCDebugString("C&C95 - Starting scenario.\n");
 #ifdef __EMSCRIPTEN__
-        std::printf("[browser-event] scenario-start name=%s type=%d\\n", Scen.ScenarioName, (int)GameToPlay);
+        std::printf("[browser-event] scenario-start name=%s type=%d\n", Scen.ScenarioName, (int)GameToPlay);
         std::fflush(stdout);
         std::printf("[browser-game] scenario.request=%s\n", Scen.ScenarioName);
 #endif
