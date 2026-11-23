@@ -400,6 +400,19 @@ async function main(){
       if(!(await ended())&&(m%5===0||m===observe))await screenshot("observe-"+m+"m");
     }
     const end=await ended();
+    if(observe&&process.env.STOCK_SCENARIO_REQUIRE_END==="1"){
+      if(!end)throw Error("The match did not end within "+observe+" minutes");
+      // The computer player must have played: built a base, harvested and
+      // fought (guarded engine events; the human player idles).
+      const text=await logText();
+      const others=re=>[...text.matchAll(re)].filter(m=>m[1]!==playerHouse&&m[1]!=="none").length;
+      const ai={placed:others(/\[browser-event\] placed name=\S+ house=(\S+)/g),
+        harvestUnloads:others(/\[browser-event\] harvest-unload house=(\S+)/g),
+        kills:others(/\[browser-event\] killed name=\S+ house=\S+ by=(\S+)/g)};
+      audit.computerPlayer=ai;
+      if(ai.placed<3||ai.harvestUnloads<1||ai.kills<1)
+        throw Error("The computer player did not build, harvest and attack: "+JSON.stringify(ai));
+    }
     if(end){
       // The end-of-match score screen (score.cpp Multi_Score_Presentation)
       // waits for a click, then the game returns to the main menu.
@@ -513,5 +526,6 @@ async function main(){
   if(audit.deployAttempts)console.log("Deploy attempts:",JSON.stringify(audit.deployAttempts));
   if(audit.houses)console.log("Houses:",JSON.stringify(audit.houses));
   if(audit.matchEnd)console.log("Match end:",JSON.stringify(audit.matchEnd));
+  if(audit.computerPlayer)console.log("Computer player:",JSON.stringify(audit.computerPlayer));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});

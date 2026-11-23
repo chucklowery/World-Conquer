@@ -14,7 +14,7 @@ const {encodeTacticalShape,decodeTacticalShape}=require("./encode-shape.js");
 // kept as-is so the engine can recolour each house.
 // Indices the engine uses for text colours; art must not land on them
 // (233-237 also rotate on the score screen). See boot-colors.js.
-const TEXT_COLOURS=new Set([16,202,209,233,234,235,236,237]);
+const TEXT_COLOURS=new Set([16,25,202,209,233,234,235,236,237]);
 function wireframeTranslation(){
   const {rgbPalette}=require("./boot-colors.js");
   const game=rgbPalette();

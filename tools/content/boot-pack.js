@@ -75,7 +75,7 @@ const LABELS={
   TXT_TAB_BUTTON_CONTROLS:"Options",
   TXT_TAB_SIDEBAR:"Sidebar",
   // End-of-match score screen prompt (score.cpp Multi_Score_Presentation).
-  TXT_MAP_CLICK2:"Click to continue",
+  TXT_MAP_CLICK2:"Continue",
   // Original display names for every object in the type tables
   // (bdata.cpp, udata.cpp, idata.cpp, adata.cpp), both factions.
   TXT_EYE:"Uplink Center",
@@ -214,7 +214,9 @@ function build(outdir,options={}) {
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
     "LED.FNT","VCR.FNT","GRAD6FNT.FNT","8FAT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"];
   const fonts=[...new Set(fontNames)];
-  for(const name of fonts)write(stage,name,font);
+  const gradientFonts=new Set(["GRAD6FNT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"]);
+  const gradientFont=encodeFont(14);verifyFont(gradientFont);
+  for(const name of fonts)write(stage,name,gradientFonts.has(name)?gradientFont:font);
   write(stage,"MOUSE.SHP",mouse);
   write(stage,"BTEXTURE.SHP",texture);
   write(stage,"PREPICK.CPS",cps);
