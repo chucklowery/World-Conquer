@@ -17,3 +17,12 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - Commands/results: `emcc` discovery → absent; `git ls-remote` → DNS resolution failure; CI `wasm-vanillatd` → success; CI `stock-engine` → success; CI boot/content checks → success. Local full baseline commands not executed.
 - CI: https://github.com/chucklowery/World-Conquer/actions/runs/45084411238
 - Open issues: a current-branch CI run is needed after PR creation.
+
+### Phase 1 — scenario probe and path decision
+
+- Status: **partial**. Report-mode Chromium probe, stock-engine event hooks and CI job committed; runtime probe has not yet produced an inspected audit.
+- Commit SHA: `01435e96b57daada10e3e90f530758bf3cd7540c` (latest implementation checkpoint; phase log commit follows).
+- Commands/results: source review of `menus.cpp`, `mplayer.cpp`, `nulldlg.cpp` confirms the Skirmish UI and `GAME_SKIRMISH` path are present without `NETWORKING`; `node browser/engine/check-stock-scenario.js` scheduled in CI with `STOCK_SCENARIO_REPORT_ONLY=1`. No local Chromium execution available.
+- CI: https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml (PR #57 run pending at this checkpoint).
+- Path decision: **provisional Skirmish**, pending a successful click-path observation. Multiplayer scenario scanning uses `SCM*EA.INI` (initial M1 audit names `scm94ea.ini`–`scm99ea.ini`). New Game and `SCG01EA` remain the prescribed fallback only after runtime evidence.
+- Open issues: probe audit not yet inspected; building/production/credits hooks need WASM compilation verification; scenario files are intentionally absent from M1 boot pack, and no generated map has been created in M2a.
