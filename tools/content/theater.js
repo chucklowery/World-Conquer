@@ -25,7 +25,7 @@ function build(game){
   fs.mkdirSync(stage,{recursive:true});
   // Flat green clear ground and flat blue water are intentional schematic art.
   const files=["CLEAR1.TEM","W1.TEM"];
-  fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(63,45)]}));
+  fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(63,45)],map:Array(16).fill(0)}));
   fs.writeFileSync(path.join(stage,files[1]),encodeIconset({icons:[tile(120,124)]}));
   // odata.cpp:162-353 declares 12 separate harvestable overlay types;
   // odata.cpp:828-839 indexes OverlayData directly as a tactical frame.
@@ -55,17 +55,7 @@ function build(game){
     archive(game,stage,"TEMPERAT.MIX",files);
     archive(game,stage,"TEMPICNH.MIX",files);
   }finally{fs.rmSync(stage,{recursive:true,force:true});}
-  // Stock display.cpp:415-490 reads these byte tables directly. Identity
-  // lookups are neutral original placeholders, not recolored game media.
-  const tables={GREEN:256,YELLOW:256,RED:256,MOUSE:5*256,
-    TRANS:13*256,WHITE:2*256,SHADOW:5*256,UNITS:2*256,SHADE:256,LIGHT:256};
-  const remaps=[];
-  for(const [name,size] of Object.entries(tables)){
-    const filename="T"+name+".MRF",data=Buffer.alloc(size);
-    for(let i=0;i<size;i++)data[i]=i%256;
-    fs.writeFileSync(path.join(game,filename),data);
-    remaps.push(filename);
-  }
-  return ["TEMPERAT.MIX","TEMPICNH.MIX",...remaps];
+  // The engine computes and writes its own fading tables (display.cpp).
+  return ["TEMPERAT.MIX","TEMPICNH.MIX"];
 }
 module.exports={build};
