@@ -30,6 +30,13 @@ function verify(dir){
   return {manifest,provenance,coverage};
 }
 try{
+  // Guard a catastrophic mistyped target before any pack is built.
+  assert.throws(()=>build(path.resolve(__dirname,"../..")),/inside build\/ or the OS temp/);
+  const occupied=path.join(base,"occupied");
+  fs.mkdirSync(occupied);
+  fs.writeFileSync(path.join(occupied,"user-work.txt"),"must survive");
+  assert.throws(()=>build(occupied),/Refusing to overwrite non-pack directory/);
+  assert.equal(fs.readFileSync(path.join(occupied,"user-work.txt"),"utf8"),"must survive");
   build(path.join(base,"first"));
   build(path.join(base,"second"));
   const a=verify(path.join(base,"first")),b=verify(path.join(base,"second"));
