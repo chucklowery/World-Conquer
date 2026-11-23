@@ -145,3 +145,19 @@ Six reviewer threads (2026-11-23) were addressed on `m2b/theater-roster-scenario
 - **Decoder hardening:** `decodeIconset` now rejects empty image sections and overlapping trans-flag/map spans, with negative tests.
 
 **Evidence:** earlier run `45102805481` is pre-review and does not validate these changes. Review-fix CI and Chromium scenario-load checks must pass on the review-fix head before calling them verified. The source-generated placeholders remain original; gameplay, HUD and zero-miss gate are outside M2b.
+
+## Session M2c
+
+- Branch: `m2c/playable-match`, branched from `vanilla` at `6db6bcd4155131bce122df4f225033cadc5fcb6f`.
+- Entry condition: M2b [PR #58](https://github.com/chucklowery/World-Conquer/pull/58) merged; review-fix [run 45108622499](https://github.com/chucklowery/World-Conquer/actions/runs/45108622499) reported green `wasm-vanillatd`, `stock-engine`, `stock-scenario`.
+- Build loop: CI-only in the GitHub connector environment; local Emscripten, native toolchain and Chromium builds are not available.
+- Scope: Phases 7–9 only. Nothing from M3 or M5 is included.
+
+### Phase 7 — battlefield and runtime asset classification
+
+- Status: **partial**; no claim that a playable battlefield, radar, or sidebar renders correctly.
+- Implementation checkpoint: `961c89932c1b30d22fe96863cab52eac405e7abc`.
+- Change: Chromium audit now categorizes file lookup misses using committed `requirements.json` contracts into required, optional and unclassified, retaining unknown misses rather than silently treating them as optional. Strict-mode predicate now requires `scenario.loaded` and zero required/unclassified misses when enabled.
+- Commands/results: repository source inspected via the GitHub connector. No local pack generation, Chromium execution, or Node test occurred; CI output is not yet available on this branch.
+- CI: pending M2c PR-head run. **Report-only remains enabled** until asset rendering and zero required misses are established.
+- Open issues: prior M2b review-fix audit reports 160 lookup events including self-generated fading-table write requests; exact runtime classification and screenshots are not yet available. Phase 7 gate, Phase 8 interactive play, and Phase 9 exit evidence remain unverified. These are not completed phases.
