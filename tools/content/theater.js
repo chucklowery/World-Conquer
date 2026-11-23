@@ -30,6 +30,17 @@ function build(game){
     archive(game,stage,"TEMPERAT.MIX",files);
     archive(game,stage,"TEMPICNH.MIX",files);
   }finally{fs.rmSync(stage,{recursive:true,force:true});}
-  return ["TEMPERAT.MIX","TEMPICNH.MIX"];
+  // Stock display.cpp:415-490 reads these byte tables directly. Identity
+  // lookups are neutral original placeholders, not recolored game media.
+  const tables={GREEN:256,YELLOW:256,RED:256,MOUSE:5*256,
+    TRANS:13*256,WHITE:2*256,SHADOW:5*256,UNITS:2*256,SHADE:256,LIGHT:256};
+  const remaps=[];
+  for(const [name,size] of Object.entries(tables)){
+    const filename="T"+name+".MRF",data=Buffer.alloc(size);
+    for(let i=0;i<size;i++)data[i]=i%256;
+    fs.writeFileSync(path.join(game,filename),data);
+    remaps.push(filename);
+  }
+  return ["TEMPERAT.MIX","TEMPICNH.MIX",...remaps];
 }
 module.exports={build};
