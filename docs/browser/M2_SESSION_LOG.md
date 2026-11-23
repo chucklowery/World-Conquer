@@ -125,3 +125,10 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - Missing lookups: 150, improved from M2a's 163. The precise 13 eliminated names are `temperat.mix`, `tempicnh.mix`, `tgreen.mrf`, `tyellow.mrf`, `tred.mrf`, `tmouse.mrf`, `ttrans.mrf`, `twhite.mrf`, `tshadow.mrf`, `tunits.mrf`, `tshade.mrf`, `tlight.mrf`, `scm94ea.bin`. The 150 remaining misses are for further auditing in M2c; zero misses are **not** claimed.
 - Caveat: engine source-backed binary INI/BIN *host* parser test, full resource animation/hud/cameo verification, terrain/radar rendering and gameplay remain incomplete. The browser screenshot is not evidence of a playable match. M2b delivered only the phase 4–6 source-built placeholder path.
 - This evidence was recorded in the log as a documentation-only closeout commit after the successful code-head run. Final PR-head CI must be rechecked after this commit before readiness is concluded.
+
+### M2b final CI integration corrections
+
+- After the initial successful browser scenario-load run, native Linux `clang-format` identified a style-only diff in `tests/test-m2-iconset.cpp`. Applied the formatter's exact output; no test logic changed (`3a1df6bcc26ed021e4400d0e3ff90f209e5ab5b2`). The earlier Linux matrix also reported all 12 functional native tests passed before the formatting check.
+- Provenance now records both `encode-iconset.js` and `encode-shape.js` for source-generated theater archives (implementation `fd894b97d67da6fa01d86d883b8c94ee41a41c9c`).
+- **Final head evidence pending:** a fresh PR-head CI is required for the formatting and provenance corrections. Prior successful engine/browsers at `7f42b636d52af55579a7e4adf221860a1e9915c6` remain documented above. Do not infer passing final head until those checks complete.
+- **M2b session gate already observed on the implementation head**; ready-for-review transition occurs after the new final-head `stock-engine` and `stock-scenario` jobs are verified. Remaining 150 misses are a M2c follow-up, not a zero-miss claim.
