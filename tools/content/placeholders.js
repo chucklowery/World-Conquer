@@ -4,7 +4,7 @@
 // roster does not cover. Names and shapes are derived from the engine's own
 // type tables and the requirements inventory, never from proprietary data.
 const fs=require("node:fs"),path=require("node:path");
-const {encodeTacticalShape}=require("./encode-shape.js");
+const {encodeTacticalShape,decodeTacticalShape}=require("./encode-shape.js");
 const {encodeIconset}=require("./encode-iconset.js");
 const ROOT=path.resolve(__dirname,"../..");
 const REQUIREMENTS=path.join(ROOT,"game/content/pack/requirements.json");
@@ -41,13 +41,34 @@ function tile(color,edge){
   });
 }
 
+// Sidebar cameo: the object's own placeholder sprite (frame 0), scaled to fit
+// the 64x48 hi-res cameo (sidebar.h:216-217) on a dark panel, so each build
+// button is recognisable.
+function cameo(upper,stage,count,width,height){
+  const base=path.join(stage,upper.replace(/ICNH\.(SHP|TEM)$/,".SHP"));
+  let sprite=null;
+  if(fs.existsSync(base)){try{sprite=decodeTacticalShape(fs.readFileSync(base)).frames[0];}catch(e){sprite=null;}}
+  const pixels=Array.from({length:width*height},(_,i)=>{
+    const x=i%width,y=Math.floor(i/width);
+    if(x===0||y===0||x===width-1||y===height-1)return 15;
+    if(!sprite)return 141;
+    const scale=Math.max(1,Math.floor(Math.min((width-4)/sprite.width,(height-4)/sprite.height)));
+    const ox=Math.floor((width-sprite.width*scale)/2),oy=Math.floor((height-sprite.height*scale)/2);
+    const sx=Math.floor((x-ox)/scale),sy=Math.floor((y-oy)/scale);
+    const p=sx>=0&&sy>=0&&sx<sprite.width&&sy<sprite.height?sprite.pixels[sy*sprite.width+sx]:0;
+    return p||141;
+  });
+  return encodeTacticalShape({frames:Array.from({length:count},()=>({width,height,pixels}))});
+}
+
 // Kind-specific placeholder contracts. Frame counts are safe upper bounds
 // unless a requirement records an exact, code-referenced contract.
 function placeholder(name,req,tmpl,stage){
   const upper=name.toUpperCase();
   if(tmpl.has(upper)){
     const {width,height}=tmpl.get(upper);
-    return encodeIconset({icons:[tile(34,26)],map:Array(width*height).fill(0)});
+    const {TERRAIN}=require("./boot-colors.js");
+    return encodeIconset({icons:[tile(TERRAIN.grass,TERRAIN.grassEdge)],map:Array(width*height).fill(0)});
   }
   const c=(req&&req.contract)||{};
   const w=Number.isInteger(c.width)?c.width:null,h=Number.isInteger(c.height)?c.height:null;
@@ -58,7 +79,10 @@ function placeholder(name,req,tmpl,stage){
   // 2530); only colours WHITE+1 (16), WHITE, LTGREY and GREY are translucent
   // (display.cpp ShadowCols). 16 darkens at level 130, 15 at 170.
   if(upper==="SHADOW.SHP")return encodeTacticalShape(frames(n||48,24,24,(x,y)=>(x+y)%2?15:16));
-  if(/ICNH\.(SHP|TEM)$/.test(upper))return shape(n||1,w||64,h||48,15,141);
+  if(/ICNH\.(SHP|TEM)$/.test(upper))return cameo(upper,stage,n||1,w||64,h||48);
+  // Sidebar, radar and HUD panels are drawn opaque over the battlefield.
+  if(/^H(SIDE\d|STRIP|TABS|POWER|REPAIR|SELL|MAP|BTN-|STRIPUP|STRIPDN)|^HRADAR\./.test(upper))
+    return shape(n||4,w||32,h||32,15,141);
   if(/MAKE\.SHP$/.test(upper)){
     // Build-up length comes from the shape header (bdata.cpp:3839); match the
     // building's own placeholder size so the animation lines up with it.

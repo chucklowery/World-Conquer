@@ -21,7 +21,8 @@ function wireframeTranslation(){
   for(let i=1;i<source.length;i++){
     let best=16,dist=Infinity;
     for(let j=16;j<256;j++){
-      if(j>=176&&j<=191)continue;
+      if(j>=176&&j<=191)continue;        // house remap band
+      if(j>=32&&j<=38)continue;          // colour cycling (defines.h:1936-1937)
       const d=source[i].reduce((sum,c,k)=>sum+(c-game[j][k])**2,0);
       if(d<dist){dist=d;best=j;}
     }
@@ -79,6 +80,18 @@ function build(outdir){
   }
   fs.rmSync(wireframeStage,{recursive:true,force:true});
   const placeholderNames=new Set(require("./placeholders.js").build(contentStage,wireframeNames));
+  // Audited frame contracts: the engine indexes frames up to minFrames-1 for
+  // these objects (requirements.json minFramesEvidence). Fail the build if a
+  // generated sprite is shorter, since the engine would read past its end.
+  const reqFiles=JSON.parse(fs.readFileSync(requirementsPath,"utf8")).files;
+  for(const entry of reqFiles){
+    const min=entry.contract&&entry.contract.minFrames;
+    if(!Number.isInteger(min))continue;
+    const file=path.join(contentStage,entry.name.toUpperCase());
+    if(!fs.existsSync(file))throw Error("Audited sprite not generated: "+entry.name);
+    const frames=fs.readFileSync(file).readUInt16LE(0);
+    if(frames<min)throw Error(entry.name+" has "+frames+" frames; the engine uses up to "+min);
+  }
   const conquerMembers=[...wireframeNames,...placeholderNames].filter(n=>!n.endsWith(".TEM")&&n!=="TEMPERAT.PAL").sort();
   const theaterMembers=[...placeholderNames].filter(n=>n.endsWith(".TEM")||n==="TEMPERAT.PAL").sort();
   buildBoot(outdir,{conquerExtra:{dir:contentStage,files:conquerMembers}});

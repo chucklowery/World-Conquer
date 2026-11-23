@@ -253,3 +253,52 @@ game and the roadmap evidence moved to the new session **M2d** (Phases
 - Local result: `scenario.loaded=SCM94EA`; misses 149, **required 0,
   unclassified 0**; battlefield 23% non-black, 10% units/resources; max
   stall 0 ms; coverage 747/747; `stock-engine` (M1) passes.
+
+### Phase 8 — base and sidebar (2026-11-23, local + CI)
+
+- Status: **done locally**; CI evidence follows the push of this commit.
+- Phase 7 CI: [run 45129469994](https://github.com/chucklowery/World-Conquer/actions/runs/45129469994)
+  and the five platform/legacy runs for `42e99a0` all passed, including the
+  now-strict `stock-scenario` job.
+- **MCV deploy with real input.** New guarded test logs:
+  `[browser-event] unit` (player units' screen position and cell at match
+  start), `[browser-event] centered` (selection position after the Home
+  key) and `[browser-event] deployed` (MCV → construction yard; `placed`
+  skips buildings with no purchase price). The test presses **H**
+  (KeyBase: select the MCV and centre on it), then **Home** for the settled
+  position, and clicks the MCV. Skirmish spawns units around the MCV, which
+  often block the yard's footprint (`Legal_Placement`); the test then drives
+  the MCV towards the map centre, waits until it has stopped (deploying needs
+  no NavCom) and retries. 4/4 local runs deployed from different starts.
+- **Terrain colour cycling.** Grass used indices 33/34, inside the engine's
+  colour-cycling range 32–38, so the ground animated. Terrain now uses
+  dedicated palette entries (`boot-colors.js` TERRAIN, 112–115), and the
+  sprite translation never picks a cycling index.
+- **Sidebar.** Appears after the deploy, opaque (filled panel placeholders),
+  with cameos rendered from each object's own sprite. The test checks the
+  sidebar is drawn and that cameo slots are filled (10 locally).
+- **`gameplay` inventory**: 282 entries (sidebar, cameos, HUD, overlays,
+  effects), all produced; no required or unclassified misses with the
+  sidebar open.
+- **Frame contracts** (`docs/browser/M2_ROSTER_CONTRACTS.md`): audited
+  minimums for 11 slice objects from the draw code, recorded as `minFrames`
+  in `requirements.json` and enforced by `pack.js`.
+- Credits log limited to the human player (AI spending flooded the log).
+- `building.cpp` restored to its original ISO-8859 encoding (M2a had
+  converted it to UTF-8); only the added event lines differ from `vanilla`.
+
+### M2c close-out and handoff to M2d
+
+- **Gate**: strict `stock-scenario` to match start, visible battlefield,
+  MCV deploys and the sidebar appears with cameos, `gameplay` inventory
+  complete, no trademarks visible, `stock-engine` green — met locally; CI
+  run for this commit to be recorded in the PR.
+- **For M2d**: starts are random among six waypoints (no fixed seed for
+  skirmish; `-SEED` is CHEAT_KEYS and single-player only). Use the
+  `unit`/`centered` logs plus H/Home for positions. The sidebar is at
+  x 480–639; cameo slots are 64×48 in two columns starting near x 496 and
+  566, y ≈ 180 (verify with `[browser-input]`). Which cameo is which is not
+  yet logged: add a guarded log of the strip contents before clicking.
+- **Known limits**: placeholder art; APC door frames and aircraft not
+  audited; the player-name list shows in the radar area until a comms
+  centre exists.

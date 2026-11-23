@@ -19,11 +19,11 @@ const server=http.createServer((req,res)=>{
     res.end(data);
   });
 });
-// Rendered colours of the generated grass tile (theater.js tile(33,26)):
+// Rendered colours of the generated grass tile (theater.js, TERRAIN):
 // 8-bit palette value -> 6-bit .PAL -> SDL presents 6-bit << 2.
-const {rgbPalette}=require("../../tools/content/boot-colors.js");
+const {rgbPalette,TERRAIN}=require("../../tools/content/boot-colors.js");
 const shown=i=>rgbPalette()[i].map(v=>(v>>2)<<2);
-const GRASS=[shown(33),shown(26)];
+const GRASS=[shown(TERRAIN.grass),shown(TERRAIN.grassEdge)];
 // Analyse the battlefield inside the canvas screenshot (in the page, so no
 // image library is needed). The tactical view is everything below the 16px
 // tab bar (640x400 game coordinates) and left of the sidebar when it is open.
@@ -46,6 +46,24 @@ async function battlefieldStats(page,png,sidebarOpen){
     }
     return {total,nonBlackShare:nonBlack/total,objectShare:object/total};
   },{data:png.toString("base64"),grass:GRASS,sidebarOpen});
+}
+// The hi-res sidebar occupies x 480..639 (sidebar.h SIDE_X doubled); cameo
+// slots are 64x48 (OBJECT_WIDTH/HEIGHT x2) in two columns.
+async function sidebarStats(page,png){
+  return page.evaluate(async ({data})=>{
+    const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
+    const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");
+    g.drawImage(img,0,0);
+    const sx=img.width/640,sy=img.height/400;
+    const share=(x,y,w,h)=>{
+      const d=g.getImageData(Math.floor(x*sx),Math.floor(y*sy),Math.max(1,Math.floor(w*sx)),Math.max(1,Math.floor(h*sy))).data;
+      let lit=0;for(let i=0;i<d.length;i+=4)if(d[i]+d[i+1]+d[i+2]>48)lit++;
+      return lit/(d.length/4);
+    };
+    let cameoSlotsDrawn=0;
+    for(const x of [496,566])for(let y=180;y<380;y+=48)if(share(x,y,60,44)>0.3)cameoSlotsDrawn++;
+    return {nonBlackShare:share(480,16,160,384),cameoSlotsDrawn};
+  },{data:png.toString("base64")});
 }
 const audit={schema:1,pathDecision:"pending (Skirmish candidate)",status:"incomplete",
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
@@ -123,8 +141,68 @@ async function main(){
     if(field.nonBlackShare<0.10)throw Error("Battlefield is mostly black: "+JSON.stringify(field));
     if(field.objectShare<0.002)throw Error("No units or resources visible on the battlefield: "+JSON.stringify(field));
     if(audit.matchStallMs>1000)throw Error("Main-thread stall after match start: "+audit.matchStallMs+"ms");
+
+    // Phase 8: deploy the MCV with real input, as a player would.
+    const logText=()=>page.evaluate(()=>document.getElementById("log").textContent);
+    const playerHouse=((await logText()).match(/\[browser-event\] unit name=\S+ house=(\S+)/)||[])[1];
+    if(!playerHouse)throw Error("No player units were reported at match start");
+    audit.playerHouse=playerHouse;
+    // KeyBase (H, options.cpp) selects the player's MCV and centres on it;
+    // Center_Map applies next frame, so then press Home (KeyHome1) for the
+    // settled screen position of the selection ([browser-event] centered).
+    async function centreOnMcv(){
+      await page.keyboard.press("h");
+      await page.waitForTimeout(1000);
+      const before=(await logText()).length;
+      await page.keyboard.press("Home");
+      await page.waitForFunction(m=>/\[browser-event\] centered name=MCV x=-?\d+ y=-?\d+/.test(
+        document.getElementById("log").textContent.slice(m)),before,{timeout:5000});
+      const c=(await logText()).slice(before).match(/\[browser-event\] centered name=MCV x=(-?\d+) y=(-?\d+) cell=(\d+),(\d+)/);
+      return [Number(c[1]),Number(c[2]),Number(c[3]),Number(c[4])];
+    }
+    const deployedRe=new RegExp("\\[browser-event\\] deployed name=MCV into=FACT house="+playerHouse+"\\b");
+    // Starting units spawn around the MCV and can block the yard's footprint
+    // (Try_To_Deploy, unit.cpp). If a deploy does not happen, drive the MCV
+    // to fresh ground and try again.
+    // Moves head towards the map centre (the scenario map spans cells 1-62 of
+    // the classic 64-cell grid), away from edges and the spawn cluster.
+    const moves=[[0,0],[5,5],[-5,5],[5,-5],[-6,-3]];
+    audit.deployAttempts=[];
+    for(const [mx,my] of moves){
+      let [x,y,cx,cy]=await centreOnMcv();
+      const sx=Math.sign(31-cx)||1,sy=Math.sign(31-cy)||1;
+      if(mx||my){
+        const tx=x+sx*Math.abs(mx)*24,ty=y+sy*Math.abs(my)*24+(mx<0?-24*sy:0);
+        await clickGame(Math.min(470,Math.max(10,tx)),Math.min(390,Math.max(24,ty)),"Move MCV");
+        // Deploying needs a stationary MCV (Try_To_Deploy: no NavCom), so
+        // wait until it reports the same cell twice in a row.
+        let last="";
+        for(let t=0;t<12;t++){
+          await page.waitForTimeout(2500);
+          [x,y,cx,cy]=await centreOnMcv();
+          if(last===cx+","+cy)break;
+          last=cx+","+cy;
+        }
+      }
+      await clickGame(x,y,"Deploy MCV");
+      const ok=await page.waitForFunction(re=>new RegExp(re).test(document.getElementById("log").textContent),
+        deployedRe.source,{timeout:12000}).then(()=>true,()=>false);
+      audit.deployAttempts.push({at:[x,y],cell:[cx,cy],deployed:ok});
+      if(ok)break;
+    }
+    if(!audit.deployAttempts.some(a=>a.deployed))throw Error("The MCV could not be deployed: "+JSON.stringify(audit.deployAttempts));
+    await page.waitForTimeout(4000);
+    await screenshot("deployed");
+    const sidebar=await sidebarStats(page,await canvas.screenshot());
+    audit.sidebar=sidebar;
+    if(sidebar.nonBlackShare<0.25)throw Error("Sidebar did not appear after deploying: "+JSON.stringify(sidebar));
+    if(sidebar.cameoSlotsDrawn<2)throw Error("Sidebar shows no buildable cameos: "+JSON.stringify(sidebar));
   }catch(error){
     audit.error=String(error.stack||error);
+    if(page){try{
+      await page.screenshot({path:path.join(root,"stock-scenario-error.png")});
+      audit.screenshots.push("stock-scenario-error.png");
+    }catch(e){}}
     audit.status="error";
     if(process.env.STOCK_SCENARIO_REPORT_ONLY!=="1")process.exitCode=1;
   }finally{

@@ -589,6 +589,22 @@ void Keyboard_Process(KeyNumType& input)
         if (CurrentObject.Count()) {
             Map.Center_Map();
             Map.Flag_To_Redraw(true);
+#ifdef __EMSCRIPTEN__
+            // Test log: screen position (640x400) of each selected object after
+            // centring, so the browser test can click it with real input.
+            for (int i = 0; i < CurrentObject.Count(); i++) {
+                int x, y;
+                if (Map.Coord_To_Pixel(CurrentObject[i]->Center_Coord(), x, y)) {
+                    printf("[browser-event] centered name=%s x=%d y=%d cell=%d,%d\n",
+                           CurrentObject[i]->Class_Of().IniName,
+                           x + Map.TacPixelX,
+                           y + Map.TacPixelY,
+                           Cell_X(Coord_Cell(CurrentObject[i]->Coord)),
+                           Cell_Y(Coord_Cell(CurrentObject[i]->Coord)));
+                }
+            }
+            fflush(stdout);
+#endif
             input = KN_NONE;
         } else {
             input = Options.KeyBase;

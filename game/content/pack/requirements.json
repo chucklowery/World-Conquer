@@ -1071,6 +1071,7 @@
    "referencedAt": [
     "tiberiandawn/idata.cpp:100",
     "tiberiandawn/idata.cpp:63",
+    "tiberiandawn/idata.cpp:63-98",
     "tiberiandawn/infantry.cpp:629"
    ],
    "contract": {
@@ -1078,7 +1079,9 @@
     "frameCount": 532,
     "source": "frame-index-audited",
     "sharedFilenameWith": [],
-    "evidence": "DoControls facing stride; highest gesture is frame 531"
+    "evidence": "DoControls facing stride; highest gesture is frame 531",
+    "minFrames": 532,
+    "minFramesEvidence": "DoControls facing stride; highest gesture is frame 531"
    }
   },
   {
@@ -1283,13 +1286,17 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/bdata.cpp:534"
+    "tiberiandawn/bdata.cpp:3792-3793",
+    "tiberiandawn/bdata.cpp:534",
+    "tiberiandawn/building.cpp:612-626"
    ],
    "contract": {
     "size": "48x48",
     "frameCount": 128,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 48,
+    "minFramesEvidence": "active anim ends at frame 24; damaged frames add the largest anim end (24)"
    }
   },
   {
@@ -1689,13 +1696,17 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/bdata.cpp:320"
+    "tiberiandawn/bdata.cpp:320",
+    "tiberiandawn/bdata.cpp:3739-3749",
+    "tiberiandawn/building.cpp:612-626"
    ],
    "contract": {
     "size": "48x48",
     "frameCount": 128,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 2,
+    "minFramesEvidence": "default single-frame anim; damaged frame 1"
    }
   },
   {
@@ -1749,13 +1760,16 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/udata.cpp:584"
+    "tiberiandawn/udata.cpp:584",
+    "tiberiandawn/unit.cpp:2127-2129"
    ],
    "contract": {
     "size": "32x32",
     "frameCount": 192,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 68,
+    "minFramesEvidence": "harvesting frames 32 + ((facing+2)/4)*4 + stage(0-3); highest 67"
    }
   },
   {
@@ -1882,13 +1896,16 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/udata.cpp:691"
+    "tiberiandawn/udata.cpp:691",
+    "tiberiandawn/unit.cpp:2070-2078"
    ],
    "contract": {
     "size": "32x32",
     "frameCount": 192,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 64,
+    "minFramesEvidence": "32 body facings plus 32 turret facings"
    }
   },
   {
@@ -1986,13 +2003,16 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/udata.cpp:638"
+    "tiberiandawn/udata.cpp:638",
+    "tiberiandawn/unit.cpp:2132"
    ],
    "contract": {
     "size": "32x32",
     "frameCount": 192,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 32,
+    "minFramesEvidence": "32 body facings (BodyShape)"
    }
   },
   {
@@ -2198,6 +2218,7 @@
    "requiredFor": "scenario",
    "referencedAt": [
     "tiberiandawn/udata.cpp:264",
+    "tiberiandawn/unit.cpp:2070-2078",
     "tiberiandawn/unit.cpp:2214"
    ],
    "contract": {
@@ -2205,7 +2226,9 @@
     "frameCount": 64,
     "source": "frame-index-audited",
     "sharedFilenameWith": [],
-    "evidence": "32 body headings plus 32 turret headings"
+    "evidence": "32 body headings plus 32 turret headings",
+    "minFrames": 64,
+    "minFramesEvidence": "32 body facings plus 32 turret facings"
    }
   },
   {
@@ -2302,13 +2325,17 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/bdata.cpp:892"
+    "tiberiandawn/bdata.cpp:3798",
+    "tiberiandawn/bdata.cpp:892",
+    "tiberiandawn/building.cpp:612-626"
    ],
    "contract": {
     "size": "48x48",
     "frameCount": 128,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 8,
+    "minFramesEvidence": "idle anim 0-3; damaged frames add 4"
    }
   },
   {
@@ -2391,13 +2418,17 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/bdata.cpp:585"
+    "tiberiandawn/bdata.cpp:3801-3805",
+    "tiberiandawn/bdata.cpp:585",
+    "tiberiandawn/building.cpp:612-626"
    ],
    "contract": {
     "size": "48x48",
     "frameCount": 128,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 60,
+    "minFramesEvidence": "undocking anim ends at frame 30; damaged frames add 30"
    }
   },
   {
@@ -2406,13 +2437,17 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/bdata.cpp:1097"
+    "tiberiandawn/bdata.cpp:1097",
+    "tiberiandawn/bdata.cpp:3790-3791",
+    "tiberiandawn/building.cpp:612-626"
    ],
    "contract": {
     "size": "48x48",
     "frameCount": 128,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 20,
+    "minFramesEvidence": "idle/active anim 0-9; damaged frames add 10"
    }
   },
   {
@@ -4276,13 +4311,16 @@
    "format": "SHP",
    "requiredFor": "scenario",
    "referencedAt": [
-    "tiberiandawn/bdata.cpp:264"
+    "tiberiandawn/bdata.cpp:264",
+    "tiberiandawn/building.cpp:584-589"
    ],
    "contract": {
     "size": "48x48",
     "frameCount": 128,
     "source": "provisional-upper-bound",
-    "sharedFilenameWith": []
+    "sharedFilenameWith": [],
+    "minFrames": 2,
+    "minFramesEvidence": "frame 0 normal, 1 damaged; the door is the separate WEAP2.SHP overlay"
    }
   },
   {

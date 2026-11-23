@@ -24,10 +24,11 @@ function build(game,extra={dir:null,files:[]}){
   const stage=path.join(path.dirname(game),"_m2_theater");
   fs.mkdirSync(stage,{recursive:true});
   // Flat green clear ground and flat blue water are intentional schematic art
-  // (TEMPERAT.PAL from boot-colors.js: 33/26 grass and edge, 217/209 water).
+  // (TEMPERAT.PAL terrain entries from boot-colors.js TERRAIN).
+  const {TERRAIN}=require("./boot-colors.js");
   const files=["CLEAR1.TEM","W1.TEM"];
-  fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(33,26)],map:Array(16).fill(0)}));
-  fs.writeFileSync(path.join(stage,files[1]),encodeIconset({icons:[tile(217,209)]}));
+  fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(TERRAIN.grass,TERRAIN.grassEdge)],map:Array(16).fill(0)}));
+  fs.writeFileSync(path.join(stage,files[1]),encodeIconset({icons:[tile(TERRAIN.water,TERRAIN.waterEdge)]}));
   // odata.cpp:162-353 declares 12 separate harvestable overlay types;
   // odata.cpp:828-839 indexes OverlayData directly as a tactical frame.
   // Supply 16 non-copyrighted growth/adjacency frames for each type.

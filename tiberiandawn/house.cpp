@@ -1727,7 +1727,8 @@ void HouseClass::Harvested(unsigned tiberium)
     }
     HarvestedCredits += tiberium;
 #ifdef __EMSCRIPTEN__
-    if (Tiberium != oldtib) {
+    // Test log for the human player's balance only; AI spending is too chatty.
+    if (IsHuman && Tiberium != oldtib) {
         std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
         std::fflush(stdout);
     }
@@ -1787,7 +1788,7 @@ void HouseClass::Spend_Money(unsigned money)
     Silo_Redraw_Check(oldtib, Capacity);
     CreditsSpent += money;
 #ifdef __EMSCRIPTEN__
-    if (oldtib != Tiberium || money) {
+    if (IsHuman && (oldtib != Tiberium || money)) {
         std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
         std::fflush(stdout);
     }
@@ -1817,7 +1818,7 @@ void HouseClass::Refund_Money(unsigned money)
     Validate();
     Credits += money;
 #ifdef __EMSCRIPTEN__
-    if (money) {
+    if (IsHuman && money) {
         std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
         std::fflush(stdout);
     }

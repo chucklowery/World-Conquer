@@ -21,6 +21,12 @@ function rgbPalette() {
     12:[0,0,0],
     13:[128,128,128],
     14:[192,192,192],
+    // Terrain. Indices 32-38 cycle (defines.h CYCLE_COLOR_START/COUNT), so
+    // static ground must use entries outside that range.
+    112:[72,128,44],  // grass
+    113:[56,104,36],  // grass edge
+    114:[44,92,168],  // water
+    115:[32,68,136],  // water edge
     140:[8,33,42],  // dialog shadow
     141:[32,76,88], // dialog background
     159:[62,177,145],
@@ -32,4 +38,6 @@ function rgbPalette() {
 function toHex(rgb) {
   return "#"+rgb.map(n=>n.toString(16).padStart(2,"0")).join("").toUpperCase();
 }
-module.exports={rgbPalette,toHex};
+// Palette indices of the terrain colours above (theater.js, placeholders.js).
+const TERRAIN={grass:112,grassEdge:113,water:114,waterEdge:115};
+module.exports={rgbPalette,toHex,TERRAIN};
