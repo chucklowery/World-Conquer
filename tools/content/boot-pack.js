@@ -12,67 +12,127 @@ const ROOT=path.resolve(__dirname,"../..");
 const REQUIREMENTS=path.join(ROOT,"game/content/pack/boot-requirements.json");
 // Generate a placeholder for every stock TXT_* index from compiled headers,
 // not from proprietary language files. All human-facing words are original.
+const LABELS={
+  TXT_NONE:"",
+  TXT_CREDIT_FORMAT:"Credits: %d",
+  TXT_START_NEW_GAME:"New Game",
+  TXT_LOAD_MISSION:"Load Game",
+  TXT_SAVE_MISSION:"Save Game",
+  TXT_MULTIPLAYER_GAME:"Multiplayer",
+  TXT_INTRO:"Replay Intro",
+  TXT_JUST_INTRO:"Replay Intro",
+  TXT_EXIT_GAME:"Exit",
+  TXT_NEW_MISSIONS:"Extra Missions",
+  TXT_BONUS_MISSIONS:"Extra Missions",
+  TXT_OK:"OK",
+  TXT_CANCEL:"Cancel",
+  TXT_YES:"Yes",
+  TXT_NO:"No",
+  TXT_GDI:"Aster",
+  TXT_NOD:"Forge",
+  // Side names in the skirmish dialog (nulldlg.cpp:348-349).
+  TXT_G_D_I:"Aster",
+  TXT_N_O_D:"Forge",
+  // Original display names instead of franchise-specific ones.
+  TXT_RAMBO:"Commando",
+  TXT_ORCA:"Gunship",
+  TXT_COMMAND:"Comms Center",
+  TXT_OBELISK:"Beam Tower",
+  TXT_HAND:"Training Hall",
+  TXT_TEMPLE:"Citadel",
+  TXT_ION_CANNON:"Orbital Strike",
+  TXT_NUKE_STRIKE:"Warhead Strike",
+  TXT_MOEBIUS:"Scientist",
+  // Readable names for the M2 playable slice.
+  TXT_E1:"Rifle Squad",
+  TXT_E2:"Grenadier",
+  TXT_E3:"Rocket Squad",
+  TXT_E4:"Flamer",
+  TXT_E5:"Hazmat Trooper",
+  TXT_MCV:"Mobile Base",
+  TXT_ARTY:"Artillery",
+  TXT_MSAM:"Rocket Launcher",
+  TXT_APC:"Carrier",
+  TXT_POWER:"Power Plant",
+  TXT_ADVANCED_POWER:"Advanced Power",
+  TXT_FIX_IT:"Repair Bay",
+  TXT_CONST_YARD:"Construction Yard",
+  TXT_CHOOSE_SIDE:"Choose a Faction",
+  TXT_OPTIONS:"Options",
+  TXT_GAME_CONTROLS:"Controls",
+  TXT_SOUND_CONTROLS:"Audio",
+  TXT_VISUAL_CONTROLS:"Video",
+  TXT_QUIT_MISSION:"Quit Mission",
+  TXT_RESUME_MISSION:"Resume Mission",
+  TXT_FAME:"Records",
+  TXT_SCENARIO_WON:"Victory",
+  TXT_SCENARIO_LOST:"Defeat",
+  TXT_TIBERIUM:"Crystal",
+  TXT_TIBERIUM_ON:"Crystal On",
+  TXT_TIBERIUM_OFF:"Crystal Off",
+  // Top tabs (tab.cpp:116-117).
+  TXT_TAB_BUTTON_CONTROLS:"Options",
+  TXT_TAB_SIDEBAR:"Sidebar",
+  // Original display names for every object in the type tables
+  // (bdata.cpp, udata.cpp, idata.cpp, adata.cpp), both factions.
+  TXT_EYE:"Uplink Center",
+  TXT_WEAPON_FACTORY:"Vehicle Factory",
+  TXT_GUARD_TOWER:"Guard Tower",
+  TXT_AGUARD_TOWER:"Heavy Guard Tower",
+  TXT_TURRET:"Gun Turret",
+  TXT_REFINERY:"Refinery",
+  TXT_STORAGE:"Crystal Silo",
+  TXT_HELIPAD:"Helipad",
+  TXT_SAM:"Missile Site",
+  TXT_AIRSTRIP:"Airstrip",
+  TXT_HOSPITAL:"Field Hospital",
+  TXT_BIO_LAB:"Research Lab",
+  TXT_BARRACKS:"Barracks",
+  TXT_TANKER:"Tanker",
+  TXT_ROAD:"Road",
+  TXT_PUMP:"Water Pump",
+  TXT_CIVMISS:"Mission House",
+  TXT_SANDBAG_WALL:"Sandbag Wall",
+  TXT_CYCLONE_WALL:"Chain Fence",
+  TXT_BRICK_WALL:"Concrete Wall",
+  TXT_BARBWIRE_WALL:"Wire Fence",
+  TXT_WOOD_WALL:"Wooden Fence",
+  TXT_PRISON:"Detention Center",
+  TXT_CIVILIAN_BUILDING:"Civilian Building",
+  TXT_VISCEROID:"Mutant",
+  TXT_FTANK:"Flame Tank",
+  TXT_STANK:"Stealth Tank",
+  TXT_LTANK:"Light Tank",
+  TXT_MTANK:"Battle Tank",
+  TXT_HTANK:"Siege Tank",
+  TXT_MHQ:"Mobile HQ",
+  TXT_HOVER:"Hovercraft",
+  TXT_HARVESTER:"Harvester",
+  TXT_JEEP:"Scout Car",
+  TXT_DUNE_BUGGY:"Raider Buggy",
+  TXT_BIKE:"Recon Bike",
+  TXT_MLRS:"Rocket Battery",
+  TXT_GUNBOAT:"Gunboat",
+  TXT_TRIC:"Horned Beast",
+  TXT_TREX:"Great Beast",
+  TXT_RAPT:"Swift Beast",
+  TXT_STEG:"Plated Beast",
+  TXT_E7:"Specialist",
+  TXT_DELPHI:"Agent",
+  TXT_CHAN:"Researcher",
+  TXT_CIVILIAN:"Civilian"
+};
+// Families of numbered civilian types share one name.
+const FAMILIES=[[/^TXT_CIV\d+$/,"Civilian Building"],[/^TXT_C\d+$/,"Civilian"]];
+function authoredText(name){
+  if(Object.prototype.hasOwnProperty.call(LABELS,name))return LABELS[name];
+  const family=FAMILIES.find(([re])=>re.test(name));
+  return family?family[1]:null;
+}
+const hasAuthoredText=name=>authoredText(name)!==null;
 function originalText(name) {
-  const labels={
-    TXT_NONE:"",
-    TXT_CREDIT_FORMAT:"Credits: %d",
-    TXT_START_NEW_GAME:"New Game",
-    TXT_LOAD_MISSION:"Load Game",
-    TXT_SAVE_MISSION:"Save Game",
-    TXT_MULTIPLAYER_GAME:"Multiplayer",
-    TXT_INTRO:"Replay Intro",
-    TXT_JUST_INTRO:"Replay Intro",
-    TXT_EXIT_GAME:"Exit",
-    TXT_NEW_MISSIONS:"Extra Missions",
-    TXT_BONUS_MISSIONS:"Extra Missions",
-    TXT_OK:"OK",
-    TXT_CANCEL:"Cancel",
-    TXT_YES:"Yes",
-    TXT_NO:"No",
-    TXT_GDI:"Aster",
-    TXT_NOD:"Forge",
-    // Side names in the skirmish dialog (nulldlg.cpp:348-349).
-    TXT_G_D_I:"Aster",
-    TXT_N_O_D:"Forge",
-    // Original display names instead of franchise-specific ones.
-    TXT_RAMBO:"Commando",
-    TXT_ORCA:"Gunship",
-    TXT_COMMAND:"Comms Center",
-    TXT_OBELISK:"Beam Tower",
-    TXT_HAND:"Training Hall",
-    TXT_TEMPLE:"Citadel",
-    TXT_ION_CANNON:"Orbital Strike",
-    TXT_NUKE_STRIKE:"Warhead Strike",
-    TXT_MOEBIUS:"Scientist",
-    // Readable names for the M2 playable slice.
-    TXT_E1:"Rifle Squad",
-    TXT_E2:"Grenadier",
-    TXT_E3:"Rocket Squad",
-    TXT_E4:"Flamer",
-    TXT_E5:"Hazmat Trooper",
-    TXT_MCV:"Mobile Base",
-    TXT_ARTY:"Artillery",
-    TXT_MSAM:"Rocket Launcher",
-    TXT_APC:"Carrier",
-    TXT_POWER:"Power Plant",
-    TXT_ADVANCED_POWER:"Advanced Power",
-    TXT_FIX_IT:"Repair Bay",
-    TXT_CONST_YARD:"Construction Yard",
-    TXT_CHOOSE_SIDE:"Choose a Faction",
-    TXT_OPTIONS:"Options",
-    TXT_GAME_CONTROLS:"Controls",
-    TXT_SOUND_CONTROLS:"Audio",
-    TXT_VISUAL_CONTROLS:"Video",
-    TXT_QUIT_MISSION:"Quit Mission",
-    TXT_RESUME_MISSION:"Resume Mission",
-    TXT_FAME:"Records",
-    TXT_SCENARIO_WON:"Victory",
-    TXT_SCENARIO_LOST:"Defeat",
-    TXT_TIBERIUM:"Crystal",
-    TXT_TIBERIUM_ON:"Crystal On",
-    TXT_TIBERIUM_OFF:"Crystal Off"
-  };
-  if(Object.prototype.hasOwnProperty.call(labels,name))return labels[name];
+  const authored=authoredText(name);
+  if(authored!==null)return authored;
   // Internal names such as TXT_MAP_GDISTAT0 embed the side names.
   return name.slice(4).replace(/GDI/g,"ASTER").replace(/NOD/g,"FORGE").split("_").map(part=>({
     GDI:"Aster",NOD:"Forge",TIB:"Crystal",TIBERIUM:"Crystal",
@@ -151,7 +211,9 @@ function build(outdir,options={}) {
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
     "LED.FNT","VCR.FNT","GRAD6FNT.FNT","8FAT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"];
   const fonts=[...new Set(fontNames)];
-  for(const name of fonts)write(stage,name,font);
+  const gradientFonts=new Set(["GRAD6FNT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"]);
+  const gradientFont=encodeFont(4);verifyFont(gradientFont);
+  for(const name of fonts)write(stage,name,gradientFonts.has(name)?gradientFont:font);
   write(stage,"MOUSE.SHP",mouse);
   write(stage,"BTEXTURE.SHP",texture);
   write(stage,"PREPICK.CPS",cps);
@@ -206,4 +268,4 @@ if(require.main===module){
     console.log("Created original boot pack: "+result.files.map(f=>f.path).join(", "));
   }catch(e){console.error(e.stack||e.message);process.exitCode=1;}
 }
-module.exports={build,stringTable,shape,nativeMixer};
+module.exports={build,stringTable,shape,nativeMixer,originalText,hasAuthoredText};
