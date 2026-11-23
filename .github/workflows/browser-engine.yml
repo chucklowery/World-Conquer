@@ -332,3 +332,39 @@ jobs:
             build/browser-engine/stock-engine-metrics.json
             build/browser-engine/stock-engine-audit.log
           if-no-files-found: ignore
+
+  stock-scenario:
+    name: stock-scenario
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    needs: wasm-vanillatd
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve built stock engine
+        uses: actions/download-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: build/browser-engine
+      - name: Retrieve original boot pack
+        uses: actions/download-artifact@v4
+        with:
+          name: world-conquer-boot-pack
+          path: build/browser-engine/data
+      - name: Install headless Chromium
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install chromium
+          npm exec --prefix browser/engine -- playwright install-deps chromium
+      - name: Probe original stock scenario path (report only until M2c phase 7)
+        env:
+          STOCK_SCENARIO_REPORT_ONLY: '1'
+        run: node browser/engine/check-stock-scenario.js
+      - name: Publish stock-scenario audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-scenario-audit
+          path: |
+            build/browser-engine/stock-scenario-audit.json
+            build/browser-engine/stock-scenario-*.png
+          if-no-files-found: warn
