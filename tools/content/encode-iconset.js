@@ -39,6 +39,7 @@ function decodeIconset(buffer){
      flags<start||mapAt<flags||mapAt+count>buffer.length||
      (flags-start)%(width*height)!==0)throw Error("Malformed icon-set");
   const n=(flags-start)/(width*height);
+  if(!n||flags+n>mapAt)throw Error("Malformed icon-set transparency offsets");
   const icons=Array.from({length:n},(_,i)=>[...buffer.subarray(start+i*width*height,start+(i+1)*width*height)]);
   const map=[...buffer.subarray(mapAt,mapAt+count)];
   if(map.some(i=>i>=n))throw Error("Icon map exceeds image count");
