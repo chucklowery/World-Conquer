@@ -3267,6 +3267,20 @@
       }
     },
     {
+      "name": "TGREEN.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "256 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
       "name": "TITLE.CPS",
       "container": "loose|GENERAL.MIX",
       "format": "CPS",
@@ -3277,6 +3291,34 @@
       "contract": {
         "size": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "TLIGHT.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "256 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
+      "name": "TMOUSE.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "1280 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
       }
     },
     {
@@ -3324,6 +3366,20 @@
       }
     },
     {
+      "name": "TRED.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "256 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
       "name": "TREX.SHP",
       "container": "loose",
       "format": "SHP",
@@ -3355,6 +3411,90 @@
         "sharedFilenameWith": [
           "WF-0294"
         ]
+      }
+    },
+    {
+      "name": "TSHADE.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "256 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
+      "name": "TSHADOW.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "1280 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
+      "name": "TTRANS.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "3328 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
+      "name": "TUNITS.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "512 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
+      "name": "TWHITE.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "512 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
+      "name": "TYELLOW.MRF",
+      "container": "loose",
+      "format": "MRF",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:415-490"
+      ],
+      "contract": {
+        "size": "256 bytes",
+        "frameCount": "N/A",
+        "source": "engine-array-size; neutral generated identity table"
       }
     },
     {
