@@ -98,6 +98,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /*
 ** New sidebar for GlyphX multiplayer. ST - 3/26/2019 12:24PM
