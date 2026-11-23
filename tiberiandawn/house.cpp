@@ -98,6 +98,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /*
 ** New sidebar for GlyphX multiplayer. ST - 3/26/2019 12:24PM
@@ -1723,6 +1726,12 @@ void HouseClass::Harvested(unsigned tiberium)
         IsMaxedOut = true;
     }
     HarvestedCredits += tiberium;
+#ifdef __EMSCRIPTEN__
+    if (Tiberium != oldtib) {
+        std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
+        std::fflush(stdout);
+    }
+#endif
     Silo_Redraw_Check(oldtib, Capacity);
 }
 
@@ -1777,6 +1786,12 @@ void HouseClass::Spend_Money(unsigned money)
     }
     Silo_Redraw_Check(oldtib, Capacity);
     CreditsSpent += money;
+#ifdef __EMSCRIPTEN__
+    if (oldtib != Tiberium || money) {
+        std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
+        std::fflush(stdout);
+    }
+#endif
 }
 
 /***********************************************************************************************
@@ -1801,6 +1816,12 @@ void HouseClass::Refund_Money(unsigned money)
 {
     Validate();
     Credits += money;
+#ifdef __EMSCRIPTEN__
+    if (money) {
+        std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
+        std::fflush(stdout);
+    }
+#endif
 }
 
 /***********************************************************************************************
