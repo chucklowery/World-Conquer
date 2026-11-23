@@ -1,7 +1,24 @@
 {
   "schema": 1,
-  "scope": "static boot/menu candidate inventory; decoder contracts not yet verified",
+  "scope": "M2a original boot/menu and provisional engine tactical-shape inventory; theater/icon formats and dynamic misses pending",
   "files": [
+    {
+      "name": "120MM.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:109"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0228"
+        ]
+      }
+    },
     {
       "name": "12GREEN.FNT",
       "container": "CCLOCAL.MIX|LOCAL.MIX",
@@ -33,6 +50,24 @@
       }
     },
     {
+      "name": "50CAL.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:65"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0236",
+          "WF-0237"
+        ]
+      }
+    },
+    {
       "name": "6POINT.FNT",
       "container": "CCLOCAL.MIX|LOCAL.MIX",
       "format": "FNT",
@@ -61,6 +96,156 @@
       }
     },
     {
+      "name": "A10.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/aadata.cpp:55"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 80,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "AFLD.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:841"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "APC.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:907"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ARCO.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1199"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ART-EXP1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:956"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ARTY.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:531"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ATOMDOOR.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1923"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ATOMICDN.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:373"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ATOMICUP.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:351"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ATOMSFX.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1899"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "ATTRACT2.CPS",
       "container": "unverified",
       "format": "CPS",
@@ -82,6 +267,160 @@
       }
     },
     {
+      "name": "ATWR.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:372"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BARB.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3446"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0193"
+        ]
+      }
+    },
+    {
+      "name": "BEACON.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2237"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BGGY.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:744"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BIKE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:797"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BIO.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1046"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BOAT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:960"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BOMB.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:307"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BOMBLET.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:285"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "BRIK.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3395"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0194"
+        ]
+      }
+    },
+    {
       "name": "BTEXTURE.SHP",
       "container": "unverified",
       "format": "SHP",
@@ -93,6 +432,222 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "BURN-L.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:364"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0151"
+        ]
+      }
+    },
+    {
+      "name": "BURN-M.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:343"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0152"
+        ]
+      }
+    },
+    {
+      "name": "BURN-S.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:322"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0153"
+        ]
+      }
+    },
+    {
+      "name": "C1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:587"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C10.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:1193"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C17.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/aadata.cpp:219"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 80,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:654"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:722"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C4.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:789"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C5.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:856"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C6.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:923"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C7.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:990"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C8.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:1057"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "C9.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:1124"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
       }
     },
     {
@@ -109,6 +664,171 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "CHAN.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:1394"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 258,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-E.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:755"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-N.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:629"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-NE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:776"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-NW.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:650"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-S.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:713"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-SE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:734"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-SW.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:692"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEM-W.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:671"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEMBALL.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2167"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "CHEW.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:439"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
       }
     },
     {
@@ -186,6 +906,38 @@
       }
     },
     {
+      "name": "CYCL.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3344"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0196"
+        ]
+      }
+    },
+    {
+      "name": "DELPHI.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:1327"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 375,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "DEMO.MIX",
       "container": "loose",
       "format": "MIX",
@@ -246,6 +998,590 @@
       }
     },
     {
+      "name": "DEVIATOR.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1945"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "DOLLAR.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1967"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "DRAGON.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:153"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0239",
+          "WF-0240"
+        ]
+      }
+    },
+    {
+      "name": "E1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:100"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 532,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "E1ROT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1414"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0099",
+          "WF-0100",
+          "WF-0101"
+        ]
+      }
+    },
+    {
+      "name": "E2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:170"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 660,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "E2ROT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1495"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0103",
+          "WF-0104",
+          "WF-0105"
+        ]
+      }
+    },
+    {
+      "name": "E3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:239"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 548,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "E3ROT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1576"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0107",
+          "WF-0108",
+          "WF-0109"
+        ]
+      }
+    },
+    {
+      "name": "E4.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:309"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 660,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "E4ROT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1657"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0111",
+          "WF-0112",
+          "WF-0113"
+        ]
+      }
+    },
+    {
+      "name": "E5.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:377"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 660,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "E6.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:447"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 248,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "EARTH.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1989"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "EMPULSE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2011"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "EYE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:213"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FACT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:534"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FBALL1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:820"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FIRE1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1158"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0118"
+        ]
+      }
+    },
+    {
+      "name": "FIRE2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1256"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0116"
+        ]
+      }
+    },
+    {
+      "name": "FIRE3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1110"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0120"
+        ]
+      }
+    },
+    {
+      "name": "FIRE4.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1206"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0122"
+        ]
+      }
+    },
+    {
+      "name": "FIX.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1250"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAGFLY.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2189"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-E.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:583"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-N.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:457"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-NE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:604"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-NW.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:478"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-S.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:541"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-SE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:562"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-SW.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:520"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME-W.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:499"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FLAME.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:263"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0226"
+        ]
+      }
+    },
+    {
+      "name": "FLMSPT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1304"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FRAG1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:842"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FRAG3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:866"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "FTNK.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:105"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "GDIMOVIES.MIX",
       "container": "loose",
       "format": "MIX",
@@ -297,6 +1633,21 @@
       }
     },
     {
+      "name": "GORE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:417"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "GRAD6FNT.FNT",
       "container": "CCLOCAL.MIX|LOCAL.MIX",
       "format": "FNT",
@@ -309,6 +1660,141 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "GTWR.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:320"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "GUN.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:475"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "GUNFIRE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1326"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "HAND.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1148"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "HARV.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:584"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "HELI.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/aadata.cpp:137"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 80,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "HOSP.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:994"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "HPAD.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:688"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "HQ.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:739"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
       }
     },
     {
@@ -325,6 +1811,66 @@
       }
     },
     {
+      "name": "HTNK.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:317"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "INVUN.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2033"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "IONSFX.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1874"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "JEEP.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:691"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "LANGUAGE.MIX",
       "container": "loose",
       "format": "MIX",
@@ -336,6 +1882,21 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "LASER.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:329"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
       }
     },
     {
@@ -369,6 +1930,181 @@
       }
     },
     {
+      "name": "LST.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:423"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "LTNK.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:211"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MCV.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:638"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MHQ.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:370"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MINE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2055"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MINIGUN.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1832"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0136",
+          "WF-0137",
+          "WF-0138",
+          "WF-0139",
+          "WF-0140",
+          "WF-0141",
+          "WF-0142"
+        ]
+      }
+    },
+    {
+      "name": "MISS.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3240"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MISSILE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bbdata.cpp:395"
+      ],
+      "contract": {
+        "size": "16x16",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0235"
+        ]
+      }
+    },
+    {
+      "name": "MISSILE2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2121"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MLRS.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:477"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MOEBIUS.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:1260"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 258,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "MOUSE.SHP",
       "container": "unverified",
       "format": "SHP",
@@ -382,6 +2118,23 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "MOVEFLSH.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2211"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0145"
+        ]
       }
     },
     {
@@ -400,6 +2153,81 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "MSAM.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:854"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "MTNK.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:264"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "NAPALM1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:978"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "NAPALM2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1000"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "NAPALM3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1022"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
       }
     },
     {
@@ -431,6 +2259,96 @@
       }
     },
     {
+      "name": "NUK2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:943"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "NUKE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:892"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "OBLI.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:424"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ORCA.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/aadata.cpp:178"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 80,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "PIFF.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1066"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "PIFFPIFF.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1088"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "PREPICK.CPS",
       "container": "unverified",
       "format": "CPS",
@@ -442,6 +2360,205 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "PROC.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:585"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "PYLE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1097"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "RAPID.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2077"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "RAPT.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:106"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0290"
+        ]
+      }
+    },
+    {
+      "name": "RMBO.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/idata.cpp:517"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 468,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ROAD.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1302"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0198"
+        ]
+      }
+    },
+    {
+      "name": "ROCK1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:552"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ROCK2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:571"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ROCK3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:590"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ROCK4.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:609"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ROCK5.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:628"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ROCK6.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:647"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "ROCK7.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:666"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
       }
     },
     {
@@ -457,6 +2574,61 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "SAM.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:790"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "SAMFIRE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:254"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0158",
+          "WF-0159",
+          "WF-0160",
+          "WF-0161",
+          "WF-0162",
+          "WF-0163",
+          "WF-0164"
+        ]
+      }
+    },
+    {
+      "name": "SBAG.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3293"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0199"
+        ]
       }
     },
     {
@@ -492,6 +2664,66 @@
       }
     },
     {
+      "name": "SILO.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:636"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "SMOKE_M.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1679"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "SMOKEY.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:1044"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "SMOKLAND.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:297"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "SOUNDS.MIX",
       "container": "loose",
       "format": "MIX",
@@ -523,6 +2755,428 @@
       }
     },
     {
+      "name": "SPLIT2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:419"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "SPLIT3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:438"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "STEALTH2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:2099"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "STEG.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:84"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0292"
+        ]
+      }
+    },
+    {
+      "name": "STNK.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:158"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T01.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:77"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T02.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:96"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T03.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:115"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T04.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:134"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T05.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:153"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T06.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:172"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T07.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:191"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T08.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:210"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T09.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:229"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T10.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:248"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T11.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:267"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T12.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:286"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T13.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:305"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T14.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:324"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T15.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:343"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T16.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:362"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T17.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:381"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "T18.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:400"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "TC01.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:457"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "TC02.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:476"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "TC03.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:495"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "TC04.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:514"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "TC05.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:533"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 32,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "TEMPERAT.PAL",
       "container": "unverified",
       "format": "PAL",
@@ -551,6 +3205,36 @@
       }
     },
     {
+      "name": "TMPL.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:162"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "TRAN.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/aadata.cpp:96"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 80,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "TRANSIT.MIX",
       "container": "loose",
       "format": "MIX",
@@ -562,6 +3246,40 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "TREX.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:62"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0293"
+        ]
+      }
+    },
+    {
+      "name": "TRIC.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:40"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0294"
+        ]
       }
     },
     {
@@ -608,6 +3326,575 @@
       }
     },
     {
+      "name": "V01.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1355"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V02.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1406"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V03.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1457"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V04.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1508"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V05.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1559"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V06.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1610"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V07.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1661"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V08.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1712"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V09.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1763"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V10.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1814"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V11.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1865"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V12.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1916"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0214"
+        ]
+      }
+    },
+    {
+      "name": "V13.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:1967"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0215"
+        ]
+      }
+    },
+    {
+      "name": "V14.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2018"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0216"
+        ]
+      }
+    },
+    {
+      "name": "V15.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2069"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0217"
+        ]
+      }
+    },
+    {
+      "name": "V16.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2120"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0218"
+        ]
+      }
+    },
+    {
+      "name": "V17.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2171"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0219"
+        ]
+      }
+    },
+    {
+      "name": "V18.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2222"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0220"
+        ]
+      }
+    },
+    {
+      "name": "V19.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2273"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V20.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2324"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V21.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2375"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V22.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2426"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V23.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2477"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V24.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2528"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V25.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2579"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V26.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2630"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V27.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2681"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V28.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2732"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V29.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2783"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V30.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2834"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V31.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2885"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V32.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2936"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V33.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:2987"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V34.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3038"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V35.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3089"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V36.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3140"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "V37.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3190"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
       "name": "VCR.FNT",
       "container": "CCLOCAL.MIX|LOCAL.MIX",
       "format": "FNT",
@@ -619,6 +3906,100 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "VEH-HIT1.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:890"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "VEH-HIT2.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:798"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0171"
+        ]
+      }
+    },
+    {
+      "name": "VEH-HIT3.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/adata.cpp:934"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "VICE.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/udata.cpp:52"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 192,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "WEAP.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:264"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "WOOD.SHP",
+      "container": "loose",
+      "format": "SHP",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/bdata.cpp:3497"
+      ],
+      "contract": {
+        "size": "48x48",
+        "frameCount": 128,
+        "source": "provisional-upper-bound",
+        "sharedFilenameWith": [
+          "WF-0222"
+        ]
       }
     },
     {
