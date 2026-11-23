@@ -2894,6 +2894,21 @@
       }
     },
     {
+      "name": "T01.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/tdata.cpp:77",
+        "tiberiandawn/terrain.cpp:357"
+      ],
+      "contract": {
+        "size": "32x32",
+        "frameCount": 16,
+        "source": "provisional-upper-bound"
+      }
+    },
+    {
       "name": "T02.SHP",
       "container": "loose",
       "format": "SHP",
@@ -3278,6 +3293,198 @@
         "size": "256 bytes",
         "frameCount": "N/A",
         "source": "engine-array-size; neutral generated identity table"
+      }
+    },
+    {
+      "name": "TI1.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI10.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI11.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI12.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI2.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI3.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI4.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI5.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI6.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI7.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI8.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
+      }
+    },
+    {
+      "name": "TI9.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "SHP theater tactical shape",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/odata.cpp:162-353",
+        "tiberiandawn/odata.cpp:828-875",
+        "tiberiandawn/map.cpp:1387"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 16,
+        "source": "provisional-upper-bound; growth stages 0..11"
       }
     },
     {
