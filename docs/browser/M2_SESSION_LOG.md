@@ -163,3 +163,43 @@ Six reviewer threads (2026-11-23) were addressed on `m2b/theater-roster-scenario
 - Open issues: prior M2b review-fix audit reports 160 lookup events including self-generated fading-table write requests; exact runtime classification and screenshots are not yet available. Phase 7 gate, Phase 8 interactive play, and Phase 9 exit evidence remain unverified. These are not completed phases.
 
 - Phase 7 follow-up checkpoint: `291d950d22dd622be0ec4b5efed15b1c1e7a0c54` corrected the path separator regular expression and a literal newline escape in the strict predicate. JavaScript source parsing with V8 `Function` (after removing the Node shebang) → PASS. This is syntax validation only, not a Node/Chromium run. [First PR workflow batch](https://github.com/chucklowery/World-Conquer/actions/runs/45116942529) still in progress when checked; it predates this correction.
+
+### Owner review findings and narrowed scope — 2026-11-23
+
+Independent review of `vanilla` at `6db6bcd` (M2a + M2b merged), with a
+**local** Emscripten 3.1.68 build, the generated pack, and
+`check-stock-scenario.js` in Chromium (report mode):
+
+- Pack: builds deterministically; coverage 258/258; `test-iconset`,
+  `test-scenario`, `test-theater` and the C++ icon-set accessor test pass.
+  **`gameplay` requirements: 0** (sidebar, cameos and HUD not inventoried).
+- The Skirmish setup dialog renders and works; the match starts
+  (`scenario.loaded=SCM94EA`), with `fatal=null` and no page errors.
+- **The battlefield draws black.** At match start and 15 s later, only a
+  white crosshatch pattern around the top-left start area (slightly larger
+  after 15 s; probably the revealed-shroud edge) and the tab labels are
+  drawn. No terrain grid and no units are visible. Keyboard scrolling did
+  not reveal anything else.
+- **Not a missing-file problem:** all 160 misses are optional (102 `.INI`
+  scenario-list scans, 37 `.AUD`, 11 `.MRF` fading tables the engine
+  writes, update/movie/score/speech MIX archives, `EXPAND.DAT`,
+  `RULES.INI`, `MISSION.INI`). No `.SHP`, `.TEM`, palette or theater miss.
+- **Not the palette:** `TEMPERAT.PAL` has 255 non-black entries, and the
+  clear tile uses indices 63 and 45 (`tools/content/theater.js`).
+- **"GDI" is visible** as the side name in the Skirmish dialog: an EA
+  trademark on screen.
+- Minor: M2a's `building.cpp` change converted the file from ISO-8859
+  (CP437) to UTF-8; only the `Debug_Dump` monitor text is affected. The
+  earlier note that the 656 non-ASCII bytes were preserved is inaccurate.
+- Local-run note: `test-pack.js` fails when the checkout itself is under the
+  OS temp directory (its "refuse the repo root" check is then allowed). That
+  is an artifact of the reviewer's checkout location, not an M2 defect.
+
+**Scope change (docs on `vanilla` at `a1bcb04`, merged into this branch):**
+M2c now covers Phases 7–8, a visible battlefield: find and fix why terrain
+and units are not drawn; automated non-black screenshot checks; strict mode
+up to match start; remove visible trademarks; MCV `deployed` event; sidebar
+with cameos; `gameplay` inventory; slice frame contracts. The end-to-end
+game and the roadmap evidence moved to the new session **M2d** (Phases
+9–10). This PR (#59) remains the M2c PR. See Phase 7 of
+`docs/milestones/M2-original-data-pack.md` for the suggested diagnosis order.
