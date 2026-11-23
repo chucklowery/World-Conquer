@@ -19,7 +19,7 @@ const server=http.createServer((req,res)=>{
     res.end(data);
   });
 });
-const audit={schema:1,pathDecision:"Skirmish (default; pending runtime confirmation)",status:"incomplete",
+const audit={schema:1,pathDecision:"pending (Skirmish candidate)",status:"incomplete",
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
   pageErrors:[],screenshots:[],input:[],ciSha:process.env.GITHUB_SHA||"local"};
 const consoleLines=[];
@@ -68,21 +68,21 @@ async function main(){
       const log=await page.evaluate(m=>document.getElementById("log").textContent.slice(m),marker);
       audit.input.push({label,target:[x,y],observed:log.match(/\[browser-input\] mouse-down x=(-?\d+) y=(-?\d+)/)?.slice(1)||null});
     }
-    // Coordinates derive from the 640x400 menu layout:
-    // menus.cpp Main_Menu D_MULTI_{X,Y,W,H}, mplayer.cpp
-    // Select_MPlayer_Game d_modemserial_*, nulldlg.cpp d_ok_*.
-    await clickGame(320,151,"Multiplayer");
-    await page.waitForTimeout(1500);
+    // NEWMENU (defines.h): Multiplayer center y=119, not the Intro row y=151.
+    // Select_MPlayer_Game uses the Skirmish row; nulldlg OK center y=359.
+    await clickGame(320,119,"Multiplayer");
+    await page.waitForFunction(()=>document.getElementById("log").textContent.includes("[browser-game] menu.choice"),
+      null,{timeout:12000});
+    await page.waitForTimeout(400);
     await screenshot("multiplayer");
     await clickGame(320,91,"Skirmish");
     await page.waitForTimeout(2000);
     await screenshot("scenario-dialog");
     // The first pack intentionally contains no SCM scenario. This click
     // tests the real scenario dialog and records missing input/asset data.
-    await clickGame(126,349,"Scenario dialog OK");
+    await clickGame(126,359,"Scenario dialog OK");
     await page.waitForTimeout(7000);
     await screenshot("after-confirm");
-    audit.pathDecision="Skirmish";
   }catch(error){
     audit.error=String(error.stack||error);
     audit.status="error";
@@ -101,6 +101,7 @@ async function main(){
     audit.misses=[];audit.fatal=null; audit.lastGameLines=[];audit.lastEventLines=[];audit.stage="startup";
     for(const line of lines)parse(line);
     const reached=audit.lastGameLines.some(x=>x.includes("scenario.request="));
+    if(reached)audit.pathDecision="Skirmish (scenario.request observed)";
     if(!audit.error)audit.status=reached?"scenario-request":"blocked-before-scenario";
     if(process.env.STOCK_SCENARIO_REPORT_ONLY!=="1"&&
         (!reached||audit.fatal||audit.pageErrors.length||audit.error)){
