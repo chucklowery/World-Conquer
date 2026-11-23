@@ -11,6 +11,7 @@ of M1 (roughly 6–8 hours, one branch, one PR).
 | [`AGENT_GUIDE.md`](AGENT_GUIDE.md) | Shared context, hard rules, build/test commands, code map, PR and report format. **Include it in every session.** |
 | [`M1-engine-in-browser.md`](M1-engine-in-browser.md) | M1 as a single-session plan (Phases 0–9) and its exit gate |
 | [`M2-original-data-pack.md`](M2-original-data-pack.md) | M2 as three sessions (M2a: Phases 0–3, M2b: 4–6, M2c: 7–9), with session gates and the exit gate |
+| [`UI-command-interface.md`](UI-command-interface.md) | The user interface plan: a design brief modeled on the late-90s command-bar style, six sessions (UI-A to UI-F) with gates, and the prompts to start, resume and iterate them. UI-A can start now; UI-B onward needs M2c merged. |
 
 ## Order of work
 

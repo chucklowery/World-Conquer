@@ -132,6 +132,13 @@ lookups, built entirely by CI. The map, sidebar and radar render; selection,
 movement, scrolling, building and harvesting respond; and the page never
 stalls for more than 1 s.
 
+### UI track: command interface (parallel with M2–M5)
+
+Agent instructions: [`docs/milestones/UI-command-interface.md`](milestones/UI-command-interface.md)
+(six sessions, UI-A to UI-F). The engine's own sidebar, radar, cursors and
+dialogs are restyled with original art modeled on the late-90s command-bar
+layout. UI-A (design spec) can start now; UI-B onward needs M2c.
+
 ### M3: First playable skirmish (2–4 weeks)
 
 - [ ] Two factions (Aster and Forge) as engine houses with distinct rosters
