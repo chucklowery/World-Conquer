@@ -79,7 +79,7 @@ jobs:
           node tools/content/test-iconset.js
           node tools/content/test-scenario.js
           node -e 'require("fs").writeFileSync("build/native/test-m2.icn",require("./tools/content/encode-iconset.js").encodeIconset({icons:[Array(576).fill(42)]}))'
-          g++ -std=c++11 -DTRUE_FALSE_DEFINED -include cstdint -I. -Icommon -Itiberiandawn tests/test-m2-iconset.cpp tiberiandawn/iconset.cpp -o build/native/test-m2-iconset
+          g++ -std=c++11 -DTRUE_FALSE_DEFINED -include cstdint -I. -Icommon -Itiberiandawn tests/test-m2-iconset.cpp tiberiandawn/iconset.cpp build/native/common/libcommon.a -lpthread -ldl -o build/native/test-m2-iconset
           build/native/test-m2-iconset build/native/test-m2.icn
           node tools/content/pack.js build build/browser-engine/data
           g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
