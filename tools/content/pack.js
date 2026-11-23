@@ -1,13 +1,24 @@
 #!/usr/bin/env node
 "use strict";
 // Single M2 pack entrypoint. Source-owned, reproducible data only.
-const fs=require("node:fs"),path=require("node:path"),crypto=require("node:crypto"),cp=require("node:child_process");
-const {build:buildBoot}=require("./boot-pack.js");
+const fs=require("node:fs"),path=require("node:path"),os=require("node:os"),crypto=require("node:crypto"),cp=require("node:child_process");
+const {build:buildBoot,nativeMixer}=require("./boot-pack.js");
 const root=path.resolve(__dirname,"../..");
 const requirementsPath=path.join(root,"game/content/pack/requirements.json");
 const sha256=buffer=>crypto.createHash("sha256").update(buffer).digest("hex");
 function build(outdir){
   outdir=path.resolve(outdir);
+  // Never recursively delete arbitrary user work. CI builds under build/;
+  // reproducibility tests use newly created directories beneath OS temp.
+  const allowedRoots=[path.join(root,"build"),fs.realpathSync(os.tmpdir())];
+  if(fs.existsSync(outdir)&&fs.lstatSync(outdir).isSymbolicLink())
+    throw Error("Pack output must not be a symbolic link: "+outdir);
+  const parent=fs.realpathSync(path.dirname(outdir));
+  const realTarget=path.join(parent,path.basename(outdir));
+  if(!allowedRoots.some(base=>realTarget.startsWith(base+path.sep)))
+    throw Error("Pack output must be inside build/ or the OS temp directory: "+outdir);
+  if(fs.existsSync(outdir)&&fs.readdirSync(outdir).length&&!fs.existsSync(path.join(outdir,"pack.json")))
+    throw Error("Refusing to overwrite non-pack directory: "+outdir);
   fs.rmSync(outdir,{recursive:true,force:true});
   fs.mkdirSync(outdir,{recursive:true});
   buildBoot(outdir);
@@ -54,14 +65,14 @@ function build(outdir){
     sourceFiles:entry.path==="SCM94EA.INI"?["game/content/pack/scenario-probe.ini"]:
       wireframeNames.has(entry.path)?
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
-      ["tools/content/boot-pack.js","game/content/pack/requirements.json"],
+      ["tools/content/boot-pack.js","game/content/pack/boot-requirements.json"],
     license:"CC0-1.0",sourceRevision:revision
   }]));
   const manifest={schema:1,packVersion:"m2-"+revision.slice(0,12),files};
   const names=new Set(files.map(f=>f.path.toUpperCase()));
   // Only report an archive member as produced when the *built archive*
   // lists it. Inventory declarations are not evidence of a MIX member.
-  const mixer=process.env.WC_MIXTOOL||path.join(root,"build/native/vanillamix");
+  const mixer=nativeMixer();
   const archiveContents=new Set();
   const mixAudit=path.join(outdir,"_mix_audit");
   fs.mkdirSync(mixAudit,{recursive:true});
