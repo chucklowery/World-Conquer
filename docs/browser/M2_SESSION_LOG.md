@@ -132,3 +132,16 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - Provenance now records both `encode-iconset.js` and `encode-shape.js` for source-generated theater archives (implementation `fd894b97d67da6fa01d86d883b8c94ee41a41c9c`).
 - **Final head evidence pending:** a fresh PR-head CI is required for the formatting and provenance corrections. Prior successful engine/browsers at `7f42b636d52af55579a7e4adf221860a1e9915c6` remain documented above. Do not infer passing final head until those checks complete.
 - **M2b session gate already observed on the implementation head**; ready-for-review transition occurs after the new final-head `stock-engine` and `stock-scenario` jobs are verified. Remaining 150 misses are a M2c follow-up, not a zero-miss claim.
+
+### PR #58 review corrections (supersedes earlier MRF claims)
+
+Six reviewer threads (2026-11-23) were addressed on `m2b/theater-roster-scenario`:
+
+- **Clear-tile safety:** `CLEAR1.TEM` now encodes **16 logical map slots** (each referencing one original 24×24 image), covering `Clear_Icon()` 0–15. The `CLEAR1.TEM` requirement now distinguishes 16 logical icons from 1 unique image.
+- **Fading table clarification:** the non-`_RETRIEVE` stock engine generates and **writes**, rather than reads, the ten `T*.MRF` fading tables in `display.cpp:415-490`. Removed our ten unnecessary placeholder MRF files and ten incorrect required-content entries. The earlier claim that ten MRF misses were resolved by supplying required original data **was inaccurate**. Earlier M2b audit showed **163 → 150 total lookup misses**, but only **three** eliminated names are demonstrated newly supplied loadable game assets: `TEMPERAT.MIX`, `TEMPICNH.MIX`, and `SCM94EA.BIN`. The other ten were write-path lookups, not missing input assets. The aggregate count is not a measure of delivered content; it must be remeasured following removal.
+- **Scenario validation:** every terrain template, waypoint, overlay, tree and unit must lie inside the declared map rectangle in addition to the legal global grid. Added boundary failure tests, including a small-map off-map start waypoint.
+- **Obsolete fixture:** removed unused `game/content/pack/scenario-probe.ini`. The maintained authored source is `game/content/scenarios/foundry-test-range.json`.
+- **MIX coverage:** `test-theater.js` extracts real members from the generated `TEMPERAT.MIX` and `TEMPICNH.MIX`; checks the identical 15-member inventories, 16-slot clear map, 1-slot water iconset, all twelve 16-frame resource sprites, and 16-frame tree. The browser CI pack step runs this test.
+- **Decoder hardening:** `decodeIconset` now rejects empty image sections and overlapping trans-flag/map spans, with negative tests.
+
+**Evidence:** earlier run `45102805481` is pre-review and does not validate these changes. Review-fix CI and Chromium scenario-load checks must pass on the review-fix head before calling them verified. The source-generated placeholders remain original; gameplay, HUD and zero-miss gate are outside M2b.
