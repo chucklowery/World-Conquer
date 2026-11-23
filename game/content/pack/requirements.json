@@ -1051,13 +1051,16 @@
       "format": "SHP",
       "requiredFor": "scenario",
       "referencedAt": [
-        "tiberiandawn/idata.cpp:100"
+        "tiberiandawn/idata.cpp:100",
+        "tiberiandawn/idata.cpp:63",
+        "tiberiandawn/infantry.cpp:629"
       ],
       "contract": {
         "size": "24x24",
         "frameCount": 532,
-        "source": "provisional-upper-bound",
-        "sharedFilenameWith": []
+        "source": "frame-index-audited",
+        "sharedFilenameWith": [],
+        "evidence": "DoControls facing stride; highest gesture is frame 531"
       }
     },
     {
@@ -2176,13 +2179,15 @@
       "format": "SHP",
       "requiredFor": "scenario",
       "referencedAt": [
-        "tiberiandawn/udata.cpp:264"
+        "tiberiandawn/udata.cpp:264",
+        "tiberiandawn/unit.cpp:2214"
       ],
       "contract": {
         "size": "32x32",
-        "frameCount": 192,
-        "source": "provisional-upper-bound",
-        "sharedFilenameWith": []
+        "frameCount": 64,
+        "source": "frame-index-audited",
+        "sharedFilenameWith": [],
+        "evidence": "32 body headings plus 32 turret headings"
       }
     },
     {
