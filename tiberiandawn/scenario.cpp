@@ -46,6 +46,9 @@
 
 #include "function.h"
 #include "common/framelimit.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 extern int PreserveVQAScreen;
 
@@ -403,6 +406,11 @@ void Clear_Scenario(void)
  *=============================================================================================*/
 void Do_Win(void)
 {
+#ifdef __EMSCRIPTEN__
+    // Test log: the match ended for the local player (M3 win/loss checks).
+    std::printf("[browser-event] match-end result=won\n");
+    std::fflush(stdout);
+#endif
     Map.Set_Default_Mouse(MOUSE_NORMAL);
     Hide_Mouse();
 
@@ -623,6 +631,11 @@ void Do_Win(void)
  *=============================================================================================*/
 void Do_Lose(void)
 {
+#ifdef __EMSCRIPTEN__
+    // Test log: the match ended for the local player (M3 win/loss checks).
+    std::printf("[browser-event] match-end result=lost\n");
+    std::fflush(stdout);
+#endif
     Map.Set_Default_Mouse(MOUSE_NORMAL);
     Hide_Mouse();
 

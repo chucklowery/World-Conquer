@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     if (LCW_Uncompress(cps.data() + 10, pixels.data(), pixels.size()) != 64000)
         return 6;
     for (const auto pixel : pixels)
-        if (pixel != 5)
+        if (pixel != 139) // title fill (tools/content/boot-colors.js TITLE_BACKGROUND)
             return 7;
     std::puts("PASS: generated font header and engine LCW picture decode");
     return 0;

@@ -6,6 +6,7 @@
 const fs=require("node:fs"),path=require("node:path");
 const {encodeTacticalShape,decodeTacticalShape}=require("./encode-shape.js");
 const {encodeIconset}=require("./encode-iconset.js");
+const {encodeWSA}=require("./encode-wsa.js");
 const ROOT=path.resolve(__dirname,"../..");
 const REQUIREMENTS=path.join(ROOT,"game/content/pack/requirements.json");
 
@@ -61,6 +62,31 @@ function cameo(upper,stage,count,width,height){
   return encodeTacticalShape({frames:Array.from({length:count},()=>({width,height,pixels}))});
 }
 
+// End-of-match score background (score.cpp Multi_Score_Presentation): a
+// 320x200 animation drawn into PseudoSeenBuff, then scaled 2x. The engine
+// prints names and scores over it, so it is a plain dark panel whose frame
+// draws in over the animation. No palette is attached (flags 0): the screen
+// uses the current game palette.
+function scoreBackground(count){
+  const W=320,H=200;
+  const base=Array.from({length:W*H},(_,i)=>{
+    const x=i%W,y=Math.floor(i/W);
+    if(y>=8&&y<=26&&x>=8&&x<W-8)return 13;          // title band
+    return 141;                                     // panel
+  });
+  const frames=[];
+  for(let f=0;f<count;f++){
+    const reach=Math.ceil((f+1)/count*(W/2-4));     // border grows from the centre
+    frames.push(base.map((c,i)=>{
+      const x=i%W,y=Math.floor(i/W);
+      const edge=x===4||x===W-5||y===4||y===H-5;
+      const inside=x>=4&&x<=W-5&&y>=4&&y<=H-5;
+      return edge&&inside&&Math.abs(x-W/2)<=reach?15:c;
+    }));
+  }
+  return encodeWSA({width:W,height:H,frames});
+}
+
 // Kind-specific placeholder contracts. Frame counts are safe upper bounds
 // unless a requirement records an exact, code-referenced contract.
 function placeholder(name,req,tmpl,stage){
@@ -74,6 +100,7 @@ function placeholder(name,req,tmpl,stage){
   const w=Number.isInteger(c.width)?c.width:null,h=Number.isInteger(c.height)?c.height:null;
   const n=Number.isInteger(c.frames)?c.frames:Number.isInteger(c.framesUsedAtMost)?c.framesUsedAtMost:null;
   // TRANS.ICN: placement cursor icons 0 (clear) and 2 (blocked), cell.cpp:1120.
+  if(upper==="MLTIPLYR.WSA")return scoreBackground(n||8);
   if(upper==="TRANS.ICN")return encodeIconset({icons:[tile(0,15),tile(0,12),tile(0,8)]});
   // SHADOW.SHP is drawn with SHAPE_GHOST through ShadowTrans (display.cpp:
   // 2530); only colours WHITE+1 (16), WHITE, LTGREY and GREY are translucent

@@ -136,13 +136,25 @@ Evidence: 2026-11-23 · `58d86a51e71f42b199e8a1333211990d3099a4a3` · [stock-sce
 
 ### M3: First playable skirmish (2–4 weeks)
 
-- [ ] Two factions (Aster and Forge) as engine houses with distinct rosters
-      defined in INI.
-- [ ] The engine AI builds, harvests and attacks on the original data.
-- [ ] Two or three original skirmish maps; win/loss screens; restart.
+Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
+
+- [x] Two factions (Aster and Forge) as engine houses with distinct rosters.
+      The rosters come from the engine's type tables (`Ownable`), not INI;
+      every object has an authored original name.
+- [x] The engine AI builds, harvests and attacks on the original data
+      (`USE_RA_AI` computer player; measured by the `ai-match` CI job).
+- [x] Two or three original skirmish maps; win/loss screens; restart.
+      Foundry Test Range, Crossroads and Long Valley; the end-of-match
+      score screen and restart are automated for a loss. The win path uses
+      the same screen but is not yet automated.
 - [ ] Publish to GitHub Pages from `vanilla` (replacing the tactical alpha).
-- [ ] A short, scripted Chromium acceptance test: start a match, place a
-      structure, produce a unit, and see credits change.
+      Set up: play view (`vanillatd.html?play`), `package-play.js` and
+      `publish-play.yml`; live once merged and Pages deploys from Actions.
+- [x] A short, scripted Chromium acceptance test: start a match, place a
+      structure, produce a unit, and see credits change (`stock-scenario`,
+      M2).
+
+Progress: 2026-11-23 · `8ccae03ee5039cc87e698bc2101dc3bdf9245b09` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45222236369) · headless Chromium (Playwright 1.56.1) · on all three maps the computer player built 9-11 structures, made 131-224 harvest deliveries and 9-13 kills, and destroyed the idle player's base; the score screen drew and the game restarted from the skirmish dialog; zero required or unclassified misses. Open for the exit gate: publishing (owner decision) and an automated win.
 
 **Exit gate:** a person with only a link can play a winnable and losable
 match against the AI in the browser.

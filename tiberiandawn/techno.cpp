@@ -112,6 +112,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /***************************************************************************
 **	Cloaking control values.
@@ -3135,6 +3138,14 @@ int TechnoTypeClass::Max_Passengers(void) const
  *=============================================================================================*/
 void TechnoClass::Record_The_Kill(TechnoClass* source)
 {
+#ifdef __EMSCRIPTEN__
+    // Test log: an object was killed, and by which house (M3 computer-player checks).
+    std::printf("[browser-event] killed name=%s house=%s by=%s\n",
+                Techno_Type_Class()->IniName,
+                House->Class->IniName,
+                source ? source->House->Class->IniName : "none");
+    std::fflush(stdout);
+#endif
     /*
     **	Handle any trigger event associated with this object.
     */

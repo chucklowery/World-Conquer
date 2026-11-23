@@ -6,6 +6,11 @@ const fs=require("node:fs"),path=require("node:path"),http=require("node:http");
 const {chromium}=require("playwright");
 const root=path.resolve(__dirname,"../../build/browser-engine");
 const report=path.join(root,"stock-scenario-audit.json");
+// The site to serve (default: the build directory) and the page to open.
+// Results are always written to build/browser-engine, never into the site.
+const site=path.resolve(process.env.STOCK_SCENARIO_SITE||root);
+const pagePath=process.env.STOCK_SCENARIO_PAGE||"vanillatd.html";
+if(!/^[A-Za-z0-9_.-]+\.html(\?[A-Za-z0-9_=&-]*)?$/.test(pagePath))throw Error("Invalid STOCK_SCENARIO_PAGE");
 const mime={".html":"text/html",".js":"text/javascript",".wasm":"application/wasm",".json":"application/json"};
 const server=http.createServer((req,res)=>{
   let name;
@@ -13,7 +18,7 @@ const server=http.createServer((req,res)=>{
   if(!/^\/[A-Za-z0-9_./-]+$/.test(name)||name.split("/").includes("..")){
     res.writeHead(400);res.end("Invalid path");return;
   }
-  fs.readFile(path.join(root,name.slice(1)),(err,data)=>{
+  fs.readFile(path.join(site,name.slice(1)),(err,data)=>{
     if(err){res.writeHead(404);res.end("Missing");return;}
     res.writeHead(200,{"Content-Type":mime[path.extname(name).toLowerCase()]||"application/octet-stream","Cache-Control":"no-store"});
     res.end(data);
@@ -270,7 +275,7 @@ async function main(){
         if(e.error&&e.error.stack)console.log("[browser-error] "+e.error.stack.replace(/\n/g," | "));
       });
     });
-    await page.goto("http://127.0.0.1:"+server.address().port+"/vanillatd.html",
+    await page.goto("http://127.0.0.1:"+server.address().port+"/"+pagePath,
       {waitUntil:"domcontentloaded",timeout:90000});
     await page.waitForFunction(()=>document.body.dataset.runtime==="ready",null,{timeout:90000});
     async function screenshot(name){
@@ -306,6 +311,14 @@ async function main(){
     await screenshot("scenario-dialog");
     // The first pack intentionally contains no SCM scenario. This click
     // tests the real scenario dialog and records missing input/asset data.
+    // M3: pick a map by its row in the skirmish dialog's list (rows are
+    // ordered by scenario number: SCM94EA, SCM95EA, SCM96EA, ...).
+    const mapRow=Number(process.env.STOCK_SCENARIO_MAP_ROW||0);
+    if(mapRow>0){
+      await clickGame(192,Math.round(88+mapRow*17.5),"Select map row "+mapRow);
+      await page.waitForTimeout(800);
+      await screenshot("map-selected");
+    }
     const confirmAt=Date.now();
     await clickGame(126,359,"Scenario dialog OK");
     page.waitForFunction(()=>document.getElementById("log").textContent.includes("[browser-game] scenario.loaded="),
@@ -326,6 +339,9 @@ async function main(){
 
     // Phase 8: deploy the MCV with real input, as a player would.
     const logText=()=>page.evaluate(()=>document.getElementById("log").textContent);
+    audit.map=((await logText()).match(/\[browser-event\] scenario-start name=(\S+)/)||[])[1]||null;
+    const expectedMap=process.env.STOCK_SCENARIO_EXPECT_MAP;
+    if(expectedMap&&audit.map!==expectedMap)throw Error("Expected map "+expectedMap+" but "+audit.map+" started");
     const playerHouse=((await logText()).match(/\[browser-event\] unit name=\S+ house=(\S+)/)||[])[1];
     if(!playerHouse)throw Error("No player units were reported at match start");
     audit.playerHouse=playerHouse;
@@ -380,6 +396,54 @@ async function main(){
     if(sidebar.nonBlackShare<0.25)throw Error("Sidebar did not appear after deploying: "+JSON.stringify(sidebar));
     if(sidebar.cameoSlotsDrawn<2)throw Error("Sidebar shows no buildable cameos: "+JSON.stringify(sidebar));
     if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
+    // M3: let the match run with no further player input and record what the
+    // computer players do (STOCK_SCENARIO_OBSERVE_MINUTES, default off).
+    const observe=Number(process.env.STOCK_SCENARIO_OBSERVE_MINUTES||0);
+    const ended=()=>page.evaluate(()=>/\[browser-event\] match-end result=(\w+)/.exec(document.getElementById("log").textContent));
+    for(let m=1;m<=observe&&!(await ended());m++){
+      for(let s=0;s<12&&!(await ended());s++)await page.waitForTimeout(5000);
+      if(!(await ended())&&(m%5===0||m===observe))await screenshot("observe-"+m+"m");
+    }
+    const end=await ended();
+    if(observe&&process.env.STOCK_SCENARIO_REQUIRE_END==="1"){
+      if(!end)throw Error("The match did not end within "+observe+" minutes");
+      // The computer player must have played: built a base, harvested and
+      // fought (guarded engine events; the human player idles).
+      const text=await logText();
+      const others=re=>[...text.matchAll(re)].filter(m=>m[1]!==playerHouse&&m[1]!=="none").length;
+      const ai={placed:others(/\[browser-event\] placed name=\S+ house=(\S+)/g),
+        harvestUnloads:others(/\[browser-event\] harvest-unload house=(\S+)/g),
+        kills:others(/\[browser-event\] killed name=\S+ house=\S+ by=(\S+)/g)};
+      audit.computerPlayer=ai;
+      if(ai.placed<3||ai.harvestUnloads<1||ai.kills<1)
+        throw Error("The computer player did not build, harvest and attack: "+JSON.stringify(ai));
+    }
+    if(end){
+      // The end-of-match score screen (score.cpp Multi_Score_Presentation)
+      // waits for a click, then the game returns to the main menu.
+      audit.matchEnd={result:end[1]};
+      for(let t=1;t<=12;t++){
+        await page.waitForTimeout(5000);
+        if(t%3===0)await screenshot("score-"+t*5+"s");
+      }
+      const score=await battlefieldStats(page,await canvas.screenshot(),true);
+      audit.matchEnd.scoreScreen=score;
+      if(score.nonBlackShare<0.25)throw Error("End-of-match score screen is not drawn: "+JSON.stringify(score));
+      if(/Error - out of memory/.test(await logText()))throw Error("End-of-match screen failed: out of memory");
+      // After the score screen the game returns to the skirmish setup dialog
+      // (Do_Lose/Do_Win set GameActive=false); OK starts a fresh match.
+      const starts=async()=>(await logText()).split("[browser-event] scenario-start").length;
+      const before=await starts();
+      await clickGame(320,200,"Dismiss score screen");
+      await page.waitForTimeout(5000);
+      await screenshot("restart-dialog");
+      await clickGame(126,359,"Restart: scenario dialog OK");
+      await page.waitForFunction(n=>document.getElementById("log").textContent.split("[browser-event] scenario-start").length>n,
+        before,{timeout:60000});
+      audit.matchEnd.restarted=true;
+      await page.waitForTimeout(5000);
+      await screenshot("after-match");
+    }
   }catch(error){
     audit.error=String(error.stack||error);
     if(page){try{
@@ -404,6 +468,17 @@ async function main(){
     fs.writeFileSync(path.join(root,"stock-scenario-log.txt"),lines.join("\n")+"\n");
     audit.misses=[];audit.fatal=null; audit.lastGameLines=[];audit.lastEventLines=[];audit.stage="startup";
     for(const line of lines)parse(line);
+    // Per-house activity, from the guarded engine events.
+    audit.houses={};
+    const house=h=>audit.houses[h]||(audit.houses[h]={placed:[],produced:{},harvestUnloads:0,harvested:0,killed:0,kills:0,deployed:0});
+    for(const line of lines){
+      let m;
+      if((m=line.match(/\[browser-event\] placed name=(\S+) house=(\S+)/)))house(m[2]).placed.push(m[1]);
+      else if((m=line.match(/\[browser-event\] produced name=(\S+) house=(\S+)/))){const p=house(m[2]).produced;p[m[1]]=(p[m[1]]||0)+1;}
+      else if((m=line.match(/\[browser-event\] harvest-unload house=(\S+) value=(\d+)/))){house(m[1]).harvestUnloads++;house(m[1]).harvested+=Number(m[2]);}
+      else if((m=line.match(/\[browser-event\] killed name=\S+ house=(\S+) by=(\S+)/))){house(m[1]).killed++;if(m[2]!=="none")house(m[2]).kills++;}
+      else if((m=line.match(/\[browser-event\] deployed name=\S+ into=\S+ house=(\S+)/)))house(m[1]).deployed++;
+    }
     // Classification is contract-driven. Unknown requests stay unclassified
     // (and fail strict mode); do not silently call them optional.
     const requirements=JSON.parse(fs.readFileSync(path.resolve(__dirname,
@@ -439,6 +514,7 @@ async function main(){
     if(browser)await browser.close();
     if(server.listening)await new Promise(resolve=>server.close(resolve));
   }
+  if(audit.map)console.log("Map:",audit.map);
   console.log("Stock scenario audit:",audit.status,"stage:",audit.stage,"misses:",audit.misses.length,
     "required:",audit.requiredMisses.length,"unclassified:",audit.unclassifiedMisses.length,
     "optional:",audit.optionalMisses.length);
@@ -453,5 +529,8 @@ async function main(){
     console.log("Recent events:\n"+recent.join("\n"));
   }
   if(audit.deployAttempts)console.log("Deploy attempts:",JSON.stringify(audit.deployAttempts));
+  if(audit.houses)console.log("Houses:",JSON.stringify(audit.houses));
+  if(audit.matchEnd)console.log("Match end:",JSON.stringify(audit.matchEnd));
+  if(audit.computerPlayer)console.log("Computer player:",JSON.stringify(audit.computerPlayer));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
