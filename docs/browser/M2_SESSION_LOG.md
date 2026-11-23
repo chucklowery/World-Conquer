@@ -203,3 +203,53 @@ with cameos; `gameplay` inventory; slice frame contracts. The end-to-end
 game and the roadmap evidence moved to the new session **M2d** (Phases
 9–10). This PR (#59) remains the M2c PR. See Phase 7 of
 `docs/milestones/M2-original-data-pack.md` for the suggested diagnosis order.
+
+### Phase 7 — visible battlefield (2026-11-23, local Emscripten 3.1.68 + Chromium)
+
+- Status: **done locally**; CI evidence follows the push of this commit.
+- Build loop: **local** (emsdk 3.1.68, SDL2 via `EMCC_LOCAL_PORTS`, native
+  `vanillamix`, Playwright Chromium) plus CI.
+- Root causes of the black battlefield, found by instrumenting the engine
+  (temporary logs, since removed):
+  1. **Players spawned off the map.** `Create_Units` (scenarioini.cpp)
+     picks a random start slot in `0..MPlayerMax-1` (globals.cpp:
+     `MPlayerMax = 6`). The map had two waypoints, so slots 2–5 were
+     uninitialized and a player landed at a garbage cell. Fix: multiplayer
+     maps need six start waypoints; `scenario.js` enforces it and the map now
+     has six starts, each with a resource field.
+  2. **The asset audit was blind to game data.** `WC_ASSET_AUDIT` was a
+     PRIVATE definition of `common`, but `MixFileClass` is a header
+     template compiled into game code, so `MFCD::Retrieve` lookups were never
+     logged. Fix: PUBLIC definition. The real miss list was 754 lookups, not
+     "zero required".
+  3. **Game data was loose.** `MFCD::Retrieve` only searches registered MIX
+     archives, but M2a/M2b placed every shape and `TEMPERAT.PAL` loose in
+     `/game`. Fix: `pack.js` puts shapes, cameos and UI in `CONQUER.MIX` and
+     theater files plus the palette in `TEMPERAT.MIX`; `MOUSE.SHP` also goes
+     in `CCLOCAL.MIX`/`LOCAL.MIX` for the early lookup at init.cpp:268.
+  4. **The palette tables were missing.** display.cpp:129 and sidebar.cpp:84
+     `#define _RETRIEVE`, so the engine *reads* its `T*.MRF` fading and
+     translucency tables; M2b removed them as "written by the engine". With
+     zeroed tables every unit pixel was drawn as shadow (black). Fix:
+     `tools/content/fading.js` ports the engine's builders and generates all
+     11 tables; `tests/test-m2-fading.cpp` checks them byte-for-byte against
+     `common/fading.cpp`.
+  5. **Palette details.** Index 12 must be `BLACK` (common/wwstd.h; the
+     shroud uses it), 13/14 grey; wireframe sprites are translated from their
+     8-colour palette to the game palette; grass and water use real green and
+     blue indices; `SHADOW.SHP` uses the translucent indices 15/16.
+- Generated placeholders for every remaining requested file
+  (`tools/content/placeholders.js`): 139 temperate templates (icon sets sized
+  from `cdata.cpp`), terrain objects, smudges, civilian buildings, cameos,
+  build-up animations and sidebar/HUD art. 481 new `requirements.json`
+  entries with code references; documented `optionalPatterns` for engine
+  probes (scenario-list scans, `.AUD`, movies, optional archives).
+- Trademarks: "GDI"/"NOD" came from `TXT_G_D_I`/`TXT_N_O_D`
+  (nulldlg.cpp:348-349); now "Aster"/"Forge". Franchise unit/structure names
+  replaced; `test-boot-pack.js` fails on any trademark term.
+- `check-stock-scenario.js`: battlefield pixel check (non-black share and
+  object share), stall check after match start, full log saved; CI job is
+  now **strict**.
+- Local result: `scenario.loaded=SCM94EA`; misses 149, **required 0,
+  unclassified 0**; battlefield 23% non-black, 10% units/resources; max
+  stall 0 ms; coverage 747/747; `stock-engine` (M1) passes.

@@ -41,6 +41,12 @@ function validate(input){
     inMap(e.at);identifier(e.type);
   }
   input.waypoints.forEach((p,i)=>{inMap(p);if(i>=8)throw Error("Waypoints limited to 8");});
+  // Multiplayer start positions: scenarioini.cpp Create_Units picks a random
+  // slot in 0..MPlayerMax-1 (globals.cpp: MPlayerMax = 6) from the sorted
+  // waypoints. Fewer than six leaves uninitialized slots, which spawns a
+  // player at a garbage cell off the map.
+  if(/^SCM/i.test(input.file||"")&&input.waypoints.length<6)
+    throw Error("Multiplayer maps need six start waypoints (0-5)");
   input.units.forEach(u=>{inMap(u.at);identifier(u.house);identifier(u.type);});
   return input;
 }

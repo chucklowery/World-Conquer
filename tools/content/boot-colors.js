@@ -16,6 +16,11 @@ function rgbPalette() {
     41:[147,240,192],
     42:[94,204,153],
     43:[55,158,130],
+    // Fixed engine colors (common/wwstd.h ColorType): the shroud and many
+    // UI fills use BLACK (12); GREY (13) and LTGREY (14) draw UI detail.
+    12:[0,0,0],
+    13:[128,128,128],
+    14:[192,192,192],
     140:[8,33,42],  // dialog shadow
     141:[32,76,88], // dialog background
     159:[62,177,145],

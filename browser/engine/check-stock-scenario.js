@@ -19,6 +19,34 @@ const server=http.createServer((req,res)=>{
     res.end(data);
   });
 });
+// Rendered colours of the generated grass tile (theater.js tile(33,26)):
+// 8-bit palette value -> 6-bit .PAL -> SDL presents 6-bit << 2.
+const {rgbPalette}=require("../../tools/content/boot-colors.js");
+const shown=i=>rgbPalette()[i].map(v=>(v>>2)<<2);
+const GRASS=[shown(33),shown(26)];
+// Analyse the battlefield inside the canvas screenshot (in the page, so no
+// image library is needed). The tactical view is everything below the 16px
+// tab bar (640x400 game coordinates) and left of the sidebar when it is open.
+async function battlefieldStats(page,png,sidebarOpen){
+  return page.evaluate(async ({data,grass,sidebarOpen})=>{
+    const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
+    const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");
+    g.drawImage(img,0,0);
+    const sx=img.width/640,sy=img.height/400;
+    const x0=0,y0=Math.ceil(16*sy),x1=Math.floor((sidebarOpen?480:640)*sx),y1=img.height;
+    const d=g.getImageData(x0,y0,x1-x0,y1-y0).data;
+    let total=0,nonBlack=0,object=0;
+    const near=(r,gg,b,[R,G,B])=>Math.abs(r-R)<=8&&Math.abs(gg-G)<=8&&Math.abs(b-B)<=8;
+    for(let i=0;i<d.length;i+=4){
+      total++;
+      const r=d[i],gg=d[i+1],b=d[i+2];
+      if(r+gg+b<=48)continue;
+      nonBlack++;
+      if(!grass.some(col=>near(r,gg,b,col))&&!(gg>r&&gg>b&&r<120&&b<60))object++;
+    }
+    return {total,nonBlackShare:nonBlack/total,objectShare:object/total};
+  },{data:png.toString("base64"),grass:GRASS,sidebarOpen});
+}
 const audit={schema:1,pathDecision:"pending (Skirmish candidate)",status:"incomplete",
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
   pageErrors:[],screenshots:[],input:[],requiredMisses:[],optionalMisses:[],unclassifiedMisses:[],
@@ -84,6 +112,17 @@ async function main(){
     await clickGame(126,359,"Scenario dialog OK");
     await page.waitForTimeout(7000);
     await screenshot("after-confirm");
+    // Phase 7 gate: the battlefield must actually be drawn (terrain plus
+    // units/resources), not just loaded. Thresholds come from a good run:
+    // the revealed start area covers well over 10% of the view.
+    await page.evaluate(()=>{window.WCWatchdog.maxStallMs=0;});
+    await page.waitForTimeout(3000);
+    const field=await battlefieldStats(page,await canvas.screenshot(),false);
+    audit.battlefield=field;
+    audit.matchStallMs=await page.evaluate(()=>window.WCWatchdog.maxStallMs);
+    if(field.nonBlackShare<0.10)throw Error("Battlefield is mostly black: "+JSON.stringify(field));
+    if(field.objectShare<0.002)throw Error("No units or resources visible on the battlefield: "+JSON.stringify(field));
+    if(audit.matchStallMs>1000)throw Error("Main-thread stall after match start: "+audit.matchStallMs+"ms");
   }catch(error){
     audit.error=String(error.stack||error);
     audit.status="error";
@@ -99,6 +138,8 @@ async function main(){
         audit.screenshots.push(filename);
       }
     }catch(e){audit.captureError=String(e);}}
+    fs.mkdirSync(root,{recursive:true});
+    fs.writeFileSync(path.join(root,"stock-scenario-log.txt"),lines.join("\n")+"\n");
     audit.misses=[];audit.fatal=null; audit.lastGameLines=[];audit.lastEventLines=[];audit.stage="startup";
     for(const line of lines)parse(line);
     // Classification is contract-driven. Unknown requests stay unclassified
@@ -107,9 +148,12 @@ async function main(){
       "../../game/content/pack/requirements.json"),"utf8"));
     const stages=new Map(requirements.files.map(entry=>[
       entry.name.toUpperCase(),entry.requiredFor]));
+    // Documented engine probes for optional data (requirements.json
+    // optionalPatterns, each with its reason and code reference).
+    const optionalPatterns=(requirements.optionalPatterns||[]).map(p=>new RegExp(p.pattern,"i"));
     for(const miss of audit.misses){
       const name=path.basename(miss.name.replace(/\\/g,"/")).toUpperCase();
-      const stage=stages.get(name);
+      const stage=stages.get(name)||(optionalPatterns.some(re=>re.test(name))?"optional":undefined);
       miss.requiredFor=stage||"unclassified";
       if(stage==="optional")audit.optionalMisses.push(miss);
       else if(stage)audit.requiredMisses.push(miss);
