@@ -381,3 +381,15 @@ game and the roadmap evidence moved to the new session **M2d** (Phases
   anything. The test now treats any `RuntimeError` or `Aborted(` line as an
   engine crash and fails immediately, and records error stacks.
 - Also added: `[browser-event] destroyed` (building destroyed, and by whom).
+
+### Phase 10 — evidence (2026-11-23)
+
+- With the crash fix, three local full matches passed (all steps, max stall
+  0 ms) and PR #60 CI passed on `58d86a5`, including the strict
+  `stock-scenario` job ([run 45167410607](https://github.com/chucklowery/World-Conquer/actions/runs/45167410607)):
+  deploy, power plant, refinery, barracks, rifle infantry, harvest +25,
+  vehicle factory, light vehicle, move/force-fire, keyboard and edge scroll,
+  2-minute run; 0 required and 0 unclassified misses.
+- The M2 evidence line and ticked boxes are in `docs/ROADMAP.md`.
+- Merge order: PR #59 (M2c) first, then PR #60 (M2d). The crash fix only
+  lands with #60; until then `vanilla` carries the unsafe log.
