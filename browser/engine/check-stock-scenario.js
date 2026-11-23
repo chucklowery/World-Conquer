@@ -108,7 +108,7 @@ async function main(){
     const stages=new Map(requirements.files.map(entry=>[
       entry.name.toUpperCase(),entry.requiredFor]));
     for(const miss of audit.misses){
-      const name=path.basename(miss.name.replace(/\\\\/g,"/")).toUpperCase();
+      const name=path.basename(miss.name.replace(/\\/g,"/")).toUpperCase();
       const stage=stages.get(name);
       miss.requiredFor=stage||"unclassified";
       if(stage==="optional")audit.optionalMisses.push(miss);
@@ -120,7 +120,8 @@ async function main(){
     if(!audit.error)audit.status=reached?"scenario-request":"blocked-before-scenario";
     if(process.env.STOCK_SCENARIO_REPORT_ONLY!=="1"&&
         (!audit.lastGameLines.some(x=>x.includes("scenario.loaded="))||
-          audit.requiredMisses.length||audit.unclassifiedMisses.length||\n          audit.fatal||audit.pageErrors.length||audit.error)){
+          audit.requiredMisses.length||audit.unclassifiedMisses.length||
+          audit.fatal||audit.pageErrors.length||audit.error)){
       audit.error=audit.error||("Scenario probe failed: stage="+audit.stage+
         " fatal="+audit.fatal+" pageErrors="+audit.pageErrors.length);
       audit.status="error";
