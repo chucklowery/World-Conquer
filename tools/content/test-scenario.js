@@ -14,5 +14,25 @@ assert.match(ini,new RegExp("1="+cell([53,53])));
 assert.match(ini,/\[Overlay\][\s\S]*TI1/);
 assert.throws(()=>generate({...source,map:{...source.map,width:64}}),/bounds/);
 assert.throws(()=>decodeBIN(bin.subarray(0,8190)),/size/);
+const smallMap={...source,map:{...source.map,x:10,y:10,width:20,height:20}};
+assert.throws(()=>generate(smallMap),/outside playable map/);
+for(const field of ["cells","overlays","trees","waypoints","units"]){
+  const base=field==="cells"?source.terrain.cells:source[field];
+  if(!base.length)continue;
+  const first=field==="waypoints"?[63,10]:{...base[0],at:[63,10]};
+  const broken=field==="cells"?
+    {...source,terrain:{...source.terrain,cells:[first,...base.slice(1)]}}:
+    {...source,[field]:[first,...base.slice(1)]};
+  assert.throws(()=>generate(broken),/Cell must lie/,"grid bounds: "+field);
+}
+const enclosed={...source,map:{...source.map,x:10,y:10,width:20,height:20}};
+for(const field of ["cells","overlays","trees","waypoints","units"]){
+  const value=field==="cells"?source.terrain.cells:source[field];
+  if(!value.length)continue;
+  const moved=field==="waypoints"?[53,53]:{...value[0],at:[53,53]};
+  const invalid=field==="cells"?{...enclosed,terrain:{...source.terrain,cells:[moved]}}:
+    {...enclosed,[field]:[moved]};
+  assert.throws(()=>generate(invalid),/outside playable map/,"map bounds: "+field);
+}
 assert.deepEqual(generate(source),generate(source),"generator must be deterministic");
 console.log("PASS: original scenario INI and 4096-cell BIN round-trip");
