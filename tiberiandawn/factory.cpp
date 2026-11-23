@@ -52,6 +52,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /***********************************************************************************************
  * FactoryClass::Validate -- validates factory pointer													  *
