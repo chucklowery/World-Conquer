@@ -4537,7 +4537,17 @@ int BuildingClass::Mission_Harvest(void)
                 int bail = techno->Offload_Tiberium_Bail();
 
                 if (bail) {
+#ifdef __EMSCRIPTEN__
+                    const int beforeUnload = House->Tiberium;
+#endif
                     House->Harvested(bail);
+#ifdef __EMSCRIPTEN__
+                    const int stored = House->Tiberium - beforeUnload;
+                    if (stored > 0) {
+                        std::printf("[browser-event] harvest-unload house=%s value=%d\n", House->Class->IniName, stored);
+                        std::fflush(stdout);
+                    }
+#endif
                     if (techno->Tiberium_Load()) {
                         return (1);
                     }
