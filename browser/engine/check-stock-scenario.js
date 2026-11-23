@@ -380,6 +380,13 @@ async function main(){
     if(sidebar.nonBlackShare<0.25)throw Error("Sidebar did not appear after deploying: "+JSON.stringify(sidebar));
     if(sidebar.cameoSlotsDrawn<2)throw Error("Sidebar shows no buildable cameos: "+JSON.stringify(sidebar));
     if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
+    // M3: let the match run with no further player input and record what the
+    // computer players do (STOCK_SCENARIO_OBSERVE_MINUTES, default off).
+    const observe=Number(process.env.STOCK_SCENARIO_OBSERVE_MINUTES||0);
+    for(let m=1;m<=observe;m++){
+      await page.waitForTimeout(60000);
+      if(m%5===0||m===observe)await screenshot("observe-"+m+"m");
+    }
   }catch(error){
     audit.error=String(error.stack||error);
     if(page){try{
@@ -404,6 +411,17 @@ async function main(){
     fs.writeFileSync(path.join(root,"stock-scenario-log.txt"),lines.join("\n")+"\n");
     audit.misses=[];audit.fatal=null; audit.lastGameLines=[];audit.lastEventLines=[];audit.stage="startup";
     for(const line of lines)parse(line);
+    // Per-house activity, from the guarded engine events.
+    audit.houses={};
+    const house=h=>audit.houses[h]||(audit.houses[h]={placed:[],produced:{},harvestUnloads:0,harvested:0,killed:0,kills:0,deployed:0});
+    for(const line of lines){
+      let m;
+      if((m=line.match(/\[browser-event\] placed name=(\S+) house=(\S+)/)))house(m[2]).placed.push(m[1]);
+      else if((m=line.match(/\[browser-event\] produced name=(\S+) house=(\S+)/))){const p=house(m[2]).produced;p[m[1]]=(p[m[1]]||0)+1;}
+      else if((m=line.match(/\[browser-event\] harvest-unload house=(\S+) value=(\d+)/))){house(m[1]).harvestUnloads++;house(m[1]).harvested+=Number(m[2]);}
+      else if((m=line.match(/\[browser-event\] killed name=\S+ house=(\S+) by=(\S+)/))){house(m[1]).killed++;if(m[2]!=="none")house(m[2]).kills++;}
+      else if((m=line.match(/\[browser-event\] deployed name=\S+ into=\S+ house=(\S+)/)))house(m[1]).deployed++;
+    }
     // Classification is contract-driven. Unknown requests stay unclassified
     // (and fail strict mode); do not silently call them optional.
     const requirements=JSON.parse(fs.readFileSync(path.resolve(__dirname,
@@ -453,5 +471,6 @@ async function main(){
     console.log("Recent events:\n"+recent.join("\n"));
   }
   if(audit.deployAttempts)console.log("Deploy attempts:",JSON.stringify(audit.deployAttempts));
+  if(audit.houses)console.log("Houses:",JSON.stringify(audit.houses));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
