@@ -837,12 +837,16 @@
       "format": "ICN",
       "requiredFor": "scenario",
       "referencedAt": [
-        "tiberiandawn/defines.h:1089"
+        "tiberiandawn/defines.h:1089",
+        "tiberiandawn/cell.cpp:921",
+        "tiberiandawn/radar.cpp:823"
       ],
       "contract": {
         "size": "24x24",
-        "frameCount": 1,
-        "source": "provisional-upper-bound"
+        "frameCount": 16,
+        "source": "source-audited Clear_Icon 4x4 indexing",
+        "logicalIconCount": 16,
+        "uniqueImageCount": 1
       }
     },
     {
@@ -3282,20 +3286,6 @@
       }
     },
     {
-      "name": "TGREEN.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "256 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
       "name": "TI1.TEM",
       "container": "TEMPERAT.MIX|TEMPICNH.MIX",
       "format": "SHP theater tactical shape",
@@ -3501,34 +3491,6 @@
       }
     },
     {
-      "name": "TLIGHT.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "256 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
-      "name": "TMOUSE.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "1280 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
       "name": "TMPL.SHP",
       "container": "loose",
       "format": "SHP",
@@ -3573,20 +3535,6 @@
       }
     },
     {
-      "name": "TRED.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "256 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
       "name": "TREX.SHP",
       "container": "loose",
       "format": "SHP",
@@ -3618,90 +3566,6 @@
         "sharedFilenameWith": [
           "WF-0294"
         ]
-      }
-    },
-    {
-      "name": "TSHADE.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "256 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
-      "name": "TSHADOW.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "1280 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
-      "name": "TTRANS.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "3328 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
-      "name": "TUNITS.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "512 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
-      "name": "TWHITE.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "512 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
-      }
-    },
-    {
-      "name": "TYELLOW.MRF",
-      "container": "loose",
-      "format": "MRF",
-      "requiredFor": "scenario",
-      "referencedAt": [
-        "tiberiandawn/display.cpp:415-490"
-      ],
-      "contract": {
-        "size": "256 bytes",
-        "frameCount": "N/A",
-        "source": "engine-array-size; neutral generated identity table"
       }
     },
     {
