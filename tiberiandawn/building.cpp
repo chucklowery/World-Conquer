@@ -2895,7 +2895,8 @@ void BuildingClass::Grand_Opening(bool captured)
 {
     Validate();
 #ifdef __EMSCRIPTEN__
-    if (!ScenarioInit && !captured) {
+    // Suppress pre-existing map buildings and captured structures.
+    if (!ScenarioInit && !captured && PurchasePrice > 0) {
         std::printf("[browser-event] placed name=%s house=%s\n", Class->IniName, House->Class->IniName);
         std::fflush(stdout);
     }
