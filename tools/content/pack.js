@@ -11,6 +11,32 @@ function build(outdir){
   fs.rmSync(outdir,{recursive:true,force:true});
   fs.mkdirSync(outdir,{recursive:true});
   buildBoot(outdir);
+  const wireframeStage=path.join(outdir,"_wireframes");
+  require("./wireframes.js").build(wireframeStage);
+  const generated=JSON.parse(fs.readFileSync(path.join(wireframeStage,"manifest.json"),"utf8")).assets;
+  // One name may belong to several engine types. Select the largest frame
+  // contract so a smaller placeholder cannot hide an out-of-range lookup.
+  const chosen=new Map();
+  for(const asset of generated){
+    if(!asset.engineFilename||!asset.target)continue;
+    const name=asset.engineFilename.toUpperCase();
+    if(name==="WIREFRAME.PAL")continue;
+    const prev=chosen.get(name);
+    if(!prev||asset.frames>prev.frames||(asset.frames===prev.frames&&asset.id<prev.id))chosen.set(name,asset);
+  }
+  const wireframeNames=new Set();
+  for(const name of [...chosen.keys()].sort()){
+    const asset=chosen.get(name);
+    const source=path.join(wireframeStage,"files",asset.target);
+    if(!fs.existsSync(source))throw Error("Wireframe missing "+asset.target);
+    const target=path.join(outdir,"game",name);
+    // Preserve the M1 boot/menu files when an engine filename overlaps.
+    if(!fs.existsSync(target)){
+      fs.copyFileSync(source,target);
+      wireframeNames.add(name);
+    }
+  }
+  fs.rmSync(wireframeStage,{recursive:true,force:true});
   const requirements=JSON.parse(fs.readFileSync(requirementsPath,"utf8"));
   if(requirements.schema!==1||!Array.isArray(requirements.files))throw Error("Invalid requirements schema");
   const revision=cp.execFileSync("git",["rev-parse","HEAD"],{cwd:root,encoding:"utf8"}).trim();
@@ -22,8 +48,10 @@ function build(outdir){
       return {path:name,bytes:data.length,sha256:sha256(data)};});
   const files=list();
   const provenance=Object.fromEntries(files.map(entry=>[entry.path,{
-    generator:"tools/content/boot-pack.js",
-    sourceFiles:["tools/content/boot-pack.js","game/content/pack/requirements.json"],
+    generator:wireframeNames.has(entry.path)?"tools/content/wireframes.js":"tools/content/boot-pack.js",
+    sourceFiles:wireframeNames.has(entry.path)?
+      ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
+      ["tools/content/boot-pack.js","game/content/pack/requirements.json"],
     license:"CC0-1.0",sourceRevision:revision
   }]));
   const manifest={schema:1,packVersion:"m2-"+revision.slice(0,12),files};
