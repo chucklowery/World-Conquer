@@ -1728,7 +1728,6 @@ void HouseClass::Harvested(unsigned tiberium)
     HarvestedCredits += tiberium;
 #ifdef __EMSCRIPTEN__
     if (Tiberium != oldtib) {
-        std::printf("[browser-event] harvest-unload house=%s value=%d\n", Class->IniName, Tiberium - oldtib);
         std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
         std::fflush(stdout);
     }
