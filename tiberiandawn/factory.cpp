@@ -287,6 +287,15 @@ void FactoryClass::AI(void)
                     Set_Rate(0);
                     House->Spend_Money(Balance);
                     Balance = 0;
+#ifdef __EMSCRIPTEN__
+                    // Test log: production finished (a building now waits to be placed).
+                    if (Object && House->IsHuman) {
+                        std::printf("[browser-event] ready name=%s house=%s\n",
+                                    Object->Techno_Type_Class()->IniName,
+                                    House->Class->IniName);
+                        std::fflush(stdout);
+                    }
+#endif
                 }
             }
         }
@@ -731,15 +740,6 @@ bool FactoryClass::Completed(void)
 {
     Validate();
     if (Object && Fetch_Stage() == STEP_COUNT) {
-#ifdef __EMSCRIPTEN__
-        // Building production is represented by Grand_Opening's placed event.
-        if (Object->What_Am_I() != RTTI_BUILDING) {
-            std::printf("[browser-event] produced name=%s house=%s\n",
-                        Object->Techno_Type_Class()->IniName,
-                        House->Class->IniName);
-            std::fflush(stdout);
-        }
-#endif
         Object = NULL;
         IsSuspended = true;
         IsDifferent = true;

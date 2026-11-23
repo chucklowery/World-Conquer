@@ -111,26 +111,28 @@ Agent instructions: [`docs/milestones/M2-original-data-pack.md`](milestones/M2-o
 
 The highest-risk milestone. It turns the repository into a game we can ship.
 
-- [ ] From the wireframe catalog, define the **minimum slice**: palette,
+- [x] From the wireframe catalog, define the **minimum slice**: palette,
       fonts, mouse cursors, sidebar/radar/tab art, one theater (templates and
       terrain objects), one resource overlay, about 6 structures (yard, power,
       refinery, barracks, factory, defense), about 4 units (harvester, rifle
       infantry, light vehicle, heavy vehicle), projectiles, explosions and
       smudges. Placeholder (wireframe) art is acceptable.
-- [ ] CI builds every required MIX archive from source (`tools/content`,
+- [x] CI builds every required MIX archive from source (`tools/content`,
       `tools/mixtool`); generated archives are artifacts, not commits.
-- [ ] Write original rules and scenario INI from scratch; retarget the R04
+- [x] Write original rules and scenario INI from scratch; retarget the R04
       map pipeline to emit scenario INI and map data.
-- [ ] Add a **missing-asset detector**: the engine logs every failed file and
+- [x] Add a **missing-asset detector**: the engine logs every failed file and
       shape lookup in a debug build, and CI fails if any occur during a
       scripted skirmish.
-- [ ] Map the R05 Aster/Forge art onto the engine slots it replaces.
+- [x] Map the R05 Aster/Forge art onto the engine slots it replaces.
 
 **Exit gate:** the unmodified engine plays a full skirmish start (base,
 harvester, production) on **100% original data**, with zero missing-asset
 lookups, built entirely by CI. The map, sidebar and radar render; selection,
 movement, scrolling, building and harvesting respond; and the page never
 stalls for more than 1 s.
+
+Evidence: 2026-11-23 · `58d86a51e71f42b199e8a1333211990d3099a4a3` · [stock-scenario CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45167410607) · headless Chromium (Playwright 1.56.1) · Skirmish match on 100% original data (pack built in CI: 66,994,806 bytes, 2,031,885 gzip): MCV deployed; placed power plant, refinery, barracks and vehicle factory; harvest +25 credits; produced rifle infantry and a light vehicle; box-select move, force-fire, keyboard and edge scrolling; ran 2 more minutes; zero required or unclassified misses (149 optional probes, each documented); no stall over the 1 s limit (0 ms in three local runs); frame p95 16.7 ms; heap flat at 99,876,864 bytes; match start in about 2 s.
 
 ### M3: First playable skirmish (2–4 weeks)
 

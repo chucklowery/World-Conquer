@@ -190,3 +190,36 @@ Acceptance is `node browser/engine/check-stock-engine.js`: actual
 three sizes and max stall 1,000 ms after startup. A successful build alone
 is **not** acceptance. The separate `stock-engine` CI job uploads screenshots,
 audit logs and metrics. Its result determines M1's status.
+
+## M2: Original data pack and a playable skirmish
+
+M2 replaces the boot pack with the full original data pack
+(`tools/content/pack.js`, documented in
+[`M2_DATA_PACK.md`](M2_DATA_PACK.md)). After building the engine and the
+native `vanillamix` tool as above:
+
+```bash
+node tools/content/pack.js build build/browser-engine/data
+cp game/content/pack/boot-requirements.json build/browser-engine/data/boot-requirements.json
+```
+
+Stage the runtime scripts exactly as the `wasm-vanillatd` job's "Verify
+compiled WebAssembly bundle" step does, then serve `build/browser-engine`.
+Click **Play**, choose **Multiplayer → Skirmish**, pick *Foundry Test Range*
+and **OK**: the unmodified engine starts a match on original data.
+
+Acceptance is `node browser/engine/check-stock-scenario.js` (CI job
+`stock-scenario`, strict). With real input only it starts the skirmish,
+checks the battlefield is drawn, deploys the MCV, builds a power plant,
+refinery, barracks and vehicle factory, waits for a harvester delivery,
+trains infantry and a vehicle, gives orders, scrolls with the keyboard and
+the screen edge, and runs 2 minutes. It fails on any required or
+unclassified missing file, page error, engine fatal or stall over 1 s, and
+writes `stock-scenario-metrics.json`, `stock-scenario-audit.json`, the full
+engine log and screenshots. Set `STOCK_SCENARIO_SKIP_GAMEPLAY=1` to stop
+after the deploy and sidebar checks.
+
+If GitHub archive downloads are blocked locally, the SDL2 Emscripten port
+cannot download: clone `https://github.com/libsdl-org/SDL.git` at
+`release-2.28.4` and build with `EMCC_LOCAL_PORTS="sdl2=<that dir>"`.
+

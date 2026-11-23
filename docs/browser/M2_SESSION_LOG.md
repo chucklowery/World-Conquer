@@ -302,3 +302,94 @@ game and the roadmap evidence moved to the new session **M2d** (Phases
 - **Known limits**: placeholder art; APC door frames and aircraft not
   audited; the player-name list shows in the radar area until a comms
   centre exists.
+
+## Session M2d
+
+- Branch: `m2d/end-to-end-match`, stacked on `m2c/playable-match` (PR #59)
+  at `effc7e5`. M2c's head CI (run 45133104868 and the five
+  platform/legacy runs) passed all six workflow groups, including the strict
+  `stock-scenario` job.
+- Build loop: local (emsdk 3.1.68, Chromium) plus CI.
+
+### Phase 9 — end-to-end gameplay test (2026-11-23)
+
+- Status: **done locally**; CI evidence follows the push.
+- New guarded test logs: `[browser-event] sidebar-add` (what each sidebar
+  slot builds, with strip geometry), `sidebar-scroll` (strip top after a
+  scroll), `sidebar-buttons` (scroll button rectangles) and `ready`
+  (production finished; a building then waits to be placed).
+- `check-stock-scenario.js` plays a match with real input only: builds and
+  places a power plant, refinery, barracks and vehicle factory (cameo clicks,
+  scrolling a strip when a slot is out of view, ring search for a legal cell
+  next to the yard), waits for a harvester delivery, trains a rifle squad and
+  a jeep, box-selects units and gives move and force-fire orders, scrolls
+  with the arrow keys and the screen edge, runs 2 minutes, and writes
+  `stock-scenario-metrics.json`.
+- Local results, four full runs on the final code path (three consecutive
+  passes after raising step timeouts; the earlier failures were a tight
+  300 s timeout on the vehicle factory and a refinery placement search that
+  was too small at an edge start, both fixed):
+
+  | Step | Run A | Run B | Run C |
+  | --- | --- | --- | --- |
+  | Power plant placed | 23 s | 21 s | 20 s |
+  | Refinery placed | 74 s | 94 s | 77 s |
+  | Barracks placed | 129 s | 125 s | — |
+  | Rifle squad trained | 136 s | 132 s | — |
+  | Harvester delivery | 136 s | 146 s | — |
+  | Vehicle factory placed | 315 s | 375 s | — |
+  | Jeep built | 337 s | 398 s | — |
+  | Frame p95 / max stall | 16.7 ms / 0 | 16.7 ms / 0 | 16.7 ms / 0 |
+
+  Heap stayed at 99,876,864 bytes over the 2-minute run. Time to match start
+  about 1.8–2.0 s after confirming the skirmish dialog. Pack: 66,994,806
+  bytes raw, 2,031,885 gzipped (placeholder frames are literal, so they
+  compress well; in-browser memory is the cost — an M4 size-budget item).
+- Temporary diagnostic logs used during this phase (harvester and factory
+  state) were removed before commit.
+
+### Phase 10 — docs and roadmap
+
+- `docs/browser/M2_DATA_PACK.md` (how the pack is built, where files must
+  go, the requirements inventory, adding objects and maps, replacing
+  placeholder art), `docs/browser/BUILD.md` and `browser/engine/README.md`
+  updated. Roadmap evidence is added once CI passes on this branch.
+
+### Phase 9 — CI failure and crash fix (2026-11-23)
+
+- PR #60's first CI runs failed in `stock-scenario` after the harvest step
+  (vehicle factory never finished). The test only printed a summary, and
+  the artifact host is not reachable from the agent container, so the test
+  now prints the error, the gameplay steps and the recent game events in the
+  job log itself.
+- Local reproduction showed the game **stopping** rather than slowing:
+  `Uncaught RuntimeError: function signature mismatch`, a WebAssembly trap.
+  It does not raise a Playwright page error, so the test waited until its
+  timeout. Stack (captured with a window error listener):
+  `BuildingClass::AI` → `FactoryClass::Completed` →
+  `TechnoClass::Techno_Type_Class` → `InfantryClass::Class_Of`.
+- **Cause: the M2a `produced` test log**, which dereferenced the factory's
+  `Object` inside `FactoryClass::Completed`. By then the produced object can
+  already be gone (here an AI infantry unit); natively that reads garbage,
+  in WebAssembly the type-checked indirect call traps and freezes the game.
+  The bug is on `vanilla` already; matches only hit it after a few minutes,
+  once the AI has produced infantry.
+- **Fix:** the `produced` event is now logged where the type is read *before*
+  the object leaves the factory: `BuildingClass::AI` (AI and building-side
+  exits) and `HouseClass` (the human player's path, which already captured
+  `object_type` early). `FactoryClass::Completed` no longer dereferences
+  anything. The test now treats any `RuntimeError` or `Aborted(` line as an
+  engine crash and fails immediately, and records error stacks.
+- Also added: `[browser-event] destroyed` (building destroyed, and by whom).
+
+### Phase 10 — evidence (2026-11-23)
+
+- With the crash fix, three local full matches passed (all steps, max stall
+  0 ms) and PR #60 CI passed on `58d86a5`, including the strict
+  `stock-scenario` job ([run 45167410607](https://github.com/chucklowery/World-Conquer/actions/runs/45167410607)):
+  deploy, power plant, refinery, barracks, rifle infantry, harvest +25,
+  vehicle factory, light vehicle, move/force-fire, keyboard and edge scroll,
+  2-minute run; 0 required and 0 unclassified misses.
+- The M2 evidence line and ticked boxes are in `docs/ROADMAP.md`.
+- Merge order: PR #59 (M2c) first, then PR #60 (M2d). The crash fix only
+  lands with #60; until then `vanilla` carries the unsafe log.

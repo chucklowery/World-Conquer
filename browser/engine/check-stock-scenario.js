@@ -75,14 +75,187 @@ function parse(rawLine){
   const stage=line.match(/^\[browser-game\] (menu\.enter|menu\.choice|scenario\.request|scenario\.loaded|scenario\.failed)/);
   if(stage)audit.stage=stage[1];
   if(line.startsWith("[browser-game]"))audit.lastGameLines.push(line);
-  if(line.startsWith("[browser-event]"))audit.lastEventLines.push(line);
+  // Credit changes are frequent; the full log keeps them.
+  if(line.startsWith("[browser-event]")&&!line.startsWith("[browser-event] credits "))audit.lastEventLines.push(line);
   if(audit.lastGameLines.length>60)audit.lastGameLines.shift();
   if(audit.lastEventLines.length>60)audit.lastEventLines.shift();
   const miss=line.match(/^\[asset-miss\] (\S+)/);
   if(miss&&!audit.misses.some(x=>x.name===miss[1]))audit.misses.push({name:miss[1],firstSeenStage:audit.stage});
   const fatal=line.match(/^\[browser-game\] fatal=(.*)/);
   if(fatal)audit.fatal=fatal[1];
+  // A WebAssembly trap or abort stops the game but does not always raise a
+  // page error; treat it as fatal.
+  const trap=line.match(/(RuntimeError: .*|Aborted\(.*)$/);
+  if(trap&&!audit.fatal)audit.fatal="engine crashed: "+trap[1];
 }
+// Phase 9: a scripted match with real input only. Positions come from the
+// engine's guarded test logs ([browser-event] sidebar-add / sidebar-scroll /
+// sidebar-buttons / centered), never from fixed guesses.
+async function playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
+  const t0=Date.now();
+  const steps=audit.gameplay={steps:[]};
+  const step=(name,data={})=>{steps.steps.push({step:name,seconds:Math.round((Date.now()-t0)/1000),...data});};
+  const lastMatch=(text,re)=>{let m=null;for(const x of text.matchAll(re))m=x;return m;};
+  const waitFor=async(source,timeout,since=0)=>page.waitForFunction(([src,m])=>
+    new RegExp(src).test(document.getElementById("log").textContent.slice(m)),[source,since],{timeout});
+  const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  async function slot(name){
+    const text=await logText();
+    const add=lastMatch(text,new RegExp("\\[browser-event\\] sidebar-add strip=(\\d+) index=(\\d+) name="+esc(name)+" x=(\\d+) y=(\\d+) w=(\\d+) h=(\\d+)","g"));
+    if(!add)return null;
+    const [strip,index,x,y,w,h]=add.slice(1).map(Number);
+    const scroll=lastMatch(text,new RegExp("\\[browser-event\\] sidebar-scroll strip="+strip+" top=(\\d+)","g"));
+    const buttons=lastMatch(text,new RegExp("\\[browser-event\\] sidebar-buttons strip="+strip+" up=(\\d+),(\\d+) down=(\\d+),(\\d+) w=(\\d+) h=(\\d+)","g"));
+    return {strip,index,x,y,w,h,top:scroll?Number(scroll[1]):0,buttons:buttons&&buttons.slice(1).map(Number)};
+  }
+  // Click a cameo, scrolling its strip first when the slot is out of view
+  // (four slots are visible, sidebar.h MAX_VISIBLE).
+  async function clickCameo(name,label){
+    for(let tries=0;tries<20;tries++){
+      const s=await slot(name);
+      if(!s)throw Error("Sidebar has no "+name);
+      if(s.index>=s.top&&s.index<s.top+4){
+        await clickGame(s.x+s.w/2,s.y+(s.index-s.top)*s.h+s.h/2,label);
+        return;
+      }
+      if(!s.buttons)throw Error("Sidebar scroll buttons were not reported");
+      const [ux,uy,dx,dy,bw,bh]=s.buttons;
+      const since=(await logText()).length;
+      if(s.index<s.top)await clickGame(ux+bw/2,uy+bh/2,"Scroll up");
+      else await clickGame(dx+bw/2,dy+bh/2,"Scroll down");
+      await waitFor("\\[browser-event\\] sidebar-scroll strip="+s.strip,5000,since).catch(()=>{});
+    }
+    throw Error("Could not bring "+name+" into view");
+  }
+  // Cells around the yard in rings of growing radius, the side facing the
+  // map centre first (the classic map spans cells 1-62; centre 31,31).
+  function placementOffsets(cell){
+    const sx=Math.sign(31-cell[0])||1,sy=Math.sign(31-cell[1])||1,out=[];
+    for(let r=2;r<=5;r++){
+      const ring=[];
+      for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++)if(Math.max(Math.abs(dx),Math.abs(dy))===r)ring.push([dx,dy]);
+      ring.sort((a,b)=>(b[0]*sx+b[1]*sy)-(a[0]*sx+a[1]*sy));
+      out.push(...ring);
+    }
+    return out;
+  }
+  async function centreOn(key,name){
+    await page.keyboard.press(key);
+    await page.waitForTimeout(800);
+    const since=(await logText()).length;
+    await page.keyboard.press("Home");
+    await waitFor("\\[browser-event\\] centered name="+name+" x=",5000,since);
+    const m=(await logText()).slice(since).match(new RegExp("\\[browser-event\\] centered name="+name+" x=(-?\\d+) y=(-?\\d+) cell=(\\d+),(\\d+)"));
+    return [Number(m[1]),Number(m[2]),[Number(m[3]),Number(m[4])]];
+  }
+  async function waitEvent(source,timeout,since){
+    return waitFor(source,timeout,since).then(()=>true,()=>false);
+  }
+  // Build a structure through the sidebar and place it next to the yard.
+  async function buildStructure(name,readyTimeout){
+    const since=(await logText()).length;
+    await clickCameo(name,"Build "+name);
+    if(!await waitEvent("\\[browser-event\\] ready name="+name+" house="+playerHouse,readyTimeout,since))
+      throw Error(name+" did not finish building");
+    const [yx,yy,yardCell]=await centreOn("h","FACT");
+    await clickCameo(name,"Place "+name);           // enters placement mode
+    await page.waitForTimeout(500);
+    let tried=0;
+    for(const [cx,cy] of placementOffsets(yardCell)){
+      const x=yx+cx*24,y=yy+cy*24;
+      if(x<12||x>468||y<28||y>388)continue;
+      tried++;
+      const at=(await logText()).length;
+      await clickGame(x,y,"Place "+name+" at "+cx+","+cy);
+      if(await waitEvent("\\[browser-event\\] placed name="+name+" house="+playerHouse,1200,at)){
+        step("placed",{object:name,offset:[cx,cy],tried});
+        return;
+      }
+    }
+    throw Error("Could not find a legal place for "+name);
+  }
+  const credits=async()=>{const m=lastMatch(await logText(),new RegExp("\\[browser-event\\] credits house="+playerHouse+" value=(\\d+)","g"));return m?Number(m[1]):null;};
+
+  // Build times vary with the start position and harvester income; the
+  // vehicle factory took 180-230 s locally, so allow 8 minutes per step.
+  const STEP_MS=480000;
+  await buildStructure("NUKE",STEP_MS);
+  const harvestSince=(await logText()).length;
+  const creditsBeforeHarvest=await credits();
+  await buildStructure("PROC",STEP_MS);             // the refinery brings a harvester
+  await buildStructure("PYLE",STEP_MS);
+  // Infantry from the barracks (units strip).
+  let since=(await logText()).length;
+  await clickCameo("E1","Train E1");
+  if(!await waitEvent("\\[browser-event\\] produced name=E1 house="+playerHouse,STEP_MS,since))throw Error("E1 was not produced");
+  step("produced",{object:"E1"});
+  // One harvester load must arrive and raise the balance.
+  if(!await waitEvent("\\[browser-event\\] harvest-unload house="+playerHouse,STEP_MS,harvestSince))
+    throw Error("The harvester did not deliver a load");
+  const unload=lastMatch((await logText()).slice(harvestSince),new RegExp("\\[browser-event\\] harvest-unload house="+playerHouse+" value=(\\d+)","g"));
+  step("harvest-unload",{value:Number(unload[1])});
+  // A vehicle from the vehicle factory.
+  await buildStructure("WEAP",STEP_MS);
+  since=(await logText()).length;
+  const vehicle=(await slot("JEEP"))?"JEEP":(await slot("MTNK"))?"MTNK":null;
+  if(!vehicle)throw Error("No vehicle is buildable after the vehicle factory");
+  await clickCameo(vehicle,"Build "+vehicle);
+  if(!await waitEvent("\\[browser-event\\] produced name="+vehicle+" house="+playerHouse,STEP_MS,since))throw Error(vehicle+" was not produced");
+  step("produced",{object:vehicle});
+  steps.creditsBeforeHarvest=creditsBeforeHarvest;
+  steps.creditsAfterHarvest=await credits();
+  // Command units: box-select the tactical view, then move and force-fire.
+  const field0=await canvas.screenshot();
+  const box=await canvas.boundingBox();
+  const at=(x,y)=>[box.x+x/640*box.width,box.y+y/400*box.height];
+  await page.mouse.move(...at(8,24));await page.mouse.down();
+  await page.mouse.move(...at(470,390),{steps:8});await page.mouse.up();
+  await page.waitForTimeout(500);
+  await clickGame(120,120,"Move selection");
+  await page.waitForTimeout(3000);
+  await page.keyboard.down("Control");
+  await clickGame(160,300,"Force-fire on ground");
+  await page.keyboard.up("Control");
+  await page.waitForTimeout(3000);
+  const field1=await canvas.screenshot();
+  if(field0.equals(field1))throw Error("Orders did not change the battlefield");
+  step("commanded");
+  // Scroll with the keyboard and with the screen edge (M1 deferred this).
+  let before=await canvas.screenshot();
+  await page.keyboard.down("ArrowRight");await page.waitForTimeout(1200);await page.keyboard.up("ArrowRight");
+  await page.waitForTimeout(400);
+  if(before.equals(await canvas.screenshot()))throw Error("Keyboard scrolling did not move the view");
+  step("scroll-keyboard");
+  before=await canvas.screenshot();
+  await page.mouse.move(...at(1,200));await page.waitForTimeout(2000);await page.mouse.move(...at(240,200));
+  await page.waitForTimeout(400);
+  if(before.equals(await canvas.screenshot()))throw Error("Edge scrolling did not move the view");
+  step("scroll-edge");
+  await screenshot("base");
+  // Let the match run, then record metrics.
+  await page.evaluate(()=>{window.WCWatchdog.maxStallMs=0;});
+  const heapStart=await page.evaluate(()=>(window.Module&&window.Module.HEAPU8&&window.Module.HEAPU8.length)||null);
+  const frames=await page.evaluate(()=>new Promise(resolve=>{
+    const d=[];let prev=performance.now(),start=prev;
+    function tick(now){d.push(now-prev);prev=now;if(now-start>=120000)resolve(d);else requestAnimationFrame(tick);}
+    requestAnimationFrame(tick);}));
+  const pct=(v,p)=>{const a=[...v].sort((x,y)=>x-y);return a[Math.min(a.length-1,Math.floor(p*(a.length-1)))];};
+  const heapEnd=await page.evaluate(()=>(window.Module&&window.Module.HEAPU8&&window.Module.HEAPU8.length)||null);
+  const stall=await page.evaluate(()=>window.WCWatchdog.maxStallMs);
+  if(stall>1000)throw Error("Main-thread stall during play: "+stall+"ms");
+  await screenshot("after-2-minutes");
+  // Pack size as served (raw and gzip), for the M4 size budget.
+  const zlib=require("node:zlib"),packDir=path.join(root,"data","game");
+  let packRaw=0,packGzip=0;
+  for(const f of fs.readdirSync(packDir)){const b=fs.readFileSync(path.join(packDir,f));packRaw+=b.length;packGzip+=zlib.gzipSync(b).length;}
+  steps.metrics={schema:1,sha:process.env.GITHUB_SHA||"local",timeToMatchStartMs:audit.timeToMatchStartMs,
+    frameP50Ms:pct(frames,0.5),frameP95Ms:pct(frames,0.95),maxStallMs:stall,
+    heapBytesAtStart:heapStart,heapBytesAfter2Min:heapEnd,packBytes:packRaw,packGzipBytes:packGzip,
+    steps:steps.steps};
+  fs.writeFileSync(path.join(root,"stock-scenario-metrics.json"),JSON.stringify(steps.metrics,null,2)+"\n");
+  step("ran-2-minutes");
+}
+
 async function main(){
   let browser,page;
   try{
@@ -91,6 +264,12 @@ async function main(){
     page=await browser.newPage({viewport:{width:1100,height:980}});
     page.on("console",msg=>{consoleLines.push(...msg.text().split(/\r?\n/));});
     page.on("pageerror",err=>audit.pageErrors.push(String(err.stack||err)));
+    // Record the stack of any uncaught error (WebAssembly traps included).
+    await page.addInitScript(()=>{
+      window.addEventListener("error",e=>{
+        if(e.error&&e.error.stack)console.log("[browser-error] "+e.error.stack.replace(/\n/g," | "));
+      });
+    });
     await page.goto("http://127.0.0.1:"+server.address().port+"/vanillatd.html",
       {waitUntil:"domcontentloaded",timeout:90000});
     await page.waitForFunction(()=>document.body.dataset.runtime==="ready",null,{timeout:90000});
@@ -127,7 +306,10 @@ async function main(){
     await screenshot("scenario-dialog");
     // The first pack intentionally contains no SCM scenario. This click
     // tests the real scenario dialog and records missing input/asset data.
+    const confirmAt=Date.now();
     await clickGame(126,359,"Scenario dialog OK");
+    page.waitForFunction(()=>document.getElementById("log").textContent.includes("[browser-game] scenario.loaded="),
+      null,{timeout:60000}).then(()=>{audit.timeToMatchStartMs=Date.now()-confirmAt;},()=>{});
     await page.waitForTimeout(7000);
     await screenshot("after-confirm");
     // Phase 7 gate: the battlefield must actually be drawn (terrain plus
@@ -197,6 +379,7 @@ async function main(){
     audit.sidebar=sidebar;
     if(sidebar.nonBlackShare<0.25)throw Error("Sidebar did not appear after deploying: "+JSON.stringify(sidebar));
     if(sidebar.cameoSlotsDrawn<2)throw Error("Sidebar shows no buildable cameos: "+JSON.stringify(sidebar));
+    if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
   }catch(error){
     audit.error=String(error.stack||error);
     if(page){try{
@@ -209,7 +392,8 @@ async function main(){
     // DOM log is authoritative: parse one chronological stream exactly once.
     let lines=consoleLines;
     if(page){try{
-      lines=(await page.locator("#log").textContent()).split(/\r?\n/);
+      lines=(await page.locator("#log").textContent()).split(/\r?\n/)
+        .concat(consoleLines.filter(l=>l.startsWith("[browser-error]")));
       if(audit.screenshots.length===0){
         const filename="stock-scenario-failure.png";
         await page.screenshot({path:path.join(root,filename)});
@@ -258,5 +442,16 @@ async function main(){
   console.log("Stock scenario audit:",audit.status,"stage:",audit.stage,"misses:",audit.misses.length,
     "required:",audit.requiredMisses.length,"unclassified:",audit.unclassifiedMisses.length,
     "optional:",audit.optionalMisses.length);
+  // Put the failure and progress in the job log itself; the artifact is not
+  // always reachable from where the log is read.
+  if(audit.error)console.log("Error:",audit.error);
+  if(audit.gameplay)console.log("Gameplay steps:",JSON.stringify(audit.gameplay.steps));
+  if(audit.error){
+    // The last game events explain most failures (destroyed buildings,
+    // production state, harvests); print them with the error.
+    const recent=audit.lastEventLines.filter(l=>!/\] credits /.test(l)).slice(-25);
+    console.log("Recent events:\n"+recent.join("\n"));
+  }
+  if(audit.deployAttempts)console.log("Deploy attempts:",JSON.stringify(audit.deployAttempts));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
