@@ -59,16 +59,26 @@ function build(outdir){
   }]));
   const manifest={schema:1,packVersion:"m2-"+revision.slice(0,12),files};
   const names=new Set(files.map(f=>f.path.toUpperCase()));
-  // MIX-contained boot entries are included in boot-pack's validated inventory.
-  const boot=JSON.parse(fs.readFileSync(path.join(root,"game/content/pack/boot-requirements.json"),"utf8"));
-  const archiveContents=new Set(boot.files.filter(x=>["boot","menu"].includes(x.requiredFor)).map(x=>x.name.toUpperCase()));
+  // Only report an archive member as produced when the *built archive*
+  // lists it. Inventory declarations are not evidence of a MIX member.
+  const mixer=process.env.WC_MIXTOOL||path.join(root,"build/native/vanillamix");
+  const archiveContents=new Set();
+  for(const archive of files.filter(x=>x.path.toUpperCase().endsWith(".MIX"))){
+    const run=cp.spawnSync(mixer,["--list",path.join(game,archive.path)],{encoding:"utf8"});
+    if(run.error||run.status!==0)throw Error("Cannot inspect MIX "+archive.path+": "+(run.error||run.stderr));
+    for(const line of run.stdout.split(/\r?\n/)){
+      const match=line.match(/^\s*([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)\s+\d+\s+\d+\s*$/);
+      if(match)archiveContents.add(match[1].toUpperCase());
+    }
+  }
+  const produced=req=>names.has(req.name.toUpperCase())||archiveContents.has(req.name.toUpperCase());
   const required=requirements.files.filter(x=>x.requiredFor!=="optional");
-  const present=required.filter(x=>names.has(x.name.toUpperCase())||archiveContents.has(x.name.toUpperCase()));
+  const present=required.filter(produced);
   const coverage={schema:1,total:required.length,produced:present.length,
-    missing:required.filter(x=>!names.has(x.name.toUpperCase())&&!archiveContents.has(x.name.toUpperCase())).map(x=>x.name),
+    missing:required.filter(x=>!produced(x)).map(x=>x.name),
     byStage:Object.fromEntries(["boot","menu","scenario","gameplay"].map(stage=>{
       const group=required.filter(x=>x.requiredFor===stage);
-      return [stage,{total:group.length,produced:group.filter(x=>names.has(x.name.toUpperCase())||archiveContents.has(x.name.toUpperCase())).length}];
+      return [stage,{total:group.length,produced:group.filter(produced).length}];
     }))};
   fs.writeFileSync(path.join(outdir,"pack.json"),JSON.stringify(manifest,null,2)+"\n");
   fs.writeFileSync(path.join(outdir,"PROVENANCE.json"),JSON.stringify(provenance,null,2)+"\n");
