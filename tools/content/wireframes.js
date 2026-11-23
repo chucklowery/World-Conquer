@@ -93,6 +93,19 @@ function paint(item, frame = 0) {
   if (representative) return representative;
   return drawFirstPass(item,frame);
 }
+// Engine house remaps replace palette slots 176–191 (const.cpp RemapGold/Red).
+// Only the M2 pack opts in; existing art previews and legacy tests are frozen.
+function paintHouseBand(item, pixels, frame) {
+  if(!["building","vehicle","infantry","aircraft"].includes(item.category))return pixels;
+  const out=pixels.slice(),w=item.width,h=item.height;
+  const y0=Math.floor(h*0.37),y1=Math.ceil(h*0.52);
+  const x0=Math.floor(w*0.30),x1=Math.ceil(w*0.70);
+  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+    const i=y*w+x;
+    if(out[i]!==0)out[i]=176+((x+frame)%16);
+  }
+  return out;
+}
 function renderSvg(item, frame = 0, overridePixels = null) {
   const pixels = overridePixels || paint(item, frame), w=item.width, h=item.height;
   const labelWidth=160, previewHeight=Math.max(h,48), fullWidth=w+labelWidth;
@@ -218,7 +231,7 @@ function representativeRoster() {
   }
   return roster.assets;
 }
-function build(destination, selectedIds) {
+function build(destination, selectedIds, houseRemap=false) {
   const dir=path.resolve(destination);
   if(fs.existsSync(dir))throw new Error(`Output already exists: ${dir}`);
   const catalog=JSON.parse(fs.readFileSync(path.join(outputRoot,"catalog.json"),"utf8")).assets;
@@ -265,7 +278,7 @@ function build(destination, selectedIds) {
       }
     }else{
       frames=[];
-      for(let i=0;i<a.provisionalFrameCount;i++)frames.push({width:a.width,height:a.height,pixels:paint(a,i)});
+      for(let i=0;i<a.provisionalFrameCount;i++)frames.push({width:a.width,height:a.height,pixels:houseRemap?paintHouseBand(a,paint(a,i),i):paint(a,i)});
       provenance={creator:"World-Conquer project",license:"CC0-1.0",source:"procedural wireframe",revision:"1"};
     }
     const bytes=encodeTacticalShape({frames});
