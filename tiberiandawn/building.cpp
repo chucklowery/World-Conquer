@@ -1130,6 +1130,14 @@ void BuildingClass::AI(void)
     **	all production control.
     */
     if (Factory && Factory->Has_Completed() && PlacementDelay.Expired()) {
+#ifdef __EMSCRIPTEN__
+        // Test log: read the type name while the produced object is still
+        // valid; after Exit_Object it may already be gone (FactoryClass::
+        // Completed must not dereference it).
+        TechnoClass const* produced = Factory->Get_Object();
+        char const* produced_name =
+            (produced && produced->What_Am_I() != RTTI_BUILDING) ? produced->Techno_Type_Class()->IniName : NULL;
+#endif
 
         switch (Exit_Object(Factory->Get_Object())) {
 
@@ -1149,6 +1157,12 @@ void BuildingClass::AI(void)
             break;
 
         case 2:
+#ifdef __EMSCRIPTEN__
+            if (produced_name) {
+                std::printf("[browser-event] produced name=%s house=%s\n", produced_name, House->Class->IniName);
+                std::fflush(stdout);
+            }
+#endif
             Factory->Completed();
             delete Factory;
             Factory = 0;

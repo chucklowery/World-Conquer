@@ -83,6 +83,10 @@ function parse(rawLine){
   if(miss&&!audit.misses.some(x=>x.name===miss[1]))audit.misses.push({name:miss[1],firstSeenStage:audit.stage});
   const fatal=line.match(/^\[browser-game\] fatal=(.*)/);
   if(fatal)audit.fatal=fatal[1];
+  // A WebAssembly trap or abort stops the game but does not always raise a
+  // page error; treat it as fatal.
+  const trap=line.match(/(RuntimeError: .*|Aborted\(.*)$/);
+  if(trap&&!audit.fatal)audit.fatal="engine crashed: "+trap[1];
 }
 // Phase 9: a scripted match with real input only. Positions come from the
 // engine's guarded test logs ([browser-event] sidebar-add / sidebar-scroll /
@@ -260,6 +264,12 @@ async function main(){
     page=await browser.newPage({viewport:{width:1100,height:980}});
     page.on("console",msg=>{consoleLines.push(...msg.text().split(/\r?\n/));});
     page.on("pageerror",err=>audit.pageErrors.push(String(err.stack||err)));
+    // Record the stack of any uncaught error (WebAssembly traps included).
+    await page.addInitScript(()=>{
+      window.addEventListener("error",e=>{
+        if(e.error&&e.error.stack)console.log("[browser-error] "+e.error.stack.replace(/\n/g," | "));
+      });
+    });
     await page.goto("http://127.0.0.1:"+server.address().port+"/vanillatd.html",
       {waitUntil:"domcontentloaded",timeout:90000});
     await page.waitForFunction(()=>document.body.dataset.runtime==="ready",null,{timeout:90000});
@@ -382,7 +392,8 @@ async function main(){
     // DOM log is authoritative: parse one chronological stream exactly once.
     let lines=consoleLines;
     if(page){try{
-      lines=(await page.locator("#log").textContent()).split(/\r?\n/);
+      lines=(await page.locator("#log").textContent()).split(/\r?\n/)
+        .concat(consoleLines.filter(l=>l.startsWith("[browser-error]")));
       if(audit.screenshots.length===0){
         const filename="stock-scenario-failure.png";
         await page.screenshot({path:path.join(root,filename)});

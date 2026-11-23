@@ -740,15 +740,6 @@ bool FactoryClass::Completed(void)
 {
     Validate();
     if (Object && Fetch_Stage() == STEP_COUNT) {
-#ifdef __EMSCRIPTEN__
-        // Building production is represented by Grand_Opening's placed event.
-        if (Object->What_Am_I() != RTTI_BUILDING) {
-            std::printf("[browser-event] produced name=%s house=%s\n",
-                        Object->Techno_Type_Class()->IniName,
-                        House->Class->IniName);
-            std::fflush(stdout);
-        }
-#endif
         Object = NULL;
         IsSuspended = true;
         IsDifferent = true;

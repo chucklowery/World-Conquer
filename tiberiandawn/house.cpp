@@ -2896,6 +2896,15 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     **	has been completed.
                     */
                     factory->Set_Is_Blocked(false);
+#ifdef __EMSCRIPTEN__
+                    // Test log: object_type was read before Exit_Object, while
+                    // the produced object was certainly valid.
+                    if (object_type) {
+                        std::printf(
+                            "[browser-event] produced name=%s house=%s\n", object_type->IniName, Class->IniName);
+                        std::fflush(stdout);
+                    }
+#endif
                     factory->Completed();
                     Abandon_Production(type);
 #ifdef REMASTER_BUILD

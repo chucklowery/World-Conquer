@@ -354,3 +354,30 @@ game and the roadmap evidence moved to the new session **M2d** (Phases
   go, the requirements inventory, adding objects and maps, replacing
   placeholder art), `docs/browser/BUILD.md` and `browser/engine/README.md`
   updated. Roadmap evidence is added once CI passes on this branch.
+
+### Phase 9 — CI failure and crash fix (2026-11-23)
+
+- PR #60's first CI runs failed in `stock-scenario` after the harvest step
+  (vehicle factory never finished). The test only printed a summary, and
+  the artifact host is not reachable from the agent container, so the test
+  now prints the error, the gameplay steps and the recent game events in the
+  job log itself.
+- Local reproduction showed the game **stopping** rather than slowing:
+  `Uncaught RuntimeError: function signature mismatch`, a WebAssembly trap.
+  It does not raise a Playwright page error, so the test waited until its
+  timeout. Stack (captured with a window error listener):
+  `BuildingClass::AI` → `FactoryClass::Completed` →
+  `TechnoClass::Techno_Type_Class` → `InfantryClass::Class_Of`.
+- **Cause: the M2a `produced` test log**, which dereferenced the factory's
+  `Object` inside `FactoryClass::Completed`. By then the produced object can
+  already be gone (here an AI infantry unit); natively that reads garbage,
+  in WebAssembly the type-checked indirect call traps and freezes the game.
+  The bug is on `vanilla` already; matches only hit it after a few minutes,
+  once the AI has produced infantry.
+- **Fix:** the `produced` event is now logged where the type is read *before*
+  the object leaves the factory: `BuildingClass::AI` (AI and building-side
+  exits) and `HouseClass` (the human player's path, which already captured
+  `object_type` early). `FactoryClass::Completed` no longer dereferences
+  anything. The test now treats any `RuntimeError` or `Aborted(` line as an
+  engine crash and fails immediately, and records error stacks.
+- Also added: `[browser-event] destroyed` (building destroyed, and by whom).
