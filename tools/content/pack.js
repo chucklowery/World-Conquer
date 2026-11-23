@@ -65,7 +65,7 @@ function build(outdir){
       theaterNames.has(entry.path)?"tools/content/theater.js":
       wireframeNames.has(entry.path)?"tools/content/wireframes.js":"tools/content/boot-pack.js",
     sourceFiles:scenarioNames.has(entry.path)?["tools/content/scenario.js","game/content/scenarios/foundry-test-range.json"]:
-      theaterNames.has(entry.path)?["tools/content/theater.js","tools/content/encode-iconset.js"]:
+      theaterNames.has(entry.path)?["tools/content/theater.js","tools/content/encode-iconset.js","tools/content/encode-shape.js"]:
       wireframeNames.has(entry.path)?
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
       ["tools/content/boot-pack.js","game/content/pack/boot-requirements.json"],
