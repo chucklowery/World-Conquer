@@ -832,6 +832,20 @@
       }
     },
     {
+      "name": "CLEAR1.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "ICN",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/defines.h:1089"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 1,
+        "source": "provisional-upper-bound"
+      }
+    },
+    {
       "name": "CONQUER.ENG",
       "container": "CONQUER.MIX|loose",
       "format": "ENG",
@@ -2637,6 +2651,20 @@
       }
     },
     {
+      "name": "SCM94EA.BIN",
+      "container": "loose",
+      "format": "BIN",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/map.cpp:1076-1165"
+      ],
+      "contract": {
+        "size": "64x64 packed cells",
+        "frameCount": "unverified",
+        "source": "source-audited"
+      }
+    },
+    {
       "name": "SCM94EA.INI",
       "container": "loose",
       "format": "INI",
@@ -3196,6 +3224,20 @@
       }
     },
     {
+      "name": "TEMPERAT.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:374-380"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "provisional-upper-bound"
+      }
+    },
+    {
       "name": "TEMPERAT.PAL",
       "container": "unverified",
       "format": "PAL",
@@ -3208,6 +3250,20 @@
         "size": "unverified",
         "frameCount": "unverified",
         "source": "unverified"
+      }
+    },
+    {
+      "name": "TEMPICNH.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/display.cpp:385-395"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "provisional-upper-bound"
       }
     },
     {
@@ -3987,6 +4043,20 @@
         "frameCount": 192,
         "source": "provisional-upper-bound",
         "sharedFilenameWith": []
+      }
+    },
+    {
+      "name": "W1.TEM",
+      "container": "TEMPERAT.MIX|TEMPICNH.MIX",
+      "format": "ICN",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/defines.h:1092"
+      ],
+      "contract": {
+        "size": "24x24",
+        "frameCount": 1,
+        "source": "provisional-upper-bound"
       }
     },
     {
