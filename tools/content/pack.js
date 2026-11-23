@@ -37,6 +37,7 @@ function build(outdir){
     }
   }
   fs.rmSync(wireframeStage,{recursive:true,force:true});
+  fs.copyFileSync(path.join(root,"game/content/pack/scenario-probe.ini"),path.join(outdir,"game/SCM94EA.INI"));
   const requirements=JSON.parse(fs.readFileSync(requirementsPath,"utf8"));
   if(requirements.schema!==1||!Array.isArray(requirements.files))throw Error("Invalid requirements schema");
   const revision=cp.execFileSync("git",["rev-parse","HEAD"],{cwd:root,encoding:"utf8"}).trim();
@@ -48,7 +49,8 @@ function build(outdir){
       return {path:name,bytes:data.length,sha256:sha256(data)};});
   const files=list();
   const provenance=Object.fromEntries(files.map(entry=>[entry.path,{
-    generator:wireframeNames.has(entry.path)?"tools/content/wireframes.js":"tools/content/boot-pack.js",
+    generator:entry.path==="SCM94EA.INI"?"game/content/pack/scenario-probe.ini":
+      wireframeNames.has(entry.path)?"tools/content/wireframes.js":"tools/content/boot-pack.js",
     sourceFiles:wireframeNames.has(entry.path)?
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
       ["tools/content/boot-pack.js","game/content/pack/requirements.json"],
