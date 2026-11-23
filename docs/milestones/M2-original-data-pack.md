@@ -1,7 +1,7 @@
 # M2: Minimum original data pack (three-session plan)
 
 Read `docs/milestones/AGENT_GUIDE.md` first. This file is self-contained apart
-from that guide. M2 is split into **three sessions: M2a, M2b and M2c**. Each
+from that guide. M2 is split into **four sessions: M2a, M2b, M2c and M2d**. Each
 is one long agent session (roughly 6–8 hours) on its **own branch** with its
 **own PR**, and is **reviewed and merged before the next session starts**.
 M1 is merged on `vanilla`; build on what it delivered.
@@ -29,7 +29,12 @@ art, final sprites) is **out of scope** for M2; it belongs to M5.
 | --- | --- | --- | --- | --- |
 | **M2a** | 0–3 | `m2a/probe-pack-placeholders` / `M2a: scenario probe, pack pipeline, universal placeholders` | M1 merged; `stock-engine` green on `vanilla` | `stock-scenario` runs in report mode and uploads its audit; the engine gets past menu and dialog loading and reaches `[browser-game] scenario.request=`; the pack is built by `pack.js` with coverage reported; `stock-engine` still green |
 | **M2b** | 4–6 | `m2b/theater-roster-scenario` / `M2b: theater, roster contracts, scenario generator` | M2a merged | Host round-trip tests pass for the icon-set encoder and the generated scenario INI and BIN; slice frame contracts are recorded with code references; the engine reaches `[browser-game] scenario.loaded=` on the M2 map (report mode, misses allowed); `stock-engine` still green |
-| **M2c** | 7–9 | `m2c/playable-match` / `M2c: playable match on original data` | M2b merged | The full **M2 exit gate** (end of this file) |
+| **M2c** | 7–8 | `m2c/playable-match` / `M2c: visible battlefield on original data` | M2b merged | `stock-scenario` passes in **strict mode up to match start** (zero required or unclassified misses, no fatal or page error, no stall over 1,000 ms); automated screenshot checks show terrain and the player's units visible in the battlefield area; the MCV deploys (`[browser-event] deployed`) and the sidebar then appears with cameos for the slice; `gameplay` requirements are inventoried; no EA trademarks are visible in the skirmish dialog or in the match; `stock-engine` still green |
+| **M2d** | 9–10 | `m2d/end-to-end-match` / `M2d: end-to-end match and M2 evidence` | M2c merged | The full **M2 exit gate** (end of this file) |
+
+M2c was narrowed on 2026-11-23, after an owner review found the match runs
+but the battlefield draws black (see Phase 7). The end-to-end game and the
+evidence moved to the new session M2d. PR #59 continues as the M2c PR.
 
 Each session reads `docs/browser/M2_SESSION_LOG.md` first, to see what the
 earlier sessions decided (in particular M2a's Skirmish or New Game decision)
@@ -44,12 +49,12 @@ session's merged work except to fix a defect it finds; log every such fix.
    ready and stop. Do not start the next session's phases.
 2. **Keep the shared session log.** M2a creates
    `docs/browser/M2_SESSION_LOG.md` in Phase 0. Every session adds a
-   `## Session M2a|M2b|M2c` section, and after each phase appends: status
+   `## Session M2a|M2b|M2c|M2d` section, and after each phase appends: status
    (done, partial or skipped), commit SHA, commands and results, CI links,
    and open issues. If a session is interrupted or your context resets,
    **read the log and your PR first** and continue from the first phase of
    your session not marked done.
-3. **Commit at every phase boundary** (`M2a phase <n>: <summary>`, likewise `M2b`/`M2c`) and keep
+3. **Commit at every phase boundary** (`M2a phase <n>: <summary>`, likewise `M2b`/`M2c`/`M2d`) and keep
    every commit buildable, with the M1 `stock-engine` job still green.
 4. **Work through the phases in order without stopping to ask.** Use the
    defaults and fallbacks here. Stop only for AGENT_GUIDE.md "Stop and ask"
@@ -134,11 +139,13 @@ session's merged work except to fix a defect it finds; log every such fix.
 | M2b | 5 | Playable roster with verified frame contracts | 4–6 h | Exact frame counts for the slice, sidebar cameos, UI art |
 | M2b | 6 | Scenario generator and the M2 map | 3–4 h | `tools/content/scenario.js`, map source, INI and BIN |
 | M2b | — | Session close-out | 30 min | Log, PR ready |
-| M2c | 7 | Reach the battlefield | 3–6 h | Scenario loads and renders, with zero required misses |
-| M2c | 8 | End-to-end gameplay test | 3–4 h | Build, harvest, produce and command, tested in CI |
-| M2c | 9 | Docs, roadmap evidence and PR | 1 h | Docs, evidence line, PR ready |
+| M2c | 7 | Visible battlefield | 3–5 h | Terrain and units draw; strict mode to match start; trademark fix |
+| M2c | 8 | Base and sidebar | 3–4 h | MCV deploys; sidebar with cameos; `gameplay` inventory; slice frames checked visually |
+| M2c | — | Session close-out | 30 min | Log, handoff, PR ready |
+| M2d | 9 | End-to-end gameplay test | 3–4 h | Build, harvest, produce and command, tested in CI |
+| M2d | 10 | Docs, roadmap evidence and PR | 1 h | Docs, evidence line, PR ready |
 
-M2b and M2c start with a short **setup step**: sync to the latest `vanilla`,
+M2b, M2c and M2d start with a short **setup step**: sync to the latest `vanilla`,
 set up the build loop, confirm `stock-engine` and the report-mode
 `stock-scenario` jobs pass, and read the log. This is Phase 0's checklist
 without creating the log.
@@ -191,7 +198,8 @@ every missing file, and a decision on which game path M2 uses.
 3. Add the CI job `stock-scenario` (`needs: wasm-vanillatd`, same setup as
    `stock-engine`). Until Phase 7 it runs in **report mode**: set
    `STOCK_SCENARIO_REPORT_ONLY=1`, so it uploads the audit but does not fail
-   the build. Phase 7 removes that flag.
+   the build. Phase 7 makes it strict up to match start, and Phase 9 makes
+   the whole session strict.
 4. **Decide the path. Default: Skirmish.** Drive Multiplayer → Skirmish →
    scenario dialog. Skirmish gives the engine's own computer opponent, a
    starting MCV and credit settings, and needs no AI scripting, so it also
@@ -272,7 +280,7 @@ during play, write the encoder; it's required.
    encoder, and any engine behavior you discovered.
 3. Mark the PR ready and post the AGENT_GUIDE.md section 6 report for
    phases 0–3. Do not tick roadmap boxes or add an evidence line; that
-   happens in M2c.
+   happens in M2d.
 
 **M2a STOP condition:** if the probe can't get past menu and dialog loading
 to `scenario.request` on either path, after the guarded "absent is
@@ -361,33 +369,118 @@ exactly what is unknown (loader, code location, what you tried), give the
 object the safe upper-bound placeholder, and continue. Close the session as
 **partial** only if the scenario cannot reach `scenario.loaded=`.
 
-## Phase 7 (M2c): Reach the battlefield
+## Phase 7 (M2c): Visible battlefield
 
-1. Iterate with the probe until the match starts and the engine draws the
-   map, sidebar and radar. Each round: read misses or the fatal reason, then
-   fix the generator, contract or map, then rebuild. After each round, check
-   the screenshot for objects drawn wrong (garbled frames usually mean a
-   wrong frame count or wrong dimensions).
-2. Then switch `stock-scenario` to **strict mode** (remove
-   `STOCK_SCENARIO_REPORT_ONLY`). It now fails on any page error, fatal, or
-   `[asset-miss]` for a `boot|menu|scenario|gameplay` entry, and on any
-   watchdog stall over 1,000 ms after the match starts.
-3. Record the remaining `optional` misses (audio, movies, unused types) in
-   the session log.
+**Starting state (owner review of `vanilla` at `6db6bcd`, 2026-11-23, local
+Emscripten build and Chromium):**
 
-**M2c STOP condition:** if, after the encoders in Phases 3–4 exist and contracts
-have been derived from the code, the engine still cannot start a scenario
-because of a format or behavior you cannot determine, stop iterating.
-Record the exact blocker (file, loader, code location, what you tried) and
-still complete Phases 8–9 for whatever stage was reached, with `stock-scenario`
-asserting the furthest verified stage. Report M2 as **partial**.
+- The Skirmish setup dialog (`Com_Scenario_Dialog`) renders and works; the
+  match starts (`scenario.loaded=SCM94EA`) with no fatal or page error.
+- **The battlefield draws black.** Even 15 seconds in, only a white
+  crosshatch pattern around the start area (it grows slightly over time,
+  which suggests the edge of the revealed shroud) and the tab labels
+  ("TAB BUTTON CONTROLS", "TAB SIDEBAR") are drawn. No terrain grid and no
+  units are visible.
+- **It is not a missing-file problem.** All 160 misses are optional
+  (scenario-list scans, `.AUD`, update archives, and the `T*.MRF` fading
+  tables the engine writes). No `.SHP`, `.TEM`, palette or theater file is
+  missing.
+- **It is not the palette.** `TEMPERAT.PAL` defines 255 non-black entries,
+  and the clear tile uses indices 63 and 45 (`tools/content/theater.js`).
+- **"GDI" is visible** as the side name in the Skirmish dialog: an EA
+  trademark on screen.
+- The coverage report has **0 `gameplay` requirements**: the sidebar,
+  cameos and HUD are not inventoried yet.
 
-## Phase 8 (M2c): End-to-end gameplay test
+Tasks:
+
+1. **Find why terrain and units are not drawn.** Work from the engine's draw
+   path, not by guessing at art. Suggested order:
+   - Confirm what the crosshatch is (shroud edge, `SHADOW.SHP`, or terrain
+     drawn with a wrong icon map) by temporarily changing the generated
+     colors of each candidate and comparing screenshots.
+   - Follow cell drawing (`CellClass::Draw_It`, the template and icon-set
+     lookup in `iconset.cpp`/`template.cpp`, `Get_Icon_Set_Map`, and the
+     `TEMPICNH.MIX` contents) for a revealed clear cell. Check that the
+     icon map, the image data offset and the `TIcon` values in
+     `SCM94EA.BIN` select a real image; an all-zero or out-of-range icon
+     reference draws nothing.
+   - Check the start units exist and where they are: a guarded log of the
+     player's units and their cells right after `scenario.loaded` is
+     allowed. Then check their shapes' frame 0 is non-empty and drawn with
+     the house remap.
+   - If needed, add a guarded, temporary log in the draw path to see which
+     icon or shape number is used; remove it before the PR is ready.
+2. Fix the cause in the generators, map or contracts, then iterate until the
+   revealed area shows the terrain grid, the resource field near the start,
+   and the player's starting units.
+3. **Remove visible trademarks.** Find where the dialog and the match get
+   their house display names (for example `Text_String(TXT_GDI)` versus the
+   house `IniName`). Change player-visible text through the generated string
+   table first. Only if the text is a C++ literal or comes from an internal
+   name, add a small `#ifdef __EMSCRIPTEN__` display-only substitution. Never
+   change `IniName` values, which scenario files depend on. Log the source
+   of each string you change.
+4. **Make the visibility check automatic.** In `check-stock-scenario.js`,
+   after the match starts, crop the battlefield area from the canvas
+   screenshot and require a minimum share of non-black pixels (choose the
+   threshold from a good screenshot, for example 30%), and require the
+   player's unit area to differ from a terrain-only reference. Fail when the
+   battlefield is mostly black.
+5. Switch `stock-scenario` to **strict mode up to match start**. Remove
+   `STOCK_SCENARIO_REPORT_ONLY` for everything through `scenario.loaded` and
+   the visibility check: any page error, fatal, required or unclassified
+   miss, or stall over 1,000 ms fails the job.
+
+## Phase 8 (M2c): Base and sidebar
+
+1. Add a guarded `[browser-event] deployed name=<unit> into=<building>
+   house=<house>` log where an MCV turns into a construction yard (the
+   existing `placed` event skips buildings with `PurchasePrice` 0, which may
+   include a deployed yard).
+2. In the test, deploy the MCV with real input (select it, then use the
+   engine's deploy action) and assert `deployed`. Confirm the sidebar
+   appears: crop the sidebar area and require cameos to be drawn (non-black
+   pixels in each cameo slot).
+3. **Inventory `gameplay` requirements.** With the sidebar open, record every
+   new lookup (strips, tabs, cameos, power bar, repair and sell buttons,
+   placement grid, selection brackets, health pips, credits display, radar
+   frame) in `requirements.json` with `requiredFor:"gameplay"` and code
+   references. Make the pack produce them all, so coverage reports them as
+   produced.
+4. **Check the slice frames visually.** For each of the 10 slice objects in
+   `docs/browser/M2_ROSTER_CONTRACTS.md`, derive the exact frame layout from
+   the draw code (M2b recorded exact counts only for rifle infantry and the
+   tank). Record each contract with its code reference, and look at the
+   screenshots for garbled or empty frames. Objects you cannot check in the
+   match yet (for example a harvester docking) keep their safe upper-bound
+   placeholder and are listed in the handoff.
+5. Derive the sidebar and cameo click positions in game coordinates
+   (640×400) from the sidebar layout code. Confirm them with the M1
+   `[browser-input]` log, and write them into the handoff for M2d.
+
+## M2c close-out
+
+1. Confirm the **M2c gate** on the PR head's CI run, download the
+   `stock-scenario` screenshots, and record both in the log.
+2. Write the handoff for M2d: the cause of the black battlefield and the
+   fix, the sidebar and cameo positions, the MCV and start positions,
+   remaining provisional frame contracts, and remaining optional misses.
+3. Mark the PR ready and post the section 6 report for phases 7–8. No roadmap
+   evidence yet.
+
+**M2c STOP condition:** if terrain or units still cannot be made visible
+after following the draw path in Phase 7 for about twice its budget, stop.
+Record the exact finding (which draw call, which data, what you tried, and
+the screenshots) and close the session as **partial**. M2d must not start
+until the owner decides how to proceed.
+
+## Phase 9 (M2d): End-to-end gameplay test
 
 Extend `check-stock-scenario.js` so that in the match it performs, with
 **real mouse and keyboard input only**:
 
-1. Deploy the MCV (or use the scenario's construction yard).
+1. Deploy the MCV (M2c already asserts this).
 2. Build and place a power plant, then a refinery, through the sidebar.
    Assert `[browser-event] placed` for each.
 3. Wait for the harvester to deliver one load. Assert
@@ -402,12 +495,18 @@ Extend `check-stock-scenario.js` so that in the match it performs, with
    p50/p95 during play, the maximum stall, heap at start and after 2 minutes,
    and the pack size (raw and gzip). No budgets are enforced.
 
-Derive sidebar and cameo click positions from the sidebar layout code (game
-coordinates, 640×400) and use the M1 `[browser-input]` log to confirm that
-clicks land where intended. Use the fastest game speed setting to shorten
-waits.
+Use the sidebar and cameo positions from M2c's handoff, confirmed with the
+`[browser-input]` log. Use the fastest game speed setting to shorten waits.
+Extend strict mode to the whole session: every step above must fail the job
+when it doesn't happen.
 
-## Phase 9 (M2c): Docs, roadmap evidence and PR
+**M2d STOP condition:** if a step cannot be completed because of a format
+or engine behavior you cannot determine within about twice the phase budget,
+stop iterating. Record the exact blocker (file, loader, code location, what
+you tried), keep the test asserting the furthest verified step, complete
+Phase 10, and report M2 as **partial**.
+
+## Phase 10 (M2d): Docs, roadmap evidence and PR
 
 1. Write `docs/browser/M2_DATA_PACK.md`: how to build the pack, the
    requirement and contract format, how to add an object or a map, and how
@@ -416,16 +515,16 @@ waits.
 3. In `docs/ROADMAP.md`, tick the completed M2 boxes and add the evidence
    line:
    `Evidence: <date> · <SHA> · <stock-scenario CI run> · Chromium <version> · <path: Skirmish|New Game> match on 100% original data; placed <list>; harvest +<n> credits; produced <list>; zero required misses; max stall <n> ms`.
-   If Phase 7 stopped early, write "partial: <furthest stage>" and leave
+   If Phase 9 stopped early, write "partial: <furthest stage>" and leave
    the exit gate unticked.
 4. Finish the log, mark the PR ready, and post the AGENT_GUIDE.md section 6
-   report covering phases 7–9, plus a one-line summary of M2a and M2b.
+   report covering phases 9–10, plus a one-line summary of M2a–M2c.
 
 ---
 
 ## M2 exit gate
 
-On the M2c PR head (and later on `vanilla`), CI shows:
+On the M2d PR head (and later on `vanilla`), CI shows:
 
 1. `world-conquer-data-pack` is built entirely from committed sources and is
    deterministic, and its coverage report shows **100%** of
