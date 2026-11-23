@@ -110,3 +110,9 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - **Unverified contracts:** icon-set C++ host test and generated INI/BIN have not been confirmed by successful CI; `MapClass`/INI genuine host reader test still absent. Building animation/docking frames, `*MAKE` frames, sprites/cameos, HUD, special effects and growth-stage overlay data remain provisional. The 10 roster entries and source notes are in `docs/browser/M2_ROSTER_CONTRACTS.md`.
 - **CI:** current M2b PR checks https://github.com/chucklowery/World-Conquer/pull/58/checks ; the browser run head must be rechecked after this log commit. `stock-engine` on `vanilla` was green in M2a run 45098472157. No local Emscripten build or Chromium execution is available.
 - **Owner review:** do not merge M2b until its acceptance gate is verified. Keep original generated placeholders; never import proprietary art or game data. M2c must not start on an unverified M2b gate.
+
+### M2b post-audit Phase 4 corrections
+
+- M2a's downloaded `stock-scenario-audit.json` (artifact 14783878902) showed temperate archive, BIN and 10 fading-table misses in addition to optional picker/audio misses. Added original 256-byte and multi-plane identity remap tables (`TGREEN.MRF` through `TLIGHT.MRF`; exact sizes from `display.cpp:415-490`, `defines.h:1929-1931`) and corresponding requirements.
+- Added source-generated theater-specific 16-frame `TI1.TEM`–`TI12.TEM` growth/adjacency stand-ins and `T01.TEM` 16-frame tree stand-in, with requirements. The archive generator now includes those alongside the two icon sets. Source references: `odata.cpp:162-353,828-875`, `tdata.cpp:77`, `terrain.cpp:357`.
+- Implementation checkpoint: `344f1982f9d894a0e8b281f2383a3940d5177ee9`. Changes are unverified against the browser renderer; `TCLOCK.MRF` was not generated (unknown file contract). Re-run PR-head CI after this log update. All binaries remain generated in CI, not committed.
