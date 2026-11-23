@@ -91,3 +91,11 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - Commands/results: source inspection of `idata.cpp:63-98`, `infantry.cpp:629`, `unit.cpp:2195-2245`, `building.cpp:503-560`, `bdata.cpp` and `udata.cpp`; runtime test and shape build not run locally.
 - CI: https://github.com/chucklowery/World-Conquer/pull/58/checks (PR checks not yet final).
 - Open issues: exact animation contracts for the rest of the slice, cameo/sidebar/radar/power controls, resource overlay stages, and effects remain unverified. No newly authored cameo frames were completed. See the source-audited contract table.
+
+### Phase 6 — scenario generator and M2 map
+
+- Status: **partial** pending PR-head CI. Added `tools/content/scenario.js`, editable `game/content/scenarios/foundry-test-range.json`, and `test-scenario.js`. Generator emits source-owned `SCM94EA.INI` and `SCM94EA.BIN`; the `pack.js` pipeline includes both with CC0 provenance. Two start waypoints (cell 650 at (10,10) and cell 3445 at (53,53)), two crystal overlay patches, two trees and a two-cell water reference are authored.
+- Commit SHA: `a84fc63e8e1de3cedba6bdcbfe1ca4cf94ef1a6c` (latest implementation checkpoint; phase log commit follows).
+- Commands/results: derived 4096 × (one-byte `TemplateType` + one-byte `TIcon`) from `tiberiandawn/defines.h:1089` and `tiberiandawn/map.cpp:1076-1165,1206-1258`; map section and waypoints from `display.cpp:1273-1346`; unit format from `unit.cpp:3770-3819`. Node and C++ checks now wired to CI, not locally executed. The full `MapClass` and `CCINIClass` host load test has not been completed.
+- CI: https://github.com/chucklowery/World-Conquer/pull/58/checks (pending); previous completed M2a report-only run https://github.com/chucklowery/World-Conquer/actions/runs/45098472157 reached `scenario.loaded` on the *probe stub*, not on this M2 map.
+- Open issues: require a successful branch-head `stock-engine` and `stock-scenario` run on the generated map; check required misses and screenshot; the map's resource draw and radar are unverified. The C++ icon-set accessor test has not yet returned an outcome.
