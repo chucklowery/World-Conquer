@@ -43,3 +43,27 @@ assert.throws(()=>generate({...source,waypoints:source.waypoints.slice(0,5)}),/s
 for(let i=0;i<6;i++)assert.match(ini,new RegExp("\\n"+i+"="+cell(source.waypoints[i])+"\\n"));
 assert.deepEqual(generate(source),generate(source),"generator must be deterministic");
 console.log("PASS: original scenario INI and 4096-cell BIN round-trip");
+
+// M3 maps: compact fields/treeLines, start clearance, and every map builds.
+{
+  const assert=require("node:assert"),os=require("node:os");
+  const {expand,build}=require("./scenario.js");
+  const base={schema:1,file:"SCM50EA",name:"Test",map:{theater:"TEMPERATE",x:1,y:1,width:62,height:62},
+    terrain:{fill:0,cells:[]},waypoints:[[10,10],[50,50],[50,10],[10,50],[31,8],[31,55]],
+    overlays:[],trees:[],units:[]};
+  const one=expand({...base,fields:[{center:[31,31],radius:2,type:"TI1"}]});
+  assert.equal(one.overlays.length,21,"radius-2 field covers 21 cells (dx²+dy² ≤ r²+1)");
+  assert.throws(()=>expand({...base,fields:[{center:[12,12],radius:2,type:"TI1"}]}),/blocked/);
+  assert.throws(()=>expand({...base,treeLines:[{from:[8,10],to:[14,10],type:"T01"}]}),/blocked/);
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"wc-maps-"));
+  const names=build(dir);
+  const inis=names.filter(n=>n.endsWith(".INI"));
+  assert.ok(inis.length>=3,"at least three skirmish maps");
+  for(const ini of inis){
+    assert.match(ini,/^SCM\d\dEA\.INI$/);
+    assert.ok(fs.existsSync(path.join(dir,ini.replace(".INI",".BIN"))));
+    assert.match(build.sources[ini],/^game\/content\/scenarios\/.+\.json$/);
+  }
+  fs.rmSync(dir,{recursive:true,force:true});
+  console.log("PASS: "+inis.length+" skirmish maps build: "+inis.join(", "));
+}

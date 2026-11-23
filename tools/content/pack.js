@@ -12,6 +12,9 @@ const {encodeTacticalShape,decodeTacticalShape}=require("./encode-shape.js");
 // the nearest game-palette colours (TEMPERAT.PAL, boot-colors.js), skipping
 // the fixed engine colours 0-15 and the house remap band 176-191, which is
 // kept as-is so the engine can recolour each house.
+// Indices the engine uses for text colours; art must not land on them
+// (233-237 also rotate on the score screen). See boot-colors.js.
+const TEXT_COLOURS=new Set([16,202,209,233,234,235,236,237]);
 function wireframeTranslation(){
   const {rgbPalette}=require("./boot-colors.js");
   const game=rgbPalette();
@@ -23,6 +26,7 @@ function wireframeTranslation(){
     for(let j=16;j<256;j++){
       if(j>=176&&j<=191)continue;        // house remap band
       if(j>=32&&j<=38)continue;          // colour cycling (defines.h:1936-1937)
+      if(TEXT_COLOURS.has(j))continue;     // engine text colours (boot-colors.js)
       const d=source[i].reduce((sum,c,k)=>sum+(c-game[j][k])**2,0);
       if(d<dist){dist=d;best=j;}
     }
@@ -114,7 +118,7 @@ function build(outdir){
     generator:scenarioNames.has(entry.path)?"tools/content/scenario.js":
       theaterNames.has(entry.path)?"tools/content/theater.js":
       wireframeNames.has(entry.path)?"tools/content/wireframes.js":"tools/content/boot-pack.js",
-    sourceFiles:scenarioNames.has(entry.path)?["tools/content/scenario.js","game/content/scenarios/foundry-test-range.json"]:
+    sourceFiles:scenarioNames.has(entry.path)?["tools/content/scenario.js",require("./scenario.js").build.sources[entry.path]]:
       theaterNames.has(entry.path)?["tools/content/theater.js","tools/content/encode-iconset.js","tools/content/encode-shape.js"]:
       wireframeNames.has(entry.path)?
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:

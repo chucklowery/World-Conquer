@@ -15,7 +15,7 @@ function cell([x,y]){
   return y*GRID+x;
 }
 function validate(input){
-  if(!input||input.schema!==1||input.file!=="SCM94EA"||typeof input.name!=="string"||
+  if(!input||input.schema!==1||!/^SCM\d\dEA$/.test(input.file)||typeof input.name!=="string"||
      !/^[A-Za-z0-9 -]{1,40}$/.test(input.name))throw Error("Invalid scenario identity");
   if(!input.map||input.map.theater!=="TEMPERATE"||
      ![input.map.x,input.map.y,input.map.width,input.map.height].every(Number.isInteger)||
@@ -50,7 +50,42 @@ function validate(input){
   input.units.forEach(u=>{inMap(u.at);identifier(u.house);identifier(u.type);});
   return input;
 }
-function generate(input){
+// Compact authoring features, expanded before validation:
+//   fields:    [{center:[x,y], radius:r, type:"TI1"}]  round resource fields
+//   treeLines: [{from:[x,y], to:[x,y], type:"T01", step:3}]  spaced trees
+// Start positions (waypoints) must stay clear so the mobile base can deploy.
+const CLEAR_RADIUS=4;
+function expand(input){
+  const out={...input,overlays:[...(input.overlays||[])],trees:[...(input.trees||[])]};
+  for(const f of input.fields||[]){
+    const [cx,cy]=f.center,r=f.radius;
+    if(!Number.isInteger(r)||r<1||r>10)throw Error("Field radius must be 1..10");
+    for(let y=cy-r;y<=cy+r;y++)for(let x=cx-r;x<=cx+r;x++)
+      if((x-cx)**2+(y-cy)**2<=r*r+1)out.overlays.push({at:[x,y],type:f.type});
+  }
+  for(const t of input.treeLines||[]){
+    const [x0,y0]=t.from,[x1,y1]=t.to,step=t.step||3;
+    const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));
+    for(let i=0;i<=n;i+=step){
+      out.trees.push({at:[Math.round(x0+(x1-x0)*i/(n||1)),Math.round(y0+(y1-y0)*i/(n||1))],type:t.type});
+    }
+  }
+  const seen=new Set();
+  out.overlays=out.overlays.filter(o=>{const k=o.at.join(",");if(seen.has(k))return false;seen.add(k);return true;});
+  // Only generated features are checked; explicit cells are the author's call.
+  const generated=[...out.overlays,...out.trees].filter(e=>
+    !(input.overlays||[]).includes(e)&&!(input.trees||[]).includes(e));
+  for(const w of input.waypoints||[]){
+    for(const e of generated){
+      if(Math.abs(e.at[0]-w[0])<=CLEAR_RADIUS&&Math.abs(e.at[1]-w[1])<=CLEAR_RADIUS)
+        throw Error("Start position "+w+" is blocked by "+e.type+" at "+e.at);
+    }
+  }
+  delete out.fields;delete out.treeLines;
+  return out;
+}
+function generate(source){
+  const input=expand(source);
   validate(input);
   const bin=Buffer.alloc(MAX*2);
   for(let i=0;i<MAX;i++)bin[i*2]=input.terrain.fill;
@@ -76,16 +111,27 @@ function decodeBIN(bin){
   if(!Buffer.isBuffer(bin)||bin.length!==MAX*2)throw Error("Invalid map BIN size");
   return Array.from({length:MAX},(_,i)=>({template:bin[i*2],icon:bin[i*2+1]}));
 }
-function build(game,sourcePath=path.resolve(__dirname,"../../game/content/scenarios/foundry-test-range.json")){
-  const data=JSON.parse(fs.readFileSync(sourcePath,"utf8"));
-  const {ini,bin}=generate(data);
-  const iniName=data.file+".INI",binName=data.file+".BIN";
-  fs.writeFileSync(path.join(game,iniName),ini);
-  fs.writeFileSync(path.join(game,binName),bin);
-  return [iniName,binName];
+const SCENARIOS=path.resolve(__dirname,"../../game/content/scenarios");
+// Builds every map in game/content/scenarios. Returns the generated file
+// names; sources maps each name to the JSON it came from (provenance).
+function build(game,dir=SCENARIOS){
+  const names=[],sources={},files=new Set();
+  for(const entry of fs.readdirSync(dir).filter(f=>f.endsWith(".json")).sort()){
+    const data=JSON.parse(fs.readFileSync(path.join(dir,entry),"utf8"));
+    if(files.has(data.file))throw Error("Duplicate scenario file "+data.file);
+    files.add(data.file);
+    const {ini,bin}=generate(data);
+    const iniName=data.file+".INI",binName=data.file+".BIN";
+    fs.writeFileSync(path.join(game,iniName),ini);
+    fs.writeFileSync(path.join(game,binName),bin);
+    names.push(iniName,binName);
+    sources[iniName]=sources[binName]="game/content/scenarios/"+entry;
+  }
+  build.sources=sources;
+  return names;
 }
 if(require.main===module){
   if(process.argv.length!==4||process.argv[2]!=="build")throw Error("Usage: scenario.js build <gameDir>");
   build(process.argv[3]);
 }
-module.exports={generate,decodeBIN,build,cell};
+module.exports={generate,expand,decodeBIN,build,cell};

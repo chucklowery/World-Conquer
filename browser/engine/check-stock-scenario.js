@@ -306,6 +306,14 @@ async function main(){
     await screenshot("scenario-dialog");
     // The first pack intentionally contains no SCM scenario. This click
     // tests the real scenario dialog and records missing input/asset data.
+    // M3: pick a map by its row in the skirmish dialog's list (rows are
+    // ordered by scenario number: SCM94EA, SCM95EA, SCM96EA, ...).
+    const mapRow=Number(process.env.STOCK_SCENARIO_MAP_ROW||0);
+    if(mapRow>0){
+      await clickGame(192,Math.round(88+mapRow*17.5),"Select map row "+mapRow);
+      await page.waitForTimeout(800);
+      await screenshot("map-selected");
+    }
     const confirmAt=Date.now();
     await clickGame(126,359,"Scenario dialog OK");
     page.waitForFunction(()=>document.getElementById("log").textContent.includes("[browser-game] scenario.loaded="),
@@ -326,6 +334,9 @@ async function main(){
 
     // Phase 8: deploy the MCV with real input, as a player would.
     const logText=()=>page.evaluate(()=>document.getElementById("log").textContent);
+    audit.map=((await logText()).match(/\[browser-event\] scenario-start name=(\S+)/)||[])[1]||null;
+    const expectedMap=process.env.STOCK_SCENARIO_EXPECT_MAP;
+    if(expectedMap&&audit.map!==expectedMap)throw Error("Expected map "+expectedMap+" but "+audit.map+" started");
     const playerHouse=((await logText()).match(/\[browser-event\] unit name=\S+ house=(\S+)/)||[])[1];
     if(!playerHouse)throw Error("No player units were reported at match start");
     audit.playerHouse=playerHouse;
@@ -485,6 +496,7 @@ async function main(){
     if(browser)await browser.close();
     if(server.listening)await new Promise(resolve=>server.close(resolve));
   }
+  if(audit.map)console.log("Map:",audit.map);
   console.log("Stock scenario audit:",audit.status,"stage:",audit.stage,"misses:",audit.misses.length,
     "required:",audit.requiredMisses.length,"unclassified:",audit.unclassifiedMisses.length,
     "optional:",audit.optionalMisses.length);

@@ -11,7 +11,19 @@ function rgbPalette() {
     0:[0,0,0],       // transparent pixels
     1:[246,248,240], // light bitmap glyphs
     3:[232,246,226],
-    5:[24,57,75],   // original flat-color title background
+    // Title art fill (TITLE.CPS, HTITLE.PCX). Not index 5: the engine uses
+    // 5 as YELLOW (common/wwstd.h) in its text colour tables.
+    139:[24,57,75],
+    // Main shades of the end-of-match score text palettes (score.cpp
+    // _yellowpal, _bluepal, _orangepal, _greenpal, _graypal; entry 1), and
+    // the cycling "click to continue" yellows (_cycleyellowpal, rotated
+    // over 233-237 by Cycle_Wait_Click). No art uses these indices.
+    5:[252,212,72],
+    2:[110,176,255],
+    209:[255,160,64],
+    16:[120,220,120],
+    202:[200,200,210],
+    233:[230,186,52],234:[252,212,72],235:[255,236,140],236:[255,224,104],237:[240,200,64],
     15:[250,253,247],
     41:[147,240,192],
     42:[94,204,153],
@@ -40,4 +52,5 @@ function toHex(rgb) {
 }
 // Palette indices of the terrain colours above (theater.js, placeholders.js).
 const TERRAIN={grass:112,grassEdge:113,water:114,waterEdge:115};
-module.exports={rgbPalette,toHex,TERRAIN};
+const TITLE_BACKGROUND=139;
+module.exports={TITLE_BACKGROUND,rgbPalette,toHex,TERRAIN};
