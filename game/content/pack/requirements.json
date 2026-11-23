@@ -2632,6 +2632,20 @@
       }
     },
     {
+      "name": "SCM94EA.INI",
+      "container": "loose",
+      "format": "INI",
+      "requiredFor": "scenario",
+      "referencedAt": [
+        "tiberiandawn/mplayer.cpp:640-673"
+      ],
+      "contract": {
+        "source": "M2a dialog probe fixture; scenario content unverified",
+        "size": "unverified",
+        "frameCount": "unverified"
+      }
+    },
+    {
       "name": "SCOREFNT.FNT",
       "container": "CCLOCAL.MIX|LOCAL.MIX",
       "format": "FNT",
