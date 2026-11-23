@@ -1,0 +1,640 @@
+{
+  "schema": 1,
+  "scope": "static boot/menu candidate inventory; decoder contracts not yet verified",
+  "files": [
+    {
+      "name": "12GREEN.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:235"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "12GRNGRD.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:222",
+        "tiberiandawn/init.cpp:236",
+        "tiberiandawn/init.cpp:237"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "6POINT.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:221"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "8FAT.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:234"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "ATTRACT2.CPS",
+      "container": "unverified",
+      "format": "CPS",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:1225",
+        "tiberiandawn/init.cpp:1226",
+        "tiberiandawn/init.cpp:1243",
+        "tiberiandawn/init.cpp:1244",
+        "tiberiandawn/init.cpp:1261",
+        "tiberiandawn/init.cpp:1262",
+        "tiberiandawn/init.cpp:1278",
+        "tiberiandawn/init.cpp:1279"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "BTEXTURE.SHP",
+      "container": "unverified",
+      "format": "SHP",
+      "requiredFor": "menu",
+      "referencedAt": [
+        "tiberiandawn/dialog.cpp:148"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "CCLOCAL.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:195",
+        "tiberiandawn/init.cpp:196",
+        "tiberiandawn/conquer.cpp:4064"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "CONQUER.ENG",
+      "container": "CONQUER.MIX|loose",
+      "format": "ENG",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:291",
+        "tiberiandawn/conquer.cpp:1361"
+      ],
+      "contract": {
+        "entryCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "CONQUER.INI",
+      "container": "unverified",
+      "format": "INI",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:2144",
+        "tiberiandawn/startup.cpp:282",
+        "tiberiandawn/startup.cpp:289"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "CONQUER.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:424",
+        "tiberiandawn/init.cpp:518",
+        "tiberiandawn/startup.cpp:282"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "COVERTMOVIES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/conquer.cpp:3684"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "COVERTSCORES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/conquer.cpp:3686"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "DEMO.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:413",
+        "tiberiandawn/init.cpp:512",
+        "tiberiandawn/conquer.cpp:4039"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "DEMOL.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:182",
+        "tiberiandawn/init.cpp:183"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "DEMOM.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:415",
+        "tiberiandawn/init.cpp:418"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "DEMOPIC.CPS",
+      "container": "unverified",
+      "format": "CPS",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/conquer.cpp:383"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "GDIMOVIES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/conquer.cpp:3672"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "GDISCORES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/conquer.cpp:3674"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "GENERAL.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:398",
+        "tiberiandawn/init.cpp:430",
+        "tiberiandawn/conquer.cpp:3511",
+        "tiberiandawn/conquer.cpp:3541",
+        "tiberiandawn/conquer.cpp:3600",
+        "tiberiandawn/conquer.cpp:3660",
+        "tiberiandawn/conquer.cpp:3667",
+        "tiberiandawn/conquer.cpp:3673",
+        "tiberiandawn/conquer.cpp:3679",
+        "tiberiandawn/conquer.cpp:3685"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "GRAD6FNT.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:225",
+        "tiberiandawn/init.cpp:226"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "HTITLE.PCX",
+      "container": "loose|GENERAL.MIX",
+      "format": "PCX",
+      "requiredFor": "menu",
+      "referencedAt": [
+        "tiberiandawn/globals.cpp:939"
+      ],
+      "contract": {
+        "size": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "LANGUAGE.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:209"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "LED.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:223"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "LOCAL.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:198",
+        "tiberiandawn/init.cpp:199",
+        "tiberiandawn/conquer.cpp:4063"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "MOUSE.SHP",
+      "container": "unverified",
+      "format": "SHP",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:267",
+        "tiberiandawn/mouse.cpp:270",
+        "tiberiandawn/mouse.cpp:274"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "MOVIES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:432",
+        "tiberiandawn/init.cpp:435",
+        "tiberiandawn/conquer.cpp:3510",
+        "tiberiandawn/conquer.cpp:3659",
+        "tiberiandawn/conquer.cpp:3666"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "NODMOVIES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/conquer.cpp:3678"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "NODSCORES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/conquer.cpp:3680"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "PREPICK.CPS",
+      "container": "unverified",
+      "format": "CPS",
+      "requiredFor": "menu",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:1021"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "RULES.INI",
+      "container": "unverified",
+      "format": "INI",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:465",
+        "tiberiandawn/init.cpp:637"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "SCOREFNT.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:222"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "SCORES.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:443",
+        "tiberiandawn/init.cpp:446",
+        "tiberiandawn/conquer.cpp:3512",
+        "tiberiandawn/conquer.cpp:3661",
+        "tiberiandawn/conquer.cpp:3668"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "SOUNDS.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:460",
+        "tiberiandawn/init.cpp:513",
+        "tiberiandawn/init.cpp:520"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "SPEECH.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:456",
+        "tiberiandawn/init.cpp:457"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "TEMPERAT.PAL",
+      "container": "unverified",
+      "format": "PAL",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:301",
+        "tiberiandawn/init.cpp:302"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "TITLE.CPS",
+      "container": "loose|GENERAL.MIX",
+      "format": "CPS",
+      "requiredFor": "menu",
+      "referencedAt": [
+        "tiberiandawn/globals.cpp:939"
+      ],
+      "contract": {
+        "size": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "TRANSIT.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:426"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "UPDATA.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:203"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "UPDATE.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:202"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "UPDATEC.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:205",
+        "tiberiandawn/init.cpp:206"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "VCR.FNT",
+      "container": "CCLOCAL.MIX|LOCAL.MIX",
+      "format": "FNT",
+      "requiredFor": "boot",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:224"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    },
+    {
+      "name": "ZOUNDS.MIX",
+      "container": "loose",
+      "format": "MIX",
+      "requiredFor": "optional",
+      "referencedAt": [
+        "tiberiandawn/init.cpp:628",
+        "tiberiandawn/init.cpp:629"
+      ],
+      "contract": {
+        "size": "unverified",
+        "frameCount": "unverified",
+        "source": "unverified"
+      }
+    }
+  ]
+}
