@@ -1,10 +1,11 @@
-# Agent instructions for M1 and M2
+# Agent instructions for M1, M2 and UI
 
 This folder holds self-contained instructions that let a coding agent, for
 example ChatGPT/Codex, complete roadmap milestones **M1** (stock engine in
-the browser) and **M2** (minimum original data pack) without any earlier
-conversation. M1 was one session. M2 is three sessions, each about the size
-of M1 (roughly 6–8 hours, one branch, one PR).
+the browser), **M2** (minimum original data pack), and the **UI** command
+interface track without any earlier conversation. M1 was one session. M2 is
+three sessions, each about the size of M1 (roughly 6–8 hours, one branch,
+one PR). UI has six sessions, UI-A to UI-F.
 
 | File | What it is |
 | --- | --- |
@@ -21,10 +22,16 @@ of M1 (roughly 6–8 hours, one branch, one PR).
 | 2 | **M2a**: scenario probe, pack pipeline, universal placeholders | 0–3 | Next | now |
 | 3 | **M2b**: theater, roster frame contracts, scenario generator | 4–6 | — | M2a merged |
 | 4 | **M2c**: playable match on original data (M2 exit gate) | 7–9 | — | M2b merged |
+| Parallel | **UI-A**: slot contracts, palette and mockups | 0–4 | Ready | M1 merged; may run alongside M2a–M2c |
+| After M2c | **UI-B → UI-E**: command bar, build strip, cursors and menus | Per UI plan | Waiting | M2c and each preceding UI session merged |
+| Optional | **UI-F**: taller sidebar and faction skins | Per UI plan | Approval required | UI-E merged and written owner approval |
 
-Run them strictly in order and **review and merge each PR before starting
-the next session**. Each session's gate is in the Sessions table of the M2
-file. The merge between sessions is the checkpoint for catching problems
+Run **M2a → M2b → M2c** strictly in order. Within the UI track, run
+**UI-A → UI-B → UI-C → UI-D → UI-E** in order; UI-F is optional and needs
+approval. UI-A can run in parallel with M2, but UI-B onward needs M2c.
+**Review and merge each PR before starting the next session in its own
+track.** Each session's gate is in its respective plan. The merge between
+sessions is the checkpoint for catching problems
 (for example, rebuild locally and look at the screenshots) before later work
 builds on them.
 
