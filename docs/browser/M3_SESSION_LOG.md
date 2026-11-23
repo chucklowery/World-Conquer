@@ -103,3 +103,20 @@ requests, all three on `vanilla` and manual runs.
 - **Publishing.** The launcher page still carries the legacy demo panels.
   Publishing to GitHub Pages from `vanilla` replaces the live tactical
   alpha and needs the owner's approval.
+
+## CI evidence (2026-11-23)
+
+Manual run [45222236369](https://github.com/chucklowery/World-Conquer/actions/runs/45222236369)
+on `8ccae03` (`legacy_soak` off): every job passed, including `stock-engine`
+(M1), the strict `stock-scenario` full match (M2) and `ai-match` on all
+three maps.
+
+| Map | Computer placed | Harvest deliveries | Kills | End |
+| --- | ---: | ---: | ---: | --- |
+| Foundry Test Range (`SCM94EA`) | 9 | 168 (5,544 credits) | 12 | lost, score screen, restart |
+| Crossroads (`SCM95EA`) | 11 | 224 (7,392 credits) | 13 | lost, score screen, restart |
+| Long Valley (`SCM96EA`) | 9 | 131 (4,323 credits) | 9 | lost, score screen, restart |
+
+Manual runs with the default `legacy_soak` on also run the frozen legacy
+demo soak; its R02 order check timed out once in that slow path (pull
+requests run it in fast mode). It does not involve the stock engine path.
