@@ -4,6 +4,7 @@
 // Format references: tiberiandawn/tile.h:55-69 and common/stamp.cpp:84-102.
 const fs=require("node:fs"),path=require("node:path"),cp=require("node:child_process");
 const {encodeIconset}=require("./encode-iconset.js");
+const {encodeTacticalShape}=require("./encode-shape.js");
 const {nativeMixer}=require("./boot-pack.js");
 function tile(color,edge=18){
   return Array.from({length:576},(_,i)=>{
@@ -26,6 +27,30 @@ function build(game){
   const files=["CLEAR1.TEM","W1.TEM"];
   fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(63,45)]}));
   fs.writeFileSync(path.join(stage,files[1]),encodeIconset({icons:[tile(120,124)]}));
+  // odata.cpp:162-353 declares 12 separate harvestable overlay types;
+  // odata.cpp:828-839 indexes OverlayData directly as a tactical frame.
+  // Supply 16 non-copyrighted growth/adjacency frames for each type.
+  const schematic=(seed,frame,width=24,height=24)=>{
+    const pixels=Array.from({length:width*height},(_,i)=>{
+      const x=i%width,y=Math.floor(i/width);
+      const center=Math.abs(x-width/2)+Math.abs(y-height/2);
+      if(center>width*0.65)return 0;
+      return ((x*7+y*11+frame*5+seed*13)%19)<(4+(frame%12)) ? 74+(seed%12) : 0;
+    });
+    return {width,height,pixels};
+  };
+  for(let n=1;n<=12;n++){
+    const name="TI"+n+".TEM";
+    const frames=Array.from({length:16},(_,i)=>schematic(n,i));
+    fs.writeFileSync(path.join(stage,name),encodeTacticalShape({frames}));
+    files.push(name);
+  }
+  // Theater-specific tree source: tdata.cpp:77, terrain.cpp:357.
+  const treeName="T01.TEM";
+  fs.writeFileSync(path.join(stage,treeName),
+    encodeTacticalShape({frames:Array.from({length:16},(_,i)=>schematic(20,i,32,32))}));
+  files.push(treeName);
+
   try{
     archive(game,stage,"TEMPERAT.MIX",files);
     archive(game,stage,"TEMPICNH.MIX",files);
