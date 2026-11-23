@@ -75,7 +75,8 @@ jobs:
           cmake -S . -B build/native -DWC_ASSET_AUDIT=OFF
           cmake --build build/native --target common --parallel 2
           node tools/content/test-boot-pack.js
-          node tools/content/boot-pack.js build build/browser-engine/data
+          node tools/content/test-pack.js
+          node tools/content/pack.js build build/browser-engine/data
           g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
           build/native/test-m1-boot-data \
             build/browser-engine/data/game/8POINT.FNT \
@@ -253,11 +254,11 @@ jobs:
             build/browser-engine/mission-pack.js
             build/browser-engine/missions/**
           if-no-files-found: error
-      - name: Upload original M1 boot pack
+      - name: Upload original M2 data pack
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: world-conquer-boot-pack
+          name: world-conquer-data-pack
           path: |
             build/browser-engine/data/**
           if-no-files-found: ignore
@@ -310,7 +311,7 @@ jobs:
         with:
           name: vanillatd-engine-wasm
           path: build/browser-engine
-      - name: Retrieve original boot pack
+      - name: Retrieve original data pack
         uses: actions/download-artifact@v4
         with:
           name: world-conquer-boot-pack
@@ -345,7 +346,7 @@ jobs:
         with:
           name: vanillatd-engine-wasm
           path: build/browser-engine
-      - name: Retrieve original boot pack
+      - name: Retrieve original data pack
         uses: actions/download-artifact@v4
         with:
           name: world-conquer-boot-pack
