@@ -21,7 +21,8 @@ const server=http.createServer((req,res)=>{
 });
 const audit={schema:1,pathDecision:"pending (Skirmish candidate)",status:"incomplete",
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
-  pageErrors:[],screenshots:[],input:[],ciSha:process.env.GITHUB_SHA||"local"};
+  pageErrors:[],screenshots:[],input:[],requiredMisses:[],optionalMisses:[],unclassifiedMisses:[],
+  ciSha:process.env.GITHUB_SHA||"local"};
 const consoleLines=[];
 function parse(rawLine){
   const line=rawLine.replace(/^\[error\]\s*/,"");
@@ -100,11 +101,26 @@ async function main(){
     }catch(e){audit.captureError=String(e);}}
     audit.misses=[];audit.fatal=null; audit.lastGameLines=[];audit.lastEventLines=[];audit.stage="startup";
     for(const line of lines)parse(line);
+    // Classification is contract-driven. Unknown requests stay unclassified
+    // (and fail strict mode); do not silently call them optional.
+    const requirements=JSON.parse(fs.readFileSync(path.resolve(__dirname,
+      "../../game/content/pack/requirements.json"),"utf8"));
+    const stages=new Map(requirements.files.map(entry=>[
+      entry.name.toUpperCase(),entry.requiredFor]));
+    for(const miss of audit.misses){
+      const name=path.basename(miss.name.replace(/\\\\/g,"/")).toUpperCase();
+      const stage=stages.get(name);
+      miss.requiredFor=stage||"unclassified";
+      if(stage==="optional")audit.optionalMisses.push(miss);
+      else if(stage)audit.requiredMisses.push(miss);
+      else audit.unclassifiedMisses.push(miss);
+    }
     const reached=audit.lastGameLines.some(x=>x.includes("scenario.request="));
     if(reached)audit.pathDecision="Skirmish (scenario.request observed)";
     if(!audit.error)audit.status=reached?"scenario-request":"blocked-before-scenario";
     if(process.env.STOCK_SCENARIO_REPORT_ONLY!=="1"&&
-        (!reached||audit.fatal||audit.pageErrors.length||audit.error)){
+        (!audit.lastGameLines.some(x=>x.includes("scenario.loaded="))||
+          audit.requiredMisses.length||audit.unclassifiedMisses.length||\n          audit.fatal||audit.pageErrors.length||audit.error)){
       audit.error=audit.error||("Scenario probe failed: stage="+audit.stage+
         " fatal="+audit.fatal+" pageErrors="+audit.pageErrors.length);
       audit.status="error";
@@ -116,6 +132,8 @@ async function main(){
     if(browser)await browser.close();
     if(server.listening)await new Promise(resolve=>server.close(resolve));
   }
-  console.log("Stock scenario audit:",audit.status,"stage:",audit.stage,"misses:",audit.misses.length);
+  console.log("Stock scenario audit:",audit.status,"stage:",audit.stage,"misses:",audit.misses.length,
+    "required:",audit.requiredMisses.length,"unclassified:",audit.unclassifiedMisses.length,
+    "optional:",audit.optionalMisses.length);
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
