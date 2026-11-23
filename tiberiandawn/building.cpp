@@ -1512,6 +1512,14 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
 
         switch (res) {
         case RESULT_DESTROYED:
+#ifdef __EMSCRIPTEN__
+            // Test log: a building was destroyed (and by whom).
+            std::printf("[browser-event] destroyed name=%s house=%s by=%s\n",
+                        Class->IniName,
+                        House->Class->IniName,
+                        source ? source->House->Class->IniName : "none");
+            std::fflush(stdout);
+#endif
 
             /*
             **	Destroy all attached objects.

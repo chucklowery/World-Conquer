@@ -75,7 +75,8 @@ function parse(rawLine){
   const stage=line.match(/^\[browser-game\] (menu\.enter|menu\.choice|scenario\.request|scenario\.loaded|scenario\.failed)/);
   if(stage)audit.stage=stage[1];
   if(line.startsWith("[browser-game]"))audit.lastGameLines.push(line);
-  if(line.startsWith("[browser-event]"))audit.lastEventLines.push(line);
+  // Credit changes are frequent; the full log keeps them.
+  if(line.startsWith("[browser-event]")&&!line.startsWith("[browser-event] credits "))audit.lastEventLines.push(line);
   if(audit.lastGameLines.length>60)audit.lastGameLines.shift();
   if(audit.lastEventLines.length>60)audit.lastEventLines.shift();
   const miss=line.match(/^\[asset-miss\] (\S+)/);
@@ -434,6 +435,12 @@ async function main(){
   // always reachable from where the log is read.
   if(audit.error)console.log("Error:",audit.error);
   if(audit.gameplay)console.log("Gameplay steps:",JSON.stringify(audit.gameplay.steps));
+  if(audit.error){
+    // The last game events explain most failures (destroyed buildings,
+    // production state, harvests); print them with the error.
+    const recent=audit.lastEventLines.filter(l=>!/\] credits /.test(l)).slice(-25);
+    console.log("Recent events:\n"+recent.join("\n"));
+  }
   if(audit.deployAttempts)console.log("Deploy attempts:",JSON.stringify(audit.deployAttempts));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
