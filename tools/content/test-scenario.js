@@ -31,7 +31,7 @@ for(const field of ["cells","overlays","trees","waypoints","units"]){
   if(!value.length)continue;
   const moved=field==="waypoints"?[53,53]:{...value[0],at:[53,53]};
   const invalid=field==="cells"?{...enclosed,terrain:{...source.terrain,cells:[moved]}}:
-    {...enclosed,[field]:[moved]};
+    {...enclosed,[field]:[moved,...value.slice(1)]};
   assert.throws(()=>generate(invalid),/outside playable map/,"map bounds: "+field);
 }
 assert.deepEqual(generate(source),generate(source),"generator must be deterministic");
