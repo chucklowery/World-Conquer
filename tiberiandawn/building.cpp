@@ -95,6 +95,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 #include "ccini.h"
 
 /*
