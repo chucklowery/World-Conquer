@@ -122,9 +122,9 @@ by the **build** jobs.
 
 ## 5. Workflow for each work package
 
-**Exception for M1 and M2:** each is a single-session milestone with one
-branch and one PR. Follow its "Session contract" instead of steps 1 and 5
-below.
+**Exception for M1 and M2:** M1 is one session; M2 is three sessions (M2a,
+M2b, M2c), each with one branch and one PR. Follow the milestone file's
+"Session contract" instead of steps 1 and 5 below.
 
 1. Branch from the latest `vanilla`: `git checkout -b m<N>/<wp-id>-<slug>`.
 2. Read the files the work package names. Confirm its prerequisites are

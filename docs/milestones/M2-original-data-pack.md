@@ -1,9 +1,13 @@
-# M2: Minimum original data pack (single-session plan)
+# M2: Minimum original data pack (three-session plan)
 
 Read `docs/milestones/AGENT_GUIDE.md` first. This file is self-contained apart
-from that guide, and is designed to be **completed in one long agent session**
-on **one branch** with **one PR**. M1 is merged on `vanilla`; build on what it
-delivered.
+from that guide. M2 is split into **three sessions: M2a, M2b and M2c**. Each
+is one long agent session (roughly 6–8 hours) on its **own branch** with its
+**own PR**, and is **reviewed and merged before the next session starts**.
+M1 is merged on `vanilla`; build on what it delivered.
+
+You are doing **one session only**: the one named in your prompt. Do the
+phases of that session, meet its gate, and stop.
 
 ## Goal
 
@@ -17,19 +21,35 @@ missing.
 schematic (outlines, flat colors, house-colored fills). What matters is that
 file names, formats, frame counts and palettes are correct, so the engine
 finds, indexes and draws everything without crashing. Real art (R05 faction
-art, final sprites) is **out of scope** for this session; it belongs to M5.
+art, final sprites) is **out of scope** for M2; it belongs to M5.
+
+## Sessions
+
+| Session | Phases | Branch / PR title | Entry condition | Session gate (must pass on the PR head) |
+| --- | --- | --- | --- | --- |
+| **M2a** | 0–3 | `m2a/probe-pack-placeholders` / `M2a: scenario probe, pack pipeline, universal placeholders` | M1 merged; `stock-engine` green on `vanilla` | `stock-scenario` runs in report mode and uploads its audit; the engine gets past menu and dialog loading and reaches `[browser-game] scenario.request=`; the pack is built by `pack.js` with coverage reported; `stock-engine` still green |
+| **M2b** | 4–6 | `m2b/theater-roster-scenario` / `M2b: theater, roster contracts, scenario generator` | M2a merged | Host round-trip tests pass for the icon-set encoder and the generated scenario INI and BIN; slice frame contracts are recorded with code references; the engine reaches `[browser-game] scenario.loaded=` on the M2 map (report mode, misses allowed); `stock-engine` still green |
+| **M2c** | 7–9 | `m2c/playable-match` / `M2c: playable match on original data` | M2b merged | The full **M2 exit gate** (end of this file) |
+
+Each session reads `docs/browser/M2_SESSION_LOG.md` first, to see what the
+earlier sessions decided (in particular M2a's Skirmish or New Game decision)
+and anything they left open. A session must not redo or rewrite an earlier
+session's merged work except to fix a defect it finds; log every such fix.
 
 ## Session contract (read before starting)
 
-1. **One branch, one PR.** Branch `m2/original-data-pack` from the latest
-   `vanilla`. Open a **draft PR** after Phase 1 and push after every phase.
-   Mark it ready at the end.
-2. **Keep a session log.** Create `docs/browser/M2_SESSION_LOG.md` in
-   Phase 0. After each phase, append: status (done, partial or skipped),
-   commit SHA, commands and results, CI links, and open issues. If the
-   session is interrupted or your context resets, **read the log and the PR
-   first** and continue from the first phase not marked done.
-3. **Commit at every phase boundary** (`M2 phase <n>: <summary>`) and keep
+1. **One branch and one PR per session.** Branch from the latest `vanilla`
+   using the name in the Sessions table. Open a **draft PR** after the
+   session's first phase and push after every phase. At the end, mark it
+   ready and stop. Do not start the next session's phases.
+2. **Keep the shared session log.** M2a creates
+   `docs/browser/M2_SESSION_LOG.md` in Phase 0. Every session adds a
+   `## Session M2a|M2b|M2c` section, and after each phase appends: status
+   (done, partial or skipped), commit SHA, commands and results, CI links,
+   and open issues. If a session is interrupted or your context resets,
+   **read the log and your PR first** and continue from the first phase of
+   your session not marked done.
+3. **Commit at every phase boundary** (`M2a phase <n>: <summary>`, likewise `M2b`/`M2c`) and keep
    every commit buildable, with the M1 `stock-engine` job still green.
 4. **Work through the phases in order without stopping to ask.** Use the
    defaults and fallbacks here. Stop only for AGENT_GUIDE.md "Stop and ask"
@@ -103,24 +123,31 @@ art, final sprites) is **out of scope** for this session; it belongs to M5.
 
 ## Phase overview
 
-| # | Phase | Soft budget | Produces |
-| --- | --- | --- | --- |
-| 0 | Setup, baseline and log | 30–60 min | Builds, green M1 test, session log |
-| 1 | Scenario-path probe test and path decision | 2–3 h | `check-stock-scenario.js`, CI job, `[browser-event]` logs, decision record |
-| 2 | Pack pipeline consolidation | 2–3 h | `tools/content/pack.js`, `requirements.json`, CI artifact |
-| 3 | Universal placeholders | 2–3 h | Every engine-requested name produced |
-| 4 | Theater, terrain and resource | 3–5 h | Icon-set encoder, `TEMPERAT.MIX`, `TEMPICNH.MIX`, overlays |
-| 5 | Playable roster with verified frame contracts | 4–6 h | Exact frame counts for the slice, sidebar cameos, UI art |
-| 6 | Scenario generator and the M2 map | 3–4 h | `tools/content/scenario.js`, map source, INI and BIN |
-| 7 | Reach the battlefield | 3–6 h | Scenario loads and renders, with zero required misses |
-| 8 | End-to-end gameplay test | 3–4 h | Build, harvest, produce and command, tested in CI |
-| 9 | Docs, roadmap evidence and PR | 1 h | Docs, evidence line, PR ready |
+| Session | # | Phase | Soft budget | Produces |
+| --- | --- | --- | --- | --- |
+| M2a | 0 | Setup, baseline and log | 30–60 min | Builds, green M1 test, session log |
+| M2a | 1 | Scenario-path probe test and path decision | 2–3 h | `check-stock-scenario.js`, CI job, `[browser-event]` logs, decision record |
+| M2a | 2 | Pack pipeline consolidation | 2–3 h | `tools/content/pack.js`, `requirements.json`, CI artifact |
+| M2a | 3 | Universal placeholders | 2–3 h | Every engine-requested name produced |
+| M2a | — | Session close-out | 30 min | Log, PR ready |
+| M2b | 4 | Theater, terrain and resource | 3–5 h | Icon-set encoder, `TEMPERAT.MIX`, `TEMPICNH.MIX`, overlays |
+| M2b | 5 | Playable roster with verified frame contracts | 4–6 h | Exact frame counts for the slice, sidebar cameos, UI art |
+| M2b | 6 | Scenario generator and the M2 map | 3–4 h | `tools/content/scenario.js`, map source, INI and BIN |
+| M2b | — | Session close-out | 30 min | Log, PR ready |
+| M2c | 7 | Reach the battlefield | 3–6 h | Scenario loads and renders, with zero required misses |
+| M2c | 8 | End-to-end gameplay test | 3–4 h | Build, harvest, produce and command, tested in CI |
+| M2c | 9 | Docs, roadmap evidence and PR | 1 h | Docs, evidence line, PR ready |
+
+M2b and M2c start with a short **setup step**: sync to the latest `vanilla`,
+set up the build loop, confirm `stock-engine` and the report-mode
+`stock-scenario` jobs pass, and read the log. This is Phase 0's checklist
+without creating the log.
 
 ---
 
-## Phase 0: Setup, baseline and log
+## Phase 0 (M2a): Setup, baseline and log
 
-1. Branch `m2/original-data-pack` from `vanilla` and set up the build loop
+1. Branch `m2a/probe-pack-placeholders` from `vanilla` and set up the build loop
    (see above).
 2. Build the WASM engine and the native `vanillamix`, generate the boot pack,
    and run `node browser/engine/check-stock-engine.js`. **It must pass
@@ -134,7 +161,7 @@ art, final sprites) is **out of scope** for this session; it belongs to M5.
 **Fallback:** if the M1 test fails on unchanged `vanilla`, record the failure,
 fix only what is needed to restore it (it is a prerequisite), and log the fix.
 
-## Phase 1: Scenario-path probe test and path decision
+## Phase 1 (M2a): Scenario-path probe test and path decision
 
 **Goal:** an automated way to drive the stock menu into a match and capture
 every missing file, and a decision on which game path M2 uses.
@@ -183,7 +210,7 @@ every missing file, and a decision on which game path M2 uses.
 5. Run the probe with the current boot pack. Expect it to stop at the first
    missing scenario-path file; that is the point. Save the miss list.
 
-## Phase 2: Pack pipeline consolidation
+## Phase 2 (M2a): Pack pipeline consolidation
 
 1. Add `tools/content/pack.js build <outDir>`. It is the **single**
    generator for the whole pack and absorbs `boot-pack.js`: keep
@@ -206,7 +233,7 @@ every missing file, and a decision on which game path M2 uses.
    upload it as `world-conquer-data-pack`, and have **both** `stock-engine`
    and `stock-scenario` use it. Keep `check-stock-engine.js` green.
 
-## Phase 3: Universal placeholders
+## Phase 3 (M2a): Universal placeholders
 
 **Goal:** every filename the engine requests on the chosen path exists and is
 structurally valid, so missing files stop masking the real problems.
@@ -235,7 +262,25 @@ Phase 4 (for example `.WSA` on the New Game path), prefer the guarded
 "absent is non-fatal" change for cinematic-only uses. For anything drawn
 during play, write the encoder; it's required.
 
-## Phase 4: Theater, terrain and resource
+## M2a close-out
+
+1. Confirm the **M2a gate** (Sessions table) on the PR head's CI run, and
+   record the run link in the log.
+2. In the log, write a short **handoff** for M2b: the path decision
+   (Skirmish or New Game) and its evidence, the current miss list grouped
+   by kind (theater, roster, UI, effects, other), formats still without an
+   encoder, and any engine behavior you discovered.
+3. Mark the PR ready and post the AGENT_GUIDE.md section 6 report for
+   phases 0–3. Do not tick roadmap boxes or add an evidence line; that
+   happens in M2c.
+
+**M2a STOP condition:** if the probe can't get past menu and dialog loading
+to `scenario.request` on either path, after the guarded "absent is
+non-fatal" changes and placeholders, record the exact blocker and close the
+session as **partial**. M2b must not start until the owner decides how to
+proceed.
+
+## Phase 4 (M2b): Theater, terrain and resource
 
 1. **Icon-set encoder:** read the template icon format (`tiberiandawn/tile.h`
    `IControl_Type`, the template drawing in `template.cpp`, and the stamp code
@@ -257,7 +302,7 @@ during play, write the encoder; it's required.
 4. Confirm with the probe that the scenario terrain draws and the radar
    shows the terrain colors.
 
-## Phase 5: Playable roster with verified frame contracts
+## Phase 5 (M2b): Playable roster with verified frame contracts
 
 The universal placeholders keep the engine running. This phase makes the
 objects the player **actually uses** correct.
@@ -282,7 +327,7 @@ objects the player **actually uses** correct.
 5. Text: make every player-visible name in the slice original (extend
    `originalText()`); no EA trademarks.
 
-## Phase 6: Scenario generator and the M2 map
+## Phase 6 (M2b): Scenario generator and the M2 map
 
 1. Add `tools/content/scenario.js`. From an editable source
    (`game/content/scenarios/<name>.json`: size, terrain grid, overlays,
@@ -301,7 +346,22 @@ objects the player **actually uses** correct.
    `browser/engine/mission-pack.js`) into this format. Do it only if it is
    quick; one good map is enough.
 
-## Phase 7: Reach the battlefield
+## M2b close-out
+
+1. Confirm the **M2b gate** on the PR head's CI run and record it in the log.
+2. Write the handoff for M2c: remaining misses by kind, objects that draw
+   wrongly in screenshots (with suspected cause), sidebar and cameo
+   positions you have already derived, and the map's start positions.
+3. Mark the PR ready and post the section 6 report for phases 4–6. No roadmap
+   evidence yet.
+
+**M2b STOP condition:** if the icon-set format or a roster frame layout can't
+be determined from the code within about twice the phase budget, record
+exactly what is unknown (loader, code location, what you tried), give the
+object the safe upper-bound placeholder, and continue. Close the session as
+**partial** only if the scenario cannot reach `scenario.loaded=`.
+
+## Phase 7 (M2c): Reach the battlefield
 
 1. Iterate with the probe until the match starts and the engine draws the
    map, sidebar and radar. Each round: read misses or the fatal reason, then
@@ -315,14 +375,14 @@ objects the player **actually uses** correct.
 3. Record the remaining `optional` misses (audio, movies, unused types) in
    the session log.
 
-**STOP condition:** if, after the encoders in Phases 3–4 exist and contracts
+**M2c STOP condition:** if, after the encoders in Phases 3–4 exist and contracts
 have been derived from the code, the engine still cannot start a scenario
 because of a format or behavior you cannot determine, stop iterating.
 Record the exact blocker (file, loader, code location, what you tried) and
 still complete Phases 8–9 for whatever stage was reached, with `stock-scenario`
 asserting the furthest verified stage. Report M2 as **partial**.
 
-## Phase 8: End-to-end gameplay test
+## Phase 8 (M2c): End-to-end gameplay test
 
 Extend `check-stock-scenario.js` so that in the match it performs, with
 **real mouse and keyboard input only**:
@@ -347,7 +407,7 @@ coordinates, 640×400) and use the M1 `[browser-input]` log to confirm that
 clicks land where intended. Use the fastest game speed setting to shorten
 waits.
 
-## Phase 9: Docs, roadmap evidence and PR
+## Phase 9 (M2c): Docs, roadmap evidence and PR
 
 1. Write `docs/browser/M2_DATA_PACK.md`: how to build the pack, the
    requirement and contract format, how to add an object or a map, and how
@@ -359,13 +419,13 @@ waits.
    If Phase 7 stopped early, write "partial: <furthest stage>" and leave
    the exit gate unticked.
 4. Finish the log, mark the PR ready, and post the AGENT_GUIDE.md section 6
-   report with every phase's status.
+   report covering phases 7–9, plus a one-line summary of M2a and M2b.
 
 ---
 
 ## M2 exit gate
 
-On the PR head (and later on `vanilla`), CI shows:
+On the M2c PR head (and later on `vanilla`), CI shows:
 
 1. `world-conquer-data-pack` is built entirely from committed sources and is
    deterministic, and its coverage report shows **100%** of
