@@ -1,19 +1,10 @@
 name: Publish World-Conquer Tactical Alpha
 
+# Superseded by publish-play.yml (M3), which publishes the playable game from
+# vanilla to the same GitHub Pages site. Kept for manual use only, so it can
+# no longer overwrite the site automatically.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feature/original-content-pipeline
-    paths:
-      - '.github/workflows/publish-tactical-alpha.yml'
-      - 'CMakeLists.txt'
-      - 'browser/engine/**'
-      - 'game/content/**'
-      - 'tools/content/**'
-      - 'tiberiandawn/**'
-      - 'common/**'
-      - 'cmake/**'
 
 # Only trusted push builds can publish. GitHub Pages deploys the exact tested
 # artifact with a short-lived OIDC token; no content write or branch rewrite.

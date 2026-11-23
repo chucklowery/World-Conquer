@@ -13,6 +13,14 @@ const ROOT=path.resolve(__dirname,"../..");
 const REQUIREMENTS=path.join(ROOT,"game/content/pack/boot-requirements.json");
 // Generate a placeholder for every stock TXT_* index from compiled headers,
 // not from proprietary language files. All human-facing words are original.
+// Glyph colour index per font file. Plain fonts use 1 (the engine swaps in
+// the text colour). The engine colours gradient fonts through fixed tables:
+// - 12GRNGRD and 12GREEN: tab labels use _textfontpal row 11 (dialog.cpp),
+//   which fills entries 1-5, and the score screen's palettes fill 2-8 but
+//   print with a transparent colour 1 (score.cpp). Entry 4 is in both.
+// - GRAD6FNT and SCOREFNT: dialog gradient rows fill 1 and 11-15; plain
+//   gradient text fills 4-15. Entry 14 is in both.
+const FONT_INK={"12GRNGRD.FNT":4,"12GREEN.FNT":4,"GRAD6FNT.FNT":14,"SCOREFNT.FNT":14};
 const LABELS={
   TXT_NONE:"",
   TXT_CREDIT_FORMAT:"Credits: %d",
@@ -214,9 +222,9 @@ function build(outdir,options={}) {
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
     "LED.FNT","VCR.FNT","GRAD6FNT.FNT","8FAT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"];
   const fonts=[...new Set(fontNames)];
-  const gradientFonts=new Set(["GRAD6FNT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"]);
-  const gradientFont=encodeFont(14);verifyFont(gradientFont);
-  for(const name of fonts)write(stage,name,gradientFonts.has(name)?gradientFont:font);
+  // Font colour per file (encode-font.js): see FONT_INK.
+  const inks=new Map([...new Set(Object.values(FONT_INK))].map(ink=>{const f=encodeFont(ink);verifyFont(f);return [ink,f];}));
+  for(const name of fonts)write(stage,name,FONT_INK[name]?inks.get(FONT_INK[name]):font);
   write(stage,"MOUSE.SHP",mouse);
   write(stage,"BTEXTURE.SHP",texture);
   write(stage,"PREPICK.CPS",cps);

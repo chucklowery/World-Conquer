@@ -380,6 +380,9 @@ jobs:
       # with zero required or unclassified misses, no fatal or page error and
       # no stall over 1s.
       - name: Play a skirmish match on original data (strict)
+        env:
+          # The public play view (published by publish-play.yml).
+          STOCK_SCENARIO_PAGE: vanillatd.html?play
         run: node browser/engine/check-stock-scenario.js
       - name: Publish stock-scenario audit
         if: always()

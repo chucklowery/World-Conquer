@@ -45,13 +45,7 @@ const GLYPHS = {
  "!":["00100","00100","00100","00100","00100","00000","00100"],
  "?":["01110","10001","00001","00010","00100","00000","00100"]
 };
-// ink: the font colour index for glyph pixels. Plain fonts use 1, which the
-// engine replaces with the requested text colour. Gradient fonts (GRAD6FNT,
-// 12GREEN, 12GRNGRD, SCOREFNT) use 14, the one index every gradient path
-// fills: dialog gradient tables (dialog.cpp _textfontpal, entries 11-15),
-// plain gradient text (fontpalette[4..15] = colour), and the score screen,
-// which prints with a transparent foreground (score.cpp: Print(..., TBLACK,
-// TBLACK)) through palettes that set entry 14.
+// ink: the font colour index for glyph pixels (boot-pack.js FONT_INK).
 function encodeFont(ink=1) {
   if(!Number.isInteger(ink)||ink<1||ink>15)throw Error("Font ink must be 1..15");
   const count=256,width=5,height=7;

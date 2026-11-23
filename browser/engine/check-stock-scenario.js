@@ -6,6 +6,11 @@ const fs=require("node:fs"),path=require("node:path"),http=require("node:http");
 const {chromium}=require("playwright");
 const root=path.resolve(__dirname,"../../build/browser-engine");
 const report=path.join(root,"stock-scenario-audit.json");
+// The site to serve (default: the build directory) and the page to open.
+// Results are always written to build/browser-engine, never into the site.
+const site=path.resolve(process.env.STOCK_SCENARIO_SITE||root);
+const pagePath=process.env.STOCK_SCENARIO_PAGE||"vanillatd.html";
+if(!/^[A-Za-z0-9_.-]+\.html(\?[A-Za-z0-9_=&-]*)?$/.test(pagePath))throw Error("Invalid STOCK_SCENARIO_PAGE");
 const mime={".html":"text/html",".js":"text/javascript",".wasm":"application/wasm",".json":"application/json"};
 const server=http.createServer((req,res)=>{
   let name;
@@ -13,7 +18,7 @@ const server=http.createServer((req,res)=>{
   if(!/^\/[A-Za-z0-9_./-]+$/.test(name)||name.split("/").includes("..")){
     res.writeHead(400);res.end("Invalid path");return;
   }
-  fs.readFile(path.join(root,name.slice(1)),(err,data)=>{
+  fs.readFile(path.join(site,name.slice(1)),(err,data)=>{
     if(err){res.writeHead(404);res.end("Missing");return;}
     res.writeHead(200,{"Content-Type":mime[path.extname(name).toLowerCase()]||"application/octet-stream","Cache-Control":"no-store"});
     res.end(data);
@@ -270,7 +275,7 @@ async function main(){
         if(e.error&&e.error.stack)console.log("[browser-error] "+e.error.stack.replace(/\n/g," | "));
       });
     });
-    await page.goto("http://127.0.0.1:"+server.address().port+"/vanillatd.html",
+    await page.goto("http://127.0.0.1:"+server.address().port+"/"+pagePath,
       {waitUntil:"domcontentloaded",timeout:90000});
     await page.waitForFunction(()=>document.body.dataset.runtime==="ready",null,{timeout:90000});
     async function screenshot(name){

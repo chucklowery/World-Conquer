@@ -100,9 +100,32 @@ requests, all three on `vanilla` and manual runs.
 - **Win path.** Only losses are automated (the idle human always loses).
   `Do_Win` uses the same score screen and restart path; a scripted win
   needs the test to find and destroy the computer's base.
-- **Publishing.** The launcher page still carries the legacy demo panels.
-  Publishing to GitHub Pages from `vanilla` replaces the live tactical
-  alpha and needs the owner's approval.
+- **Publishing** is set up (approved by the owner); it goes live after this
+  branch is merged and Pages is set to deploy from GitHub Actions.
+
+## Publishing (step 4)
+
+- **Play view.** `vanillatd.html?play` shows only the game: title, status,
+  Play, the canvas and a short how-to. A small script moves those elements
+  into the view and hides the rest of the page; the legacy launcher is
+  unchanged without `?play`. The strict `stock-scenario` CI job now opens
+  the play view.
+- **Fonts.** The top tab labels use `12GRNGRD` through `_textfontpal` row 11
+  (entries 1-5), so a single glyph colour cannot serve every gradient font.
+  `boot-pack.js` `FONT_INK` sets it per file: `12GRNGRD`/`12GREEN` use 4,
+  `GRAD6FNT`/`SCOREFNT` use 14, plain fonts 1.
+- **Site.** `browser/engine/package-play.js` packages the tested engine,
+  its scripts and the data pack, with `index.html` opening the play view and
+  a `site.json` listing every file with its SHA-256 (about 96 MB; size
+  budgets are M4).
+- **Workflow.** `publish-play.yml` runs after a successful browser-engine
+  run on a `vanilla` push (or by hand on `vanilla`), downloads that run's
+  artifacts, plays the packaged site through its play view in Chromium
+  (start a skirmish, deploy the base), then deploys it to GitHub Pages.
+  `publish-tactical-alpha.yml` is now manual only, so it cannot overwrite
+  the site.
+- **Owner step.** Settings > Pages > Build and deployment > Source: GitHub
+  Actions. Until then the workflow stops before deploying with a notice.
 
 ## CI evidence (2026-11-23)
 

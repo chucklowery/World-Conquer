@@ -1,0 +1,117 @@
+name: Publish World-Conquer to GitHub Pages
+
+# M3: publish the playable game from vanilla. Deploys the exact engine and
+# original data pack that a successful "Browser VanillaTD engine compile"
+# run on a vanilla push built and tested; nothing is rebuilt here. Before
+# deploying, the packaged site itself is played in Chromium through its play
+# view (start a skirmish and deploy the base).
+on:
+  workflow_run:
+    workflows: ["Browser VanillaTD engine compile"]
+    types: [completed]
+    branches: [vanilla]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-play
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.repository == 'chucklowery/World-Conquer' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/vanilla') ||
+       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Find the tested build
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -z "$RUN_ID" ]; then
+            read -r RUN_ID RUN_SHA < <(gh run list --repo "$GITHUB_REPOSITORY" --workflow browser-engine.yml \
+              --branch vanilla --event push --status success --limit 1 \
+              --json databaseId,headSha --jq '.[0] | "\(.databaseId) \(.headSha)"')
+          fi
+          test -n "$RUN_ID" && test -n "$RUN_SHA"
+          echo "run=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "sha=$RUN_SHA" >> "$GITHUB_OUTPUT"
+          echo "Publishing the build from run $RUN_ID (commit $RUN_SHA)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.source.outputs.sha }}
+      - name: Retrieve tested engine
+        uses: actions/download-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: build/browser-engine
+          run-id: ${{ steps.source.outputs.run }}
+          github-token: ${{ github.token }}
+      - name: Retrieve tested data pack
+        uses: actions/download-artifact@v4
+        with:
+          name: world-conquer-data-pack
+          path: build/browser-engine/data
+          run-id: ${{ steps.source.outputs.run }}
+          github-token: ${{ github.token }}
+      - name: Package the play site
+        run: node browser/engine/package-play.js build/browser-engine build/browser-engine/data build/play-site "${{ steps.source.outputs.sha }}"
+      - name: Install headless Chromium
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install chromium
+          npm exec --prefix browser/engine -- playwright install-deps chromium
+      - name: Play the packaged site through its play view (strict)
+        env:
+          STOCK_SCENARIO_SITE: build/play-site
+          STOCK_SCENARIO_PAGE: vanillatd.html?play
+          STOCK_SCENARIO_SKIP_GAMEPLAY: '1'
+        run: node browser/engine/check-stock-scenario.js
+      - name: Publish play-site check
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: play-site-check
+          path: |
+            build/browser-engine/stock-scenario-audit.json
+            build/browser-engine/stock-scenario-*.png
+          if-no-files-found: warn
+      - name: Check Pages configuration
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          build_type="$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || true)"
+          if [ "$build_type" = workflow ]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::GitHub Pages is not set to deploy from GitHub Actions. Enable it in Settings > Pages > Build and deployment, then re-run.'
+            echo 'Pages activation required before publishing.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Configure GitHub Pages
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./build/play-site
+      - name: Deploy to GitHub Pages
+        if: steps.pages.outputs.enabled == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4

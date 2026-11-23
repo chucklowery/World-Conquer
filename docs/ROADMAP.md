@@ -148,6 +148,8 @@ Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
       score screen and restart are automated for a loss. The win path uses
       the same screen but is not yet automated.
 - [ ] Publish to GitHub Pages from `vanilla` (replacing the tactical alpha).
+      Set up: play view (`vanillatd.html?play`), `package-play.js` and
+      `publish-play.yml`; live once merged and Pages deploys from Actions.
 - [x] A short, scripted Chromium acceptance test: start a match, place a
       structure, produce a unit, and see credits change (`stock-scenario`,
       M2).
