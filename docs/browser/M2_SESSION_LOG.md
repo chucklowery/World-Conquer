@@ -68,3 +68,18 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - [Browser run 45089812657](https://github.com/chucklowery/World-Conquer/actions/runs/45089812657): `Generate original M1 boot data` **passed**, including three independent pack invocations, on-disk hash/required-output/tamper checks and archive-member-based coverage reporting **240/240** produced in the *current provisional inventory*. The `Verify original content pipeline` failure was only an outdated generated Markdown reference to `building.cpp:513`; updated `docs/browser/REPRESENTATIVE_FRAME_CONTRACTS.md` to `:516` in commit `9b26393`.
 - [Linux run 45089812634](https://github.com/chucklowery/World-Conquer/actions/runs/45089812634): clang formatting check flagged one overlong `std::printf` in `factory.cpp`. Formatting corrected in `ecf9629`. This was a CI formatting failure rather than a native compiler failure.
 - Final validation remains required on the latest review head: green native build/format job, green `wasm-vanillatd`/`stock-engine`, and report-only `stock-scenario` audit showing the furthest reached event. No M2b work started.
+
+## Session M2b
+
+- Branch: `m2b/theater-roster-scenario`, branched from `vanilla` at `dbfb0c334bbda1b8c9132211fbddb21175566123`.
+- Entry condition: M2a [PR #57](https://github.com/chucklowery/World-Conquer/pull/57) merged at `dbfb0c334bbda1b8c9132211fbddb21175566123`.
+- M2a baseline: [browser run 45098472157](https://github.com/chucklowery/World-Conquer/actions/runs/45098472157) completed with `wasm-vanillatd`, `stock-engine`, and report-mode `stock-scenario` all successful. `stock-scenario` reported `scenario.loaded` and 163 misses. Latest `vanilla` baseline run [45100216241](https://github.com/chucklowery/World-Conquer/actions/runs/45100216241) was still running at this checkpoint.
+- Build loop: CI-only. GitHub checkout is unavailable in this environment (DNS resolution failure); Emscripten/Chromium and native host tests cannot be executed here.
+
+### Phase 4 — theater, terrain and resource
+
+- Status: **partial**. Added the geometry-only 32-byte TD icon-set writer/reader, JavaScript round-trip fixture, and generated `TEMPERAT.MIX`/`TEMPICNH.MIX` with clear and reference-water tiles. Hooked both generated archives into the unified pack with provenance.
+- Commit SHA: `06efee38997c8d1ace12af6d29d45bcb932dfca9` (implementation checkpoint; this log update follows).
+- Commands/results: reviewed `tiberiandawn/tile.h:55-69`, `tiberiandawn/iconset.cpp:72-149`, `common/stamp.cpp:84-102`, and `tiberiandawn/display.cpp:335-404`; local build and test unavailable (no clone). `node tools/content/test-iconset.js` and pack CI validation still unverified.
+- CI: [M2b browser workflow](https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml) (first branch run pending).
+- Open issues: host *engine-backed* icon-set test has not been added; the loader's exact template archive member set and the terrain/radar drawing remain unverified. Resource overlays, theater-specific trees/smudges and complete color contracts still need work. The 163 scenario misses require audit classification. The files written in this phase are original generated schematics; no proprietary art was used.
