@@ -63,14 +63,20 @@ function build(outdir){
   // lists it. Inventory declarations are not evidence of a MIX member.
   const mixer=process.env.WC_MIXTOOL||path.join(root,"build/native/vanillamix");
   const archiveContents=new Set();
+  const mixAudit=path.join(outdir,"_mix_audit");
+  fs.mkdirSync(mixAudit,{recursive:true});
   for(const archive of files.filter(x=>x.path.toUpperCase().endsWith(".MIX"))){
-    const run=cp.spawnSync(mixer,["--list",path.join(game,archive.path)],{encoding:"utf8"});
+    // vanillamix uses RawFileClass's lower-case POSIX basename normalization.
+    const alias=path.join(mixAudit,archive.path.toLowerCase());
+    fs.copyFileSync(path.join(game,archive.path),alias);
+    const run=cp.spawnSync(mixer,["--list",alias],{encoding:"utf8"});
     if(run.error||run.status!==0)throw Error("Cannot inspect MIX "+archive.path+": "+(run.error||run.stderr));
     for(const line of run.stdout.split(/\r?\n/)){
       const match=line.match(/^\s*([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)\s+\d+\s+\d+\s*$/);
       if(match)archiveContents.add(match[1].toUpperCase());
     }
   }
+  fs.rmSync(mixAudit,{recursive:true,force:true});
   const produced=req=>names.has(req.name.toUpperCase())||archiveContents.has(req.name.toUpperCase());
   const required=requirements.files.filter(x=>x.requiredFor!=="optional");
   const present=required.filter(produced);
