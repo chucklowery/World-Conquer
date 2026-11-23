@@ -4544,7 +4544,8 @@ int BuildingClass::Mission_Harvest(void)
 #ifdef __EMSCRIPTEN__
                     const int stored = House->Tiberium - beforeUnload;
                     if (stored > 0) {
-                        std::printf("[browser-event] harvest-unload house=%s value=%d\n", House->Class->IniName, stored);
+                        std::printf(
+                            "[browser-event] harvest-unload house=%s value=%d\n", House->Class->IniName, stored);
                         std::fflush(stdout);
                     }
 #endif
