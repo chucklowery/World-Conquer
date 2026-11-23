@@ -23,7 +23,8 @@ const audit={schema:1,pathDecision:"Skirmish (default; pending runtime confirmat
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
   pageErrors:[],screenshots:[],input:[],ciSha:process.env.GITHUB_SHA||"local"};
 const consoleLines=[];
-function parse(line){
+function parse(rawLine){
+  const line=rawLine.replace(/^\[error\]\s*/,"");
   const stage=line.match(/^\[browser-game\] (menu\.enter|menu\.choice|scenario\.request|scenario\.loaded|scenario\.failed)/);
   if(stage)audit.stage=stage[1];
   if(line.startsWith("[browser-game]"))audit.lastGameLines.push(line);
