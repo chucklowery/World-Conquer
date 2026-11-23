@@ -6,6 +6,35 @@ const {build:buildBoot,nativeMixer}=require("./boot-pack.js");
 const root=path.resolve(__dirname,"../..");
 const requirementsPath=path.join(root,"game/content/pack/requirements.json");
 const sha256=buffer=>crypto.createHash("sha256").update(buffer).digest("hex");
+const {encodeTacticalShape,decodeTacticalShape}=require("./encode-shape.js");
+// Wireframes are drawn with their own 8-colour palette (indices 1-7,
+// game/content/source/placeholder.palette.json). Translate those indices to
+// the nearest game-palette colours (TEMPERAT.PAL, boot-colors.js), skipping
+// the fixed engine colours 0-15 and the house remap band 176-191, which is
+// kept as-is so the engine can recolour each house.
+function wireframeTranslation(){
+  const {rgbPalette}=require("./boot-colors.js");
+  const game=rgbPalette();
+  const source=JSON.parse(fs.readFileSync(path.join(root,"game/content/source/placeholder.palette.json"),"utf8")).colors
+    .map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
+  const table=Array.from({length:256},(_,i)=>i);
+  for(let i=1;i<source.length;i++){
+    let best=16,dist=Infinity;
+    for(let j=16;j<256;j++){
+      if(j>=176&&j<=191)continue;        // house remap band
+      if(j>=32&&j<=38)continue;          // colour cycling (defines.h:1936-1937)
+      const d=source[i].reduce((sum,c,k)=>sum+(c-game[j][k])**2,0);
+      if(d<dist){dist=d;best=j;}
+    }
+    table[i]=best;
+  }
+  return table;
+}
+function translateShape(buffer,table){
+  const shape=decodeTacticalShape(buffer);
+  for(const frame of shape.frames)frame.pixels=frame.pixels.map(p=>table[p]);
+  return encodeTacticalShape(shape);
+}
 function build(outdir){
   outdir=path.resolve(outdir);
   // Never recursively delete arbitrary user work. CI builds under build/;
@@ -21,8 +50,9 @@ function build(outdir){
     throw Error("Refusing to overwrite non-pack directory: "+outdir);
   fs.rmSync(outdir,{recursive:true,force:true});
   fs.mkdirSync(outdir,{recursive:true});
-  buildBoot(outdir);
   const wireframeStage=path.join(outdir,"_wireframes");
+  const contentStage=path.join(outdir,"_content");
+  fs.mkdirSync(contentStage,{recursive:true});
   require("./wireframes.js").build(wireframeStage,undefined,true);
   const generated=JSON.parse(fs.readFileSync(path.join(wireframeStage,"manifest.json"),"utf8")).assets;
   // One name may belong to several engine types. Select the largest frame
@@ -36,20 +66,40 @@ function build(outdir){
     if(!prev||asset.frames>prev.frames||(asset.frames===prev.frames&&asset.id<prev.id))chosen.set(name,asset);
   }
   const wireframeNames=new Set();
+  const bootOwned=new Set(["MOUSE.SHP","CONQUER.ENG"]);
+  const translation=wireframeTranslation();
   for(const name of [...chosen.keys()].sort()){
     const asset=chosen.get(name);
     const source=path.join(wireframeStage,"files",asset.target);
     if(!fs.existsSync(source))throw Error("Wireframe missing "+asset.target);
-    const target=path.join(outdir,"game",name);
     // Preserve the M1 boot/menu files when an engine filename overlaps.
-    if(!fs.existsSync(target)){
-      fs.copyFileSync(source,target);
+    if(!bootOwned.has(name)){
+      fs.writeFileSync(path.join(contentStage,name),translateShape(fs.readFileSync(source),translation));
       wireframeNames.add(name);
     }
   }
   fs.rmSync(wireframeStage,{recursive:true,force:true});
+  const placeholderNames=new Set(require("./placeholders.js").build(contentStage,wireframeNames));
+  // Audited frame contracts: the engine indexes frames up to minFrames-1 for
+  // these objects (requirements.json minFramesEvidence). Fail the build if a
+  // generated sprite is shorter, since the engine would read past its end.
+  const reqFiles=JSON.parse(fs.readFileSync(requirementsPath,"utf8")).files;
+  for(const entry of reqFiles){
+    const min=entry.contract&&entry.contract.minFrames;
+    if(!Number.isInteger(min))continue;
+    const file=path.join(contentStage,entry.name.toUpperCase());
+    if(!fs.existsSync(file))throw Error("Audited sprite not generated: "+entry.name);
+    const frames=fs.readFileSync(file).readUInt16LE(0);
+    if(frames<min)throw Error(entry.name+" has "+frames+" frames; the engine uses up to "+min);
+  }
+  const conquerMembers=[...wireframeNames,...placeholderNames].filter(n=>!n.endsWith(".TEM")&&n!=="TEMPERAT.PAL").sort();
+  const theaterMembers=[...placeholderNames].filter(n=>n.endsWith(".TEM")||n==="TEMPERAT.PAL").sort();
+  buildBoot(outdir,{conquerExtra:{dir:contentStage,files:conquerMembers}});
+  fs.copyFileSync(path.join(outdir,"game","TEMPERAT.PAL"),path.join(contentStage,"TEMPERAT.PAL"));
   const scenarioNames=new Set(require("./scenario.js").build(path.join(outdir,"game")));
-  const theaterNames=new Set(require("./theater.js").build(path.join(outdir,"game")));
+  const theaterNames=new Set(require("./theater.js").build(path.join(outdir,"game"),
+    {dir:contentStage,files:[...new Set(["TEMPERAT.PAL",...theaterMembers])]}));
+  fs.rmSync(contentStage,{recursive:true,force:true});
   const requirements=JSON.parse(fs.readFileSync(requirementsPath,"utf8"));
   if(requirements.schema!==1||!Array.isArray(requirements.files))throw Error("Invalid requirements schema");
   const revision=cp.execFileSync("git",["rev-parse","HEAD"],{cwd:root,encoding:"utf8"}).trim();
@@ -68,6 +118,9 @@ function build(outdir){
       theaterNames.has(entry.path)?["tools/content/theater.js","tools/content/encode-iconset.js","tools/content/encode-shape.js"]:
       wireframeNames.has(entry.path)?
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
+      entry.path.toUpperCase().endsWith(".MIX")?
+      ["tools/content/boot-pack.js","tools/content/placeholders.js","tools/content/fading.js","tools/content/theater.js",
+        "tools/content/wireframes.js","game/content/pack/requirements.json"]:
       ["tools/content/boot-pack.js","game/content/pack/boot-requirements.json"],
     license:"CC0-1.0",sourceRevision:revision
   }]));
@@ -77,6 +130,7 @@ function build(outdir){
   // lists it. Inventory declarations are not evidence of a MIX member.
   const mixer=nativeMixer();
   const archiveContents=new Set();
+  const archiveMembers={};
   const mixAudit=path.join(outdir,"_mix_audit");
   fs.mkdirSync(mixAudit,{recursive:true});
   for(const archive of files.filter(x=>x.path.toUpperCase().endsWith(".MIX"))){
@@ -87,7 +141,10 @@ function build(outdir){
     if(run.error||run.status!==0)throw Error("Cannot inspect MIX "+archive.path+": "+(run.error||run.stderr));
     for(const line of run.stdout.split(/\r?\n/)){
       const match=line.match(/^\s*([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)\s+\d+\s+\d+\s*$/);
-      if(match)archiveContents.add(match[1].toUpperCase());
+      if(match){
+        archiveContents.add(match[1].toUpperCase());
+        (archiveMembers[archive.path]=archiveMembers[archive.path]||[]).push(match[1].toUpperCase());
+      }
     }
   }
   fs.rmSync(mixAudit,{recursive:true,force:true});
@@ -101,6 +158,17 @@ function build(outdir){
       return [stage,{total:group.length,produced:group.filter(produced).length}];
     }))};
   fs.writeFileSync(path.join(outdir,"pack.json"),JSON.stringify(manifest,null,2)+"\n");
+  // Archive members: the engine loads game data through MFCD::Retrieve,
+  // which only sees registered MIX archives, so members are what count.
+  for(const name of Object.keys(archiveMembers))archiveMembers[name].sort();
+  const memberSource=name=>name.endsWith(".MRF")?"tools/content/fading.js":
+    theaterMembers.includes(name)||placeholderNames.has(name)?"tools/content/placeholders.js":
+    wireframeNames.has(name)?"tools/content/wireframes.js":
+    ["CLEAR1.TEM","W1.TEM","T01.TEM"].includes(name)||/^TI\d+\.TEM$/.test(name)?"tools/content/theater.js":
+    "tools/content/boot-pack.js";
+  provenance.members=Object.fromEntries(Object.entries(archiveMembers).map(([archive,members])=>
+    [archive,Object.fromEntries(members.map(m=>[m,{generator:memberSource(m),license:"CC0-1.0"}]))]));
+  fs.writeFileSync(path.join(outdir,"archives.json"),JSON.stringify(archiveMembers,null,2)+"\n");
   fs.writeFileSync(path.join(outdir,"PROVENANCE.json"),JSON.stringify(provenance,null,2)+"\n");
   fs.writeFileSync(path.join(outdir,"coverage.json"),JSON.stringify(coverage,null,2)+"\n");
   console.log("M2 pack coverage:",JSON.stringify(coverage));
@@ -111,4 +179,4 @@ if(require.main===module){
     build(process.argv[3]);
   }catch(e){console.error(e.stack||e);process.exitCode=1;}
 }
-module.exports={build};
+module.exports={build,wireframeTranslation,translateShape};

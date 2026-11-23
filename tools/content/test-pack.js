@@ -9,9 +9,22 @@ function verify(dir){
   const coverage=JSON.parse(fs.readFileSync(path.join(dir,"coverage.json"),"utf8"));
   assert.equal(manifest.schema,1);
   const names=new Set(manifest.files.map(x=>x.path));
-  for(const filename of ["CCLOCAL.MIX","CONQUER.MIX","GENERAL.MIX","SCM94EA.INI","FACTMAKE.SHP","E1.SHP"]){
+  for(const filename of ["CCLOCAL.MIX","CONQUER.MIX","GENERAL.MIX","TEMPERAT.MIX","SCM94EA.INI"]){
     assert(names.has(filename),"Missing required generated file "+filename);
   }
+  // Game data is loaded with MFCD::Retrieve, which only searches registered
+  // MIX archives (common/mixfile.h). It must be inside them, not loose.
+  const archives=JSON.parse(fs.readFileSync(path.join(dir,"archives.json"),"utf8"));
+  for(const [archive,member] of [["CONQUER.MIX","E1.SHP"],["CONQUER.MIX","FACTMAKE.SHP"],["CONQUER.MIX","SHADOW.SHP"],
+      ["CONQUER.MIX","PROCICNH.SHP"],["CONQUER.MIX","HSIDE1.SHP"],["CCLOCAL.MIX","MOUSE.SHP"],
+      ["TEMPERAT.MIX","TEMPERAT.PAL"],["TEMPERAT.MIX","CLEAR1.TEM"],["TEMPERAT.MIX","TUNITS.MRF"]]){
+    assert((archives[archive]||[]).includes(member),member+" must be inside "+archive);
+  }
+  for(const loose of ["E1.SHP","FACTMAKE.SHP","SHADOW.SHP"])
+    assert(!names.has(loose),loose+" is loose; the engine cannot load it from there");
+  const provenance0=JSON.parse(fs.readFileSync(path.join(dir,"PROVENANCE.json"),"utf8"));
+  for(const [archive,members] of Object.entries(archives))
+    for(const m of members)assert(provenance0.members?.[archive]?.[m]?.generator,"No provenance for "+archive+"/"+m);
   const digest=file=>crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
   const actual=fs.readdirSync(path.join(dir,"game")).sort();
   assert.deepEqual(actual,[...names].sort(),"Manifest does not match game directory");

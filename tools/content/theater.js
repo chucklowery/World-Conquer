@@ -20,13 +20,15 @@ function archive(game,stage,name,files){
   if(fs.existsSync(lower)&&lower!==upper)fs.renameSync(lower,upper);
   if(!fs.existsSync(upper))throw Error("Theater MIX missing: "+name);
 }
-function build(game){
+function build(game,extra={dir:null,files:[]}){
   const stage=path.join(path.dirname(game),"_m2_theater");
   fs.mkdirSync(stage,{recursive:true});
-  // Flat green clear ground and flat blue water are intentional schematic art.
+  // Flat green clear ground and flat blue water are intentional schematic art
+  // (TEMPERAT.PAL terrain entries from boot-colors.js TERRAIN).
+  const {TERRAIN}=require("./boot-colors.js");
   const files=["CLEAR1.TEM","W1.TEM"];
-  fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(63,45)],map:Array(16).fill(0)}));
-  fs.writeFileSync(path.join(stage,files[1]),encodeIconset({icons:[tile(120,124)]}));
+  fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(TERRAIN.grass,TERRAIN.grassEdge)],map:Array(16).fill(0)}));
+  fs.writeFileSync(path.join(stage,files[1]),encodeIconset({icons:[tile(TERRAIN.water,TERRAIN.waterEdge)]}));
   // odata.cpp:162-353 declares 12 separate harvestable overlay types;
   // odata.cpp:828-839 indexes OverlayData directly as a tactical frame.
   // Supply 16 non-copyrighted growth/adjacency frames for each type.
@@ -51,6 +53,17 @@ function build(game){
     encodeTacticalShape({frames:Array.from({length:16},(_,i)=>schematic(20,i,32,32))}));
   files.push(treeName);
 
+  // Theater data (palette, templates, terrain objects, smudges) is fetched
+  // with MFCD::Retrieve, which only searches registered MIX archives.
+  for(const name of extra.files){fs.copyFileSync(path.join(extra.dir,name),path.join(stage,name));files.push(name);}
+  // display.cpp:129 and sidebar.cpp:84 define _RETRIEVE: the engine reads its
+  // palette fading/translucency tables from data. Build them from our palette.
+  const paletteFile=path.join(stage,"TEMPERAT.PAL");
+  if(fs.existsSync(paletteFile)){
+    for(const [name,data] of Object.entries(require("./fading.js").tables(fs.readFileSync(paletteFile),"T"))){
+      fs.writeFileSync(path.join(stage,name),data);files.push(name);
+    }
+  }
   try{
     archive(game,stage,"TEMPERAT.MIX",files);
     archive(game,stage,"TEMPICNH.MIX",files);

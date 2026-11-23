@@ -27,7 +27,7 @@ for(const field of ["cells","overlays","trees","waypoints","units"]){
 }
 // Isolate each feature category so an unrelated invalid feature cannot mask it.
 const enclosed={...source,map:{...source.map,x:10,y:10,width:20,height:20},
-  terrain:{...source.terrain,cells:[]},waypoints:[[12,12],[13,13]],
+  terrain:{...source.terrain,cells:[]},waypoints:[[12,12],[13,13],[14,14],[15,15],[16,16],[17,17]],
   overlays:[],trees:[],units:[]};
 assert.doesNotThrow(()=>generate(enclosed));
 for(const field of ["cells","overlays","trees","waypoints","units"]){
@@ -35,9 +35,11 @@ for(const field of ["cells","overlays","trees","waypoints","units"]){
   const invalid=field==="cells"?
     {...enclosed,terrain:{...enclosed.terrain,cells:[changed]}}:
     field==="waypoints"?
-      {...enclosed,waypoints:[[12,12],changed]}:
+      {...enclosed,waypoints:[[12,12],changed,...enclosed.waypoints.slice(2)]}:
       {...enclosed,[field]:[changed]};
   assert.throws(()=>generate(invalid),/outside playable map/,"map bounds: "+field);
 }
+assert.throws(()=>generate({...source,waypoints:source.waypoints.slice(0,5)}),/six start waypoints/);
+for(let i=0;i<6;i++)assert.match(ini,new RegExp("\\n"+i+"="+cell(source.waypoints[i])+"\\n"));
 assert.deepEqual(generate(source),generate(source),"generator must be deterministic");
 console.log("PASS: original scenario INI and 4096-cell BIN round-trip");

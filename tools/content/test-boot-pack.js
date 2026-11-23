@@ -40,3 +40,18 @@ try{
   assert.equal(Object.keys(JSON.parse(fs.readFileSync(path.join(tmp,"first/PROVENANCE.json")))).length,a.files.length);
   console.log("Original boot pack determinism and format checks passed");
 }finally{fs.rmSync(tmp,{recursive:true,force:true});}
+
+// No franchise names or trademarks in player-visible text (AGENT_GUIDE rule 3).
+{
+  const {stringTable}=require("./boot-pack.js");
+  const table=stringTable(),count=table.readUInt16LE(0)/2,banned=[];
+  const pattern=/\b(G ?D ?I|N ?O ?D|Kane|Tiberium|Westwood|Command (and|&) Conquer|C&C|Brotherhood|Global Defense|Temple|Obelisk|Orca|Rambo|Ion Cannon|Moebius)\b/i;
+  for(let i=0;i<count;i++){
+    const start=table.readUInt16LE(i*2),end=table.indexOf(0,start);
+    const text=table.subarray(start,end).toString("latin1");
+    if(pattern.test(text))banned.push(i+"="+text);
+  }
+  if(banned.length)throw Error("Trademark or franchise terms in generated strings: "+banned.join(", "));
+  console.log("PASS: generated strings contain no franchise names");
+}
+

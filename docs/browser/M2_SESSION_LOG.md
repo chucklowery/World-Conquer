@@ -145,3 +145,160 @@ Six reviewer threads (2026-11-23) were addressed on `m2b/theater-roster-scenario
 - **Decoder hardening:** `decodeIconset` now rejects empty image sections and overlapping trans-flag/map spans, with negative tests.
 
 **Evidence:** earlier run `45102805481` is pre-review and does not validate these changes. Review-fix CI and Chromium scenario-load checks must pass on the review-fix head before calling them verified. The source-generated placeholders remain original; gameplay, HUD and zero-miss gate are outside M2b.
+
+## Session M2c
+
+- Branch: `m2c/playable-match`, branched from `vanilla` at `6db6bcd4155131bce122df4f225033cadc5fcb6f`.
+- Entry condition: M2b [PR #58](https://github.com/chucklowery/World-Conquer/pull/58) merged; review-fix [run 45108622499](https://github.com/chucklowery/World-Conquer/actions/runs/45108622499) reported green `wasm-vanillatd`, `stock-engine`, `stock-scenario`.
+- Build loop: CI-only in the GitHub connector environment; local Emscripten, native toolchain and Chromium builds are not available.
+- Scope: Phases 7–9 only. Nothing from M3 or M5 is included.
+
+### Phase 7 — battlefield and runtime asset classification
+
+- Status: **partial**; no claim that a playable battlefield, radar, or sidebar renders correctly.
+- Implementation checkpoint: `961c89932c1b30d22fe96863cab52eac405e7abc`.
+- Change: Chromium audit now categorizes file lookup misses using committed `requirements.json` contracts into required, optional and unclassified, retaining unknown misses rather than silently treating them as optional. Strict-mode predicate now requires `scenario.loaded` and zero required/unclassified misses when enabled.
+- Commands/results: repository source inspected via the GitHub connector. No local pack generation, Chromium execution, or Node test occurred; CI output is not yet available on this branch.
+- CI: pending M2c PR-head run. **Report-only remains enabled** until asset rendering and zero required misses are established.
+- Open issues: prior M2b review-fix audit reports 160 lookup events including self-generated fading-table write requests; exact runtime classification and screenshots are not yet available. Phase 7 gate, Phase 8 interactive play, and Phase 9 exit evidence remain unverified. These are not completed phases.
+
+- Phase 7 follow-up checkpoint: `291d950d22dd622be0ec4b5efed15b1c1e7a0c54` corrected the path separator regular expression and a literal newline escape in the strict predicate. JavaScript source parsing with V8 `Function` (after removing the Node shebang) → PASS. This is syntax validation only, not a Node/Chromium run. [First PR workflow batch](https://github.com/chucklowery/World-Conquer/actions/runs/45116942529) still in progress when checked; it predates this correction.
+
+### Owner review findings and narrowed scope — 2026-11-23
+
+Independent review of `vanilla` at `6db6bcd` (M2a + M2b merged), with a
+**local** Emscripten 3.1.68 build, the generated pack, and
+`check-stock-scenario.js` in Chromium (report mode):
+
+- Pack: builds deterministically; coverage 258/258; `test-iconset`,
+  `test-scenario`, `test-theater` and the C++ icon-set accessor test pass.
+  **`gameplay` requirements: 0** (sidebar, cameos and HUD not inventoried).
+- The Skirmish setup dialog renders and works; the match starts
+  (`scenario.loaded=SCM94EA`), with `fatal=null` and no page errors.
+- **The battlefield draws black.** At match start and 15 s later, only a
+  white crosshatch pattern around the top-left start area (slightly larger
+  after 15 s; probably the revealed-shroud edge) and the tab labels are
+  drawn. No terrain grid and no units are visible. Keyboard scrolling did
+  not reveal anything else.
+- **Not a missing-file problem:** all 160 misses are optional (102 `.INI`
+  scenario-list scans, 37 `.AUD`, 11 `.MRF` fading tables the engine
+  writes, update/movie/score/speech MIX archives, `EXPAND.DAT`,
+  `RULES.INI`, `MISSION.INI`). No `.SHP`, `.TEM`, palette or theater miss.
+- **Not the palette:** `TEMPERAT.PAL` has 255 non-black entries, and the
+  clear tile uses indices 63 and 45 (`tools/content/theater.js`).
+- **"GDI" is visible** as the side name in the Skirmish dialog: an EA
+  trademark on screen.
+- Minor: M2a's `building.cpp` change converted the file from ISO-8859
+  (CP437) to UTF-8; only the `Debug_Dump` monitor text is affected. The
+  earlier note that the 656 non-ASCII bytes were preserved is inaccurate.
+- Local-run note: `test-pack.js` fails when the checkout itself is under the
+  OS temp directory (its "refuse the repo root" check is then allowed). That
+  is an artifact of the reviewer's checkout location, not an M2 defect.
+
+**Scope change (docs on `vanilla` at `a1bcb04`, merged into this branch):**
+M2c now covers Phases 7–8, a visible battlefield: find and fix why terrain
+and units are not drawn; automated non-black screenshot checks; strict mode
+up to match start; remove visible trademarks; MCV `deployed` event; sidebar
+with cameos; `gameplay` inventory; slice frame contracts. The end-to-end
+game and the roadmap evidence moved to the new session **M2d** (Phases
+9–10). This PR (#59) remains the M2c PR. See Phase 7 of
+`docs/milestones/M2-original-data-pack.md` for the suggested diagnosis order.
+
+### Phase 7 — visible battlefield (2026-11-23, local Emscripten 3.1.68 + Chromium)
+
+- Status: **done locally**; CI evidence follows the push of this commit.
+- Build loop: **local** (emsdk 3.1.68, SDL2 via `EMCC_LOCAL_PORTS`, native
+  `vanillamix`, Playwright Chromium) plus CI.
+- Root causes of the black battlefield, found by instrumenting the engine
+  (temporary logs, since removed):
+  1. **Players spawned off the map.** `Create_Units` (scenarioini.cpp)
+     picks a random start slot in `0..MPlayerMax-1` (globals.cpp:
+     `MPlayerMax = 6`). The map had two waypoints, so slots 2–5 were
+     uninitialized and a player landed at a garbage cell. Fix: multiplayer
+     maps need six start waypoints; `scenario.js` enforces it and the map now
+     has six starts, each with a resource field.
+  2. **The asset audit was blind to game data.** `WC_ASSET_AUDIT` was a
+     PRIVATE definition of `common`, but `MixFileClass` is a header
+     template compiled into game code, so `MFCD::Retrieve` lookups were never
+     logged. Fix: PUBLIC definition. The real miss list was 754 lookups, not
+     "zero required".
+  3. **Game data was loose.** `MFCD::Retrieve` only searches registered MIX
+     archives, but M2a/M2b placed every shape and `TEMPERAT.PAL` loose in
+     `/game`. Fix: `pack.js` puts shapes, cameos and UI in `CONQUER.MIX` and
+     theater files plus the palette in `TEMPERAT.MIX`; `MOUSE.SHP` also goes
+     in `CCLOCAL.MIX`/`LOCAL.MIX` for the early lookup at init.cpp:268.
+  4. **The palette tables were missing.** display.cpp:129 and sidebar.cpp:84
+     `#define _RETRIEVE`, so the engine *reads* its `T*.MRF` fading and
+     translucency tables; M2b removed them as "written by the engine". With
+     zeroed tables every unit pixel was drawn as shadow (black). Fix:
+     `tools/content/fading.js` ports the engine's builders and generates all
+     11 tables; `tests/test-m2-fading.cpp` checks them byte-for-byte against
+     `common/fading.cpp`.
+  5. **Palette details.** Index 12 must be `BLACK` (common/wwstd.h; the
+     shroud uses it), 13/14 grey; wireframe sprites are translated from their
+     8-colour palette to the game palette; grass and water use real green and
+     blue indices; `SHADOW.SHP` uses the translucent indices 15/16.
+- Generated placeholders for every remaining requested file
+  (`tools/content/placeholders.js`): 139 temperate templates (icon sets sized
+  from `cdata.cpp`), terrain objects, smudges, civilian buildings, cameos,
+  build-up animations and sidebar/HUD art. 481 new `requirements.json`
+  entries with code references; documented `optionalPatterns` for engine
+  probes (scenario-list scans, `.AUD`, movies, optional archives).
+- Trademarks: "GDI"/"NOD" came from `TXT_G_D_I`/`TXT_N_O_D`
+  (nulldlg.cpp:348-349); now "Aster"/"Forge". Franchise unit/structure names
+  replaced; `test-boot-pack.js` fails on any trademark term.
+- `check-stock-scenario.js`: battlefield pixel check (non-black share and
+  object share), stall check after match start, full log saved; CI job is
+  now **strict**.
+- Local result: `scenario.loaded=SCM94EA`; misses 149, **required 0,
+  unclassified 0**; battlefield 23% non-black, 10% units/resources; max
+  stall 0 ms; coverage 747/747; `stock-engine` (M1) passes.
+
+### Phase 8 — base and sidebar (2026-11-23, local + CI)
+
+- Status: **done locally**; CI evidence follows the push of this commit.
+- Phase 7 CI: [run 45129469994](https://github.com/chucklowery/World-Conquer/actions/runs/45129469994)
+  and the five platform/legacy runs for `42e99a0` all passed, including the
+  now-strict `stock-scenario` job.
+- **MCV deploy with real input.** New guarded test logs:
+  `[browser-event] unit` (player units' screen position and cell at match
+  start), `[browser-event] centered` (selection position after the Home
+  key) and `[browser-event] deployed` (MCV → construction yard; `placed`
+  skips buildings with no purchase price). The test presses **H**
+  (KeyBase: select the MCV and centre on it), then **Home** for the settled
+  position, and clicks the MCV. Skirmish spawns units around the MCV, which
+  often block the yard's footprint (`Legal_Placement`); the test then drives
+  the MCV towards the map centre, waits until it has stopped (deploying needs
+  no NavCom) and retries. 4/4 local runs deployed from different starts.
+- **Terrain colour cycling.** Grass used indices 33/34, inside the engine's
+  colour-cycling range 32–38, so the ground animated. Terrain now uses
+  dedicated palette entries (`boot-colors.js` TERRAIN, 112–115), and the
+  sprite translation never picks a cycling index.
+- **Sidebar.** Appears after the deploy, opaque (filled panel placeholders),
+  with cameos rendered from each object's own sprite. The test checks the
+  sidebar is drawn and that cameo slots are filled (10 locally).
+- **`gameplay` inventory**: 282 entries (sidebar, cameos, HUD, overlays,
+  effects), all produced; no required or unclassified misses with the
+  sidebar open.
+- **Frame contracts** (`docs/browser/M2_ROSTER_CONTRACTS.md`): audited
+  minimums for 11 slice objects from the draw code, recorded as `minFrames`
+  in `requirements.json` and enforced by `pack.js`.
+- Credits log limited to the human player (AI spending flooded the log).
+- `building.cpp` restored to its original ISO-8859 encoding (M2a had
+  converted it to UTF-8); only the added event lines differ from `vanilla`.
+
+### M2c close-out and handoff to M2d
+
+- **Gate**: strict `stock-scenario` to match start, visible battlefield,
+  MCV deploys and the sidebar appears with cameos, `gameplay` inventory
+  complete, no trademarks visible, `stock-engine` green — met locally; CI
+  run for this commit to be recorded in the PR.
+- **For M2d**: starts are random among six waypoints (no fixed seed for
+  skirmish; `-SEED` is CHEAT_KEYS and single-player only). Use the
+  `unit`/`centered` logs plus H/Home for positions. The sidebar is at
+  x 480–639; cameo slots are 64×48 in two columns starting near x 496 and
+  566, y ≈ 180 (verify with `[browser-input]`). Which cameo is which is not
+  yet logged: add a guarded log of the strip contents before clicking.
+- **Known limits**: placeholder art; APC door frames and aircraft not
+  audited; the player-name list shows in the radar area until a comms
+  centre exists.

@@ -95,6 +95,9 @@
 
 #include "function.h"
 #include "ccini.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /***********************************************************************************************
  * UnitClass::Validate -- validates unit pointer.															  *
@@ -1699,6 +1702,15 @@ bool UnitClass::Try_To_Deploy(void)
                     **	mobile construction vehicle.
                     */
                     building->Revealed(House);
+#ifdef __EMSCRIPTEN__
+                    // Test log: Grand_Opening's "placed" event skips buildings
+                    // with no purchase price, which includes a deployed yard.
+                    std::printf("[browser-event] deployed name=%s into=%s house=%s\n",
+                                Class->IniName,
+                                building->Class->IniName,
+                                House->Class->IniName);
+                    std::fflush(stdout);
+#endif
 
                     /*
                     **	Force the newly placed construction yard to be in the same strength

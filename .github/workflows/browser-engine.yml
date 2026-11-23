@@ -83,6 +83,11 @@ jobs:
           build/native/test-m2-iconset build/native/test-m2.icn
           node tools/content/pack.js build build/browser-engine/data
           node tools/content/test-theater.js build/browser-engine/data/game
+          # The engine reads its palette tables from data (display.cpp:129
+          # _RETRIEVE). Check the generated tables against its own builders.
+          node -e 'const fs=require("fs"),f=require("./tools/content/fading.js");const d="build/native/m2-fading";fs.mkdirSync(d,{recursive:true});const p=fs.readFileSync("build/browser-engine/data/game/TEMPERAT.PAL");fs.writeFileSync(d+"/TEMPERAT.PAL",p);for(const [n,b] of Object.entries(f.tables(p,"T")))fs.writeFileSync(d+"/"+n,b)'
+          g++ -std=c++11 -Icommon tests/test-m2-fading.cpp common/fading.cpp -o build/native/test-m2-fading
+          build/native/test-m2-fading build/native/m2-fading
           g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
           build/native/test-m1-boot-data \
             build/browser-engine/data/game/8POINT.FNT \
@@ -362,9 +367,10 @@ jobs:
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
           npm exec --prefix browser/engine -- playwright install chromium
           npm exec --prefix browser/engine -- playwright install-deps chromium
-      - name: Probe original stock scenario path (report only until M2c phase 7)
-        env:
-          STOCK_SCENARIO_REPORT_ONLY: '1'
+      # Strict: the match must start with zero required or unclassified
+      # misses, no fatal or page error, no stall over 1s, and a visibly drawn
+      # battlefield (terrain plus units/resources).
+      - name: Start a skirmish match on original data (strict)
         run: node browser/engine/check-stock-scenario.js
       - name: Publish stock-scenario audit
         if: always()
@@ -373,5 +379,6 @@ jobs:
           name: stock-scenario-audit
           path: |
             build/browser-engine/stock-scenario-audit.json
+            build/browser-engine/stock-scenario-log.txt
             build/browser-engine/stock-scenario-*.png
           if-no-files-found: warn
