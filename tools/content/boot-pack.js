@@ -171,4 +171,4 @@ if(require.main===module){
     console.log("Created original boot pack: "+result.files.map(f=>f.path).join(", "));
   }catch(e){console.error(e.stack||e.message);process.exitCode=1;}
 }
-module.exports={build,stringTable,shape};
+module.exports={build,stringTable,shape,nativeMixer};
