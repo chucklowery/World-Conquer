@@ -51,7 +51,8 @@ function build(outdir){
   const provenance=Object.fromEntries(files.map(entry=>[entry.path,{
     generator:entry.path==="SCM94EA.INI"?"game/content/pack/scenario-probe.ini":
       wireframeNames.has(entry.path)?"tools/content/wireframes.js":"tools/content/boot-pack.js",
-    sourceFiles:wireframeNames.has(entry.path)?
+    sourceFiles:entry.path==="SCM94EA.INI"?["game/content/pack/scenario-probe.ini"]:
+      wireframeNames.has(entry.path)?
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
       ["tools/content/boot-pack.js","game/content/pack/requirements.json"],
     license:"CC0-1.0",sourceRevision:revision
