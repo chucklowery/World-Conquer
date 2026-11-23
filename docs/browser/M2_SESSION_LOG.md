@@ -83,3 +83,11 @@ This log records phase-boundary evidence for the three-session M2 plan. Original
 - Commands/results: reviewed `tiberiandawn/tile.h:55-69`, `tiberiandawn/iconset.cpp:72-149`, `common/stamp.cpp:84-102`, and `tiberiandawn/display.cpp:335-404`; local build and test unavailable (no clone). `node tools/content/test-iconset.js` and pack CI validation still unverified.
 - CI: [M2b browser workflow](https://github.com/chucklowery/World-Conquer/actions/workflows/browser-engine.yml) (first branch run pending).
 - Open issues: host *engine-backed* icon-set test has not been added; the loader's exact template archive member set and the terrain/radar drawing remain unverified. Resource overlays, theater-specific trees/smudges and complete color contracts still need work. The 163 scenario misses require audit classification. The files written in this phase are original generated schematics; no proprietary art was used.
+
+### Phase 5 — playable roster with frame contracts
+
+- Status: **partial**. Recorded code-backed exact accessed-frame minimums for rifle infantry (532) and tank body/turret (64); retained the tank's 192-frame generated safety margin and unverified building/vehicle contracts as provisional. Added `docs/browser/M2_ROSTER_CONTRACTS.md` identifying ten slice slots and outstanding animation contracts.
+- Commit SHA: `f4b00c0d42297e833ce820b166cfd002b50722bd` (documentation checkpoint; phase log commit follows).
+- Commands/results: source inspection of `idata.cpp:63-98`, `infantry.cpp:629`, `unit.cpp:2195-2245`, `building.cpp:503-560`, `bdata.cpp` and `udata.cpp`; runtime test and shape build not run locally.
+- CI: https://github.com/chucklowery/World-Conquer/pull/58/checks (PR checks not yet final).
+- Open issues: exact animation contracts for the rest of the slice, cameo/sidebar/radar/power controls, resource overlay stages, and effects remain unverified. No newly authored cameo frames were completed. See the source-audited contract table.
