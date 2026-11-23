@@ -302,3 +302,55 @@ game and the roadmap evidence moved to the new session **M2d** (Phases
 - **Known limits**: placeholder art; APC door frames and aircraft not
   audited; the player-name list shows in the radar area until a comms
   centre exists.
+
+## Session M2d
+
+- Branch: `m2d/end-to-end-match`, stacked on `m2c/playable-match` (PR #59)
+  at `effc7e5`. M2c's head CI (run 45133104868 and the five
+  platform/legacy runs) passed all six workflow groups, including the strict
+  `stock-scenario` job.
+- Build loop: local (emsdk 3.1.68, Chromium) plus CI.
+
+### Phase 9 — end-to-end gameplay test (2026-11-23)
+
+- Status: **done locally**; CI evidence follows the push.
+- New guarded test logs: `[browser-event] sidebar-add` (what each sidebar
+  slot builds, with strip geometry), `sidebar-scroll` (strip top after a
+  scroll), `sidebar-buttons` (scroll button rectangles) and `ready`
+  (production finished; a building then waits to be placed).
+- `check-stock-scenario.js` plays a match with real input only: builds and
+  places a power plant, refinery, barracks and vehicle factory (cameo clicks,
+  scrolling a strip when a slot is out of view, ring search for a legal cell
+  next to the yard), waits for a harvester delivery, trains a rifle squad and
+  a jeep, box-selects units and gives move and force-fire orders, scrolls
+  with the arrow keys and the screen edge, runs 2 minutes, and writes
+  `stock-scenario-metrics.json`.
+- Local results, four full runs on the final code path (three consecutive
+  passes after raising step timeouts; the earlier failures were a tight
+  300 s timeout on the vehicle factory and a refinery placement search that
+  was too small at an edge start, both fixed):
+
+  | Step | Run A | Run B | Run C |
+  | --- | --- | --- | --- |
+  | Power plant placed | 23 s | 21 s | 20 s |
+  | Refinery placed | 74 s | 94 s | 77 s |
+  | Barracks placed | 129 s | 125 s | — |
+  | Rifle squad trained | 136 s | 132 s | — |
+  | Harvester delivery | 136 s | 146 s | — |
+  | Vehicle factory placed | 315 s | 375 s | — |
+  | Jeep built | 337 s | 398 s | — |
+  | Frame p95 / max stall | 16.7 ms / 0 | 16.7 ms / 0 | 16.7 ms / 0 |
+
+  Heap stayed at 99,876,864 bytes over the 2-minute run. Time to match start
+  about 1.8–2.0 s after confirming the skirmish dialog. Pack: 66,994,806
+  bytes raw, 2,031,885 gzipped (placeholder frames are literal, so they
+  compress well; in-browser memory is the cost — an M4 size-budget item).
+- Temporary diagnostic logs used during this phase (harvester and factory
+  state) were removed before commit.
+
+### Phase 10 — docs and roadmap
+
+- `docs/browser/M2_DATA_PACK.md` (how the pack is built, where files must
+  go, the requirements inventory, adding objects and maps, replacing
+  placeholder art), `docs/browser/BUILD.md` and `browser/engine/README.md`
+  updated. Roadmap evidence is added once CI passes on this branch.

@@ -1,5 +1,11 @@
 # VanillaTD browser runtime bootstrap
 
+> **M2 (2026-11-23):** **Play** starts the stock engine on the original data
+> pack (`tools/content/pack.js`). Multiplayer → Skirmish runs a full match on
+> 100% original placeholder data: deploy, build, harvest, train and fight.
+> See [`docs/browser/M2_DATA_PACK.md`](../../docs/browser/M2_DATA_PACK.md)
+> and the `stock-scenario` acceptance test.
+
 > **Direction (2026-11-22, ADR-0003):** the stock VanillaTD engine is the game.
 > The launcher's first panel starts it on locally supplied data. Every other
 > mode described below (Courier, R02 orders, the R02/R03/R04 live match, R03
