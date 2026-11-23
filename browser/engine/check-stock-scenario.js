@@ -430,5 +430,10 @@ async function main(){
   console.log("Stock scenario audit:",audit.status,"stage:",audit.stage,"misses:",audit.misses.length,
     "required:",audit.requiredMisses.length,"unclassified:",audit.unclassifiedMisses.length,
     "optional:",audit.optionalMisses.length);
+  // Put the failure and progress in the job log itself; the artifact is not
+  // always reachable from where the log is read.
+  if(audit.error)console.log("Error:",audit.error);
+  if(audit.gameplay)console.log("Gameplay steps:",JSON.stringify(audit.gameplay.steps));
+  if(audit.deployAttempts)console.log("Deploy attempts:",JSON.stringify(audit.deployAttempts));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
