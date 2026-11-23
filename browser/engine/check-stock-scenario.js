@@ -383,9 +383,37 @@ async function main(){
     // M3: let the match run with no further player input and record what the
     // computer players do (STOCK_SCENARIO_OBSERVE_MINUTES, default off).
     const observe=Number(process.env.STOCK_SCENARIO_OBSERVE_MINUTES||0);
-    for(let m=1;m<=observe;m++){
-      await page.waitForTimeout(60000);
-      if(m%5===0||m===observe)await screenshot("observe-"+m+"m");
+    const ended=()=>page.evaluate(()=>/\[browser-event\] match-end result=(\w+)/.exec(document.getElementById("log").textContent));
+    for(let m=1;m<=observe&&!(await ended());m++){
+      for(let s=0;s<12&&!(await ended());s++)await page.waitForTimeout(5000);
+      if(!(await ended())&&(m%5===0||m===observe))await screenshot("observe-"+m+"m");
+    }
+    const end=await ended();
+    if(end){
+      // The end-of-match score screen (score.cpp Multi_Score_Presentation)
+      // waits for a click, then the game returns to the main menu.
+      audit.matchEnd={result:end[1]};
+      for(let t=1;t<=12;t++){
+        await page.waitForTimeout(5000);
+        if(t%3===0)await screenshot("score-"+t*5+"s");
+      }
+      const score=await battlefieldStats(page,await canvas.screenshot(),true);
+      audit.matchEnd.scoreScreen=score;
+      if(score.nonBlackShare<0.25)throw Error("End-of-match score screen is not drawn: "+JSON.stringify(score));
+      if(/Error - out of memory/.test(await logText()))throw Error("End-of-match screen failed: out of memory");
+      // After the score screen the game returns to the skirmish setup dialog
+      // (Do_Lose/Do_Win set GameActive=false); OK starts a fresh match.
+      const starts=async()=>(await logText()).split("[browser-event] scenario-start").length;
+      const before=await starts();
+      await clickGame(320,200,"Dismiss score screen");
+      await page.waitForTimeout(5000);
+      await screenshot("restart-dialog");
+      await clickGame(126,359,"Restart: scenario dialog OK");
+      await page.waitForFunction(n=>document.getElementById("log").textContent.split("[browser-event] scenario-start").length>n,
+        before,{timeout:60000});
+      audit.matchEnd.restarted=true;
+      await page.waitForTimeout(5000);
+      await screenshot("after-match");
     }
   }catch(error){
     audit.error=String(error.stack||error);
@@ -472,5 +500,6 @@ async function main(){
   }
   if(audit.deployAttempts)console.log("Deploy attempts:",JSON.stringify(audit.deployAttempts));
   if(audit.houses)console.log("Houses:",JSON.stringify(audit.houses));
+  if(audit.matchEnd)console.log("Match end:",JSON.stringify(audit.matchEnd));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});

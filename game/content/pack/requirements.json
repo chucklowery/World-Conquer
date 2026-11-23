@@ -12004,6 +12004,25 @@
     "bytes": 512,
     "note": "_RETRIEVE build: the engine reads this table; generated with a port of the engine's own builder (tools/content/fading.js)"
    }
+  },
+  {
+   "name": "MLTIPLYR.WSA",
+   "container": "CONQUER.MIX",
+   "format": "WSA",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/score.cpp:2040",
+    "tiberiandawn/scenario.cpp:445",
+    "tiberiandawn/scenario.cpp:671"
+   ],
+   "generator": "placeholders",
+   "contract": {
+    "width": 320,
+    "height": 200,
+    "frames": 8,
+    "palette": "none (flags 0; the current game palette is used)",
+    "note": "End-of-match score background. A missing file leaves Open_Animation with an uninitialized header and the allocation fails (Error - out of memory)."
+   }
   }
  ],
  "optionalPatterns": [
@@ -12048,6 +12067,14 @@
    "reason": "optional configuration and expansion probes",
    "referencedAt": [
     "tiberiandawn/init.cpp"
+   ]
+  },
+  {
+   "pattern": "^MULTSCOR\\.PAL$",
+   "reason": "Cached interpolation table for the end-of-match screen; the engine builds it when the file is absent (Is_Available check).",
+   "referencedAt": [
+    "common/interpal.cpp:75",
+    "tiberiandawn/score.cpp:2051"
    ]
   }
  ]
