@@ -111,3 +111,40 @@ in its formats, and the repository already has SHP/PAL/MIX encoders and a
   `EventClass` stream.
 - Fidelity to engine behavior constrains game design; deviations need
   targeted engine changes that are justified case by case.
+
+
+## ADR-0004: Player-facing gates and milestone reorder after M3
+**Status:** Accepted on 2026-11-24. Amends the roadmap after M3; ADR-0003
+stands. Roadmap: [`docs/ROADMAP.md`](../ROADMAP.md) (revision 2).
+
+### Context
+M1 to M3 were evidenced within two days of ADR-0003, which confirms that
+direction. Their gates, however, check only what CI can observe. The
+published game runs, but it is all grass and wireframes, has no sound, has
+been tested only in headless Chromium, and is about 96 MB before
+compression. Download size, readability and multiplayer feasibility were
+scheduled late (old M4, M5 and M6), although they decide whether anyone plays
+or the plan holds. The frozen legacy demos still ship in the public site and
+run in per-PR CI.
+
+### Decision
+1. Gates have up to three parts: CI, budget and **player** (a recorded
+   playtest of the published site by at least three people new to the
+   project). A milestone with a player part is not done on CI alone.
+2. Reorder after M3: M4 load, budgets and browser reach; M5 readable
+   vertical slice (real theater, final art for the minimum roster, UI-B to
+   UI-E, sound); M6 persistence and controls (parallel with M5); S1 a
+   multiplayer spike any time after M3; M7 game design and content; M8
+   multiplayer; M9 release.
+3. Remove the legacy demos, their workflows and their scripts in M3 instead
+   of keeping them frozen.
+4. Size milestones in agent sessions, not calendar weeks.
+5. Add a Design track that owns faction identity, balance targets and AI
+   difficulty, measured by an AI-versus-AI balance job.
+
+### Consequences
+- Budgets move from a release concern to the first post-M3 milestone.
+- The UI track is folded into M5 and no longer runs open-ended.
+- An engine change for an alternative order scheme is accepted in principle
+  (M6), still guarded and justified per ADR-0003.
+- Playtests need people outside the project; the owner arranges them.
