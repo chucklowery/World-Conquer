@@ -30,13 +30,16 @@ int main(int argc, char** argv)
     if (font.size() < 1300 || u16(font, 0) != font.size() || font[2] != 0 || font[3] != 5)
         return 2;
     const unsigned offsets = u16(font, 6), widths = u16(font, 8), heights = u16(font, 12);
-    if (u16(font, 4) != 16 || font[17] != 255 || font[18] != 7 || font[19] != 5)
+    // UI-C fonts are proportional: every glyph is 7 rows, 1..max columns wide
+    // (max = header byte 19), and its data lies inside the file.
+    const unsigned maxw = font[19];
+    if (u16(font, 4) != 16 || font[17] != 255 || font[18] != 7 || maxw < 5 || maxw > 8)
         return 3;
     for (unsigned c = 0; c < 256; c++) {
         const unsigned offset = u16(font, offsets + c * 2);
         const unsigned rows = u16(font, heights + c * 2) >> 8;
         const unsigned cols = font.at(widths + c);
-        if (cols != 5 || rows != 7 || offset + rows * ((cols + 1) / 2) > font.size())
+        if (cols < 1 || cols > maxw || rows != 7 || offset + rows * ((cols + 1) / 2) > font.size())
             return 4;
     }
     const auto cps = read(argv[2]);
