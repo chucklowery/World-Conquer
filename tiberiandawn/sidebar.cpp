@@ -75,6 +75,17 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+
+/*
+**	UI-F (WC_COMMAND_BAR_TALL): the number of cameo rows per strip is a runtime
+**	value derived from the screen height. Without the option it is the stock
+**	compile-time MAX_VISIBLE, so the code below is unchanged in effect.
+*/
+#ifdef WC_COMMAND_BAR_TALL
+#define WC_STRIP_ROWS (SidebarClass::StripClass::VisibleRows)
+#else
+#define WC_STRIP_ROWS (MAX_VISIBLE)
+#endif
 #include "settings.h"
 #ifdef __EMSCRIPTEN__
 #include <cstdio>
@@ -118,7 +129,13 @@ ToggleClass* SidebarClass::Upgrade = NULL;
 ToggleClass* SidebarClass::Zoom = NULL;
 ShapeButtonClass SidebarClass::StripClass::UpButton[COLUMNS];
 ShapeButtonClass SidebarClass::StripClass::DownButton[COLUMNS];
+#ifdef WC_COMMAND_BAR_TALL
+SidebarClass::StripClass::SelectClass SidebarClass::StripClass::SelectButton[COLUMNS][MAX_VISIBLE_LIMIT];
+int SidebarClass::StripClass::VisibleRows = SidebarClass::StripClass::MAX_VISIBLE;
+void const* SidebarClass::SidebarShape3;
+#else
 SidebarClass::StripClass::SelectClass SidebarClass::StripClass::SelectButton[COLUMNS][MAX_VISIBLE];
+#endif
 
 /*
 ** Shape data pointers
@@ -188,6 +205,18 @@ void SidebarClass::One_Time(void)
     MaxVisible = 4;
     ButtonHeight = 9 * factor;
     TopHeight = ButtonHeight + (4 * factor);
+#ifdef WC_COMMAND_BAR_TALL
+    /*
+    **	UI-F: on taller screens, fill the height with cameo rows. The strips start
+    **	at SideY + TopHeight + 1 and the scroll buttons (24 rows plus margin) sit
+    **	below them. 640x400 gives the stock 4 rows.
+    */
+    if (factor == 2) {
+        int rows = (SeenBuff.Get_Height() - (SideY + TopHeight + 1) - 26) / (StripClass::OBJECT_HEIGHT * factor);
+        MaxVisible = Bound(rows, (int)StripClass::MAX_VISIBLE, (int)StripClass::MAX_VISIBLE_LIMIT);
+    }
+    StripClass::VisibleRows = MaxVisible;
+#endif
 
     Background.X = SideX + 8 * factor;
     Background.Y = SideY, Background.Width = SideWidth - 1;
@@ -225,13 +254,56 @@ void SidebarClass::One_Time(void)
     /*
     **	Load the sidebar shape in at this time. (Hi-Res sidebar is theater dependant)
     */
+#ifdef WC_COMMAND_BAR_TALL
+    Load_Sidebar_Art();
+#else
     if (SidebarShape1 == NULL) {
         SidebarShape1 = Hires_Retrieve("SIDE1.SHP");
     }
     if (SidebarShape2 == NULL) {
         SidebarShape2 = Hires_Retrieve("SIDE2.SHP");
     }
+#endif
 }
+
+#ifdef WC_COMMAND_BAR_TALL
+/***********************************************************************************************
+ * SidebarClass::Load_Sidebar_Art -- UI-F: per-faction sidebar art with neutral fallback.      *
+ *                                                                                             *
+ *    Uses SIDE1/SIDE2/SIDE3 with the house suffix of the player's ActLike house, the same     *
+ *    naming the radar uses (radar.cpp RADAR.<suffix>), and falls back to the neutral .SHP     *
+ *    set. SIDE3 is a one-row filler repeated on screens taller than 400 lines.                *
+ *=============================================================================================*/
+void SidebarClass::Load_Sidebar_Art(void)
+{
+    static HousesType _house = HOUSE_NONE;
+    static bool _loaded = false;
+    HousesType house = PlayerPtr ? PlayerPtr->ActLike : HOUSE_NONE;
+    if (_loaded && house == _house) {
+        return;
+    }
+    _loaded = true;
+    _house = house;
+
+    void const* art[3] = {NULL, NULL, NULL};
+    static char const* const _names[3] = {"SIDE1", "SIDE2", "SIDE3"};
+    for (int i = 0; i < 3; i++) {
+        if (house == HOUSE_GOOD || house == HOUSE_BAD) {
+            char name[_MAX_FNAME + _MAX_EXT];
+            _makepath(name, NULL, NULL, _names[i], HouseTypeClass::As_Reference(house).Suffix);
+            art[i] = Hires_Retrieve(name);
+        }
+        if (art[i] == NULL) {
+            char name[_MAX_FNAME + _MAX_EXT];
+            _makepath(name, NULL, NULL, _names[i], "SHP");
+            art[i] = Hires_Retrieve(name);
+        }
+    }
+    SidebarShape1 = art[0];
+    SidebarShape2 = art[1];
+    SidebarShape3 = art[2];
+}
+#endif
 
 /***********************************************************************************************
  * SidebarClass::Init_Clear -- Sets sidebar to a known (and deactivated) state                 *
@@ -344,17 +416,29 @@ void SidebarClass::Init_IO(void)
             ShapeButtonClass* SBCUpgrade = (ShapeButtonClass*)Upgrade;
             ShapeButtonClass* SBCZoom = (ShapeButtonClass*)Zoom;
 
+#ifdef WC_COMMAND_BAR_TALL
+            Repair->X = SideX + 4; // UI-F: follows the sidebar on wider screens (484 at 640).
+#else
             Repair->X = 484;
+#endif
             Repair->Y = 160;
             SBCRepair->ReflectButtonState = true;
             SBCRepair->Set_Shape(Hires_Retrieve(repair_shp));
 
+#ifdef WC_COMMAND_BAR_TALL
+            Upgrade->X = SideX + 57;
+#else
             Upgrade->X = 480 + 57;
+#endif
             Upgrade->Y = 160;
             SBCUpgrade->ReflectButtonState = true;
             SBCUpgrade->Set_Shape(Hires_Retrieve(sell_shp));
 
+#ifdef WC_COMMAND_BAR_TALL
+            Zoom->X = SideX + 110;
+#else
             Zoom->X = 480 + 110;
+#endif
             Zoom->Y = 160;
             SBCZoom->Set_Shape(Hires_Retrieve(map_shp));
         } else {
@@ -802,8 +886,29 @@ void SidebarClass::Draw_It(bool complete)
                          false);
             } else {
                 LogicPage->Draw_Line(SideX, 157, SeenBuff.Get_Width() - 1, 157, 0);
+#ifdef WC_COMMAND_BAR_TALL
+                /*
+                **	UI-F: SIDE1 at the top, SIDE2 against the bottom edge, and the
+                **	one-row SIDE3 filler repeated between them on taller screens.
+                **	At 640x400 SIDE2 lands at 158 + 118 exactly as in the stock code.
+                */
+                Load_Sidebar_Art();
+                {
+                    int bottom = SidebarShape2 ? SeenBuff.Get_Height() - Get_Build_Frame_Height(SidebarShape2)
+                                               : SeenBuff.Get_Height();
+                    CC_Draw_Shape(SidebarShape1, 0, SideX, 158, WINDOW_MAIN, SHAPE_WIN_REL);
+                    if (SidebarShape3) {
+                        int step = Get_Build_Frame_Height(SidebarShape3);
+                        for (int y = 158 + 118; step > 0 && y < bottom; y += step) {
+                            CC_Draw_Shape(SidebarShape3, 0, SideX, y, WINDOW_MAIN, SHAPE_WIN_REL);
+                        }
+                    }
+                    CC_Draw_Shape(SidebarShape2, 0, SideX, bottom, WINDOW_MAIN, SHAPE_WIN_REL);
+                }
+#else
                 CC_Draw_Shape(SidebarShape1, 0, SideX, 158, WINDOW_MAIN, SHAPE_WIN_REL);
                 CC_Draw_Shape(SidebarShape2, 0, SideX, 158 + 118, WINDOW_MAIN, SHAPE_WIN_REL);
+#endif
             }
 
             //  Repair.Draw_Me(true);
@@ -1249,14 +1354,14 @@ void SidebarClass::StripClass::Init_IO(int id)
     UpButton[ID].IsSticky = true;
     UpButton[ID].ID = BUTTON_UP + id;
     UpButton[ID].X = X + ButtonSpacingOffset + 1;
-    UpButton[ID].Y = Y + MAX_VISIBLE * ObjectHeight - 1;
+    UpButton[ID].Y = Y + WC_STRIP_ROWS * ObjectHeight - 1;
 
     UpButton[ID].Set_Shape(Hires_Retrieve("STRIPUP.SHP"));
 
     DownButton[ID].IsSticky = true;
     DownButton[ID].ID = BUTTON_DOWN + id;
     DownButton[ID].X = UpButton[ID].X + UpButton[ID].Width + ButtonSpacingOffset - 2;
-    DownButton[ID].Y = Y + MAX_VISIBLE * ObjectHeight - 1;
+    DownButton[ID].Y = Y + WC_STRIP_ROWS * ObjectHeight - 1;
 
     DownButton[ID].Set_Shape(Hires_Retrieve("STRIPDN.SHP"));
 #ifdef __EMSCRIPTEN__
@@ -1272,7 +1377,7 @@ void SidebarClass::StripClass::Init_IO(int id)
     std::fflush(stdout);
 #endif
 
-    for (int index = 0; index < MAX_VISIBLE; index++) {
+    for (int index = 0; index < WC_STRIP_ROWS; index++) {
         SelectClass& g = SelectButton[ID][index];
         g.ID = BUTTON_SELECT;
         g.X = X;
@@ -1364,7 +1469,7 @@ void SidebarClass::StripClass::Activate(void)
     DownButton[ID].Zap();
     Map.Add_A_Button(DownButton[ID]);
 
-    for (int index = 0; index < MAX_VISIBLE; index++) {
+    for (int index = 0; index < WC_STRIP_ROWS; index++) {
         SelectButton[ID][index].Zap();
         Map.Add_A_Button(SelectButton[ID][index]);
     }
@@ -1389,7 +1494,7 @@ void SidebarClass::StripClass::Deactivate(void)
 {
     Map.Remove_A_Button(UpButton[ID]);
     Map.Remove_A_Button(DownButton[ID]);
-    for (int index = 0; index < MAX_VISIBLE; index++) {
+    for (int index = 0; index < WC_STRIP_ROWS; index++) {
         Map.Remove_A_Button(SelectButton[ID][index]);
     }
 }
@@ -1551,7 +1656,7 @@ bool SidebarClass::StripClass::Scroll(bool up)
         Scroller++;
     }
 #ifdef NEVER
-    if (BuildableCount <= MAX_VISIBLE)
+    if (BuildableCount <= WC_STRIP_ROWS)
         return (false);
 
     /*
@@ -1566,7 +1671,7 @@ bool SidebarClass::StripClass::Scroll(bool up)
         TopIndex--;
         Slid = 0;
     } else {
-        if (TopIndex + MAX_VISIBLE >= BuildableCount)
+        if (TopIndex + WC_STRIP_ROWS >= BuildableCount)
             return (false);
 
         Slid = ObjectHeight;
@@ -1642,7 +1747,7 @@ bool SidebarClass::StripClass::AI(KeyNumType& input, int, int)
     **	logic handler. This might result in up or down scrolling.
     */
     if (!IsScrolling && Scroller) {
-        if (BuildableCount <= MAX_VISIBLE) {
+        if (BuildableCount <= WC_STRIP_ROWS) {
             Scroller = 0;
         } else {
 
@@ -1663,7 +1768,7 @@ bool SidebarClass::StripClass::AI(KeyNumType& input, int, int)
                 }
 
             } else {
-                if (TopIndex + MAX_VISIBLE >= BuildableCount) {
+                if (TopIndex + WC_STRIP_ROWS >= BuildableCount) {
                     Scroller = 0;
                 } else {
                     Scroller--;
@@ -1811,7 +1916,7 @@ void SidebarClass::StripClass::Draw_It(bool complete)
         /*
         ** New sidebar needs to be drawn not filled
         */
-        if (factor > 0 && BuildableCount < MAX_VISIBLE) {
+        if (factor > 0 && BuildableCount < WC_STRIP_ROWS) {
             CC_Draw_Shape(LogoShapes, ID, X + 3, Y - 1, WINDOW_MAIN, SHAPE_WIN_REL | SHAPE_NORMAL, 0);
         }
 
@@ -1825,7 +1930,7 @@ void SidebarClass::StripClass::Draw_It(bool complete)
         **	Loop through all the buildable objects that are visible in the strip and render
         **	them. Their Y offset may be adjusted if the strip is in the process of scrolling.
         */
-        for (int i = 0; i < MAX_VISIBLE + (IsScrolling ? 1 : 0); i++) {
+        for (int i = 0; i < WC_STRIP_ROWS + (IsScrolling ? 1 : 0); i++) {
             bool production;
             bool completed;
             int stage;

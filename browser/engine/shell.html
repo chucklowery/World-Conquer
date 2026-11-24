@@ -104,6 +104,26 @@ body.play-view>*:not(#play-view){display:none!important}
 #play-view .play-how{margin-top:14px;padding:12px 16px;background:#1b2736;border:1px solid #394d60;border-radius:10px}
 #play-view .play-how ol{margin:6px 0 0;padding-left:20px;color:#b8c8d8;line-height:1.6}
 #play-view #play-stock{font-size:1.05rem;padding:12px 22px}
+/* UI-E: page shell around the engine canvas in the blacksite palette
+   (tools/content/ui/design-tokens.json). Page chrome only: the engine draws
+   every pixel of the game, its HUD and its menus inside the canvas. */
+:root{--wc-app:#090A0D;--wc-surface1:#111317;--wc-surface2:#1A1E24;--wc-border:#39424D;--wc-border-strong:#4B5561;
+  --wc-text:#D7DEE7;--wc-text2:#A6B0BB;--wc-crimson:#C2362B;--wc-crimson-deep:#8A1F1D;--wc-cyan:#3FC6D5;--wc-focus:#77D7E3;
+  background:var(--wc-app);color:var(--wc-text)}
+body{background:var(--wc-app)}
+p,.note{color:var(--wc-text2)}
+.eyebrow{color:var(--wc-cyan);letter-spacing:.2em}
+h1{letter-spacing:.02em;text-transform:uppercase;font-weight:800}
+.panel{background:var(--wc-surface1);border-color:var(--wc-border);border-radius:2px;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.status{background:var(--wc-surface2);border:1px solid var(--wc-border);border-left:3px solid var(--wc-cyan);border-radius:2px;color:var(--wc-text)}
+canvas{background:#000;border-color:var(--wc-border-strong);border-radius:0}
+canvas:focus{border-color:var(--wc-focus);box-shadow:0 0 0 1px var(--wc-focus)}
+button:not(.hud-shell *),label.pick{background:var(--wc-surface2);border-color:var(--wc-border-strong);color:var(--wc-text);border-radius:0;
+  clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+button.primary:not(.hud-shell *),#play-view #play-stock{background:var(--wc-crimson-deep);border-color:var(--wc-crimson);color:#F5F7FA}
+button:not(.hud-shell *):focus-visible,label.pick:focus-within{outline:2px solid var(--wc-focus);outline-offset:2px}
+#log{background:var(--wc-surface1);border-color:var(--wc-border);border-radius:0;color:var(--wc-text2)}
 </style>
 </head>
 <body data-runtime="loading" data-mode="idle">
@@ -868,7 +888,15 @@ body.play-view>*:not(#play-view){display:none!important}
       // Never replace previously restored user settings.
       const userConfig = "/game/user/conquer.ini";
       if (!Module.FS.analyzePath(userConfig).exists) {
-        Module.FS.writeFile(userConfig, "[Intro]\nPlayIntro=no\n[Video]\nWindowed=yes\n[Mouse]\nRawInput=no\n");
+        // UI-F: ?gamew=&gameh= request a larger game screen (read only by
+        // builds with WC_COMMAND_BAR_TALL; startup.cpp bounds the values; the
+        // SDL presenter's 16:10 boxing is turned off so it is not squeezed) and
+        // ?side=forge selects the Forge side ([MultiPlayer] Side, mplayer.cpp).
+        const query = new URLSearchParams(location.search);
+        const gw = parseInt(query.get("gamew") || "", 10), gh = parseInt(query.get("gameh") || "", 10);
+        const size = gw >= 640 && gw <= 1024 && gh >= 400 && gh <= 768 ? "GameWidth=" + gw + "\nGameHeight=" + gh + "\nBoxing=no\n" : "";
+        const side = query.get("side") === "forge" ? "[MultiPlayer]\nSide=1\n" : "";
+        Module.FS.writeFile(userConfig, "[Intro]\nPlayIntro=no\n[Video]\nWindowed=yes\n" + size + "[Mouse]\nRawInput=no\n" + side);
         report("[browser-game] initialized original boot-pack user settings");
       }
       assetReady = true;

@@ -24,6 +24,9 @@ option(BUILD_REMASTERRA "Build Red Alert remaster dll." OFF)
 option(BUILD_VANILLATD "Build Tiberian Dawn executable." ON)
 # Audit stock engine file lookups in browser builds by default.
 option(WC_ASSET_AUDIT "Log stock engine asset hits and misses." ${EMSCRIPTEN})
+# UI-F: runtime-height command bar and per-faction sidebar art in VanillaTD.
+# Off by default on native builds; on in the browser build.
+option(WC_COMMAND_BAR_TALL "Full-height command bar and faction sidebar skins (VanillaTD)." ${EMSCRIPTEN})
 option(BUILD_VANILLARA "Build Red Alert executable." ON)
 option(MAP_EDITORTD "Include internal scenario editor in Tiberian Dawn build." OFF)
 option(MAP_EDITORRA "Include internal scenario editor in Red Alert build." OFF)

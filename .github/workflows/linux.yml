@@ -58,6 +58,19 @@ jobs:
       run: |
         cmake --workflow --preset ${{ matrix.preset }}
 
+    # UI-F: the tall command bar and faction sidebar skins are compiled only
+    # with WC_COMMAND_BAR_TALL (default OFF on native); keep that path building.
+    - name: Build VanillaTD with WC_COMMAND_BAR_TALL=ON
+      if: ${{ matrix.preset == 'testing' }}
+      env:
+        CC: ${{ matrix.compiler.cc }}
+        CXX: ${{ matrix.compiler.cxx }}
+      run: |
+        cmake -S . -B build/command-bar-tall -G Ninja -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF \
+          -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF \
+          -DWC_COMMAND_BAR_TALL=ON
+        cmake --build build/command-bar-tall --target VanillaTD
+
     - name: Check formatting
       if: ${{ matrix.compiler.cc == 'clang' && matrix.preset == 'testing'}} 
       run: |

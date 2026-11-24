@@ -234,6 +234,10 @@ public:
             // BUTTON_SPACING_OFFSET = 0, // spacing info for buttons
 
         };
+#ifdef WC_COMMAND_BAR_TALL
+        // UI-F: upper bound of the runtime cameo rows (array size).
+        enum {MAX_VISIBLE_LIMIT = 12};
+#endif
 
         /*
         **	This is the coordinate of the upper left corner that this side strip
@@ -359,7 +363,16 @@ public:
 
         static ShapeButtonClass UpButton[COLUMNS];
         static ShapeButtonClass DownButton[COLUMNS];
+#ifdef WC_COMMAND_BAR_TALL
+        static SelectClass SelectButton[COLUMNS][MAX_VISIBLE_LIMIT];
+        /*
+        **	UI-F: rows of cameos shown per strip, derived from the screen height
+        **	in SidebarClass::One_Time (4 at 640x400, as in the stock layout).
+        */
+        static int VisibleRows;
+#else
         static SelectClass SelectButton[COLUMNS][MAX_VISIBLE];
+#endif
 
         /*
         **	This points to the shapes that are used for the clock overlay. This displays
@@ -406,6 +419,11 @@ public:
     */
     static void const* SidebarShape1;
     static void const* SidebarShape2;
+#ifdef WC_COMMAND_BAR_TALL
+    // UI-F: one-row filler for taller screens, and per-faction art loading.
+    static void const* SidebarShape3;
+    void Load_Sidebar_Art(void);
+#endif
 
 private:
     bool Activate_Repair(int control);

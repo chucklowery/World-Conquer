@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "status": "allocated-in-TEMPERAT.PAL",
+  "excluded": [
+    [
+      0,
+      63
+    ],
+    [
+      112,
+      115
+    ],
+    [
+      139,
+      141
+    ],
+    [
+      159,
+      159
+    ],
+    [
+      167,
+      167
+    ],
+    [
+      176,
+      191
+    ],
+    [
+      202,
+      202
+    ],
+    [
+      209,
+      209
+    ],
+    [
+      233,
+      237
+    ]
+  ],
+  "colors": {
+    "shadow": {
+      "index": 216,
+      "rgb": "#090A0D"
+    },
+    "plate": {
+      "index": 217,
+      "rgb": "#1A1E24"
+    },
+    "steel": {
+      "index": 218,
+      "rgb": "#232932"
+    },
+    "bevel": {
+      "index": 219,
+      "rgb": "#39424D"
+    },
+    "edge": {
+      "index": 220,
+      "rgb": "#4B5561"
+    },
+    "highlight": {
+      "index": 221,
+      "rgb": "#A6B0BB"
+    },
+    "teal": {
+      "index": 222,
+      "rgb": "#3FC6D5"
+    },
+    "amber": {
+      "index": 223,
+      "rgb": "#D08B2C"
+    },
+    "normal": {
+      "index": 224,
+      "rgb": "#B9DD79"
+    },
+    "critical": {
+      "index": 226,
+      "rgb": "#A52C31"
+    },
+    "white": {
+      "index": 227,
+      "rgb": "#D7DEE7"
+    },
+    "grey": {
+      "index": 228,
+      "rgb": "#8B96A3"
+    },
+    "red": {
+      "index": 229,
+      "rgb": "#E5483B"
+    },
+    "deep": {
+      "index": 230,
+      "rgb": "#8A1F1D"
+    },
+    "ice": {
+      "index": 231,
+      "rgb": "#77D7E3"
+    },
+    "coal": {
+      "index": 232,
+      "rgb": "#111317"
+    },
+    "primary": {
+      "index": 238,
+      "rgb": "#C2362B"
+    },
+    "button": {
+      "index": 239,
+      "rgb": "#F5F7FA"
+    },
+    "subtle": {
+      "index": 225,
+      "rgb": "#2A3038"
+    }
+  },
+  "states": {
+    "normal": {
+      "color": "normal",
+      "pattern": "solid"
+    },
+    "low": {
+      "color": "amber",
+      "pattern": "diagonal"
+    },
+    "critical": {
+      "color": "critical",
+      "pattern": "cross"
+    }
+  },
+  "textPairs": [
+    [
+      "white",
+      "plate"
+    ],
+    [
+      "grey",
+      "steel"
+    ],
+    [
+      "amber",
+      "shadow"
+    ],
+    [
+      "teal",
+      "shadow"
+    ],
+    [
+      "button",
+      "primary"
+    ],
+    [
+      "button",
+      "deep"
+    ]
+  ],
+  "notes": "Allocated in UI-B: boot-colors.js applies these RGB values and pack.js keeps the wireframe nearest-colour translation off these indices."
+}

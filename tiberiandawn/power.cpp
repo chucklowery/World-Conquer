@@ -42,6 +42,14 @@
 
 #include "function.h"
 
+#ifdef WC_COMMAND_BAR_TALL
+/*
+**	UI-F: height of the repeating lower power-bar piece (PWRBAR frames 1, 3, 5, 7),
+**	read from the shape so taller gauges tile it seamlessly.
+*/
+#define WC_POWER_PIECE (Get_Build_Frame_Height(PowerBarShape) > 0 ? Get_Build_Frame_Height(PowerBarShape) : 124)
+#endif
+
 /*
 **	Points to the shape to use for the "desired" power level indicator.
 */
@@ -206,7 +214,17 @@ void PowerClass::Draw_It(bool complete)
                 if (factor) {
 
                     CC_Draw_Shape(PowerBarShape, 0, PowX, PowY, WINDOW_CUSTOM, SHAPE_WIN_REL);
+#ifdef WC_COMMAND_BAR_TALL
+                    /*
+                    **	UI-F: repeat the lower piece down a taller gauge. At 640x400
+                    **	this draws once, at PowY + 100, as the stock code does.
+                    */
+                    for (int yy = PowY + 100; yy < bottom; yy += WC_POWER_PIECE) {
+                        CC_Draw_Shape(PowerBarShape, 1, PowX, yy, WINDOW_CUSTOM, SHAPE_WIN_REL);
+                    }
+#else
                     CC_Draw_Shape(PowerBarShape, 1, PowX, PowY + 100, WINDOW_CUSTOM, SHAPE_WIN_REL);
+#endif
                 } else {
                     /* Draw MS-DOS power gauge. */
                     int top_y = PowY + 1;
@@ -259,12 +277,23 @@ void PowerClass::Draw_It(bool complete)
                                       WINDOW_CUSTOM,
                                       SHAPE_WIN_REL);
 
+#ifdef WC_COMMAND_BAR_TALL
+                        for (int yy = PowY + 100; yy < bottom; yy += WC_POWER_PIECE) {
+                            CC_Draw_Shape(PowerBarShape,
+                                          3 + power_color,
+                                          PowX,
+                                          yy - WindowList[WINDOW_CUSTOM][WINDOWY],
+                                          WINDOW_CUSTOM,
+                                          SHAPE_WIN_REL);
+                        }
+#else
                         CC_Draw_Shape(PowerBarShape,
                                       3 + power_color,
                                       PowX,
                                       PowY - WindowList[WINDOW_CUSTOM][WINDOWY] + 100,
                                       WINDOW_CUSTOM,
                                       SHAPE_WIN_REL);
+#endif
                     } else {
                         LogicPage->Fill_Rect(PowX + 2, bottom - power_height + 1, PowX + 5, bottom - 1, power_color);
                     }

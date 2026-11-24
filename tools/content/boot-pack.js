@@ -39,6 +39,44 @@ const LABELS={
   TXT_NO:"No",
   TXT_GDI:"Aster",
   TXT_NOD:"Forge",
+  // UI-C: player-visible messages and labels in the COMMS voice: short,
+  // clipped, original. Format specifiers match the engine's sprintf calls
+  // (house.cpp:2144,2181,4117; event.cpp:430; conquer.cpp:1312).
+  TXT_PLAYER_DEFEATED:"%s eliminated.",
+  TXT_HAS_ALLIED:"%s allied with %s.",
+  TXT_AT_WAR:"%s hostile to %s.",
+  TXT_SPECIAL_WARNING:"%s changed rules.",
+  TXT_FROM:"%s: %s",
+  TXT_FROM_COMPUTER:"Intercept:",
+  TXT_COMP_MSG1:"Perimeter breached.",TXT_COMP_MSG2:"We have your signal.",TXT_COMP_MSG3:"Grid failing.",
+  TXT_COMP_MSG4:"Hold if you can.",TXT_COMP_MSG5:"Next wave inbound.",TXT_COMP_MSG6:"Your harvest is ours.",
+  TXT_COMP_MSG7:"Recalculating.",TXT_COMP_MSG8:"Stand down.",TXT_COMP_MSG9:"Nothing escapes the net.",
+  TXT_COMP_MSG10:"Too slow.",TXT_COMP_MSG11:"Lights out soon.",TXT_COMP_MSG12:"Run the numbers.",
+  TXT_COMP_MSG13:"Signal jammed.",
+  TXT_LOW_POWER:"Power low.",
+  TXT_INSUFFICIENT_FUNDS:"Funds short.",
+  TXT_BUILD_DEST:"Structure lost.",
+  TXT_UNIT_DEST:"Unit lost.",
+  TXT_QUEUE_FULL:"Queue full.",
+  TXT_READY:"Ready",
+  TXT_HOLDING:"Hold",
+  TXT_YOU:"You",
+  TXT_ENEMY:"Hostile",
+  TXT_COMPUTER:"Computer",
+  TXT_UNKNOWN:"Unknown",
+  TXT_NAME_COLON:"Name:",
+  TXT_KILLS_COLON:"Kills:",
+  TXT_POWER_OUTPUT:"Power output",
+  TXT_POWER_OUTPUT_LOW:"Power output low",
+  TXT_SIDE_COLON:"Side:",
+  TXT_COLOR_COLON:"Colour:",
+  TXT_SCENARIO_COLON:"Map:",
+  TXT_START_CREDITS_COLON:"Credits:",
+  TXT_BASES_COLON:"Bases:",
+  TXT_TIBERIUM_COLON:"Crystal:",
+  TXT_CRATES_COLON:"Crates:",
+  TXT_AI_PLAYERS_COLON:"AI players:",
+  TXT_REPAIR:"Repair",TXT_SELL:"Sell",TXT_MAP:"Map",
   // Side names in the skirmish dialog (nulldlg.cpp:348-349).
   TXT_G_D_I:"Aster",
   TXT_N_O_D:"Forge",
@@ -214,17 +252,21 @@ function build(outdir,options={}) {
   fs.mkdirSync(stage,{recursive:true});
   const indexedColors=rgbPalette();
   const palette=encodePalette({colors:indexedColors.map(toHex)});
-  const font=encodeFont();verifyFont(font);
+  // UI-C typeface (tools/content/ui/fonts.js) for every engine font slot.
+  const uiFonts=require("./ui/fonts.js");
+  const font=uiFonts.font("8POINT.FNT",1);verifyFont(font);
   const cps=encodeCPS(TITLE_BACKGROUND);if(decodeCPS(cps).length!==64000)throw Error("CPS round-trip failed");
-  const pcx=encodePCX(640,400,TITLE_BACKGROUND,indexedColors);verifyPCX(pcx);
-  const mouse=shape(16,16,16,15),texture=shape(64,20,20,10);
+  // UI-E: original title key art and dialog texture (tools/content/ui/frontend.js).
+  const front=require("./ui/frontend.js").bootAssets();
+  const pcx=front["HTITLE.PCX"];verifyPCX(pcx);
+  // UI-D: every frame of the engine cursor table (tools/content/ui/cursors.js).
+  const mouse=require("./ui/cursors.js").mouseShape(),texture=front["BTEXTURE.SHP"];
   const strings=stringTable();
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
     "LED.FNT","VCR.FNT","GRAD6FNT.FNT","8FAT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"];
   const fonts=[...new Set(fontNames)];
-  // Font colour per file (encode-font.js): see FONT_INK.
-  const inks=new Map([...new Set(Object.values(FONT_INK))].map(ink=>{const f=encodeFont(ink);verifyFont(f);return [ink,f];}));
-  for(const name of fonts)write(stage,name,FONT_INK[name]?inks.get(FONT_INK[name]):font);
+  // Font colour per file: see FONT_INK; plain fonts use ink 1.
+  for(const name of fonts){const f=uiFonts.font(name,FONT_INK[name]||1);verifyFont(f);write(stage,name,f);}
   write(stage,"MOUSE.SHP",mouse);
   write(stage,"BTEXTURE.SHP",texture);
   write(stage,"PREPICK.CPS",cps);
