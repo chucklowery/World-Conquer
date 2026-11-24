@@ -322,3 +322,19 @@ The following are code-derived minimum coverage constraints, not claims about hi
 | HRADAR house variants | 42 minimum, frame 0 absent, 22 active, 41 offline; radar.cpp:341–350 selects house suffix or JP. | Current pack only declares HRADAR.GDI. Other suffixes must be traced and covered for supported houses, without changing selection code. |
 
 Power state thresholds: normal when Drain <= Power; low when Drain > Power; critical when Drain > 2×Power (power.cpp:241–249). The height itself is independent of these status thresholds; patterns must remain recognizable at small fill heights. Low-resolution power is code-drawn (power.cpp:210–229,269); do not claim patterned low-res art without an approved engine change.
+
+## Additional front-end inventory and implementation scope
+
+Owner scope: UI-A through UI-E only. UI-F is excluded; no runtime layout, additional icon rows, or new faction sidebar selection. Existing per-house radar selection remains supported.
+
+| Slot | Loader / consumer | Verified coverage / unresolved |
+|---|---|---|
+| BTN-UP.SHP, BTN-DN.SHP, BTN-UP2.SHP, BTN-DN2.SHP | nulldlg.cpp:236–240; conquer.cpp:3959–3968 | Hires_Retrieve selects resolution prefix; actual shape sizes and button state draw paths unverified. UI-E must resolve before replacement. |
+| OPTIONS.SHP | goptions.cpp:570–571 | option and option+1, centered at left/right row ends; complete enum coverage and shape dimensions unverified. |
+| BTEXTURE.SHP | dialog.cpp:148 | CC_Texture_Fill uses InMainLoop and dialog bounds; actual frame dimensions and tile count unverified. |
+| DEMOPIC.CPS | conquer.cpp:383 | full title loader; existing boot pack does not establish original dimensions. Verify before replacement. |
+| TitlePicture / PREPICK.CPS | init.cpp:502,844,1025; nulldlg.cpp:429,949 | title loader and scenario selection; preserve resolution-specific format. |
+| Score graphics | score.cpp:724–725,759,762–763,775–776,1104–1106,1467 | BAR3YLW, BAR3RED, TIME, HISCORE1/2, LOGOS, FACT, RMBO, FBALL1, CREDS; score.cpp:1271 draws frame 120 of BAR3RED. Other exact ranges, dimensions, palette use unverified; not a UI-E menu-path acceptance claim. |
+| Help and messages | help.cpp, msglist.cpp | No direct Retrieve/Load_Title_Screen calls in these units. Audit draw and font paths in UI-C; no new HUD layer. |
+
+All unresolved slots remain explicitly unverified and must be skipped until their contracts can be established. Do not convert generated pack bounds into asserted historical asset dimensions. UI-B must preserve existing translations and review palette-impact.json before integrating the candidate palette.
