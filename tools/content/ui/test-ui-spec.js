@@ -43,6 +43,21 @@ const translated=sourceColors.slice(1).map(hex=>{
  return best;
 });
 for(const index of translated)assert(!seen.has(index),"existing wireframe index "+index);
+// House remap tables (const.cpp Remap*) must never read or write a reserved
+// UI index, or a house colour change would recolour the command bar.
+{
+ const src=fs.readFileSync(path.join(__dirname,"../../../tiberiandawn/const.cpp"),"latin1");
+ const tables=[...src.matchAll(/unsigned char const (Remap\w+)\[256\] = \{([^}]*)\}/g)];
+ assert(tables.length>=6,"remap tables parsed: "+tables.length);
+ for(const [,name,body] of tables){
+  const values=body.replace(/\/\/[^\n]*/g,"").split(",").map(v=>v.trim()).filter(Boolean).map(Number);
+  assert.equal(values.length,256,name);
+  values.forEach((v,i)=>{
+   if(v===i)return;
+   assert(!seen.has(i)&&!seen.has(v),name+" remaps "+i+"->"+v+" through a reserved UI index");
+  });
+ }
+}
 const ratio=(a,b)=>contrast(lum(rgb(a).map(linear)),lum(rgb(b).map(linear)));
 for(const [a,b] of [
  [t.text.primary,t.background.surface2],[t.text.muted,t.background.surface3],

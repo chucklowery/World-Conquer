@@ -338,3 +338,27 @@ Owner scope: UI-A through UI-E only. UI-F is excluded; no runtime layout, additi
 | Help and messages | help.cpp, msglist.cpp | No direct Retrieve/Load_Title_Screen calls in these units. Audit draw and font paths in UI-C; no new HUD layer. |
 
 All unresolved slots remain explicitly unverified and must be skipped until their contracts can be established. Do not convert generated pack bounds into asserted historical asset dimensions. UI-B must preserve existing translations and review palette-impact.json before integrating the candidate palette.
+
+## UI-A close-out: contracts used by UI-B to UI-F (2026-11-24)
+
+Each row below was re-read from the draw code and supersedes any earlier
+"unverified" entry for the same slot. Coordinates are 640×400 engine pixels.
+
+| Slot | Code | Contract the generators follow |
+|---|---|---|
+| HTABS.SHP | tab.cpp:110–113,126–130,257–267,232–244 | Frame 0 drawn at x=0, x=320 (credits) and x=480 (sidebar tab); frame 1 (highlighted) at x=0. `Eva_Width`=160, `Tab_Height`=16; row 15 is overdrawn by a BLACK line, and centred text (TXT_TAB_BUTTON_CONTROLS / TXT_TAB_SIDEBAR / credits) is printed on top. Generated 160×16, 2 frames. |
+| HSIDE1.SHP / HSIDE2.SHP | sidebar.cpp:805–806 | Frame 0 only, at (480,158) and (480,276). SIDE1 visible span 158–275 (118 rows); SIDE2 276–399 (124 rows). Generated 160×118 and 160×124 so the seam is exact. Strips, buttons and power draw over them afterwards (sidebar.cpp:813–818, power.cpp). |
+| HREPAIR / HSELL / HMAP.SHP | sidebar.cpp:343–359; shapebtn.cpp:107–113,145–160; common/shapebtn.h:54–56 | Button width/height come from the shape header. X=484, 537, 590; Y=160. Repair and Sell reflect toggle state (frame = IsOn: 0 off, 1 on); Map uses 0 up, 1 down, 2 disabled (disabled until radar is active). Width ≤ 53 (no overlap) and ≤ 50 for MAP (screen edge); strips start at y=181, so height ≤ 21. Generated 48×18, 3 frames each. |
+| HRADAR.<suffix> | radar.cpp:341–350,423,472–473,1271,1313–1340; radar.h:135–136; hdata.cpp:52,64 | `RADAR` + house suffix of `PlayerPtr->ActLike` (GDI=Aster, NOD=Forge; CIV/JP/MP1–6 are not player `ActLike` values in skirmish). Drawn at (480,15). Frame 0: no radar facility ever; 1–21: first activation (counts up); 22 (RADAR_ACTIVATED_FRAME): active housing, inset (16,7) 128×128 is then filled by the map; 23–40: deactivation (counts up) and re-activation (counts down from 41 to 22); 41 (MAX_RADAR_FRAMES): radar present but offline. Generated 160×140, 42 frames, for GDI and NOD. |
+| HPWRBAR.SHP | power.cpp:131–146,184–193,208–209,241–267 | Gauge x=480, y=176, 16×224. Frame 0 (empty upper) at y=176 and frame 1 (empty lower) at y=276, clipped to the unfilled part; frames 2/3 normal, 4/5 low (Drain > Power), 6/7 critical (Drain > 2×Power), same origins, clipped to the filled part. Generated 16×100 (even frames) and 16×124 (odd frames). |
+| HPOWER.SHP | power.cpp:148,274–277 | Frame 0, drain marker, drawn at (480, bottom − drain_height − 4) with bottom = 399. Generated 16×9 notched pointer whose tip row is y=4. Loaded with `MFCD::Retrieve` directly, not `Hires_Retrieve`. |
+| HSTRIP.SHP | sidebar.cpp:1161,1814–1815,1969–1972 | Frame = strip ID (0 left, 1 right), drawn at (X+3, Y−1) = (500,181) and (570,181) only while a strip has fewer than 4 buildables; blank slots are not drawn over it. Generated 64×193, 2 frames. |
+| HSTRIPUP / HSTRIPDN.SHP | sidebar.cpp:1246–1262; shapebtn.cpp | Up button at (X+ButtonSpacingOffset+1, Y+4×48−1); down button to its right. Non-reflecting: frame 0 up, 1 down, 2 disabled. Generated 32×24, 3 frames. |
+| HCLOCK.SHP | sidebar.cpp:1162,1986–1995,2018–2025; factory.h:117 | Frame 0 darkens an unavailable cameo; frames 1–108 overlay production stage 0–107. Both drawn with SHAPE_GHOST through ClockTranslucentTable, so only the ghost-ink colour is visible. Generated 64×48, 109 frames. |
+| HPIPS.SHP | object.cpp:1078–1085; sidebar.cpp:2002–2038; defines.h:1748–1758; techno.cpp:4443–4489 | PIP_READY (3) and PIP_HOLDING (4) drawn SHAPE_CENTER over the cameo, 8 px above its bottom edge, using the frame-0 build height; 0 empty, 1 full, 2 primary, 5 engineer, 6 civilian, 7 commando are cargo/primary pips. |
+| MOUSE.SHP | mouse.cpp:95–114,137–168,201–216,304–340 | See the cursor table above. At least 178 frames (154+24). |
+| TRANS.ICN | cell.cpp:1120–1122 | Icon 0 allowed, icon 2 blocked, 24×24. |
+
+Remap check: every `Remap*` table in const.cpp only rewrites 176–191 and
+maps them to indices below 128, so the reserved UI indices are never a remap
+source or target (asserted in `tools/content/ui/test-ui-spec.js`).
