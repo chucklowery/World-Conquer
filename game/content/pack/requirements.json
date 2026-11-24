@@ -4383,12 +4383,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4401,12 +4402,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4420,12 +4422,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4438,12 +4441,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4471,12 +4475,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4489,12 +4494,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4507,12 +4513,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4540,12 +4547,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4558,12 +4566,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4577,12 +4586,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4595,12 +4605,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4614,12 +4625,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4632,12 +4644,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4707,12 +4720,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4725,12 +4739,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4758,12 +4773,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4776,12 +4792,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4834,12 +4851,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4852,12 +4870,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4871,12 +4890,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4889,12 +4909,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4922,12 +4943,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -4940,12 +4962,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5015,12 +5038,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5033,12 +5057,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5066,12 +5091,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5084,12 +5110,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5103,12 +5130,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5121,12 +5149,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5140,12 +5169,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5158,12 +5188,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5177,12 +5208,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5195,12 +5227,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5214,12 +5247,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5232,12 +5266,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5251,12 +5286,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5269,12 +5305,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5288,12 +5325,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5306,12 +5344,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5325,12 +5364,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5343,12 +5383,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5362,12 +5403,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5380,12 +5422,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5399,12 +5442,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5417,12 +5461,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5436,12 +5481,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5454,12 +5500,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5473,12 +5520,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5491,12 +5539,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5604,12 +5653,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -5622,12 +5672,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6257,12 +6308,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6275,12 +6327,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6294,12 +6347,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6312,12 +6366,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6331,12 +6386,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6349,12 +6405,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6368,12 +6425,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6386,12 +6444,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6405,12 +6464,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6423,12 +6483,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6442,12 +6503,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6460,12 +6522,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6479,12 +6542,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6497,12 +6561,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6527,12 +6592,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6545,12 +6611,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6577,12 +6644,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6624,12 +6692,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6642,12 +6711,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6719,12 +6789,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6737,12 +6808,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6756,12 +6828,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6774,12 +6847,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6807,12 +6881,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6825,12 +6900,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6858,12 +6934,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6876,12 +6953,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6909,12 +6987,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6927,12 +7006,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -6975,12 +7055,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp:1159"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 64
+    "frames": 109,
+    "minFrames": 109,
+    "source": "sidebar.cpp:1986-1995,2018-2025; factory.h:117 STEP_COUNT=108"
    }
   },
   {
@@ -6994,12 +7075,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7012,12 +7094,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7048,12 +7131,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7066,12 +7150,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7099,12 +7184,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7117,12 +7203,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7147,12 +7234,13 @@
    "referencedAt": [
     "tiberiandawn/object.cpp:1085"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
-    "width": 8,
-    "height": 8,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 32
+    "width": 42,
+    "height": 9,
+    "frames": 8,
+    "minFrames": 8,
+    "source": "defines.h:1748-1758; sidebar.cpp:2008-2038; techno.cpp:4443-4489"
    }
   },
   {
@@ -7200,12 +7288,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7218,12 +7307,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7404,12 +7494,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7422,12 +7513,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7441,12 +7533,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7459,12 +7552,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7478,12 +7572,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7496,12 +7591,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7531,12 +7627,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7549,12 +7646,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7568,12 +7666,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7586,12 +7685,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7605,12 +7705,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7623,12 +7724,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7641,12 +7743,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7685,12 +7788,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7703,12 +7807,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7722,12 +7827,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7740,12 +7846,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7759,12 +7866,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7777,12 +7885,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7796,12 +7905,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7814,12 +7924,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7833,12 +7944,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7851,12 +7963,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7884,12 +7997,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7902,12 +8016,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7935,12 +8050,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -7953,12 +8069,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8002,12 +8119,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8020,12 +8138,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8165,12 +8284,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8183,12 +8303,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8216,12 +8337,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8234,12 +8356,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8267,12 +8390,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -8285,12 +8409,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9034,12 +9159,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9052,12 +9178,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9085,12 +9212,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9103,12 +9231,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9582,12 +9711,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9600,12 +9730,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9675,12 +9806,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9693,12 +9825,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9959,12 +10092,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -9977,12 +10111,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10010,12 +10145,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10028,12 +10164,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10076,12 +10213,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10121,12 +10259,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10166,12 +10305,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10211,12 +10351,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10256,12 +10397,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10301,12 +10443,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10346,12 +10489,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10391,12 +10535,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10436,12 +10581,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10481,12 +10627,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10526,12 +10673,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10571,12 +10719,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10616,12 +10765,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10661,12 +10811,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10706,12 +10857,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10751,12 +10903,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10796,12 +10949,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10841,12 +10995,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10873,12 +11028,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10918,12 +11074,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -10963,12 +11120,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11008,12 +11166,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11053,12 +11212,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11098,12 +11258,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11143,12 +11304,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11188,12 +11350,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11233,12 +11396,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11278,12 +11442,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11323,12 +11488,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11368,12 +11534,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11413,12 +11580,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11458,12 +11626,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11503,12 +11672,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11548,12 +11718,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11593,12 +11764,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11638,12 +11810,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11683,12 +11856,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11778,12 +11952,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11796,12 +11971,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11829,12 +12005,13 @@
     "tiberiandawn/idata.cpp:1751",
     "tiberiandawn/aadata.cpp:416"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {
@@ -11847,12 +12024,13 @@
     "tiberiandawn/idata.cpp:1794",
     "tiberiandawn/aadata.cpp:724"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
     "height": 48,
     "frames": 1,
-    "note": "theater-specific cameo; hi-res cameo is 2x OBJECT_WIDTH/HEIGHT (sidebar.h:216-217)"
+    "minFrames": 1,
+    "source": "sidebar.h:216-217; sidebar.cpp:1973-1979 (frame 0, 64x48 at 640x400)"
    }
   },
   {

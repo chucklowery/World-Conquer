@@ -85,12 +85,13 @@ function build(outdir){
     }
   }
   fs.rmSync(wireframeStage,{recursive:true,force:true});
-  // Command-interface art (tools/content/ui, UI-B onward) replaces the
+  const placeholderNames=new Set(require("./placeholders.js").build(contentStage,wireframeNames));
+  // Command-interface art (tools/content/ui, UI-B onward) runs last, so the
+  // cameo generator can read every object sprite, and replaces the
   // wireframe or placeholder file of the same engine name.
   const uiOwners=require("./ui/build.js").build(contentStage);
   const uiNames=new Set(Object.keys(uiOwners));
-  for(const name of uiNames)wireframeNames.delete(name);
-  const placeholderNames=new Set(require("./placeholders.js").build(contentStage,new Set([...wireframeNames,...uiNames])));
+  for(const name of uiNames){wireframeNames.delete(name);placeholderNames.delete(name);}
   // Audited frame contracts: the engine indexes frames up to minFrames-1 for
   // these objects (requirements.json minFramesEvidence). Fail the build if a
   // generated sprite is shorter, since the engine would read past its end.
@@ -104,7 +105,7 @@ function build(outdir){
     if(frames<min)throw Error(entry.name+" has "+frames+" frames; the engine uses up to "+min);
   }
   const conquerMembers=[...wireframeNames,...placeholderNames,...uiNames].filter(n=>!n.endsWith(".TEM")&&n!=="TEMPERAT.PAL").sort();
-  const theaterMembers=[...placeholderNames].filter(n=>n.endsWith(".TEM")||n==="TEMPERAT.PAL").sort();
+  const theaterMembers=[...placeholderNames,...uiNames].filter(n=>n.endsWith(".TEM")||n==="TEMPERAT.PAL").sort();
   buildBoot(outdir,{conquerExtra:{dir:contentStage,files:conquerMembers}});
   fs.copyFileSync(path.join(outdir,"game","TEMPERAT.PAL"),path.join(contentStage,"TEMPERAT.PAL"));
   const scenarioNames=new Set(require("./scenario.js").build(path.join(outdir,"game")));

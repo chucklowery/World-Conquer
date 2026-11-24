@@ -5,7 +5,7 @@
 // content stage, ahead of the generic placeholders.
 const fs=require("node:fs"),path=require("node:path");
 const {encodeTacticalShape}=require("../encode-shape.js");
-const GENERATORS=["chrome"];
+const GENERATORS=["chrome","icons"];
 function collect(stage){
   const all={};
   for(const name of GENERATORS){

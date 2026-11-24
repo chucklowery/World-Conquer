@@ -157,11 +157,18 @@ async function playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas})
     return waitFor(source,timeout,since).then(()=>true,()=>false);
   }
   // Build a structure through the sidebar and place it next to the yard.
+  const ui=require("./ui-chrome-probes.js");
   async function buildStructure(name,readyTimeout){
     const since=(await logText()).length;
     await clickCameo(name,"Build "+name);
+    // UI-C evidence on the first structure: clock mid-build, READY when done.
+    const evidence=name==="NUKE"&&!audit.uiBuildStrip;
+    const s=evidence?await slot(name):null;
+    const cameoAt=s?[s.x,s.y+(s.index-s.top)*s.h]:null;
+    if(evidence){await page.waitForTimeout(2500);audit.uiBuildStrip={midBuild:await ui.midBuild(page,{canvas,screenshot,slot:cameoAt})};}
     if(!await waitEvent("\\[browser-event\\] ready name="+name+" house="+playerHouse,readyTimeout,since))
       throw Error(name+" did not finish building");
+    if(evidence){await page.waitForTimeout(500);audit.uiBuildStrip.ready=await ui.ready(page,{canvas,screenshot,slot:cameoAt});}
     const [yx,yy,yardCell]=await centreOn("h","FACT");
     await clickCameo(name,"Place "+name);           // enters placement mode
     await page.waitForTimeout(500);
@@ -398,6 +405,8 @@ async function main(){
     // UI-B: generated command-bar chrome at the spec coordinates, and the
     // REPAIR / SELL / MAP buttons driving the engine's own modes.
     audit.uiChrome=await require("./ui-chrome-probes.js").run(page,{canvas,clickGame,screenshot,log:l=>console.log(l)});
+    // UI-C: hovering a cameo shows the engine's tooltip in the new font.
+    audit.uiTooltip=await require("./ui-chrome-probes.js").tooltip(page,{canvas,screenshot,at:[532,206]});
     if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
     // M3: let the match run with no further player input and record what the
     // computer players do (STOCK_SCENARIO_OBSERVE_MINUTES, default off).
