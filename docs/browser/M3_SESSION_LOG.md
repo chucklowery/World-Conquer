@@ -143,3 +143,11 @@ three maps.
 Manual runs with the default `legacy_soak` on also run the frozen legacy
 demo soak; its R02 order check timed out once in that slow path (pull
 requests run it in fast mode). It does not involve the stock engine path.
+
+## Published (2026-11-23)
+
+PR #61 merged. `publish-play.yml` ran on the `vanilla` build of `977d4f6`
+([run 45262345913](https://github.com/chucklowery/World-Conquer/actions/runs/45262345913)):
+it played the packaged site through its play view, then deployed it to
+GitHub Pages. The owner confirmed a skirmish starts from the public link.
+M3 is complete except for an automated win test.

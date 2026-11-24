@@ -155,14 +155,17 @@ Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
       Foundry Test Range, Crossroads and Long Valley; the end-of-match
       score screen and restart are automated for a loss. The win path uses
       the same screen but is not yet automated.
-- [ ] Publish to GitHub Pages from `vanilla` (replacing the tactical alpha).
-      Set up: play view (`vanillatd.html?play`), `package-play.js` and
-      `publish-play.yml`; live once merged and Pages deploys from Actions.
+- [x] Publish to GitHub Pages from `vanilla` (replacing the tactical alpha).
+      `publish-play.yml` deploys each tested `vanilla` build to
+      <https://chucklowery.github.io/World-Conquer/> (play view
+      `vanillatd.html?play`, packaged by `package-play.js`).
 - [x] A short, scripted Chromium acceptance test: start a match, place a
       structure, produce a unit, and see credits change (`stock-scenario`,
       M2).
 
 Progress: 2026-11-23 · `8ccae03ee5039cc87e698bc2101dc3bdf9245b09` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45222236369) · headless Chromium (Playwright 1.56.1) · on all three maps the computer player built 9-11 structures, made 131-224 harvest deliveries and 9-13 kills, and destroyed the idle player's base; the score screen drew and the game restarted from the skirmish dialog; zero required or unclassified misses. Open for the exit gate: publishing (owner decision) and an automated win.
+
+Evidence: 2026-11-23 · `977d4f6e5d2344b51f6edea421d24c629f901d8b` · [publish run](https://github.com/chucklowery/World-Conquer/actions/runs/45262345913) · headless Chromium (Playwright 1.56.1) and owner check in a browser · the packaged site was played through its play view before deploying (skirmish started, base deployed, zero required or unclassified misses) and deployed to GitHub Pages; the owner started a skirmish from the public link. Matches against the computer player: see the progress line above. Not yet automated: a win (it uses the same score screen and restart path as a loss).
 
 **Exit gate:** a person with only a link can play a winnable and losable
 match against the AI in the browser.
