@@ -70,5 +70,11 @@ try{
   assert(!/<image|<script|foreignObject/i.test(actual));
  }
  assert.notEqual(match("aster"),match("forge"));
+ for(const power of Object.keys(p.states)){
+  const preview=match("aster",1,power);
+  assert(preview.includes(p.colors[p.states[power].color].rgb));
+  assert.equal(preview,match("aster",1,power));
+ }
+ assert.notEqual(match("aster",1,"low"),match("aster",1,"critical"));
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
 console.log("UI design checks passed (target contrast, provisional palette and wireframe translation; full pack audit pending)");
