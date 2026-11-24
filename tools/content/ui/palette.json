@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "status": "proposed-not-allocated",
+  "excluded": [
+    [
+      0,
+      63
+    ],
+    [
+      112,
+      115
+    ],
+    [
+      139,
+      141
+    ],
+    [
+      159,
+      159
+    ],
+    [
+      167,
+      167
+    ],
+    [
+      176,
+      191
+    ],
+    [
+      202,
+      202
+    ],
+    [
+      209,
+      209
+    ],
+    [
+      233,
+      237
+    ]
+  ],
+  "colors": {
+    "shadow": {
+      "index": 216,
+      "rgb": "#10181c"
+    },
+    "plate": {
+      "index": 217,
+      "rgb": "#27343a"
+    },
+    "steel": {
+      "index": 218,
+      "rgb": "#43535a"
+    },
+    "bevel": {
+      "index": 219,
+      "rgb": "#64767e"
+    },
+    "edge": {
+      "index": 220,
+      "rgb": "#9aadb4"
+    },
+    "highlight": {
+      "index": 221,
+      "rgb": "#c5d2d6"
+    },
+    "teal": {
+      "index": 222,
+      "rgb": "#65e3da"
+    },
+    "amber": {
+      "index": 223,
+      "rgb": "#ffcc72"
+    },
+    "normal": {
+      "index": 224,
+      "rgb": "#d0f7b1"
+    },
+    "low": {
+      "index": 225,
+      "rgb": "#d5a33b"
+    },
+    "critical": {
+      "index": 226,
+      "rgb": "#a52c31"
+    },
+    "white": {
+      "index": 227,
+      "rgb": "#f4f7f8"
+    },
+    "grey": {
+      "index": 228,
+      "rgb": "#c5d0d2"
+    }
+  },
+  "states": {
+    "normal": {
+      "color": "normal",
+      "pattern": "solid"
+    },
+    "low": {
+      "color": "low",
+      "pattern": "diagonal"
+    },
+    "critical": {
+      "color": "critical",
+      "pattern": "cross"
+    }
+  },
+  "textPairs": [
+    [
+      "white",
+      "plate"
+    ],
+    [
+      "grey",
+      "plate"
+    ],
+    [
+      "amber",
+      "shadow"
+    ],
+    [
+      "teal",
+      "shadow"
+    ]
+  ]
+}
