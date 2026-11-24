@@ -2,6 +2,21 @@
 
 Original geometric design from the written milestone brief. No external media. This is a design-only session; do not change the renderer or pack. All dimensions below are engine pixels.
 
+## Revised visual acceptance — blacksite tactical HUD
+
+This section supersedes earlier heavy-bevel, riveted and teal/amber aesthetic guidance. Source: owner-supplied written design brief, 2026-11-23. All art is original. No external reference artwork, branded assets or third-party UI library is required.
+
+- Semantic target RGB values are in tools/content/ui/design-tokens.json; they are not assigned engine indices. The earlier palette.json remains a provisional allocation experiment, not the visual authority. Quantize to the engine palette only after collision audit; measure contrast after quantization, including engine-generated gradients. No palette/pack changes in UI-A.
+- Chrome-only approximate area targets: 70% deep neutral, 15% raised neutral, 8% text/borders, 5% crimson, 2% utility hues. Exclude tactical map and object art; review representative idle and active frames separately.
+- Matte, clipped corners, 1–2 px strokes at 640×400, inset segmented lines, restrained localized highlights; no glossy bevels, decorative bolts, full-screen glow, heavy rust or visual noise. Optional grain 2–4% contrast modulation, radar-only scanlines, never behind text. At 1× remove details that compete with content.
+- Shared chrome neutral; crimson marks active command states; cyan focus/data; amber caution; lime success. Aster radar cyan/ice; Forge radar crimson with cold white/amber readouts. No new per-house sidebar selection before UI-F.
+- Text contrast >=4.5:1 on actual backgrounds, meaningful control boundaries/icons >=3:1 against adjacent surfaces. Disabled controls must remain distinguishable. White on bright crimson hover is not automatically acceptable: use a darker red fill and bright outline, or dark text if contrast passes. Use red as a signal rather than small text on dark panels unless tested.
+- Buttons: distinct up/down/disabled and reflected toggle states using outline, inset position/glyph and value as well as hue. Use pictograms for commands. Menu action emphasis via clipped corners, crimson edge and high-contrast labels. Inputs and focus cues only where supported by existing engine code; no simulated controls or invented state.
+- Radar: subdued offline glass versus active frame with sparse scanlines/technical ticks; retain map visibility and activation semantics. Cameos: one recognizable silhouette, dark neutral background, thin frame, no tiny labels. Clock: radial ghost ink per existing contract; silhouette remains legible. Ready/holding pip labels have distinct shapes.
+- Power: three value/pattern-distinct states (solid, diagonal, cross) subject to palette quantization and actual frame clipping. Placement: distinguish allowed and blocked with different hatch geometry, not hue alone. Health: preserve code-drawn fill length and corners; segmentation/pattern changes require approved engine work; document any accessibility limitation rather than claim it fixed.
+- Typography: original readable bitmap sans for body, compact squared uppercase labels where legible, tabular telemetry digits; no external webfont on engine canvas. The browser shell may use system sans/monospace in UI-E only. Keep existing engine glyph metrics and positions.
+- Evidence: generate Aster, Forge and menu SVG previews at 1× and 2×; check actual engine screenshots at 1100 px in UI-B onward. Review contrast, clipping, active/disabled differentiation, radar readability, all three power states, placement, build progress, and text at native pixels. Assertions and screenshots must be recorded before claiming a phase complete. Browser shell CSS tokens are deferred to UI-E; no HTML HUD, additional navigation rail, telemetry panel or layout changes before UI-F approval.
+
 ## Verified draw contracts
 
 | Slot | Source (tiberiandawn/) | Frames actually referenced / constraints |
