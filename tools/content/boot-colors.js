@@ -49,6 +49,12 @@ function rgbPalette() {
     167:[188,250,215]
   };
   for(const [key,value] of Object.entries(overrides))colors[Number(key)]=value;
+  // UI-E: dialog-dedicated entries restyled to the blacksite palette:
+  // 139 title / PREPICK fill, 141 dialog background (CC_GREEN_BKGD,
+  // defines.h:2882), 159 dialog highlight (CC_LIGHT_GREEN, defines.h:2884),
+  // and the fixed GREY (13) and LTGREY (14) used by gold-style dialog edges
+  // (dialog.cpp:113-126) as cool steel. 140 stays: wireframe art uses it.
+  Object.assign(colors,{139:[14,24,32],141:[26,30,36],159:[63,198,213],13:[75,85,97],14:[166,176,187]});
   // Command-interface ramps (UI-B), allocated in tools/content/ui/palette.json.
   // These indices are outside the remap band, the cycling ranges and the
   // engine text colours above; pack.js keeps wireframe art off them.

@@ -256,9 +256,11 @@ function build(outdir,options={}) {
   const uiFonts=require("./ui/fonts.js");
   const font=uiFonts.font("8POINT.FNT",1);verifyFont(font);
   const cps=encodeCPS(TITLE_BACKGROUND);if(decodeCPS(cps).length!==64000)throw Error("CPS round-trip failed");
-  const pcx=encodePCX(640,400,TITLE_BACKGROUND,indexedColors);verifyPCX(pcx);
+  // UI-E: original title key art and dialog texture (tools/content/ui/frontend.js).
+  const front=require("./ui/frontend.js").bootAssets();
+  const pcx=front["HTITLE.PCX"];verifyPCX(pcx);
   // UI-D: every frame of the engine cursor table (tools/content/ui/cursors.js).
-  const mouse=require("./ui/cursors.js").mouseShape(),texture=shape(64,20,20,10);
+  const mouse=require("./ui/cursors.js").mouseShape(),texture=front["BTEXTURE.SHP"];
   const strings=stringTable();
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
     "LED.FNT","VCR.FNT","GRAD6FNT.FNT","8FAT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"];

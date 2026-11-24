@@ -1773,6 +1773,42 @@
    }
   },
   {
+   "name": "HBTN-DN.SHP",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/nulldlg.cpp:236",
+    "tiberiandawn/expand.cpp:95"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 32,
+    "height": 18,
+    "frames": 4,
+    "minFrames": 3,
+    "source": "nulldlg.cpp:236-240; drop.cpp:51-52; list.cpp:80-81; shapebtn.cpp frames 0 up,1 down,2 disabled"
+   }
+  },
+  {
+   "name": "HBTN-UP.SHP",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/nulldlg.cpp:236",
+    "tiberiandawn/expand.cpp:95"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 32,
+    "height": 18,
+    "frames": 4,
+    "minFrames": 3,
+    "source": "nulldlg.cpp:236-240; drop.cpp:51-52; list.cpp:80-81; shapebtn.cpp frames 0 up,1 down,2 disabled"
+   }
+  },
+  {
    "name": "HELI.SHP",
    "container": "loose",
    "format": "SHP",
@@ -7023,12 +7059,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 32,
     "height": 18,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 4,
+    "minFrames": 3,
+    "source": "nulldlg.cpp:236-240; drop.cpp:51-52; list.cpp:80-81; shapebtn.cpp frames 0 up,1 down,2 disabled"
    }
   },
   {
@@ -7039,12 +7076,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 32,
     "height": 18,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 4,
+    "minFrames": 3,
+    "source": "nulldlg.cpp:236-240; drop.cpp:51-52; list.cpp:80-81; shapebtn.cpp frames 0 up,1 down,2 disabled"
    }
   },
   {
@@ -8100,12 +8138,13 @@
    "referencedAt": [
     "tiberiandawn/goptions.cpp:570"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 24,
     "height": 24,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 8
+    "frames": 32,
+    "minFrames": 32,
+    "source": "goptions.cpp:570-571; defines.h:2897-2919 OptionControlType"
    }
   },
   {
