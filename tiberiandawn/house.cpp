@@ -98,6 +98,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /*
 ** New sidebar for GlyphX multiplayer. ST - 3/26/2019 12:24PM
@@ -1723,6 +1726,13 @@ void HouseClass::Harvested(unsigned tiberium)
         IsMaxedOut = true;
     }
     HarvestedCredits += tiberium;
+#ifdef __EMSCRIPTEN__
+    // Test log for the human player's balance only; AI spending is too chatty.
+    if (IsHuman && Tiberium != oldtib) {
+        std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
+        std::fflush(stdout);
+    }
+#endif
     Silo_Redraw_Check(oldtib, Capacity);
 }
 
@@ -1777,6 +1787,12 @@ void HouseClass::Spend_Money(unsigned money)
     }
     Silo_Redraw_Check(oldtib, Capacity);
     CreditsSpent += money;
+#ifdef __EMSCRIPTEN__
+    if (IsHuman && (oldtib != Tiberium || money)) {
+        std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
+        std::fflush(stdout);
+    }
+#endif
 }
 
 /***********************************************************************************************
@@ -1801,6 +1817,12 @@ void HouseClass::Refund_Money(unsigned money)
 {
     Validate();
     Credits += money;
+#ifdef __EMSCRIPTEN__
+    if (IsHuman && money) {
+        std::printf("[browser-event] credits house=%s value=%d\n", Class->IniName, Tiberium + Credits);
+        std::fflush(stdout);
+    }
+#endif
 }
 
 /***********************************************************************************************
@@ -2874,6 +2896,15 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     **	has been completed.
                     */
                     factory->Set_Is_Blocked(false);
+#ifdef __EMSCRIPTEN__
+                    // Test log: object_type was read before Exit_Object, while
+                    // the produced object was certainly valid.
+                    if (object_type) {
+                        std::printf(
+                            "[browser-event] produced name=%s house=%s\n", object_type->IniName, Class->IniName);
+                        std::fflush(stdout);
+                    }
+#endif
                     factory->Completed();
                     Abandon_Production(type);
 #ifdef REMASTER_BUILD

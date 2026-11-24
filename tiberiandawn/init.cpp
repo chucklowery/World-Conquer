@@ -1410,6 +1410,8 @@ bool Select_Game(bool fade)
         Special.IsFromInstall = 0;
         CCDebugString("C&C95 - Starting scenario.\n");
 #ifdef __EMSCRIPTEN__
+        std::printf("[browser-event] scenario-start name=%s type=%d\n", Scen.ScenarioName, (int)GameToPlay);
+        std::fflush(stdout);
         std::printf("[browser-game] scenario.request=%s\n", Scen.ScenarioName);
 #endif
         if (!Start_Scenario(Scen.ScenarioName)) {
@@ -1420,6 +1422,23 @@ bool Select_Game(bool fade)
         }
 #ifdef __EMSCRIPTEN__
         std::printf("[browser-game] scenario.loaded=%s\n", Scen.ScenarioName);
+        // Test log: where the player's units are on screen (640x400 game
+        // coordinates), so the browser test can click them with real input.
+        for (int i = 0; i < Units.Count(); i++) {
+            UnitClass* unit = Units.Ptr(i);
+            int x, y;
+            if (unit && unit->House == PlayerPtr && !unit->IsInLimbo
+                && Map.Coord_To_Pixel(unit->Center_Coord(), x, y)) {
+                std::printf("[browser-event] unit name=%s house=%s x=%d y=%d cell=%d,%d\n",
+                            unit->Class->IniName,
+                            unit->House->Class->IniName,
+                            x + Map.TacPixelX,
+                            y + Map.TacPixelY,
+                            Cell_X(Coord_Cell(unit->Coord)),
+                            Cell_Y(Coord_Cell(unit->Coord)));
+            }
+        }
+        std::fflush(stdout);
 #endif
         CCDebugString("C&C95 - Scenario started OK.\n");
     }

@@ -5,6 +5,7 @@ const fs=require("node:fs"),path=require("node:path"),crypto=require("node:crypt
 const {encodePalette}=require("./encode-palette.js");
 const {encodeShape}=require("./encode-shape.js");
 const {encodeFont,verifyFont}=require("./encode-font.js");
+const {TITLE_BACKGROUND}=require("./boot-colors.js");
 const {encodeCPS,decodeCPS}=require("./encode-cps.js");
 const {encodePCX,verifyPCX}=require("./encode-pcx.js");
 const {rgbPalette,toHex}=require("./boot-colors.js");
@@ -12,41 +13,139 @@ const ROOT=path.resolve(__dirname,"../..");
 const REQUIREMENTS=path.join(ROOT,"game/content/pack/boot-requirements.json");
 // Generate a placeholder for every stock TXT_* index from compiled headers,
 // not from proprietary language files. All human-facing words are original.
+// Glyph colour index per font file. Plain fonts use 1 (the engine swaps in
+// the text colour). The engine colours gradient fonts through fixed tables:
+// - 12GRNGRD and 12GREEN: tab labels use _textfontpal row 11 (dialog.cpp),
+//   which fills entries 1-5, and the score screen's palettes fill 2-8 but
+//   print with a transparent colour 1 (score.cpp). Entry 4 is in both.
+// - GRAD6FNT and SCOREFNT: dialog gradient rows fill 1 and 11-15; plain
+//   gradient text fills 4-15. Entry 14 is in both.
+const FONT_INK={"12GRNGRD.FNT":4,"12GREEN.FNT":4,"GRAD6FNT.FNT":14,"SCOREFNT.FNT":14};
+const LABELS={
+  TXT_NONE:"",
+  TXT_CREDIT_FORMAT:"Credits: %d",
+  TXT_START_NEW_GAME:"New Game",
+  TXT_LOAD_MISSION:"Load Game",
+  TXT_SAVE_MISSION:"Save Game",
+  TXT_MULTIPLAYER_GAME:"Multiplayer",
+  TXT_INTRO:"Replay Intro",
+  TXT_JUST_INTRO:"Replay Intro",
+  TXT_EXIT_GAME:"Exit",
+  TXT_NEW_MISSIONS:"Extra Missions",
+  TXT_BONUS_MISSIONS:"Extra Missions",
+  TXT_OK:"OK",
+  TXT_CANCEL:"Cancel",
+  TXT_YES:"Yes",
+  TXT_NO:"No",
+  TXT_GDI:"Aster",
+  TXT_NOD:"Forge",
+  // Side names in the skirmish dialog (nulldlg.cpp:348-349).
+  TXT_G_D_I:"Aster",
+  TXT_N_O_D:"Forge",
+  // Original display names instead of franchise-specific ones.
+  TXT_RAMBO:"Commando",
+  TXT_ORCA:"Gunship",
+  TXT_COMMAND:"Comms Center",
+  TXT_OBELISK:"Beam Tower",
+  TXT_HAND:"Training Hall",
+  TXT_TEMPLE:"Citadel",
+  TXT_ION_CANNON:"Orbital Strike",
+  TXT_NUKE_STRIKE:"Warhead Strike",
+  TXT_MOEBIUS:"Scientist",
+  // Readable names for the M2 playable slice.
+  TXT_E1:"Rifle Squad",
+  TXT_E2:"Grenadier",
+  TXT_E3:"Rocket Squad",
+  TXT_E4:"Flamer",
+  TXT_E5:"Hazmat Trooper",
+  TXT_MCV:"Mobile Base",
+  TXT_ARTY:"Artillery",
+  TXT_MSAM:"Rocket Launcher",
+  TXT_APC:"Carrier",
+  TXT_POWER:"Power Plant",
+  TXT_ADVANCED_POWER:"Advanced Power",
+  TXT_FIX_IT:"Repair Bay",
+  TXT_CONST_YARD:"Construction Yard",
+  TXT_CHOOSE_SIDE:"Choose a Faction",
+  TXT_OPTIONS:"Options",
+  TXT_GAME_CONTROLS:"Controls",
+  TXT_SOUND_CONTROLS:"Audio",
+  TXT_VISUAL_CONTROLS:"Video",
+  TXT_QUIT_MISSION:"Quit Mission",
+  TXT_RESUME_MISSION:"Resume Mission",
+  TXT_FAME:"Records",
+  TXT_SCENARIO_WON:"Victory",
+  TXT_SCENARIO_LOST:"Defeat",
+  TXT_TIBERIUM:"Crystal",
+  TXT_TIBERIUM_ON:"Crystal On",
+  TXT_TIBERIUM_OFF:"Crystal Off",
+  // Top tabs (tab.cpp:116-117).
+  TXT_TAB_BUTTON_CONTROLS:"Options",
+  TXT_TAB_SIDEBAR:"Sidebar",
+  // End-of-match score screen prompt (score.cpp Multi_Score_Presentation).
+  TXT_MAP_CLICK2:"Continue",
+  // Original display names for every object in the type tables
+  // (bdata.cpp, udata.cpp, idata.cpp, adata.cpp), both factions.
+  TXT_EYE:"Uplink Center",
+  TXT_WEAPON_FACTORY:"Vehicle Factory",
+  TXT_GUARD_TOWER:"Guard Tower",
+  TXT_AGUARD_TOWER:"Heavy Guard Tower",
+  TXT_TURRET:"Gun Turret",
+  TXT_REFINERY:"Refinery",
+  TXT_STORAGE:"Crystal Silo",
+  TXT_HELIPAD:"Helipad",
+  TXT_SAM:"Missile Site",
+  TXT_AIRSTRIP:"Airstrip",
+  TXT_HOSPITAL:"Field Hospital",
+  TXT_BIO_LAB:"Research Lab",
+  TXT_BARRACKS:"Barracks",
+  TXT_TANKER:"Tanker",
+  TXT_ROAD:"Road",
+  TXT_PUMP:"Water Pump",
+  TXT_CIVMISS:"Mission House",
+  TXT_SANDBAG_WALL:"Sandbag Wall",
+  TXT_CYCLONE_WALL:"Chain Fence",
+  TXT_BRICK_WALL:"Concrete Wall",
+  TXT_BARBWIRE_WALL:"Wire Fence",
+  TXT_WOOD_WALL:"Wooden Fence",
+  TXT_PRISON:"Detention Center",
+  TXT_CIVILIAN_BUILDING:"Civilian Building",
+  TXT_VISCEROID:"Mutant",
+  TXT_FTANK:"Flame Tank",
+  TXT_STANK:"Stealth Tank",
+  TXT_LTANK:"Light Tank",
+  TXT_MTANK:"Battle Tank",
+  TXT_HTANK:"Siege Tank",
+  TXT_MHQ:"Mobile HQ",
+  TXT_HOVER:"Hovercraft",
+  TXT_HARVESTER:"Harvester",
+  TXT_JEEP:"Scout Car",
+  TXT_DUNE_BUGGY:"Raider Buggy",
+  TXT_BIKE:"Recon Bike",
+  TXT_MLRS:"Rocket Battery",
+  TXT_GUNBOAT:"Gunboat",
+  TXT_TRIC:"Horned Beast",
+  TXT_TREX:"Great Beast",
+  TXT_RAPT:"Swift Beast",
+  TXT_STEG:"Plated Beast",
+  TXT_E7:"Specialist",
+  TXT_DELPHI:"Agent",
+  TXT_CHAN:"Researcher",
+  TXT_CIVILIAN:"Civilian"
+};
+// Families of numbered civilian types share one name.
+const FAMILIES=[[/^TXT_CIV\d+$/,"Civilian Building"],[/^TXT_C\d+$/,"Civilian"]];
+function authoredText(name){
+  if(Object.prototype.hasOwnProperty.call(LABELS,name))return LABELS[name];
+  const family=FAMILIES.find(([re])=>re.test(name));
+  return family?family[1]:null;
+}
+const hasAuthoredText=name=>authoredText(name)!==null;
 function originalText(name) {
-  const labels={
-    TXT_NONE:"",
-    TXT_CREDIT_FORMAT:"Credits: %d",
-    TXT_START_NEW_GAME:"New Game",
-    TXT_LOAD_MISSION:"Load Game",
-    TXT_SAVE_MISSION:"Save Game",
-    TXT_MULTIPLAYER_GAME:"Multiplayer",
-    TXT_INTRO:"Replay Intro",
-    TXT_JUST_INTRO:"Replay Intro",
-    TXT_EXIT_GAME:"Exit",
-    TXT_NEW_MISSIONS:"Extra Missions",
-    TXT_BONUS_MISSIONS:"Extra Missions",
-    TXT_OK:"OK",
-    TXT_CANCEL:"Cancel",
-    TXT_YES:"Yes",
-    TXT_NO:"No",
-    TXT_GDI:"Aster",
-    TXT_NOD:"Forge",
-    TXT_CHOOSE_SIDE:"Choose a Faction",
-    TXT_OPTIONS:"Options",
-    TXT_GAME_CONTROLS:"Controls",
-    TXT_SOUND_CONTROLS:"Audio",
-    TXT_VISUAL_CONTROLS:"Video",
-    TXT_QUIT_MISSION:"Quit Mission",
-    TXT_RESUME_MISSION:"Resume Mission",
-    TXT_FAME:"Records",
-    TXT_SCENARIO_WON:"Victory",
-    TXT_SCENARIO_LOST:"Defeat",
-    TXT_TIBERIUM:"Crystal",
-    TXT_TIBERIUM_ON:"Crystal On",
-    TXT_TIBERIUM_OFF:"Crystal Off"
-  };
-  if(Object.prototype.hasOwnProperty.call(labels,name))return labels[name];
-  return name.slice(4).split("_").map(part=>({
+  const authored=authoredText(name);
+  if(authored!==null)return authored;
+  // Internal names such as TXT_MAP_GDISTAT0 embed the side names.
+  return name.slice(4).replace(/GDI/g,"ASTER").replace(/NOD/g,"FORGE").split("_").map(part=>({
     GDI:"Aster",NOD:"Forge",TIB:"Crystal",TIBERIUM:"Crystal",
     CNC:"World",CONQUER:"World",WESTWOOD:"Studio",EA:"World",
     CHOAM:"Market",JURASSIC:"Ancient"
@@ -107,7 +206,7 @@ function archive(tool,workdir,game,name,entries) {
   if(listing.error||listing.status!==0)throw Error("MIX list "+name+" failed");
   if(source!==dest)fs.renameSync(source,dest);
 }
-function build(outdir) {
+function build(outdir,options={}) {
   const requirements=JSON.parse(fs.readFileSync(REQUIREMENTS,"utf8"));
   const revision=cp.execFileSync("git",["rev-parse","HEAD"],{cwd:ROOT,encoding:"utf8"}).trim();
   const game=path.join(outdir,"game"),stage=path.join(outdir,"_m1stage");
@@ -116,14 +215,16 @@ function build(outdir) {
   const indexedColors=rgbPalette();
   const palette=encodePalette({colors:indexedColors.map(toHex)});
   const font=encodeFont();verifyFont(font);
-  const cps=encodeCPS();if(decodeCPS(cps).length!==64000)throw Error("CPS round-trip failed");
-  const pcx=encodePCX(640,400,5,indexedColors);verifyPCX(pcx);
+  const cps=encodeCPS(TITLE_BACKGROUND);if(decodeCPS(cps).length!==64000)throw Error("CPS round-trip failed");
+  const pcx=encodePCX(640,400,TITLE_BACKGROUND,indexedColors);verifyPCX(pcx);
   const mouse=shape(16,16,16,15),texture=shape(64,20,20,10);
   const strings=stringTable();
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
     "LED.FNT","VCR.FNT","GRAD6FNT.FNT","8FAT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"];
   const fonts=[...new Set(fontNames)];
-  for(const name of fonts)write(stage,name,font);
+  // Font colour per file (encode-font.js): see FONT_INK.
+  const inks=new Map([...new Set(Object.values(FONT_INK))].map(ink=>{const f=encodeFont(ink);verifyFont(f);return [ink,f];}));
+  for(const name of fonts)write(stage,name,FONT_INK[name]?inks.get(FONT_INK[name]):font);
   write(stage,"MOUSE.SHP",mouse);
   write(stage,"BTEXTURE.SHP",texture);
   write(stage,"PREPICK.CPS",cps);
@@ -132,9 +233,16 @@ function build(outdir) {
   write(stage,"CONQUER.ENG",strings);
   write(stage,"WCBOOT.DAT",Buffer.from("World-Conquer original boot placeholder\n"));
   const tool=nativeMixer();
-  archive(tool,stage,game,"CCLOCAL.MIX",fonts);
-  archive(tool,stage,game,"LOCAL.MIX",fonts);
-  archive(tool,stage,game,"CONQUER.MIX",["MOUSE.SHP","CONQUER.ENG"]);
+  // init.cpp:268 fetches MOUSE.SHP before CONQUER.MIX is registered; only
+  // the local font archives are searchable at that point.
+  archive(tool,stage,game,"CCLOCAL.MIX",[...fonts,"MOUSE.SHP"]);
+  archive(tool,stage,game,"LOCAL.MIX",[...fonts,"MOUSE.SHP"]);
+  // The engine loads game shapes with MFCD::Retrieve, which only searches
+  // registered MIX archives (common/mixfile.h), never loose files. Content
+  // generated by pack.js is therefore placed inside the cached CONQUER.MIX.
+  const extra=options.conquerExtra||{dir:null,files:[]};
+  for(const name of extra.files)fs.copyFileSync(path.join(extra.dir,name),path.join(stage,name));
+  archive(tool,stage,game,"CONQUER.MIX",[...new Set(["MOUSE.SHP","CONQUER.ENG",...extra.files])].sort());
   archive(tool,stage,game,"GENERAL.MIX",["BTEXTURE.SHP","PREPICK.CPS","TITLE.CPS","HTITLE.PCX"]);
   archive(tool,stage,game,"SOUNDS.MIX",["WCBOOT.DAT"]);
   write(game,"TEMPERAT.PAL",palette);
@@ -171,4 +279,4 @@ if(require.main===module){
     console.log("Created original boot pack: "+result.files.map(f=>f.path).join(", "));
   }catch(e){console.error(e.stack||e.message);process.exitCode=1;}
 }
-module.exports={build,stringTable,shape};
+module.exports={build,stringTable,shape,nativeMixer,originalText,hasAuthoredText};

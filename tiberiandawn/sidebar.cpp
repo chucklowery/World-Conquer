@@ -76,6 +76,9 @@
 
 #include "function.h"
 #include "settings.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /*
 **	Define "_RETRIEVE" if the palette morphing tables are part of the loaded data. If this
@@ -1256,6 +1259,18 @@ void SidebarClass::StripClass::Init_IO(int id)
     DownButton[ID].Y = Y + MAX_VISIBLE * ObjectHeight - 1;
 
     DownButton[ID].Set_Shape(Hires_Retrieve("STRIPDN.SHP"));
+#ifdef __EMSCRIPTEN__
+    // Test log: scroll button rectangles (640x400 game coordinates).
+    std::printf("[browser-event] sidebar-buttons strip=%d up=%d,%d down=%d,%d w=%d h=%d\n",
+                ID,
+                UpButton[ID].X,
+                UpButton[ID].Y,
+                DownButton[ID].X,
+                DownButton[ID].Y,
+                DownButton[ID].Width,
+                DownButton[ID].Height);
+    std::fflush(stdout);
+#endif
 
     for (int index = 0; index < MAX_VISIBLE; index++) {
         SelectClass& g = SelectButton[ID][index];
@@ -1481,6 +1496,24 @@ bool SidebarClass::StripClass::Add(RTTIType type, int id, bool via_capture)
         Buildables[BuildableCount].BuildableID = id;
         Buildables[BuildableCount].BuildableViaCapture = via_capture;
         BuildableCount++;
+#ifdef __EMSCRIPTEN__
+        // Test log: what each sidebar slot builds and where the strip is, so
+        // the browser test can click cameos with real input (640x400 game
+        // coordinates; slot i is drawn at Y + (i - TopIndex) * ObjectHeight).
+        if (type != RTTI_SPECIAL) {
+            TechnoTypeClass const* techno = Fetch_Techno_Type(type, id);
+            std::printf("[browser-event] sidebar-add strip=%d index=%d name=%s x=%d y=%d w=%d h=%d top=%d\n",
+                        ID,
+                        BuildableCount - 1,
+                        techno ? techno->IniName : "?",
+                        X + LeftEdgeOffset,
+                        Y,
+                        ObjectWidth,
+                        ObjectHeight,
+                        TopIndex);
+            std::fflush(stdout);
+        }
+#endif
         IsToRedraw = true;
 #ifdef OBSOLETE
         if (GameToPlay == GAME_NORMAL) {
@@ -1661,6 +1694,14 @@ bool SidebarClass::StripClass::AI(KeyNumType& input, int, int)
             }
         }
         redraw = true;
+#ifdef __EMSCRIPTEN__
+        if (!IsScrolling) {
+            // Test log: the strip finished scrolling; slot i is now drawn at
+            // Y + (i - TopIndex) * ObjectHeight.
+            std::printf("[browser-event] sidebar-scroll strip=%d top=%d\n", ID, TopIndex);
+            std::fflush(stdout);
+        }
+#endif
     }
 
     /*

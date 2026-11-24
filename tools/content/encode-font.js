@@ -45,7 +45,9 @@ const GLYPHS = {
  "!":["00100","00100","00100","00100","00100","00000","00100"],
  "?":["01110","10001","00001","00010","00100","00000","00100"]
 };
-function encodeFont() {
+// ink: the font colour index for glyph pixels (boot-pack.js FONT_INK).
+function encodeFont(ink=1) {
+  if(!Number.isInteger(ink)||ink<1||ink>15)throw Error("Font ink must be 1..15");
   const count=256,width=5,height=7;
   const offsetTable=20, widthBlock=offsetTable+count*2;
   const heightBlock=widthBlock+count, dataBlock=heightBlock+count*2;
@@ -70,7 +72,7 @@ function encodeFont() {
       for(let x=0;x<width;x++){
         if(rows[y][x]==="1"){
           const off=dataBlock+c*height*3+y*3+Math.floor(x/2);
-          out[off]|=1<<(x%2?4:0);
+          out[off]|=ink<<(x%2?4:0);
         }
       }
     }

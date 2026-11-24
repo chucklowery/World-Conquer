@@ -90,7 +90,7 @@ jobs:
     permissions:
       contents: write
     concurrency:
-      group: world-conquer-release-latest
+      group: world-conquer-release-latest-macos
       cancel-in-progress: false
     steps:
       - uses: actions/download-artifact@v4
@@ -98,6 +98,15 @@ jobs:
           pattern: vanilla-conquer-*-macos-*
           path: artifact
           merge-multiple: true
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          path: ci-scripts
+      - name: Remove superseded builds from the rolling release
+        if: ${{ github.ref == 'refs/heads/vanilla' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ci-scripts/.github/scripts/prune-release-assets.sh latest "${{ github.sha }}" artifact
       - uses: softprops/action-gh-release@v2
         with:
           name: Development Build

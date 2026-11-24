@@ -122,8 +122,8 @@ by the **build** jobs.
 
 ## 5. Workflow for each work package
 
-**Exception for M1 and M2:** M1 is one session; M2 is three sessions (M2a,
-M2b, M2c), each with one branch and one PR. Follow the milestone file's
+**Exception for M1 and M2:** M1 is one session; M2 is four sessions (M2a,
+M2b, M2c, M2d), each with one branch and one PR. Follow the milestone file's
 "Session contract" instead of steps 1 and 5 below.
 
 1. Branch from the latest `vanilla`: `git checkout -b m<N>/<wp-id>-<slug>`.

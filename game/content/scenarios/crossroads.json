@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "file": "SCM95EA",
+  "name": "Crossroads",
+  "description": "Compact 48x48 map. A rich central field framed by tree lines; each corner start has a small field of its own.",
+  "map": {"theater": "TEMPERATE", "x": 8, "y": 8, "width": 48, "height": 48},
+  "terrain": {"fill": 0, "cells": []},
+  "waypoints": [[13, 13], [50, 50], [50, 13], [13, 50], [31, 12], [31, 51]],
+  "fields": [
+    {"center": [31, 31], "radius": 4, "type": "TI1"},
+    {"center": [21, 14], "radius": 2, "type": "TI1"},
+    {"center": [42, 49], "radius": 2, "type": "TI1"},
+    {"center": [49, 21], "radius": 2, "type": "TI1"},
+    {"center": [14, 42], "radius": 2, "type": "TI1"}
+  ],
+  "treeLines": [
+    {"from": [22, 22], "to": [27, 22], "type": "T01", "step": 2},
+    {"from": [36, 22], "to": [41, 22], "type": "T01", "step": 2},
+    {"from": [22, 41], "to": [27, 41], "type": "T01", "step": 2},
+    {"from": [36, 41], "to": [41, 41], "type": "T01", "step": 2},
+    {"from": [22, 24], "to": [22, 28], "type": "T01", "step": 2},
+    {"from": [41, 24], "to": [41, 28], "type": "T01", "step": 2},
+    {"from": [22, 35], "to": [22, 39], "type": "T01", "step": 2},
+    {"from": [41, 35], "to": [41, 39], "type": "T01", "step": 2}
+  ],
+  "overlays": [],
+  "trees": [],
+  "units": []
+}

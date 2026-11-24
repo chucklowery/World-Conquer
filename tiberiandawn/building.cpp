@@ -95,6 +95,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 #include "ccini.h"
 
 /*
@@ -1127,6 +1130,14 @@ void BuildingClass::AI(void)
     **	all production control.
     */
     if (Factory && Factory->Has_Completed() && PlacementDelay.Expired()) {
+#ifdef __EMSCRIPTEN__
+        // Test log: read the type name while the produced object is still
+        // valid; after Exit_Object it may already be gone (FactoryClass::
+        // Completed must not dereference it).
+        TechnoClass const* produced = Factory->Get_Object();
+        char const* produced_name =
+            (produced && produced->What_Am_I() != RTTI_BUILDING) ? produced->Techno_Type_Class()->IniName : NULL;
+#endif
 
         switch (Exit_Object(Factory->Get_Object())) {
 
@@ -1146,6 +1157,12 @@ void BuildingClass::AI(void)
             break;
 
         case 2:
+#ifdef __EMSCRIPTEN__
+            if (produced_name) {
+                std::printf("[browser-event] produced name=%s house=%s\n", produced_name, House->Class->IniName);
+                std::fflush(stdout);
+            }
+#endif
             Factory->Completed();
             delete Factory;
             Factory = 0;
@@ -1509,6 +1526,14 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
 
         switch (res) {
         case RESULT_DESTROYED:
+#ifdef __EMSCRIPTEN__
+            // Test log: a building was destroyed (and by whom).
+            std::printf("[browser-event] destroyed name=%s house=%s by=%s\n",
+                        Class->IniName,
+                        House->Class->IniName,
+                        source ? source->House->Class->IniName : "none");
+            std::fflush(stdout);
+#endif
 
             /*
             **	Destroy all attached objects.
@@ -2891,6 +2916,13 @@ TARGET BuildingClass::Greatest_Threat(ThreatType threat) const
 void BuildingClass::Grand_Opening(bool captured)
 {
     Validate();
+#ifdef __EMSCRIPTEN__
+    // Suppress pre-existing map buildings and captured structures.
+    if (!ScenarioInit && !captured && PurchasePrice > 0) {
+        std::printf("[browser-event] placed name=%s house=%s\n", Class->IniName, House->Class->IniName);
+        std::fflush(stdout);
+    }
+#endif
 
     /*
     **	Adjust the owning house according to the power, drain, and Tiberium capacity that
@@ -4527,7 +4559,18 @@ int BuildingClass::Mission_Harvest(void)
                 int bail = techno->Offload_Tiberium_Bail();
 
                 if (bail) {
+#ifdef __EMSCRIPTEN__
+                    const int beforeUnload = House->Tiberium;
+#endif
                     House->Harvested(bail);
+#ifdef __EMSCRIPTEN__
+                    const int stored = House->Tiberium - beforeUnload;
+                    if (stored > 0) {
+                        std::printf(
+                            "[browser-event] harvest-unload house=%s value=%d\n", House->Class->IniName, stored);
+                        std::fflush(stdout);
+                    }
+#endif
                     if (techno->Tiberium_Load()) {
                         return (1);
                     }

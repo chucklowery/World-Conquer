@@ -107,24 +107,24 @@ Evidence: 2026-11-22 · `f43de4d5433f7fc6c768b45424540addde92070c` · [stock-eng
 
 ### M2: Minimum original data pack (4–8 weeks; overlaps M1)
 
-Agent instructions: [`docs/milestones/M2-original-data-pack.md`](milestones/M2-original-data-pack.md) (three sessions: M2a, M2b, M2c).
+Agent instructions: [`docs/milestones/M2-original-data-pack.md`](milestones/M2-original-data-pack.md) (four sessions: M2a, M2b, M2c, M2d).
 
 The highest-risk milestone. It turns the repository into a game we can ship.
 
-- [ ] From the wireframe catalog, define the **minimum slice**: palette,
+- [x] From the wireframe catalog, define the **minimum slice**: palette,
       fonts, mouse cursors, sidebar/radar/tab art, one theater (templates and
       terrain objects), one resource overlay, about 6 structures (yard, power,
       refinery, barracks, factory, defense), about 4 units (harvester, rifle
       infantry, light vehicle, heavy vehicle), projectiles, explosions and
       smudges. Placeholder (wireframe) art is acceptable.
-- [ ] CI builds every required MIX archive from source (`tools/content`,
+- [x] CI builds every required MIX archive from source (`tools/content`,
       `tools/mixtool`); generated archives are artifacts, not commits.
-- [ ] Write original rules and scenario INI from scratch; retarget the R04
+- [x] Write original rules and scenario INI from scratch; retarget the R04
       map pipeline to emit scenario INI and map data.
-- [ ] Add a **missing-asset detector**: the engine logs every failed file and
+- [x] Add a **missing-asset detector**: the engine logs every failed file and
       shape lookup in a debug build, and CI fails if any occur during a
       scripted skirmish.
-- [ ] Map the R05 Aster/Forge art onto the engine slots it replaces.
+- [x] Map the R05 Aster/Forge art onto the engine slots it replaces.
 
 **Exit gate:** the unmodified engine plays a full skirmish start (base,
 harvester, production) on **100% original data**, with zero missing-asset
@@ -132,22 +132,37 @@ lookups, built entirely by CI. The map, sidebar and radar render; selection,
 movement, scrolling, building and harvesting respond; and the page never
 stalls for more than 1 s.
 
+Evidence: 2026-11-23 · `58d86a51e71f42b199e8a1333211990d3099a4a3` · [stock-scenario CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45167410607) · headless Chromium (Playwright 1.56.1) · Skirmish match on 100% original data (pack built in CI: 66,994,806 bytes, 2,031,885 gzip): MCV deployed; placed power plant, refinery, barracks and vehicle factory; harvest +25 credits; produced rifle infantry and a light vehicle; box-select move, force-fire, keyboard and edge scrolling; ran 2 more minutes; zero required or unclassified misses (149 optional probes, each documented); no stall over the 1 s limit (0 ms in three local runs); frame p95 16.7 ms; heap flat at 99,876,864 bytes; match start in about 2 s.
+
 ### UI track: command interface (parallel with M2–M5)
 
 Agent instructions: [`docs/milestones/UI-command-interface.md`](milestones/UI-command-interface.md)
 (six sessions, UI-A to UI-F). The engine's own sidebar, radar, cursors and
-dialogs are restyled with original art modeled on the late-90s command-bar
-layout. UI-A (design spec) can start now; UI-B onward needs M2c.
+menus are restyled with original art in a late-90s command-bar aesthetic.
+UI-A (design spec) can start after M1; UI-B onward requires the M2 exit
+gate evidenced on `vanilla` and the preceding UI session merged.
 
 ### M3: First playable skirmish (2–4 weeks)
 
-- [ ] Two factions (Aster and Forge) as engine houses with distinct rosters
-      defined in INI.
-- [ ] The engine AI builds, harvests and attacks on the original data.
-- [ ] Two or three original skirmish maps; win/loss screens; restart.
+Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
+
+- [x] Two factions (Aster and Forge) as engine houses with distinct rosters.
+      The rosters come from the engine's type tables (`Ownable`), not INI;
+      every object has an authored original name.
+- [x] The engine AI builds, harvests and attacks on the original data
+      (`USE_RA_AI` computer player; measured by the `ai-match` CI job).
+- [x] Two or three original skirmish maps; win/loss screens; restart.
+      Foundry Test Range, Crossroads and Long Valley; the end-of-match
+      score screen and restart are automated for a loss. The win path uses
+      the same screen but is not yet automated.
 - [ ] Publish to GitHub Pages from `vanilla` (replacing the tactical alpha).
-- [ ] A short, scripted Chromium acceptance test: start a match, place a
-      structure, produce a unit, and see credits change.
+      Set up: play view (`vanillatd.html?play`), `package-play.js` and
+      `publish-play.yml`; live once merged and Pages deploys from Actions.
+- [x] A short, scripted Chromium acceptance test: start a match, place a
+      structure, produce a unit, and see credits change (`stock-scenario`,
+      M2).
+
+Progress: 2026-11-23 · `8ccae03ee5039cc87e698bc2101dc3bdf9245b09` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45222236369) · headless Chromium (Playwright 1.56.1) · on all three maps the computer player built 9-11 structures, made 131-224 harvest deliveries and 9-13 kills, and destroyed the idle player's base; the score screen drew and the game restarted from the skirmish dialog; zero required or unclassified misses. Open for the exit gate: publishing (owner decision) and an automated win.
 
 **Exit gate:** a person with only a link can play a winnable and losable
 match against the AI in the browser.

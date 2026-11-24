@@ -52,6 +52,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef __EMSCRIPTEN__
+#include <cstdio>
+#endif
 
 /***********************************************************************************************
  * FactoryClass::Validate -- validates factory pointer													  *
@@ -284,6 +287,15 @@ void FactoryClass::AI(void)
                     Set_Rate(0);
                     House->Spend_Money(Balance);
                     Balance = 0;
+#ifdef __EMSCRIPTEN__
+                    // Test log: production finished (a building now waits to be placed).
+                    if (Object && House->IsHuman) {
+                        std::printf("[browser-event] ready name=%s house=%s\n",
+                                    Object->Techno_Type_Class()->IniName,
+                                    House->Class->IniName);
+                        std::fflush(stdout);
+                    }
+#endif
                 }
             }
         }

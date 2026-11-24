@@ -2,6 +2,11 @@ name: Browser VanillaTD engine compile
 
 on:
   workflow_dispatch:
+    inputs:
+      legacy_soak:
+        description: Run the frozen legacy demo soak (5 minutes per map) in wasm-vanillatd
+        type: boolean
+        default: true
   push:
     branches: [vanilla]
     paths:
@@ -75,7 +80,20 @@ jobs:
           cmake -S . -B build/native -DWC_ASSET_AUDIT=OFF
           cmake --build build/native --target common --parallel 2
           node tools/content/test-boot-pack.js
-          node tools/content/boot-pack.js build build/browser-engine/data
+          node tools/content/test-pack.js
+          node tools/content/test-iconset.js
+          node tools/content/test-wsa.js
+          node tools/content/test-scenario.js
+          node -e 'require("fs").writeFileSync("build/native/test-m2.icn",require("./tools/content/encode-iconset.js").encodeIconset({icons:[Array(576).fill(42)]}))'
+          g++ -std=c++11 -DTRUE_FALSE_DEFINED -include cstdint -I. -Icommon -Itiberiandawn tests/test-m2-iconset.cpp tiberiandawn/iconset.cpp build/native/common/libcommon.a -lpthread -ldl -o build/native/test-m2-iconset
+          build/native/test-m2-iconset build/native/test-m2.icn
+          node tools/content/pack.js build build/browser-engine/data
+          node tools/content/test-theater.js build/browser-engine/data/game
+          # The engine reads its palette tables from data (display.cpp:129
+          # _RETRIEVE). Check the generated tables against its own builders.
+          node -e 'const fs=require("fs"),f=require("./tools/content/fading.js");const d="build/native/m2-fading";fs.mkdirSync(d,{recursive:true});const p=fs.readFileSync("build/browser-engine/data/game/TEMPERAT.PAL");fs.writeFileSync(d+"/TEMPERAT.PAL",p);for(const [n,b] of Object.entries(f.tables(p,"T")))fs.writeFileSync(d+"/"+n,b)'
+          g++ -std=c++11 -Icommon tests/test-m2-fading.cpp common/fading.cpp -o build/native/test-m2-fading
+          build/native/test-m2-fading build/native/m2-fading
           g++ -std=c++11 -Icommon tests/test-m1-boot-data.cpp common/lcw.cpp -o build/native/test-m1-boot-data
           build/native/test-m1-boot-data \
             build/browser-engine/data/game/8POINT.FNT \
@@ -215,13 +233,15 @@ jobs:
       # thresholds, and retained raw JSON for three independent SHA-matched runs.
       - name: Test actual engine in headless Chromium
         env:
-          BROWSER_CI_FAST: ${{ github.event_name == 'pull_request' && '1' || '0' }}
-          R20_WASM_SOAK_EPOCHS: ${{ github.event_name == 'workflow_dispatch' && '48' || '0' }}
+          # Manual runs soak the frozen legacy demos unless legacy_soak is off
+          # (then they run in the fast mode used on pull requests).
+          BROWSER_CI_FAST: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && !inputs.legacy_soak)) && '1' || '0' }}
+          R20_WASM_SOAK_EPOCHS: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '48' || '0' }}
           # Manual candidate runs require at least 5 real minutes *per map*;
           # vanilla-push runs are regression-only, not soak evidence.
-          R20_WASM_SOAK_SECONDS_PER_MAP: ${{ github.event_name == 'workflow_dispatch' && '300' || '0' }}
-          R20_WASM_MAX_TICK_P95_US: ${{ github.event_name == 'workflow_dispatch' && '50000' || '0' }}
-          R20_WASM_MAX_HEAP_DELTA_BYTES: ${{ github.event_name == 'workflow_dispatch' && '16777216' || '0' }}
+          R20_WASM_SOAK_SECONDS_PER_MAP: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '300' || '0' }}
+          R20_WASM_MAX_TICK_P95_US: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '50000' || '0' }}
+          R20_WASM_MAX_HEAP_DELTA_BYTES: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '16777216' || '0' }}
         run: |
           node browser/engine/check-r01-ui.js
           node browser/engine/check-runtime.js
@@ -253,11 +273,11 @@ jobs:
             build/browser-engine/mission-pack.js
             build/browser-engine/missions/**
           if-no-files-found: error
-      - name: Upload original M1 boot pack
+      - name: Upload original M2 data pack
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: world-conquer-boot-pack
+          name: world-conquer-data-pack
           path: |
             build/browser-engine/data/**
           if-no-files-found: ignore
@@ -310,10 +330,10 @@ jobs:
         with:
           name: vanillatd-engine-wasm
           path: build/browser-engine
-      - name: Retrieve original boot pack
+      - name: Retrieve original data pack
         uses: actions/download-artifact@v4
         with:
-          name: world-conquer-boot-pack
+          name: world-conquer-data-pack
           path: build/browser-engine/data
       - name: Install headless Chromium
         run: |
@@ -332,3 +352,95 @@ jobs:
             build/browser-engine/stock-engine-metrics.json
             build/browser-engine/stock-engine-audit.log
           if-no-files-found: ignore
+
+  stock-scenario:
+    name: stock-scenario
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    needs: wasm-vanillatd
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve built stock engine
+        uses: actions/download-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: build/browser-engine
+      - name: Retrieve original data pack
+        uses: actions/download-artifact@v4
+        with:
+          name: world-conquer-data-pack
+          path: build/browser-engine/data
+      - name: Install headless Chromium
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install chromium
+          npm exec --prefix browser/engine -- playwright install-deps chromium
+      # Strict: a full skirmish on original data with real input only --
+      # deploy, build, harvest, train, command, scroll, 2 minutes of play --
+      # with zero required or unclassified misses, no fatal or page error and
+      # no stall over 1s.
+      - name: Play a skirmish match on original data (strict)
+        env:
+          # The public play view (published by publish-play.yml).
+          STOCK_SCENARIO_PAGE: vanillatd.html?play
+        run: node browser/engine/check-stock-scenario.js
+      - name: Publish stock-scenario audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-scenario-audit
+          path: |
+            build/browser-engine/stock-scenario-audit.json
+            build/browser-engine/stock-scenario-metrics.json
+            build/browser-engine/stock-scenario-log.txt
+            build/browser-engine/stock-scenario-*.png
+          if-no-files-found: warn
+
+  # M3: a full match against the engine's computer player. The human player
+  # deploys and then idles; the computer must build a base, harvest and
+  # attack until it wins, the end-of-match score screen must draw, and the
+  # game must restart from the skirmish dialog. One map on pull requests
+  # (Crossroads, the smallest), all maps on vanilla and manual runs.
+  ai-match:
+    name: ai-match (map row ${{ matrix.row }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    needs: wasm-vanillatd
+    strategy:
+      fail-fast: false
+      matrix:
+        row: ${{ fromJSON(github.event_name == 'pull_request' && '[1]' || '[0, 1, 2]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve built stock engine
+        uses: actions/download-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: build/browser-engine
+      - name: Retrieve original data pack
+        uses: actions/download-artifact@v4
+        with:
+          name: world-conquer-data-pack
+          path: build/browser-engine/data
+      - name: Install headless Chromium
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install chromium
+          npm exec --prefix browser/engine -- playwright install-deps chromium
+      - name: Play to the end against the computer player (strict)
+        env:
+          STOCK_SCENARIO_MAP_ROW: ${{ matrix.row }}
+          STOCK_SCENARIO_SKIP_GAMEPLAY: '1'
+          STOCK_SCENARIO_OBSERVE_MINUTES: '35'
+          STOCK_SCENARIO_REQUIRE_END: '1'
+        run: node browser/engine/check-stock-scenario.js
+      - name: Publish ai-match audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-match-audit-row-${{ matrix.row }}
+          path: |
+            build/browser-engine/stock-scenario-audit.json
+            build/browser-engine/stock-scenario-log.txt
+            build/browser-engine/stock-scenario-*.png
+          if-no-files-found: warn

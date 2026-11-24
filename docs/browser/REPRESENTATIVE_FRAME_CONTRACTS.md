@@ -73,7 +73,7 @@ These are source-audited rendering rules for the [representative roster](../../g
 **Source evidence:**
 
 - [`tiberiandawn/udata.cpp:264`](../../tiberiandawn/udata.cpp#L264) — `static UnitTypeClass const UnitMTank(UNIT_MTANK`
-- [`tiberiandawn/unit.cpp:2214`](../../tiberiandawn/unit.cpp#L2214) — `shapenum = TechnoClass::BodyShape[tfacing] + 32;`
+- [`tiberiandawn/unit.cpp:2226`](../../tiberiandawn/unit.cpp#L2226) — `shapenum = TechnoClass::BodyShape[tfacing] + 32;`
 
 **Frame indexing rules:**
 
@@ -119,7 +119,7 @@ These are source-audited rendering rules for the [representative roster](../../g
 **Source evidence:**
 
 - [`tiberiandawn/bdata.cpp:534`](../../tiberiandawn/bdata.cpp#L534) — `ClassConst(STRUCT_CONST`
-- [`tiberiandawn/building.cpp:513`](../../tiberiandawn/building.cpp#L513) — `shapefile = Class->Get_Buildup_Data();`
+- [`tiberiandawn/building.cpp:516`](../../tiberiandawn/building.cpp#L516) — `shapefile = Class->Get_Buildup_Data();`
 - [`tiberiandawn/bdata.cpp:3839`](../../tiberiandawn/bdata.cpp#L3839) — `sprintf(buffer, "%sMAKE", building.IniName);`
 - [`tiberiandawn/bdata.cpp:3792`](../../tiberiandawn/bdata.cpp#L3792) — `{STRUCT_CONST, BSTATE_ACTIVE, 4, 20, 3}`
 
