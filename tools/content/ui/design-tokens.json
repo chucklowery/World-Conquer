@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "status": "design-targets-not-engine-indices",
+  "background": {
+    "app": "#090A0D",
+    "surface1": "#111317",
+    "surface2": "#1A1E24",
+    "surface3": "#232932"
+  },
+  "border": {
+    "subtle": "#2A3038",
+    "default": "#39424D",
+    "strong": "#4B5561"
+  },
+  "text": {
+    "primary": "#D7DEE7",
+    "secondary": "#A6B0BB",
+    "muted": "#8B96A3",
+    "disabled": "#5B636C",
+    "button": "#F5F7FA"
+  },
+  "accent": {
+    "primary": "#C2362B",
+    "hover": "#E5483B",
+    "deep": "#8A1F1D",
+    "cyan": "#3FC6D5",
+    "ice": "#77D7E3"
+  },
+  "statusColors": {
+    "success": "#8BBF3D",
+    "warning": "#D08B2C",
+    "danger": "#D94A3F"
+  },
+  "atmosphere": {
+    "infrared": "#2A0F12",
+    "blueSmoke": "#0E1820"
+  },
+  "chromeAreaTargets": {
+    "deepNeutral": 70,
+    "raisedNeutral": 15,
+    "textBorder": 8,
+    "crimson": 5,
+    "utility": 2
+  },
+  "strokePixels": [
+    1,
+    2
+  ],
+  "grainContrastPercent": [
+    2,
+    4
+  ],
+  "minimumTextContrast": 4.5,
+  "minimumMeaningfulNonTextContrast": 3
+}
