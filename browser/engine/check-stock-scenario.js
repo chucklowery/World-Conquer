@@ -172,6 +172,11 @@ async function playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas})
     const [yx,yy,yardCell]=await centreOn("h","FACT");
     await clickCameo(name,"Place "+name);           // enters placement mode
     await page.waitForTimeout(500);
+    if(evidence){
+      // UI-D: allowed (first candidate cell) and blocked (the yard) grids.
+      const [cx,cy]=placementOffsets(yardCell).find(([dx,dy])=>{const x=yx+dx*24,y=yy+dy*24;return x>=12&&x<=468&&y>=28&&y<=388;});
+      audit.uiPlacement=await ui.placement(page,{canvas,screenshot,candidate:[yx+cx*24,yy+cy*24],blocked:[yx,yy]});
+    }
     let tried=0;
     for(const [cx,cy] of placementOffsets(yardCell)){
       const x=yx+cx*24,y=yy+cy*24;
@@ -405,6 +410,10 @@ async function main(){
     // UI-B: generated command-bar chrome at the spec coordinates, and the
     // REPAIR / SELL / MAP buttons driving the engine's own modes.
     audit.uiChrome=await require("./ui-chrome-probes.js").run(page,{canvas,clickGame,screenshot,log:l=>console.log(l)});
+    // UI-D: engine-drawn cursor over open ground (select arrow, hotspot 0,0).
+    {const ui=require("./ui-chrome-probes.js");
+     audit.uiCursor={ground:await ui.cursorAt(page,{canvas,screenshot,at:[120,300],name:"ground"})};
+     if(audit.uiCursor.ground.white<5||audit.uiCursor.ground.outline<5)throw Error("Select arrow not drawn: "+JSON.stringify(audit.uiCursor));}
     // UI-C: hovering a cameo shows the engine's tooltip in the new font.
     audit.uiTooltip=await require("./ui-chrome-probes.js").tooltip(page,{canvas,screenshot,at:[532,206]});
     if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});

@@ -9367,12 +9367,13 @@
    "referencedAt": [
     "tiberiandawn/object.cpp:1078"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 24,
     "height": 24,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 16
+    "frames": 3,
+    "minFrames": 3,
+    "source": "defines.h:1733-1740; building.cpp:689 (frame 2 repair wrench)"
    }
   },
   {
@@ -10182,12 +10183,13 @@
     "tiberiandawn/display.cpp:215",
     "tiberiandawn/cell.cpp:1120"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 24,
     "height": 24,
     "frames": 3,
-    "framesUsedAtMost": 3
+    "framesUsedAtMost": 3,
+    "source": "cell.cpp:1120-1122 (icon 0 allowed, 2 blocked)"
    }
   },
   {
