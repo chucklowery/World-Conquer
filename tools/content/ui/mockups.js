@@ -4,6 +4,8 @@ const fs=require("node:fs");
 const path=require("node:path");
 const {colors}=require("./palette.json");
 const c=k=>colors[k].rgb;
+// Art origins (not hit targets): sidebar.cpp:214–220,1155,1251–1261.
+const layout=Object.freeze({sidebarX:480,powerY:176,powerWidth:16,iconX:[500,570],iconY:182,iconWidth:64,iconHeight:48,scrollY:373});
 const rect=(x,y,w,h,fill,stroke="none")=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}"/>`;
 const line=(x,y,X,Y,stroke)=>`<path d="M${x} ${y}L${X} ${Y}" stroke="${stroke}" fill="none"/>`;
 const text=(x,y,s,fill=c("white"),size=10)=>`<text x="${x}" y="${y}" fill="${fill}" font-family="monospace" font-size="${size}">${s}</text>`;
@@ -26,17 +28,17 @@ function match(faction,scale=1){
     if(icon==="sell")s+=text(x+19,173,"$",c("white"),13);
     if(icon==="map")s+=rect(x+17,164,12,10,"none",c("white"))+line(x+23,164,x+23,174,c("white"))+line(x+17,169,x+29,169,c("white"));
   }
-  s+=rect(481,176,14,223,c("shadow"),c("bevel"));
+  s+=rect(layout.sidebarX,layout.powerY,layout.powerWidth,400-layout.powerY,c("shadow"),c("bevel"));
   for(let y=390;y>=250;y-=8)s+=rect(484,y,8,5,c("normal"));
   s+=`<path d="M481 268l8 4-8 4z" fill="${c("white")}"/>`;
-  for(const x of [497,567]){
+  for(const x of layout.iconX){
     for(let i=0;i<4;i++){
-      const y=182+i*48;
-      s+=plate(x,y,64,48)+rect(x+5,y+5,54,38,c("shadow"));
+      const y=layout.iconY+i*layout.iconHeight;
+      s+=plate(x,y,layout.iconWidth,layout.iconHeight)+rect(x+5,y+5,54,38,c("shadow"));
       if(i<3)s+=`<path d="M${x+12} ${y+30}l10 -15 24 0 8 15z" fill="${c("steel")}" stroke="${c("edge")}"/>`;
     }
     for(const [dx,sign] of [[0,1],[32,-1]]){
-      s+=plate(x+dx,373,32,24)+`<path d="M${x+dx+8} ${385+sign*4}l8 ${-sign*8} 8 ${sign*8}" fill="none" stroke="${c("white")}" stroke-width="2"/>`;
+      s+=plate(x+dx,layout.scrollY,32,24)+`<path d="M${x+dx+8} ${385+sign*4}l8 ${-sign*8} 8 ${sign*8}" fill="none" stroke="${c("white")}" stroke-width="2"/>`;
     }
   }
   s+=text(10,31,"COMMS: Construction complete.",c("white"));
@@ -55,4 +57,4 @@ function generate(dir){
     fs.writeFileSync(path.join(dir,`${name}-${scale}x.svg`),name==="menu"?menu(scale):match(name,scale));
 }
 if(require.main===module)generate(process.argv[2]||path.resolve("build/ui-mockups"));
-module.exports={plate,match,menu,generate};
+module.exports={layout,plate,match,menu,generate};
