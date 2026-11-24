@@ -1,16 +1,18 @@
-# Agent instructions for M1 and M2
+# Agent instructions for M1, M2 and UI
 
 This folder holds self-contained instructions that let a coding agent, for
 example ChatGPT/Codex, complete roadmap milestones **M1** (stock engine in
-the browser) and **M2** (minimum original data pack) without any earlier
-conversation. M1 was one session. M2 is four sessions, each about the size
-of M1 (roughly 6–8 hours, one branch, one PR).
+the browser), **M2** (minimum original data pack), and the **UI** command
+interface track without any earlier conversation. M1 was one session. M2 is
+four sessions, each about the size of M1 (roughly 6–8 hours, one branch,
+one PR). UI has six sessions, UI-A to UI-F.
 
 | File | What it is |
 | --- | --- |
 | [`AGENT_GUIDE.md`](AGENT_GUIDE.md) | Shared context, hard rules, build/test commands, code map, PR and report format. **Include it in every session.** |
 | [`M1-engine-in-browser.md`](M1-engine-in-browser.md) | M1 as a single-session plan (Phases 0–9) and its exit gate |
 | [`M2-original-data-pack.md`](M2-original-data-pack.md) | M2 as four sessions (M2a: Phases 0–3, M2b: 4–6, M2c: 7–8, M2d: 9–10), with session gates and the exit gate |
+| [`UI-command-interface.md`](UI-command-interface.md) | UI design brief and six sessions (UI-A to UI-F) with gates and prompts; UI-A can start after M1, UI-B onward needs the evidenced M2 exit gate and preceding UI sessions merged. |
 
 ## Order of work
 
@@ -21,10 +23,15 @@ of M1 (roughly 6–8 hours, one branch, one PR).
 | 3 | **M2b**: theater, roster frame contracts, scenario generator | 4–6 | **Merged** ([PR #58](https://github.com/chucklowery/World-Conquer/pull/58)); scenario INI/BIN host test and 8 of 10 frame contracts left partial | — |
 | 4 | **M2c**: visible battlefield (terrain and units draw, MCV deploys, sidebar with cameos, strict to match start) | 7–8 | **In progress** ([PR #59](https://github.com/chucklowery/World-Conquer/pull/59)) | M2b merged |
 | 5 | **M2d**: end-to-end match and M2 evidence (M2 exit gate) | 9–10 | — | M2c merged |
+| Parallel | **UI-A**: slot contracts, palette and mockups | 0–4 | Ready | M1 merged; can run alongside M2 |
+| UI track | **UI-B → UI-E**: command bar, build strip, cursors and menus | Per UI plan | Dependent | M2 exit gate evidenced on `vanilla` and preceding UI session merged |
+| Optional | **UI-F**: taller sidebar and faction skins | Per UI plan | Approval required | UI-E merged and written owner approval |
 
-Run them strictly in order and **review and merge each PR before starting
-the next session**. Each session's gate is in the Sessions table of the M2
-file. The merge between sessions is the checkpoint for catching problems
+Run M2a → M2b → M2c → M2d in order, and UI-A → UI-B → UI-C → UI-D →
+UI-E in order (UI-F is optional and approval-gated). UI-A may overlap M2;
+UI-B onward requires the evidenced M2 exit gate on `vanilla`.
+**Review and merge each PR before starting the next session in its own
+track.** Each session's gate is in its respective milestone plan. The merge between sessions is the checkpoint for catching problems
 (for example, rebuild locally and look at the screenshots) before later work
 builds on them.
 

@@ -134,6 +134,14 @@ stalls for more than 1 s.
 
 Evidence: 2026-11-23 · `58d86a51e71f42b199e8a1333211990d3099a4a3` · [stock-scenario CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45167410607) · headless Chromium (Playwright 1.56.1) · Skirmish match on 100% original data (pack built in CI: 66,994,806 bytes, 2,031,885 gzip): MCV deployed; placed power plant, refinery, barracks and vehicle factory; harvest +25 credits; produced rifle infantry and a light vehicle; box-select move, force-fire, keyboard and edge scrolling; ran 2 more minutes; zero required or unclassified misses (149 optional probes, each documented); no stall over the 1 s limit (0 ms in three local runs); frame p95 16.7 ms; heap flat at 99,876,864 bytes; match start in about 2 s.
 
+### UI track: command interface (parallel with M2–M5)
+
+Agent instructions: [`docs/milestones/UI-command-interface.md`](milestones/UI-command-interface.md)
+(six sessions, UI-A to UI-F). The engine's own sidebar, radar, cursors and
+menus are restyled with original art in a late-90s command-bar aesthetic.
+UI-A (design spec) can start after M1; UI-B onward requires the M2 exit
+gate evidenced on `vanilla` and the preceding UI session merged.
+
 ### M3: First playable skirmish (2–4 weeks)
 
 Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
