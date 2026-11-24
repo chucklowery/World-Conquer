@@ -3,7 +3,8 @@
 const fs=require("node:fs");
 const path=require("node:path");
 const t=require("./design-tokens.json");
-const colors={shadow:t.background.app,plate:t.background.surface2,steel:t.background.surface3,bevel:t.border.default,edge:t.border.strong,highlight:t.text.secondary,teal:t.accent.cyan,amber:t.statusColors.warning,normal:t.statusColors.success,white:t.text.primary,red:t.accent.hover,deep:t.accent.deep,ice:t.accent.ice};
+const p=require("./palette.json");
+const colors={shadow:t.background.app,plate:t.background.surface2,steel:t.background.surface3,bevel:t.border.default,edge:t.border.strong,highlight:t.text.secondary,teal:t.accent.cyan,amber:t.statusColors.warning,normal:p.colors.normal.rgb,white:t.text.primary,red:t.accent.hover,deep:t.accent.deep,ice:t.accent.ice};
 const c=k=>colors[k];
 // Art origins (not hit targets): sidebar.cpp:214–220,1155,1251–1261.
 const layout=Object.freeze({sidebarX:480,powerY:176,powerWidth:16,iconX:[500,570],iconY:182,iconWidth:64,iconHeight:48,scrollY:373});
@@ -18,7 +19,9 @@ function svg(body,scale){
   if(![1,2].includes(scale))throw Error("scale must be 1 or 2");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${640*scale}" height="${400*scale}" viewBox="0 0 640 400" shape-rendering="crispEdges">${body}</svg>\n`;
 }
-function match(faction,scale=1){
+function match(faction,scale=1,power="normal"){
+  if(!Object.hasOwn(p.states,power))throw Error("unknown power state");
+  const state=p.states[power], ink=p.colors[state.color].rgb;
   if(!["aster","forge"].includes(faction))throw Error("unknown faction");
   const glow=c(faction==="aster"?"teal":"red");
   let s=rect(0,0,640,400,"#263b31")+rect(0,0,640,16,c("shadow"))+plate(0,0,160,16)+text(12,12,"OPTIONS")+plate(480,0,160,16)+text(535,12,"01250",c(faction==="aster"?"ice":"white"))+plate(480,15,160,140)+rect(496,22,128,128,c("shadow"),glow);
@@ -32,7 +35,11 @@ function match(faction,scale=1){
     if(icon==="map")s+=rect(x+17,164,12,10,"none",c("white"))+line(x+23,164,x+23,174,c("white"))+line(x+17,169,x+29,169,c("white"));
   }
   s+=rect(layout.sidebarX,layout.powerY,layout.powerWidth,400-layout.powerY,c("shadow"),c("bevel"));
-  for(let y=390;y>=250;y-=8)s+=rect(484,y,8,5,c("normal"));
+  for(let y=390;y>=250;y-=8){
+    s+=rect(484,y,8,5,ink);
+    if(state.pattern!=="solid")s+=line(484,y+4,488,y,c("shadow"))+line(488,y+4,492,y,c("shadow"));
+    if(state.pattern==="cross")s+=line(484,y,488,y+4,c("white"))+line(488,y,492,y+4,c("white"));
+  }
   s+=`<path d="M481 268l8 4-8 4z" fill="${c("white")}"/>`;
   for(const x of layout.iconX){
     for(let i=0;i<4;i++){
