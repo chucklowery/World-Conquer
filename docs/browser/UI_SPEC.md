@@ -261,10 +261,10 @@ Palette proposal is not an allocation in the shipped palette. Verify all consume
 - Power: power.cpp:132–146 gives x=480, y=176, width=16, height=224. PWRBAR two pieces need coverage of the full gauge; the current provisional 16×8 frames are not proof of that coverage.
 - Button enum: common/shapebtn.h:54–56 defines up=0, down=1, disabled=2. sidebar.cpp:347–359 positions repair at (484,160), sell (537,160), map (590,160); repair/sell reflect toggle state. Current 64×18 placeholders overlap the next button origin; exact replacement widths require validation.
 - Strip positions: sidebar.cpp:214–220 gives spacing=(160−16−140)/3=1, column origins (497,182), (567,182). sidebar.cpp:1155 adds 3 px to art draw X, so cameo artwork starts x=500/570; hit targets start x=497/567. Scroll buttons y=373, up x=500/570, down x=532/602 assuming generated 32 px width (1251–1261).
-- Clock: factory.h:117 defines STEP_COUNT=108; factory.cpp:626 and sidebar.cpp:2018–2025 draw stage+1 for incomplete production. Verify actual Completion implementation and any scaling before setting the frame count; the provisional 64-frame pack is not an exact contract. sidebar.cpp:1322–1323 identifies GREEN as ghost ink, LTGREY as target, intensity 180; _RETRIEVE loads TCLOCK.MRF (existing pack).
+- Clock: factory.h:117 defines STEP_COUNT=108; factory.cpp:626 and sidebar.cpp:2018–2025 draw stage+1 for incomplete production. Completion returns Fetch_Stage directly (factory.cpp:626–630); regular incomplete production requires frames 1–108, plus unavailable frame 0. Special-item stages still require verification. sidebar.cpp:1322–1323 identifies GREEN as ghost ink, LTGREY as target, intensity 180; _RETRIEVE loads TCLOCK.MRF (existing pack).
 - Pips: object.cpp:1078–1085 loads SELECT.SHP and Hires_Retrieve PIPS.SHP (localized variants). defines.h:1748–1758 enumerates 0 empty, 1 full, 2 primary, 3 ready, 4 holding, 5 engineer, 6 civilian, 7 commando. techno.cpp:4443–4489 uses 3-pixel cargo spacing; UI-C owns ready/holding, UI-D remaining pip artwork. Frame dimensions for labels versus cargo need verification.
 - Health and selection: techno.cpp:1011–1100 draws health by code, with BLACK outline and LTGREEN/YELLOW/RED thresholds 0x7F and 0x3F. Existing geometry must remain; segmented health geometry would require an approved engine change. SELECT.SHP loader does not establish that it draws selection brackets. Placement: cell.cpp:1120–1122 explicitly draws TRANS.ICN tiles 0 and 2; tile 1 is not referenced on that path.
-- Remap: pack.js:13–29 and placeholders.js:32–33 identify engine band 176–191, in addition to fixed 0–15 and cycling 32–38. R05 authoring remaps are distinct from the engine palette. Proposed indices 216–228 are not allocated until all art consumers and nearest-colour translations are audited. No changes to boot-colors.js or pack.js in UI-A.
+- Remap: pack.js:13–29 and placeholders.js:32–33 identify engine band 176–191, in addition to fixed 0–15 and cycling 32–38. R05 authoring remaps are distinct from the engine palette. Proposed indices 216–239 (excluding unused and protected entries) are not allocated until all art consumers and nearest-colour translations are audited. No changes to boot-colors.js or pack.js in UI-A.
 
 ### Cursor table (mouse.cpp:304–340)
 
@@ -306,3 +306,19 @@ Fields below reproduce the original engine table, not external media. Size is st
 | MOUSE_AIR_STRIKE | 88 | 8 | 2 | -1 | 15 | 12 |
 | MOUSE_DEMOLITIONS | 122 | 3 | 4 | 127 | 15 | 12 |
 | MOUSE_AREA_GUARD | 153 | 1 | 0 | 152 | 15 | 12 |
+
+## Minimum coverage and replacement blockers
+
+The following are code-derived minimum coverage constraints, not claims about historical asset dimensions. Generated placeholder dimensions are recorded separately in game/content/pack/requirements.json. Do not copy provisional sizes blindly.
+
+| Asset | Minimum reference coverage | Replacement decision |
+|---|---|---|
+| HCLOCK.SHP | 109 frames (0 unavailable, 1–108 incomplete factory stages 0–107). factory.cpp:626–630 returns Fetch_Stage directly; factory.h:117 defines 108; sidebar.cpp:2002–2025 skips clock on completion. | Current 64-frame placeholder insufficient for full progress. Match 64×48 cameo footprint; UI-C verify special-item stages and ghost ink. |
+| HPWRBAR.SHP | Frames 0–7; upper and lower frame origins separated by 100 px (power.cpp:208–209,255–267). Gauge 16×224 at (480,176). | For full coverage, upper piece must span at least 100 px and lower at least 124 px, subject to SHP origin/clipping validation. Current 16×8 provisional placeholder cannot cover gauge. UI-B verify header and pixel probes. |
+| HPOWER.SHP | Frame 0 at PowX,bottom-drain_height-4 (power.cpp:277); 16 px gauge width. | Existing 16×240 placeholder is not a verified pointer contract; verify marker bounds and clipping. |
+| HSTRIPUP/DN.SHP | Nominal 32×24, 3 button states (sidebar.h:226–227, common/shapebtn.h:54–56). | Confirm actual header sizes and no overlap at x=500/532 and 570/602, y=373. |
+| HSIDE1/2.SHP | Frame 0 drawn at y=158/276 (sidebar.cpp:805–806). | Existing 160×120 provisional pieces overlap by 2 px; verify coverage at seams and bottom. |
+| MOUSE.SHP | At least 178 frames (mouse.cpp:331 start 154,count 24; AI:201–216 uses base+Frame, not Frame/4). | Small cursor animation also uses full Frame during AI, though size transitions use Frame/4 (107–113). Preserve both paths; hotspot x=29/y=23 requires verification of actual cursor frame dimensions. |
+| HRADAR house variants | 42 minimum, frame 0 absent, 22 active, 41 offline; radar.cpp:341–350 selects house suffix or JP. | Current pack only declares HRADAR.GDI. Other suffixes must be traced and covered for supported houses, without changing selection code. |
+
+Power state thresholds: normal when Drain <= Power; low when Drain > Power; critical when Drain > 2×Power (power.cpp:241–249). The height itself is independent of these status thresholds; patterns must remain recognizable at small fill heights. Low-resolution power is code-drawn (power.cpp:210–229,269); do not claim patterned low-res art without an approved engine change.
