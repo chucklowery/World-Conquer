@@ -8,7 +8,7 @@ Original geometric design from the written milestone brief. No external media. T
 |---|---|---|
 | SIDE1 / SIDE2 | sidebar.cpp:229–232,805–806 | frame 0, origins (480,158) and (480,276) at 640×400 |
 | TABS | tab.cpp:111–162,255–267 | 0 normal, 1 highlighted; width 160, height 16 at high resolution |
-| RADAR | radar.cpp:125–145,341–350; radar.h:135–136 | housing 160×140; inset 128×128 at offset (16,7); activated frame 22, 41-frame animation limit; exact per-frame meaning unverified |
+| RADAR | radar.cpp:125–145,341–350; radar.h:135–136 | housing 160×140; inset 128×128 at offset (16,7); activated frame 22, last frame index 41 (42 minimum); exact per-frame meaning unverified |
 | REPAIR / SELL / MAP | sidebar.cpp:278–289,350–359; shapebtn.cpp:130–145 | pressed/up/disabled or reflected toggle state; exact numeric enum and dimensions unverified |
 | POWER / HPOWER | power.cpp:148,277–279 | frame 0 drain pointer; dimensions unverified |
 | PWRBAR | power.cpp:208–209,241–267 | frames 0/1 empty, 2/3 normal, 4/5 low, 6/7 critical; lower piece offset 100 px |
@@ -28,7 +28,7 @@ The shared sidebar is not selected by house. Radar uses PlayerPtr->ActLike and t
 
 ## Coordinates
 
-At 640×400 the sidebar starts x=480 (sidebar.cpp:182–184; sidebar.h:68). Tabs are 16 px high (tab.cpp:257–264); radar origin is (480,14), drawn at y=15, with inset at (496,21) for engine radar coordinates (radar.cpp:125–145,430). Sidebar Y=155 and build region starts y=181; four rows of 48 pixels. Exact column X and power geometry depend on PowWidth; not yet verified. Mockup geometry is illustrative until that audit is completed.
+At 640×400 the sidebar starts x=480 (sidebar.cpp:182–184; sidebar.h:68). Tabs are 16 px high (tab.cpp:257–264); radar origin is (480,14), drawn at y=15, with inset at (496,21) for engine radar coordinates (radar.cpp:125–145,430). Sidebar Y=155 and build region starts y=181; four rows of 48 pixels. Column and power coordinates are refined in the follow-up audit below. Mockup geometry remains illustrative where asset dimensions are unresolved.
 
 ## Existing pack inventory
 
@@ -238,3 +238,56 @@ Boot inventory: 12GREEN.FNT, 12GRNGRD.FNT, 6POINT.FNT, 8FAT.FNT, ATTRACT2.CPS, B
 ## Palette and handoff
 
 Palette proposal is not an allocation in the shipped palette. Verify all consumers of each proposed index before UI-B. Engine cycling 32–38 and broader cycling bounds 16–63 (defines.h:1936–1943), score cycling 233–237 and terrain indices 112–115 (boot-colors.js) are excluded. Also exclude fixed engine colors and house remap 6–13. Text contrast and color-vision checks apply to proposed RGB values, not engine captures. No screenshot or CI acceptance is claimed in UI-A yet.
+
+## Follow-up audit (2026-11-23)
+
+- Credits: credits.cpp:108–112 uses TPF_GREEN12_GRAD in high resolution and TPF_6PT_GRAD in low resolution. UI-C owns 12GRNGRD.FNT and GRAD6FNT.FNT; LED.FNT is not the credit font.
+- Radar: radar.cpp:472–473 draws MAX_RADAR_FRAMES (41) directly when offline but present. Minimum count is 42, not 41. Frame 0 absent, 1–21 initial activation, 22 active, 23–40 transition, 41 offline. Current HRADAR.GDI pack bound is 64; retain existing generated dimensions until actual coverage is verified. Radar housing logical bounds 160×140 are not the generated frame dimensions (160×136).
+- Power: power.cpp:132–146 gives x=480, y=176, width=16, height=224. PWRBAR two pieces need coverage of the full gauge; the current provisional 16×8 frames are not proof of that coverage.
+- Button enum: common/shapebtn.h:54–56 defines up=0, down=1, disabled=2. sidebar.cpp:347–359 positions repair at (484,160), sell (537,160), map (590,160); repair/sell reflect toggle state. Current 64×18 placeholders overlap the next button origin; exact replacement widths require validation.
+- Strip positions: sidebar.cpp:214–220 gives spacing=(160−16−140)/3=1, column origins (497,182), (567,182). sidebar.cpp:1155 adds 3 px to art draw X, so cameo artwork starts x=500/570; hit targets start x=497/567. Scroll buttons y=373, up x=500/570, down x=532/602 assuming generated 32 px width (1251–1261).
+- Clock: factory.h:117 defines STEP_COUNT=108; factory.cpp:626 and sidebar.cpp:2018–2025 draw stage+1 for incomplete production. Verify actual Completion implementation and any scaling before setting the frame count; the provisional 64-frame pack is not an exact contract. sidebar.cpp:1322–1323 identifies GREEN as ghost ink, LTGREY as target, intensity 180; _RETRIEVE loads TCLOCK.MRF (existing pack).
+- Pips: object.cpp:1078–1085 loads SELECT.SHP and Hires_Retrieve PIPS.SHP (localized variants). defines.h:1748–1758 enumerates 0 empty, 1 full, 2 primary, 3 ready, 4 holding, 5 engineer, 6 civilian, 7 commando. techno.cpp:4443–4489 uses 3-pixel cargo spacing; UI-C owns ready/holding, UI-D remaining pip artwork. Frame dimensions for labels versus cargo need verification.
+- Health and selection: techno.cpp:1011–1100 draws health by code, with BLACK outline and LTGREEN/YELLOW/RED thresholds 0x7F and 0x3F. Existing geometry must remain; segmented health geometry would require an approved engine change. SELECT.SHP loader does not establish that it draws selection brackets. Placement: cell.cpp:1120–1122 explicitly draws TRANS.ICN tiles 0 and 2; tile 1 is not referenced on that path.
+- Remap: pack.js:13–29 and placeholders.js:32–33 identify engine band 176–191, in addition to fixed 0–15 and cycling 32–38. R05 authoring remaps are distinct from the engine palette. Proposed indices 216–228 are not allocated until all art consumers and nearest-colour translations are audited. No changes to boot-colors.js or pack.js in UI-A.
+
+### Cursor table (mouse.cpp:304–340)
+
+Fields below reproduce the original engine table, not external media. Size is still unverified; current boot-pack.js:220 generates 16 frames at 16×16 and cannot satisfy the full table. UI-D must verify small-frame animation span and actual Extract_Shape behavior before generating.
+
+| Cursor | Start | Count | Rate | Small | Hotspot X | Hotspot Y |
+|---|---:|---:|---:|---:|---:|---:|
+| MOUSE_NORMAL | 0 | 1 | 0 | 86 | 0 | 0 |
+| MOUSE_N | 1 | 1 | 0 | -1 | 15 | 0 |
+| MOUSE_NE | 2 | 1 | 0 | -1 | 29 | 0 |
+| MOUSE_E | 3 | 1 | 0 | -1 | 29 | 12 |
+| MOUSE_SE | 4 | 1 | 0 | -1 | 29 | 23 |
+| MOUSE_S | 5 | 1 | 0 | -1 | 15 | 23 |
+| MOUSE_SW | 6 | 1 | 0 | -1 | 0 | 23 |
+| MOUSE_W | 7 | 1 | 0 | -1 | 0 | 13 |
+| MOUSE_NW | 8 | 1 | 0 | -1 | 0 | 0 |
+| MOUSE_NO_N | 130 | 1 | 0 | -1 | 15 | 0 |
+| MOUSE_NO_NE | 131 | 1 | 0 | -1 | 29 | 0 |
+| MOUSE_NO_E | 132 | 1 | 0 | -1 | 29 | 12 |
+| MOUSE_NO_SE | 133 | 1 | 0 | -1 | 29 | 23 |
+| MOUSE_NO_S | 134 | 1 | 0 | -1 | 15 | 23 |
+| MOUSE_NO_SW | 135 | 1 | 0 | -1 | 0 | 23 |
+| MOUSE_NO_W | 136 | 1 | 0 | -1 | 0 | 13 |
+| MOUSE_NO_NW | 137 | 1 | 0 | -1 | 0 | 0 |
+| MOUSE_NO_MOVE | 11 | 1 | 0 | 27 | 15 | 12 |
+| MOUSE_CAN_MOVE | 10 | 1 | 0 | 26 | 15 | 12 |
+| MOUSE_ENTER | 119 | 3 | 4 | 148 | 15 | 12 |
+| MOUSE_DEPLOY | 53 | 9 | 4 | -1 | 15 | 12 |
+| MOUSE_CAN_SELECT | 12 | 6 | 4 | -1 | 15 | 12 |
+| MOUSE_CAN_ATTACK | 18 | 8 | 4 | 140 | 15 | 12 |
+| MOUSE_SELL_BACK | 62 | 24 | 2 | -1 | 15 | 12 |
+| MOUSE_SELL_UNIT | 154 | 24 | 2 | -1 | 15 | 12 |
+| MOUSE_REPAIR | 29 | 24 | 2 | -1 | 15 | 12 |
+| MOUSE_NO_REPAIR | 126 | 1 | 0 | -1 | 15 | 12 |
+| MOUSE_NO_SELL_BACK | 125 | 1 | 0 | -1 | 15 | 12 |
+| MOUSE_RADAR_CURSOR | 87 | 1 | 0 | 151 | 0 | 0 |
+| MOUSE_ION_CANNON | 103 | 16 | 2 | -1 | 15 | 12 |
+| MOUSE_NUCLEAR_BOMB | 96 | 7 | 4 | -1 | 15 | 12 |
+| MOUSE_AIR_STRIKE | 88 | 8 | 2 | -1 | 15 | 12 |
+| MOUSE_DEMOLITIONS | 122 | 3 | 4 | 127 | 15 | 12 |
+| MOUSE_AREA_GUARD | 153 | 1 | 0 | 152 | 15 | 12 |
