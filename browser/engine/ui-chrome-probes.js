@@ -7,6 +7,8 @@
 const {rgbPalette}=require("../../tools/content/boot-colors.js");
 const UI=require("../../tools/content/ui/ui-colors.js");
 const L=require("../../tools/content/ui/chrome.js").layout;
+// UI-F: game height (taller screens keep the bottom deck and gauge at the edge).
+const GAME_H=Number(process.env.STOCK_SCENARIO_GAME_HEIGHT||400);
 // 8-bit palette -> 6-bit .PAL -> SDL presents 6-bit << 2.
 const shown=i=>rgbPalette()[i].map(v=>(v>>2)<<2);
 
@@ -15,7 +17,7 @@ async function sample(page,png,points){
     const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
     const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");
     g.drawImage(img,0,0);
-    const sx=img.width/640,sy=img.height/400;
+    const sx=img.width/640,sy=sx;
     return points.map(([x,y])=>Array.from(g.getImageData(Math.floor((x+0.5)*sx),Math.floor((y+0.5)*sy),1,1).data.slice(0,3)));
   },{data:png.toString("base64"),points});
 }
@@ -24,7 +26,7 @@ async function regionHash(page,png,[x,y,w,h]){
     const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
     const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");
     g.drawImage(img,0,0);
-    const sx=img.width/640,sy=img.height/400;
+    const sx=img.width/640,sy=sx;
     const d=g.getImageData(Math.floor(r[0]*sx),Math.floor(r[1]*sy),Math.floor(r[2]*sx),Math.floor(r[3]*sy)).data;
     let hsh=2166136261;for(let i=0;i<d.length;i+=4){hsh^=d[i]*7+d[i+1]*3+d[i+2];hsh=Math.imul(hsh,16777619)>>>0;}
     return hsh;
@@ -39,14 +41,24 @@ const PROBES=[
   {name:"tab plate (SIDEBAR)",at:[480+150,6],expect:[UI.plate]},
   {name:"radar housing outline",at:[480,85],expect:[UI.bevel]},
   {name:"column divider",at:[567,250],expect:[UI.bevel]},
-  {name:"scroll deck",at:[497,395],expect:[UI.plate]},
+  {name:"scroll deck",at:[497,GAME_H-5],expect:[UI.plate]},
   {name:"power gauge rail",at:[480,300],expect:[UI.bevel]},
-  {name:"power gauge track",at:[488,398],expect:[UI.normal,UI.amber,UI.critical,UI.red,UI.shadow,UI.subtle,UI.white,UI.button]},
+  {name:"power gauge track",at:[488,GAME_H-2],expect:[UI.normal,UI.amber,UI.critical,UI.red,UI.shadow,UI.subtle,UI.white,UI.button]},
   {name:"REPAIR outline",at:[L.buttons.REPAIR,L.buttonY+9],expect:[UI.edge,UI.red]},
   {name:"MAP outline",at:[L.buttons.MAP,L.buttonY+9],expect:[UI.edge,UI.red,UI.subtle]}
 ];
+// UI-F: with STOCK_SCENARIO_EXPECT_SIDE=aster|forge the sidebar rails must
+// carry that faction's trim (HSIDE*.GDI ice / HSIDE*.NOD crimson).
+function probes(){
+  const side=process.env.STOCK_SCENARIO_EXPECT_SIDE;
+  if(!side)return PROBES;
+  const trim=side==="forge"?UI.primary:UI.ice;
+  // The power-slot rail (x 496); x 639 sits under the page's 1 px canvas border.
+  return PROBES.concat([{name:side+" sidebar rail",at:[496,300],expect:[trim]},{name:side+" rail low",at:[496,GAME_H-40],expect:[trim]}]);
+}
 async function probeChrome(page,canvas){
   const png=await canvas.screenshot();
+  const PROBES=probes();
   const got=await sample(page,png,PROBES.map(p=>p.at));
   return PROBES.map((p,i)=>({name:p.name,at:p.at,rgb:got[i],
     ok:p.expect.some(idx=>near(got[i],shown(idx))),expected:p.expect.map(idx=>({index:idx,rgb:shown(idx)}))}));
@@ -97,7 +109,7 @@ async function slotShare(page,png,[x,y],index){
   return page.evaluate(async ({data,x,y,rgb})=>{
     const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
     const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");g.drawImage(img,0,0);
-    const sx=img.width/640,sy=img.height/400;let n=0,t=0;
+    const sx=img.width/640,sy=sx;let n=0,t=0;
     for(let j=0;j<48;j++)for(let i=0;i<64;i++){
       const d=g.getImageData(Math.floor((x+i+0.5)*sx),Math.floor((y+j+0.5)*sy),1,1).data;t++;
       if(Math.abs(d[0]-rgb[0])<=8&&Math.abs(d[1]-rgb[1])<=8&&Math.abs(d[2]-rgb[2])<=8)n++;
@@ -127,14 +139,14 @@ async function ready(page,{canvas,screenshot,slot}){
 async function tooltip(page,{canvas,screenshot,at:[x,y]}){
   const box=await canvas.boundingBox();
   const area=[Math.max(0,x-200),Math.max(16,y-30),200,60];
-  await page.mouse.move(box.x+100/640*box.width,box.y+100/400*box.height);
+  await page.mouse.move(box.x+100/640*box.width,box.y+100/GAME_H*box.height);
   await page.waitForTimeout(800);
   const before=await regionHash(page,await canvas.screenshot(),area);
-  await page.mouse.move(box.x+x/640*box.width,box.y+y/400*box.height);
+  await page.mouse.move(box.x+x/640*box.width,box.y+y/GAME_H*box.height);
   let after=before;
   for(let i=0;i<10&&after===before;i++){await page.waitForTimeout(300);after=await regionHash(page,await canvas.screenshot(),area);}
   await screenshot("ui-tooltip");
-  await page.mouse.move(box.x+100/640*box.width,box.y+100/400*box.height);
+  await page.mouse.move(box.x+100/640*box.width,box.y+100/GAME_H*box.height);
   const r={at:[x,y],changed:before!==after,ok:before!==after};
   if(!r.ok)throw Error("No tooltip appeared over the sidebar: "+JSON.stringify(r));
   return r;
@@ -144,7 +156,7 @@ async function colourCounts(page,png,[x,y,w,h],indices){
   return page.evaluate(async ({data,x,y,w,h,cols})=>{
     const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
     const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");g.drawImage(img,0,0);
-    const sx=img.width/640,sy=img.height/400,out=cols.map(()=>0);
+    const sx=img.width/640,sy=sx,out=cols.map(()=>0);
     for(let j=0;j<h;j++)for(let i=0;i<w;i++){
       const d=g.getImageData(Math.floor((x+i+0.5)*sx),Math.floor((y+j+0.5)*sy),1,1).data;
       cols.forEach((rgb,k)=>{if(Math.abs(d[0]-rgb[0])<=8&&Math.abs(d[1]-rgb[1])<=8&&Math.abs(d[2]-rgb[2])<=8)out[k]++;});
@@ -154,7 +166,7 @@ async function colourCounts(page,png,[x,y,w,h],indices){
 }
 async function hover(page,canvas,[x,y],wait=500){
   const box=await canvas.boundingBox();
-  await page.mouse.move(box.x+x/640*box.width,box.y+y/400*box.height);
+  await page.mouse.move(box.x+x/640*box.width,box.y+y/GAME_H*box.height);
   await page.waitForTimeout(wait);
 }
 // Placement grid: hover a candidate cell and the yard itself while the

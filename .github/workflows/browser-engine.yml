@@ -411,6 +411,28 @@ jobs:
             build/browser-engine/stock-scenario-*.png
           if-no-files-found: warn
 
+      # UI-F: the tall command bar with the Forge sidebar skin (640x544,
+      # seven rows per strip), with chrome probes and button toggles.
+      - name: Tall command bar and Forge skin (UI-F)
+        env:
+          STOCK_SCENARIO_PAGE: vanillatd.html?play&gamew=640&gameh=544&side=forge
+          STOCK_SCENARIO_GAME_HEIGHT: '544'
+          STOCK_SCENARIO_EXPECT_SIDE: forge
+          STOCK_SCENARIO_SKIP_GAMEPLAY: '1'
+        run: |
+          mkdir -p build/ui-f-evidence/aster-400
+          cp build/browser-engine/stock-scenario-*.png build/ui-f-evidence/aster-400/ || true
+          node browser/engine/check-stock-scenario.js
+          mkdir -p build/ui-f-evidence/forge-544
+          cp build/browser-engine/stock-scenario-*.png build/browser-engine/stock-scenario-audit.json build/ui-f-evidence/forge-544/
+      - name: Publish UI-F evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-f-evidence
+          path: build/ui-f-evidence/
+          if-no-files-found: warn
+
   # M3: a full match against the engine's computer player. The human player
   # deploys and then idles; the computer must build a base, harvest and
   # attack until it wins, the end-of-match score screen must draw, and the

@@ -32,8 +32,28 @@ for(const [name,value] of Object.entries(g)){
 
 // Sidebar halves meet at the engine seam and are fully opaque.
 assert.equal(g["HSIDE1.SHP"][0].height+g["HSIDE2.SHP"][0].height,400-158);
-for(const n of ["HSIDE1.SHP","HSIDE2.SHP"])assert(!frames(n)[0].pixels.includes(0),n+" opaque");
+for(const n of Object.keys(g).filter(n=>n.startsWith("HSIDE")))assert(!frames(n)[0].pixels.includes(0),n+" opaque");
 
+// UI-F: per-faction sets and the one-row filler. SIDE3 repeats seamlessly:
+// its first row is the slot-separator row and the channel pattern has a
+// 48-row period; the faction sets differ from neutral only in trim.
+{
+  const comp=chrome.sidebarComposite();
+  const row=(r,y)=>Array.from({length:160},(_,x)=>r.get(x,y));
+  const filler=g["HSIDE3.SHP"][0];
+  assert.equal(filler.height,48);
+  assert.deepEqual(row(filler,0),row(comp,chrome.FILLER_Y),"filler starts on a separator row");
+  for(const x of [20,60,90,130])for(let y=0;y<48;y++)
+    assert.equal(comp.get(x,chrome.FILLER_Y+y),comp.get(x,chrome.FILLER_Y+48+y),"channel period at "+x+","+y);
+  for(const sfx of ["GDI","NOD"]){
+    for(const n of ["HSIDE1.","HSIDE2.","HSIDE3."]){
+      const a=frames(n+"SHP")[0],b=frames(n+sfx)[0];
+      const diff=hamming(a,b);
+      assert(diff>0&&diff<0.05*a.pixels.length,n+sfx+" differs from neutral only in trim ("+diff+")");
+    }
+  }
+  assert(frames("HSIDE1.GDI")[0].pixels.includes(UI.teal)&&frames("HSIDE1.NOD")[0].pixels.includes(UI.red),"faction trim");
+}
 // Command buttons: no overlap, on screen, above the strips (y<181).
 const L=chrome.layout,xs=Object.values(L.buttons).sort((a,b)=>a-b);
 for(let i=1;i<xs.length;i++)assert(xs[i-1]+L.buttonW<=xs[i],"buttons overlap");

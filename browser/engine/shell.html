@@ -888,7 +888,15 @@ button:not(.hud-shell *):focus-visible,label.pick:focus-within{outline:2px solid
       // Never replace previously restored user settings.
       const userConfig = "/game/user/conquer.ini";
       if (!Module.FS.analyzePath(userConfig).exists) {
-        Module.FS.writeFile(userConfig, "[Intro]\nPlayIntro=no\n[Video]\nWindowed=yes\n[Mouse]\nRawInput=no\n");
+        // UI-F: ?gamew=&gameh= request a larger game screen (read only by
+        // builds with WC_COMMAND_BAR_TALL; startup.cpp bounds the values; the
+        // SDL presenter's 16:10 boxing is turned off so it is not squeezed) and
+        // ?side=forge selects the Forge side ([MultiPlayer] Side, mplayer.cpp).
+        const query = new URLSearchParams(location.search);
+        const gw = parseInt(query.get("gamew") || "", 10), gh = parseInt(query.get("gameh") || "", 10);
+        const size = gw >= 640 && gw <= 1024 && gh >= 400 && gh <= 768 ? "GameWidth=" + gw + "\nGameHeight=" + gh + "\nBoxing=no\n" : "";
+        const side = query.get("side") === "forge" ? "[MultiPlayer]\nSide=1\n" : "";
+        Module.FS.writeFile(userConfig, "[Intro]\nPlayIntro=no\n[Video]\nWindowed=yes\n" + size + "[Mouse]\nRawInput=no\n" + side);
         report("[browser-game] initialized original boot-pack user settings");
       }
       assetReady = true;

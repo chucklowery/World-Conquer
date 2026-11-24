@@ -454,8 +454,18 @@ int main(int argc, char** argv)
         }
 #endif
 
+#ifdef WC_COMMAND_BAR_TALL
+        /*
+        **	UI-F: the viewports cover the whole (possibly larger) game screen.
+        **	They only ever grow past GBUFF_INIT_*, so DOS mode (320x200) and the
+        **	default 640x400 attach exactly as the stock code does.
+        */
+        SeenBuff.Attach(&VisiblePage, 0, 0, MAX(ScreenWidth, GBUFF_INIT_WIDTH), MAX(ScreenHeight, GBUFF_INIT_HEIGHT));
+        HidPage.Attach(&HiddenPage, 0, 0, MAX(ScreenWidth, GBUFF_INIT_WIDTH), MAX(ScreenHeight, GBUFF_INIT_HEIGHT));
+#else
         SeenBuff.Attach(&VisiblePage, 0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
         HidPage.Attach(&HiddenPage, 0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
+#endif
 
         CCDebugString("C&C95 - Adjusting variables for resolution.\n");
         Options.Adjust_Variables_For_Resolution();
@@ -673,6 +683,22 @@ void Read_Setup_Options(RawFileClass* config_file)
     ** Read in global settings
     */
     Settings.Load(ini);
+
+#ifdef WC_COMMAND_BAR_TALL
+    /*
+    **	UI-F: optional larger game screen, [Video] GameWidth / GameHeight. The
+    **	command bar follows the right edge and fills the height; the default
+    **	(keys absent) is the stock 640x400. Limits keep every buffer in range.
+    */
+    {
+        int w = ini.Get_Int("Video", "GameWidth", ScreenWidth);
+        int h = ini.Get_Int("Video", "GameHeight", ScreenHeight);
+        if (w >= 640 && w <= 1024 && h >= 400 && h <= 768) {
+            ScreenWidth = w;
+            ScreenHeight = h;
+        }
+    }
+#endif
 
     /*
     ** Read in the boolean options

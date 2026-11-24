@@ -381,3 +381,15 @@ source or target (asserted in `tools/content/ui/test-ui-spec.js`).
 | HBTN-UP(2) / HBTN-DN(2).SHP | ui/frontend.js | 32×18 (unchanged), 4 frames: 0 up, 1 pressed, 2 disabled, 3 spare. "UP" is the list scroll-up arrow; "DN" is the drop button and scroll-down arrow (drop.cpp:51–52; list.cpp:80–81). |
 | Palette 13, 14, 139, 141, 159 | boot-colors.js | Gold-style dialogs draw edges with GREY/LTGREY/BLACK and fill with CC_GREEN_BKGD (141); 159 is CC_LIGHT_GREEN; 139 is the title/PREPICK fill. Restyled to cool steel, matte plate, cyan and blue-smoke. 140 is not changed: wireframe art translates to it. |
 | shell.html | browser/engine/shell.html | Page tokens only (background, panels, status, buttons, focus ring, canvas frame); the frozen legacy `.hud-*` demo rules are excluded. Nothing is drawn over the canvas. |
+
+## UI-F: tall command bar and faction skins (WC_COMMAND_BAR_TALL)
+
+Design note: docs/browser/DECISIONS.md ADR-0004.
+
+| Slot | Contract |
+|---|---|
+| HSIDE1/2/3.GDI | Aster set: neutral chrome with cyan bay tick and ice rails (x 496 and 639). Loaded for `ActLike` HOUSE_GOOD. |
+| HSIDE1/2/3.NOD | Forge set: crimson tick and rails. Loaded for HOUSE_BAD. |
+| HSIDE3.SHP | Neutral one-row filler, 160×48, starting on a slot-separator row so repeats continue the channel pattern (tested). |
+| Layout | rows = clamp((H − 182 − 26) / 48, 4, 12); SIDE1 at 158, SIDE3 repeated from 276 while above SIDE2, SIDE2 at H − 124; scroll buttons at 182 + rows × 48 − 1; power gauge lower piece repeated every 124 px; command buttons at SideX + 4 / 57 / 110. 640×400 gives the stock layout. |
+| Limitation | HSTRIP.SHP (the empty-strip filler) is drawn once by the engine at 193 rows, so on taller screens the extra rows of an under-filled strip show the plain recessed channel. |

@@ -1886,6 +1886,125 @@
    }
   },
   {
+   "name": "HSIDE1.GDI",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/sidebar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 118,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "UI-F (WC_COMMAND_BAR_TALL): sidebar.cpp SidebarClass::Load_Sidebar_Art and Draw_It"
+   }
+  },
+  {
+   "name": "HSIDE1.NOD",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/sidebar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 118,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "UI-F (WC_COMMAND_BAR_TALL): sidebar.cpp SidebarClass::Load_Sidebar_Art and Draw_It"
+   }
+  },
+  {
+   "name": "HSIDE2.GDI",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/sidebar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 124,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "UI-F (WC_COMMAND_BAR_TALL): sidebar.cpp SidebarClass::Load_Sidebar_Art and Draw_It"
+   }
+  },
+  {
+   "name": "HSIDE2.NOD",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/sidebar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 124,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "UI-F (WC_COMMAND_BAR_TALL): sidebar.cpp SidebarClass::Load_Sidebar_Art and Draw_It"
+   }
+  },
+  {
+   "name": "HSIDE3.GDI",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/sidebar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 48,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "UI-F (WC_COMMAND_BAR_TALL): sidebar.cpp SidebarClass::Load_Sidebar_Art and Draw_It"
+   }
+  },
+  {
+   "name": "HSIDE3.NOD",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/sidebar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 48,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "UI-F (WC_COMMAND_BAR_TALL): sidebar.cpp SidebarClass::Load_Sidebar_Art and Draw_It"
+   }
+  },
+  {
+   "name": "HSIDE3.SHP",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/sidebar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 48,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "UI-F (WC_COMMAND_BAR_TALL): sidebar.cpp SidebarClass::Load_Sidebar_Art and Draw_It"
+   }
+  },
+  {
    "name": "HTITLE.PCX",
    "container": "loose|GENERAL.MIX",
    "format": "PCX",

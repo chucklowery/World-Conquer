@@ -10,6 +10,9 @@ const report=path.join(root,"stock-scenario-audit.json");
 // Results are always written to build/browser-engine, never into the site.
 const site=path.resolve(process.env.STOCK_SCENARIO_SITE||root);
 const pagePath=process.env.STOCK_SCENARIO_PAGE||"vanillatd.html";
+// UI-F: game screen height when the page requests a taller screen
+// (vanillatd.html?gameh=...); the width stays 640 in these runs.
+const GAME_H=Number(process.env.STOCK_SCENARIO_GAME_HEIGHT||400);
 if(!/^[A-Za-z0-9_.-]+\.html(\?[A-Za-z0-9_=&-]*)?$/.test(pagePath))throw Error("Invalid STOCK_SCENARIO_PAGE");
 const mime={".html":"text/html",".js":"text/javascript",".wasm":"application/wasm",".json":"application/json"};
 const server=http.createServer((req,res)=>{
@@ -37,7 +40,7 @@ async function battlefieldStats(page,png,sidebarOpen){
     const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
     const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");
     g.drawImage(img,0,0);
-    const sx=img.width/640,sy=img.height/400;
+    const sx=img.width/640,sy=sx;
     const x0=0,y0=Math.ceil(16*sy),x1=Math.floor((sidebarOpen?480:640)*sx),y1=img.height;
     const d=g.getImageData(x0,y0,x1-x0,y1-y0).data;
     let total=0,nonBlack=0,object=0;
@@ -59,7 +62,7 @@ async function sidebarStats(page,png){
     const img=new Image();img.src="data:image/png;base64,"+data;await img.decode();
     const c=new OffscreenCanvas(img.width,img.height),g=c.getContext("2d");
     g.drawImage(img,0,0);
-    const sx=img.width/640,sy=img.height/400;
+    const sx=img.width/640,sy=sx;
     const share=(x,y,w,h)=>{
       const d=g.getImageData(Math.floor(x*sx),Math.floor(y*sy),Math.max(1,Math.floor(w*sx)),Math.max(1,Math.floor(h*sy))).data;
       let lit=0;for(let i=0;i<d.length;i+=4)if(d[i]+d[i+1]+d[i+2]>48)lit++;
@@ -224,7 +227,7 @@ async function playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas})
   // Command units: box-select the tactical view, then move and force-fire.
   const field0=await canvas.screenshot();
   const box=await canvas.boundingBox();
-  const at=(x,y)=>[box.x+x/640*box.width,box.y+y/400*box.height];
+  const at=(x,y)=>[box.x+x/640*box.width,box.y+y/GAME_H*box.height];
   await page.mouse.move(...at(8,24));await page.mouse.down();
   await page.mouse.move(...at(470,390),{steps:8});await page.mouse.up();
   await page.waitForTimeout(500);
@@ -305,7 +308,7 @@ async function main(){
       const box=await canvas.boundingBox();
       if(!box)throw Error("Stock canvas has no visible bounds");
       const marker=await page.evaluate(()=>document.getElementById("log").textContent.length);
-      await canvas.click({position:{x:x/640*box.width,y:y/400*box.height}});
+      await canvas.click({position:{x:x/640*box.width,y:y/GAME_H*box.height}});
       await page.waitForFunction(m=>/\[browser-input\] mouse-down x=(-?\d+) y=(-?\d+)/.test(
         document.getElementById("log").textContent.slice(m)),marker,{timeout:5000});
       const log=await page.evaluate(m=>document.getElementById("log").textContent.slice(m),marker);
@@ -345,7 +348,9 @@ async function main(){
     const field=await battlefieldStats(page,await canvas.screenshot(),false);
     audit.battlefield=field;
     audit.matchStallMs=await page.evaluate(()=>window.WCWatchdog.maxStallMs);
-    if(field.nonBlackShare<0.10)throw Error("Battlefield is mostly black: "+JSON.stringify(field));
+    // A taller view (UI-F) shows more shroud around a corner start position;
+    // the stock 640x400 threshold is unchanged.
+    if(field.nonBlackShare<(GAME_H>400?0.05:0.10))throw Error("Battlefield is mostly black: "+JSON.stringify(field));
     if(field.objectShare<0.002)throw Error("No units or resources visible on the battlefield: "+JSON.stringify(field));
     if(audit.matchStallMs>1000)throw Error("Main-thread stall after match start: "+audit.matchStallMs+"ms");
 

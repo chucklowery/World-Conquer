@@ -111,3 +111,49 @@ in its formats, and the repository already has SHP/PAL/MIX encoders and a
   `EventClass` stream.
 - Fidelity to engine behavior constrains game design; deviations need
   targeted engine changes that are justified case by case.
+
+## ADR-0004: Runtime-height command bar and faction sidebar art (UI-F)
+
+Status: accepted (owner approval: "Implement A-F", 2026-11-24, for the UI plan
+in docs/milestones/UI-command-interface.md).
+
+Context: the stock 640×400 layout fixes four cameo rows per strip, places the
+SIDE1/SIDE2 halves at y 158 and 276, the command buttons at x 484/537/590, the
+lower power-bar piece at PowY+100, and loads one neutral sidebar set. UI-F asks
+for a full-height command bar on larger screens and per-faction sidebar art,
+behind a named compile-time option, with no save-game or multiplayer change.
+
+Decision: `WC_COMMAND_BAR_TALL` (CMake option, default OFF on native, ON in the
+browser build; compile definition on the VanillaTD target only).
+
+- Constants that become runtime values: `StripClass::MAX_VISIBLE` uses become
+  `WC_STRIP_ROWS` = `StripClass::VisibleRows` (sidebar.h/.cpp), computed in
+  `SidebarClass::One_Time` as `(screen height − strip top − 26) / 48`, clamped
+  to 4..`MAX_VISIBLE_LIMIT` (12, the array size of `SelectButton`). `MaxVisible`
+  and the WINDOW_SIDEBAR clip height follow it; the scroll buttons follow
+  `Y + rows × 48 − 1`. `radar.h` and `tab.h` constants are unchanged: the radar
+  and tabs keep their size and anchor to the right edge as before.
+- Screen size: `[Video] GameWidth/GameHeight` (640..1024 × 400..768, read in
+  startup.cpp `Read_Setup_Options`). The SeenBuff/HidPage viewports grow to the
+  screen and never shrink below 640×400, so the default and DOS mode attach as
+  in the stock code. The playfield width is derived as before from
+  `SeenBuff.Get_Width() − SideBarWidth` (display.cpp); the command buttons are
+  placed relative to `SideX` instead of x 484.
+- Drawing: SIDE1 at y 158, SIDE2 against the bottom edge, and the one-row SIDE3
+  filler (48 rows) repeated between them; at 640×400 SIDE2 lands at 276 and no
+  filler is drawn. The lower power-bar piece repeats every frame height down the
+  gauge; at 640×400 it draws once at PowY+100.
+- Faction skins: `Load_Sidebar_Art` loads `SIDE1/2/3.<suffix>` for the player's
+  `ActLike` house when it is HOUSE_GOOD (Aster, .GDI) or HOUSE_BAD (Forge, .NOD),
+  the same suffix scheme the stock radar uses, and falls back to the neutral
+  `.SHP` set; it reloads when the house changes (checked at draw time).
+- Save games and multiplayer: nothing new is saved or sent. `VisibleRows` is
+  derived from the screen each start; `TopIndex`/scroll state saved by the stock
+  code is bounded by the existing scroll logic. Players with different screen
+  heights see different numbers of rows; the simulation is unaffected.
+
+Consequences: with the option OFF the compiled code is the stock code. With it
+ON at 640×400 the layout is pixel-identical to OFF except for the faction art.
+The browser shell may request a larger screen with `?gamew=&gameh=` (it also
+turns off the SDL presenter's 16:10 boxing for that profile) and the Forge side
+with `?side=forge`.

@@ -19,12 +19,14 @@ const FACTION={GDI:{name:"aster",glow:UI.teal,soft:UI.ice},NOD:{name:"forge",glo
 
 // ---------------------------------------------------------------- sidebar
 // One 160x242 composite (y 158..399) split at the engine's seam (y 276).
-function sidebarComposite(){
+// `trim` is the accent: crimson for the neutral set (UI-B), and the faction
+// glow for the per-house sets loaded by UI-F (sidebar.cpp Load_Sidebar_Art).
+function sidebarComposite(trim=UI.primary,rail=UI.subtle){
   const H=L.side1H+L.side2H,r=new Raster(L.radarW,H,UI.coal);
   r.grain(0,0,160,H,UI.coal,UI.shadow,23,7);
-  // Command-button bay (y 158..180): raised steel deck with a crimson tick.
+  // Command-button bay (y 158..180): raised steel deck with an accent tick.
   r.plate(0,0,160,23,{fill:UI.plate,edge:UI.bevel,cut:3,corners:["bl","br"],light:UI.edge});
-  r.hline(150,156,21,UI.primary);
+  r.hline(150,156,21,trim);
   // Recessed build channels behind both cameo columns (x 497.., y 181..372).
   for(const cx of L.columnX){
     const x=cx-L.sideX,y=L.stripY-L.side1Y,w=70,h=L.scrollY-L.stripY;
@@ -38,16 +40,25 @@ function sidebarComposite(){
   r.plate(16,214,144,28,{fill:UI.plate,edge:UI.bevel,cut:4,corners:["br"]});
   for(let x=24;x<150;x+=8)r.set(x,239,UI.subtle);
   // Right-edge rail and power-slot rail.
-  r.vline(159,0,H-5,UI.subtle);
-  r.vline(16,23,H-1,UI.subtle);
+  r.vline(159,0,H-5,rail);
+  r.vline(16,23,H-1,rail);
   return r;
 }
-function sidebar(){
-  const c=sidebarComposite();
+// The filler row (UI-F SIDE3): 48 rows of the channel section, starting on a
+// slot-separator row so repeats line up with the cameo rows.
+const FILLER_Y=L.stripY-L.side1Y+L.cameoH;     // composite row 71
+function sidebarSet(suffix,trim,rail){
+  const c=sidebarComposite(trim,rail);
   return {
-    "HSIDE1.SHP":[c.crop(0,0,160,L.side1H)],
-    "HSIDE2.SHP":[c.crop(0,L.side1H,160,L.side2H)]
+    ["HSIDE1."+suffix]:[c.crop(0,0,160,L.side1H)],
+    ["HSIDE2."+suffix]:[c.crop(0,L.side1H,160,L.side2H)],
+    ["HSIDE3."+suffix]:[c.crop(0,FILLER_Y,160,L.cameoH)]
   };
+}
+function sidebar(){
+  return Object.assign(sidebarSet("SHP",UI.primary,UI.subtle),
+    sidebarSet("GDI",FACTION.GDI.glow,FACTION.GDI.soft),
+    sidebarSet("NOD",FACTION.NOD.glow,FACTION.NOD.soft));
 }
 
 // ------------------------------------------------------------------- tabs
@@ -241,4 +252,4 @@ function strip(){
 function generate(){
   return Object.assign({},sidebar(),tabs(),buttons(),radar(),power(),strip());
 }
-module.exports={generate,layout:L,FACTION,sidebarComposite,radarFrame,button,gaugePixel};
+module.exports={generate,layout:L,FACTION,sidebarComposite,sidebarSet,radarFrame,button,gaugePixel,FILLER_Y};
