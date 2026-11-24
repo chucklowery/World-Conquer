@@ -11,3 +11,9 @@
 - Phase 3: 6b0d5ba, 904231a, fe50300, ea08396, 062055b — deterministic preview source, tests, audited coordinates, angular chrome and gauge patterns. 9cbdb3f adds design tests and preview generation to browser-engine workflow. Commands: node tools/content/ui/test-ui-spec.js; node tools/content/ui/mockups.js build/ui-mockups. Full Node suite and stock-engine gate not yet observed passing on PR head.
 - Owner revised visual criteria: d484768, 7d87cb4; matte charcoal, selective crimson/cyan, thin angular framing. Design targets are separate from indexed allocation. Preserve engine geometry and original assets.
 - Draft PR: https://github.com/chucklowery/World-Conquer/pull/64. No UI-B work until UI-A gate passes and PR merges. Remaining blockers: complete slot dimensions and palette consumers, verify quantized colors and actual generated asset indices, review preview artifacts and CI, record final head evidence. No engine or production pack edits.
+
+### Palette impact and CI evidence
+
+- Head d5e96d5: browser run https://github.com/chucklowery/World-Conquer/actions/runs/45311971224 reported UI design validation and wasm-vanillatd successful; Linux, Windows, MinGW and legacy regression also successful. Stock-engine, stock-scenario, AI match and macOS were not complete at observation. This is historical evidence, not final-head acceptance.
+- 79cbe85, a5e7047: audit-palette-impact.js simulates six-bit palette encoding and fading-table differences. Unprotected candidate translations change 140 to 218 and 255 to 227. Protect reserved UI indices in the world-art translator in UI-B, and verify regenerated fading tables against existing gameplay. No runtime modifications in UI-A.
+- be4cc66: CI runs audit and publishes ui-design-evidence (six SVG previews and palette-impact.json). New-head results not yet verified. Full slot dimension and engine remap consumer audit remains outstanding; PR stays draft.
