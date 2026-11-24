@@ -1,5 +1,6 @@
 "use strict";
 // Design-only simulation: never writes or changes the runtime palette/pack.
+const assert=require("node:assert/strict");
 const {rgbPalette,toHex}=require("../boot-colors");
 const {encodePalette}=require("../encode-palette");
 const {tables}=require("../fading");
@@ -42,5 +43,11 @@ const contrasts=p.textPairs.map(([a,b])=>{
 const report={status:"simulation-only",original,unprotected,protectedTranslation,
  translationStableWithProtection:JSON.stringify(original)===JSON.stringify(protectedTranslation),
  contrasts,changes};
-if(require.main===module)console.log(JSON.stringify(report,null,2));
+if(require.main===module){
+ console.log(JSON.stringify(report,null,2));
+ assert(report.translationStableWithProtection,"protecting proposed UI indices must preserve existing translations");
+ for(const pair of contrasts)assert(pair.ratio>=4.5,"quantized contrast: "+JSON.stringify(pair));
+ for(const index of reserved)assert(!(index>=74&&index<=85)&&index<240,"resource/fading range collision");
+ // Changed fading entries are reported for UI-B review, not silently accepted.
+}
 module.exports=report;
