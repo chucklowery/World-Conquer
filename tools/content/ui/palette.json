@@ -42,55 +42,75 @@
   "colors": {
     "shadow": {
       "index": 216,
-      "rgb": "#10181c"
+      "rgb": "#090A0D"
     },
     "plate": {
       "index": 217,
-      "rgb": "#27343a"
+      "rgb": "#1A1E24"
     },
     "steel": {
       "index": 218,
-      "rgb": "#43535a"
+      "rgb": "#232932"
     },
     "bevel": {
       "index": 219,
-      "rgb": "#64767e"
+      "rgb": "#39424D"
     },
     "edge": {
       "index": 220,
-      "rgb": "#9aadb4"
+      "rgb": "#4B5561"
     },
     "highlight": {
       "index": 221,
-      "rgb": "#c5d2d6"
+      "rgb": "#A6B0BB"
     },
     "teal": {
       "index": 222,
-      "rgb": "#65e3da"
+      "rgb": "#3FC6D5"
     },
     "amber": {
       "index": 223,
-      "rgb": "#ffcc72"
+      "rgb": "#D08B2C"
     },
     "normal": {
       "index": 224,
-      "rgb": "#d0f7b1"
-    },
-    "low": {
-      "index": 225,
-      "rgb": "#d5a33b"
+      "rgb": "#B9DD79"
     },
     "critical": {
       "index": 226,
-      "rgb": "#a52c31"
+      "rgb": "#A52C31"
     },
     "white": {
       "index": 227,
-      "rgb": "#f4f7f8"
+      "rgb": "#D7DEE7"
     },
     "grey": {
       "index": 228,
-      "rgb": "#c5d0d2"
+      "rgb": "#8B96A3"
+    },
+    "red": {
+      "index": 229,
+      "rgb": "#E5483B"
+    },
+    "deep": {
+      "index": 230,
+      "rgb": "#8A1F1D"
+    },
+    "ice": {
+      "index": 231,
+      "rgb": "#77D7E3"
+    },
+    "coal": {
+      "index": 232,
+      "rgb": "#111317"
+    },
+    "primary": {
+      "index": 238,
+      "rgb": "#C2362B"
+    },
+    "button": {
+      "index": 239,
+      "rgb": "#F5F7FA"
     }
   },
   "states": {
@@ -99,7 +119,7 @@
       "pattern": "solid"
     },
     "low": {
-      "color": "low",
+      "color": "amber",
       "pattern": "diagonal"
     },
     "critical": {
@@ -114,7 +134,7 @@
     ],
     [
       "grey",
-      "plate"
+      "steel"
     ],
     [
       "amber",
@@ -123,6 +143,14 @@
     [
       "teal",
       "shadow"
+    ],
+    [
+      "button",
+      "primary"
+    ],
+    [
+      "button",
+      "deep"
     ]
   ]
 }
