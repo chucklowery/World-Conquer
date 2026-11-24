@@ -15,6 +15,7 @@ const {encodeTacticalShape,decodeTacticalShape}=require("./encode-shape.js");
 // Indices the engine uses for text colours; art must not land on them
 // (233-237 also rotate on the score screen). See boot-colors.js.
 const TEXT_COLOURS=new Set([16,25,202,209,233,234,235,236,237]);
+const UI_RESERVED=new Set(require("./ui/ui-colors.js").reserved);
 function wireframeTranslation(){
   const {rgbPalette}=require("./boot-colors.js");
   const game=rgbPalette();
@@ -27,6 +28,7 @@ function wireframeTranslation(){
       if(j>=176&&j<=191)continue;        // house remap band
       if(j>=32&&j<=38)continue;          // colour cycling (defines.h:1936-1937)
       if(TEXT_COLOURS.has(j))continue;     // engine text colours (boot-colors.js)
+      if(UI_RESERVED.has(j))continue;      // command interface (ui/palette.json)
       const d=source[i].reduce((sum,c,k)=>sum+(c-game[j][k])**2,0);
       if(d<dist){dist=d;best=j;}
     }
@@ -83,7 +85,12 @@ function build(outdir){
     }
   }
   fs.rmSync(wireframeStage,{recursive:true,force:true});
-  const placeholderNames=new Set(require("./placeholders.js").build(contentStage,wireframeNames));
+  // Command-interface art (tools/content/ui, UI-B onward) replaces the
+  // wireframe or placeholder file of the same engine name.
+  const uiOwners=require("./ui/build.js").build(contentStage);
+  const uiNames=new Set(Object.keys(uiOwners));
+  for(const name of uiNames)wireframeNames.delete(name);
+  const placeholderNames=new Set(require("./placeholders.js").build(contentStage,new Set([...wireframeNames,...uiNames])));
   // Audited frame contracts: the engine indexes frames up to minFrames-1 for
   // these objects (requirements.json minFramesEvidence). Fail the build if a
   // generated sprite is shorter, since the engine would read past its end.
@@ -96,7 +103,7 @@ function build(outdir){
     const frames=fs.readFileSync(file).readUInt16LE(0);
     if(frames<min)throw Error(entry.name+" has "+frames+" frames; the engine uses up to "+min);
   }
-  const conquerMembers=[...wireframeNames,...placeholderNames].filter(n=>!n.endsWith(".TEM")&&n!=="TEMPERAT.PAL").sort();
+  const conquerMembers=[...wireframeNames,...placeholderNames,...uiNames].filter(n=>!n.endsWith(".TEM")&&n!=="TEMPERAT.PAL").sort();
   const theaterMembers=[...placeholderNames].filter(n=>n.endsWith(".TEM")||n==="TEMPERAT.PAL").sort();
   buildBoot(outdir,{conquerExtra:{dir:contentStage,files:conquerMembers}});
   fs.copyFileSync(path.join(outdir,"game","TEMPERAT.PAL"),path.join(contentStage,"TEMPERAT.PAL"));
@@ -124,7 +131,7 @@ function build(outdir){
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
       entry.path.toUpperCase().endsWith(".MIX")?
       ["tools/content/boot-pack.js","tools/content/placeholders.js","tools/content/fading.js","tools/content/theater.js",
-        "tools/content/wireframes.js","game/content/pack/requirements.json"]:
+        "tools/content/wireframes.js","tools/content/ui/build.js","game/content/pack/requirements.json"]:
       ["tools/content/boot-pack.js","game/content/pack/boot-requirements.json"],
     license:"CC0-1.0",sourceRevision:revision
   }]));
@@ -165,7 +172,8 @@ function build(outdir){
   // Archive members: the engine loads game data through MFCD::Retrieve,
   // which only sees registered MIX archives, so members are what count.
   for(const name of Object.keys(archiveMembers))archiveMembers[name].sort();
-  const memberSource=name=>name.endsWith(".MRF")?"tools/content/fading.js":
+  const memberSource=name=>uiOwners[name]?uiOwners[name]:
+    name.endsWith(".MRF")?"tools/content/fading.js":
     theaterMembers.includes(name)||placeholderNames.has(name)?"tools/content/placeholders.js":
     wireframeNames.has(name)?"tools/content/wireframes.js":
     ["CLEAR1.TEM","W1.TEM","T01.TEM"].includes(name)||/^TI\d+\.TEM$/.test(name)?"tools/content/theater.js":

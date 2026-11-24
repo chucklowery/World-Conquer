@@ -49,6 +49,11 @@ function rgbPalette() {
     167:[188,250,215]
   };
   for(const [key,value] of Object.entries(overrides))colors[Number(key)]=value;
+  // Command-interface ramps (UI-B), allocated in tools/content/ui/palette.json.
+  // These indices are outside the remap band, the cycling ranges and the
+  // engine text colours above; pack.js keeps wireframe art off them.
+  for(const {index,rgb} of Object.values(require("./ui/palette.json").colors))
+    colors[index]=[1,3,5].map(i=>parseInt(rgb.slice(i,i+2),16));
   return colors;
 }
 function toHex(rgb) {

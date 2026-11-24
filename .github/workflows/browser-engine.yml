@@ -42,7 +42,9 @@ jobs:
       - name: Validate UI design sources
         run: |
           node tools/content/ui/test-ui-spec.js
+          node tools/content/ui/test-ui-chrome.js
           node tools/content/ui/mockups.js build/ui-mockups
+          node tools/content/ui/preview.js build/ui-mockups/generated
           node tools/content/ui/audit-palette-impact.js > build/ui-mockups/palette-impact.json
       - name: Publish UI design evidence
         uses: actions/upload-artifact@v4

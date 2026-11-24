@@ -1833,6 +1833,23 @@
    }
   },
   {
+   "name": "HRADAR.NOD",
+   "container": "CONQUER.MIX",
+   "format": "SHP",
+   "requiredFor": "gameplay",
+   "referencedAt": [
+    "tiberiandawn/radar.cpp"
+   ],
+   "generator": "ui",
+   "contract": {
+    "width": 160,
+    "height": 142,
+    "frames": 42,
+    "minFrames": 42,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/radar.cpp:341-350,472"
+   }
+  },
+  {
    "name": "HTITLE.PCX",
    "container": "loose|GENERAL.MIX",
    "format": "PCX",
@@ -7011,12 +7028,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
-    "width": 64,
+    "width": 48,
     "height": 18,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 3,
+    "minFrames": 3,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:353-355"
    }
   },
   {
@@ -7145,13 +7163,13 @@
    "referencedAt": [
     "tiberiandawn/power.cpp:148"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 16,
-    "height": 240,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4,
-    "note": "tactical SHP dimensions are limited to 255 (encode-shape.js)"
+    "height": 9,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/power.cpp:148,277"
    }
   },
   {
@@ -7162,12 +7180,13 @@
    "referencedAt": [
     "tiberiandawn/power.cpp:149"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 16,
-    "height": 8,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 16
+    "height": 124,
+    "frames": 8,
+    "minFrames": 8,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/power.cpp:208-209,255-267"
    }
   },
   {
@@ -7229,12 +7248,13 @@
    "referencedAt": [
     "tiberiandawn/radar.cpp:348"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 160,
-    "height": 136,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 64
+    "height": 142,
+    "frames": 42,
+    "minFrames": 42,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/radar.cpp:341-350,472"
    }
   },
   {
@@ -7245,12 +7265,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
-    "width": 64,
+    "width": 48,
     "height": 18,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 3,
+    "minFrames": 3,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:343-346"
    }
   },
   {
@@ -7261,12 +7282,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
-    "width": 64,
+    "width": 48,
     "height": 18,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 3,
+    "minFrames": 3,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:348-351"
    }
   },
   {
@@ -7277,12 +7299,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp:226"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 160,
-    "height": 120,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "height": 118,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:805"
    }
   },
   {
@@ -7293,12 +7316,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp:229"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 160,
-    "height": 120,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "height": 124,
+    "frames": 1,
+    "minFrames": 1,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:806"
    }
   },
   {
@@ -7309,12 +7333,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp:1158"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 64,
-    "height": 48,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "height": 193,
+    "frames": 2,
+    "minFrames": 2,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:1161,1814-1815"
    }
   },
   {
@@ -7325,12 +7350,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp:1251"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 32,
     "height": 24,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 3,
+    "minFrames": 3,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:1257-1261"
    }
   },
   {
@@ -7341,12 +7367,13 @@
    "referencedAt": [
     "tiberiandawn/sidebar.cpp:1251"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 32,
     "height": 24,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 3,
+    "minFrames": 3,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/sidebar.cpp:1251-1255"
    }
   },
   {
@@ -7357,12 +7384,13 @@
    "referencedAt": [
     "tiberiandawn/tab.cpp"
    ],
-   "generator": "placeholders",
+   "generator": "ui",
    "contract": {
     "width": 160,
     "height": 16,
-    "frames": "provisional-upper-bound",
-    "framesUsedAtMost": 4
+    "frames": 2,
+    "minFrames": 2,
+    "source": "docs/browser/UI_SPEC.md UI-A close-out; tiberiandawn/tab.cpp:111-113,262"
    }
   },
   {

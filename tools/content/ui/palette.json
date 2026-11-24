@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "proposed-not-allocated",
+  "status": "allocated-in-TEMPERAT.PAL",
   "excluded": [
     [
       0,
@@ -111,6 +111,10 @@
     "button": {
       "index": 239,
       "rgb": "#F5F7FA"
+    },
+    "subtle": {
+      "index": 225,
+      "rgb": "#2A3038"
     }
   },
   "states": {
@@ -152,5 +156,6 @@
       "button",
       "deep"
     ]
-  ]
+  ],
+  "notes": "Allocated in UI-B: boot-colors.js applies these RGB values and pack.js keeps the wireframe nearest-colour translation off these indices."
 }

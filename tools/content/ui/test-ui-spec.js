@@ -29,19 +29,16 @@ for(const [a,b] of p.textPairs){
  const ratio=contrast(lum(rgb(p.colors[a].rgb).map(linear)),lum(rgb(p.colors[b].rgb).map(linear)));
  assert(ratio>=4.5,a+"/"+b+" contrast "+ratio);
 }
-// Mirror the existing pack.js nearest-colour translation, without changing the pack.
-const game=rgbPalette();
-const textIndices=new Set([16,25,202,209,233,234,235,236,237]);
-const translated=sourceColors.slice(1).map(hex=>{
- const source=rgb(hex).map(x=>Math.round(x*255));
- let best=16,dist=Infinity;
- for(let j=16;j<256;j++){
-  if(j>=176&&j<=191||j>=32&&j<=38||textIndices.has(j))continue;
-  const d=source.reduce((sum,v,k)=>sum+(v-game[j][k])**2,0);
-  if(d<dist){dist=d;best=j;}
- }
- return best;
-});
+// The real pack.js translation must keep wireframe art off the UI indices
+// and must match the translation recorded before allocation (UI-A log).
+const translated=require("../pack.js").wireframeTranslation().slice(1,sourceColors.length);
+assert.deepEqual(translated,[140,97,42,170,41,110,255],"wireframe translation changed by UI allocation");
+// The shipped palette carries the allocated RGB values.
+{
+ const game=rgbPalette();
+ for(const {index,rgb:hex} of Object.values(p.colors))
+  assert.deepEqual(game[index],rgb(hex).map(v=>Math.round(v*255)),"palette entry "+index);
+}
 for(const index of translated)assert(!seen.has(index),"existing wireframe index "+index);
 // House remap tables (const.cpp Remap*) must never read or write a reserved
 // UI index, or a house colour change would recolour the command bar.

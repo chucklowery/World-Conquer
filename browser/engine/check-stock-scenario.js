@@ -395,6 +395,9 @@ async function main(){
     audit.sidebar=sidebar;
     if(sidebar.nonBlackShare<0.25)throw Error("Sidebar did not appear after deploying: "+JSON.stringify(sidebar));
     if(sidebar.cameoSlotsDrawn<2)throw Error("Sidebar shows no buildable cameos: "+JSON.stringify(sidebar));
+    // UI-B: generated command-bar chrome at the spec coordinates, and the
+    // REPAIR / SELL / MAP buttons driving the engine's own modes.
+    audit.uiChrome=await require("./ui-chrome-probes.js").run(page,{canvas,clickGame,screenshot,log:l=>console.log(l)});
     if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
     // M3: let the match run with no further player input and record what the
     // computer players do (STOCK_SCENARIO_OBSERVE_MINUTES, default off).
@@ -496,6 +499,10 @@ async function main(){
       else if(stage)audit.requiredMisses.push(miss);
       else audit.unclassifiedMisses.push(miss);
     }
+    // Any engine miss for a command-interface file is a failure on its own.
+    const uiFiles=new Set(requirements.files.filter(e=>e.generator==="ui").map(e=>e.name.toUpperCase()));
+    audit.uiMisses=audit.misses.filter(m=>uiFiles.has(path.basename(m.name.replace(/\\/g,"/")).toUpperCase()));
+    if(audit.uiMisses.length&&!audit.error)audit.error="Command-interface asset misses: "+JSON.stringify(audit.uiMisses);
     const reached=audit.lastGameLines.some(x=>x.includes("scenario.request="));
     if(reached)audit.pathDecision="Skirmish (scenario.request observed)";
     if(!audit.error)audit.status=reached?"scenario-request":"blocked-before-scenario";
