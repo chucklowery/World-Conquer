@@ -5,7 +5,9 @@ const os=require("node:os");
 const path=require("node:path");
 const p=require("./palette.json");
 const {match,menu,generate}=require("./mockups");
-const {TERRAIN}=require("../boot-colors");
+const {TERRAIN,rgbPalette}=require("../boot-colors");
+const t=require("./design-tokens.json");
+const {colors:sourceColors}=require("../../../game/content/source/placeholder.palette.json");
 const rgb=s=>s.match(/[0-9a-f]{2}/gi).map(v=>parseInt(v,16)/255);
 const linear=v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;
 const lum=v=>v.reduce((s,c,i)=>s+c*[0.2126,0.7152,0.0722][i],0);
@@ -27,6 +29,29 @@ for(const [a,b] of p.textPairs){
  const ratio=contrast(lum(rgb(p.colors[a].rgb).map(linear)),lum(rgb(p.colors[b].rgb).map(linear)));
  assert(ratio>=4.5,a+"/"+b+" contrast "+ratio);
 }
+// Mirror the existing pack.js nearest-colour translation, without changing the pack.
+const game=rgbPalette();
+const textIndices=new Set([16,25,202,209,233,234,235,236,237]);
+const translated=sourceColors.slice(1).map(hex=>{
+ const source=rgb(hex).map(x=>Math.round(x*255));
+ let best=16,dist=Infinity;
+ for(let j=16;j<256;j++){
+  if(j>=176&&j<=191||j>=32&&j<=38||textIndices.has(j))continue;
+  const d=source.reduce((sum,v,k)=>sum+(v-game[j][k])**2,0);
+  if(d<dist){dist=d;best=j;}
+ }
+ return best;
+});
+for(const index of translated)assert(!seen.has(index),"existing wireframe index "+index);
+const ratio=(a,b)=>contrast(lum(rgb(a).map(linear)),lum(rgb(b).map(linear)));
+for(const [a,b] of [
+ [t.text.primary,t.background.surface2],[t.text.muted,t.background.surface3],
+ [t.text.button,t.accent.primary],[t.text.button,t.accent.deep],
+ [t.accent.cyan,t.background.surface2],[t.accent.ice,t.background.surface2]
+])assert(ratio(a,b)>=t.minimumTextContrast,"design text contrast "+a+" / "+b);
+for(const a of [t.accent.hover,t.accent.cyan,t.statusColors.success,t.statusColors.warning,t.statusColors.danger])
+ assert(ratio(a,t.background.app)>=t.minimumMeaningfulNonTextContrast,"design signal contrast "+a);
+assert.equal(Object.values(t.chromeAreaTargets).reduce((a,b)=>a+b,0),100);
 const states=Object.values(p.states);
 assert.equal(new Set(states.map(s=>s.pattern)).size,states.length);
 for(const m of matrices){
@@ -46,4 +71,4 @@ try{
  }
  assert.notEqual(match("aster"),match("forge"));
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
-console.log("UI design checks passed (proposed palette only; full pack audit pending)");
+console.log("UI design checks passed (target contrast, provisional palette and wireframe translation; full pack audit pending)");
