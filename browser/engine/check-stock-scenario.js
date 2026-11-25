@@ -336,6 +336,8 @@ async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
     if(attempt%4===0){from=await mark();await request(1);}
   }
   const text=await logText();
+  const sold=text.match(new RegExp("\\[browser-event\\] sold name="+target+" house="+aiHouse));
+  if(sold)throw Error("The computer sold its last "+target+" instead of losing it to the player");
   if(!new RegExp(wonRe).test(text))throw Error("The match was not won: "+JSON.stringify(steps.steps.slice(-6)));
   const killed=text.match(new RegExp("\\[browser-event\\] killed name="+target+" house="+aiHouse+" by=(\\S+)"));
   if(!killed||killed[1]!==playerHouse)throw Error("The last building was not destroyed by the player: "+(killed?killed[0]:"no kill event"));

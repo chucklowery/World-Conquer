@@ -160,15 +160,19 @@ unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
   (`Limbo()` then `delete`, `scenario.cpp:593`): no death, no explosion.
   The kept building is the first one that neither builds (`ToBuild ==
   RTTI_NONE`) nor shoots (`Primary == WEAPON_NONE`). The house's expert AI
-  is switched off (`IsBaseBuilding`, `house.cpp:1596`, so no fire sale or
-  power sale) and it gets at least 5000 credits, so a damaged building
+  is switched off (`IQ = 0` and `IsBaseBuilding = false`; `house.cpp:932`
+  re-enables base building every tick while IQ is high enough, and
+  `house.cpp:1596` runs the expert AI, so no fire sale or power sale) and it gets at least 5000 credits, so a damaged building
   repairs instead of selling itself (`building.cpp:1187`). Safe to repeat.
 - **Why each of those** (CI runs on this branch): 45546655452 weakened the
   kept building and destroyed its neighbours through `Take_Damage`; their
   death explosions killed it (`by=none`). 45549805362 kept it at full
   strength; the explosions still killed it. 45551864057 removed the others
   quietly; the computer then sold the weakened building, which the engine
-  logs as a kill with no attacker (`building.cpp:4274`).
+  logs as a kill with no attacker (`building.cpp:4274`). 45553930818 cleared
+  `IsBaseBuilding` only; the engine set it again and the AI still sold the
+  building (crew left, and no `destroyed` event, which every real
+  destruction logs).
 - **Request 2 (show).** Centres the view on the kept building and logs its
   screen position on the next frame (`[browser-event] test-target`).
 - **Test** (`STOCK_SCENARIO_WIN=1`, CI job `win-match`). Waits until the

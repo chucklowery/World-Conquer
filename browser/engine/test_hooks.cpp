@@ -13,7 +13,9 @@
 //     killed the kept building with their death explosions (CI runs
 //     45546655452 and 45549805362).
 //     The house also stops selling: its expert AI is switched off
-//     (IsBaseBuilding, house.cpp:1596; no fire sale or power sale) and it is
+//     (IQ 0 and IsBaseBuilding false, house.cpp:932 and 1596; no fire sale
+//     or power sale; run 45553930818 set only IsBaseBuilding, which the
+//     engine turned back on, and the AI sold the building) and it is
 //     given enough credits that a damaged building repairs rather than sells
 //     itself (building.cpp:1187). In CI run 45551864057 the computer sold the
 //     kept building (logged as a kill with no attacker) before the player's
@@ -110,6 +112,9 @@ void Reduce()
     for (int h = HOUSE_MULTI1; h <= HOUSE_MULTI6; h++) {
         HouseClass* house = HouseClass::As_Pointer((HousesType)h);
         if (Is_Computer_House(house)) {
+            // IQ 0 too: house.cpp:932 turns base building back on every tick
+            // while IQ >= Rule.IQProduction (CI run 45553930818).
+            house->IQ = 0;
             house->IsBaseBuilding = false;
             house->State = STATE_BUILDUP;
             if (house->Credits < 5000)
