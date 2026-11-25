@@ -261,6 +261,87 @@ async function playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas})
   step("ran-2-minutes");
 }
 
+// M3 automated win (STOCK_SCENARIO_WIN=1). The engine declares a win only
+// when the computer has no buildings or units left. The CI-only test hook
+// (browser/engine/test_hooks.cpp, enabled by --browser-test-hooks) removes
+// all of the computer's forces but one weakened building; the player's own
+// starting units then destroy it with real selection and attack orders, and
+// the engine's defeat check, win screen and restart run as in normal play.
+async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
+  const t0=Date.now();
+  const steps=audit.win={steps:[]};
+  const step=(name,data={})=>{steps.steps.push({step:name,seconds:Math.round((Date.now()-t0)/1000),...data});};
+  const mark=async()=>(await logText()).length;
+  const seen=(src,timeout,from)=>page.waitForFunction(([re,m])=>
+    new RegExp(re).test(document.getElementById("log").textContent.slice(m)),[src,from],{timeout}).then(()=>true,()=>false);
+  const grab=async(src,from)=>(await logText()).slice(from).match(new RegExp(src));
+  async function request(n){
+    const result=await page.evaluate(n=>typeof Module._Browser_Test_Request==="function"?
+      Module._Browser_Test_Request(n):-1,n);
+    if(result!==1)throw Error("Test hook request "+n+" was refused ("+result+"); is --browser-test-hooks passed?");
+  }
+  const box=await canvas.boundingBox();
+  const at=(x,y)=>[box.x+x/640*box.width,box.y+y/400*box.height];
+  async function selectVisibleUnits(label){
+    await page.mouse.move(...at(8,24));await page.mouse.down();
+    await page.mouse.move(...at(470,390),{steps:8});await page.mouse.up();
+    await page.waitForTimeout(400);
+    step("select",{where:label});
+  }
+  // 1. Let the computer player start its base (the kept building must be
+  //    one it placed, not its construction yard).
+  let placed=0;
+  for(const deadline=Date.now()+10*60000;Date.now()<deadline;await page.waitForTimeout(5000)){
+    placed=[...(await logText()).matchAll(/\[browser-event\] placed name=\S+ house=(\S+)/g)]
+      .filter(m=>m[1]!==playerHouse).length;
+    if(placed>=2)break;
+  }
+  if(placed<2)throw Error("The computer player placed "+placed+" buildings in 10 minutes");
+  step("computer-built",{placed});
+  // 2. Remove all of the computer's forces but one weakened building.
+  let from=await mark();
+  await request(1);
+  if(!await seen("\\[browser-event\\] test-reduced ",10000,from))throw Error("The test hook did not run");
+  const reduced=await grab("\\[browser-event\\] test-reduced destroyed=(\\d+) target=(\\S+) house=(\\S+) cell=(\\d+),(\\d+)",from);
+  if(!reduced)throw Error("The computer player had no building to keep");
+  const target=reduced[2],aiHouse=reduced[3];
+  step("reduced",{destroyed:Number(reduced[1]),target,house:aiHouse,cell:[Number(reduced[4]),Number(reduced[5])]});
+  await screenshot("win-reduced");
+  // 3. Select the player's starting units at home (H centres on the base).
+  await page.keyboard.press("h");await page.waitForTimeout(800);
+  await page.keyboard.press("Home");await page.waitForTimeout(800);
+  await selectVisibleUnits("base");
+  // 4. Centre on the target and order the attack with a normal click; repeat
+  //    while units travel, reselecting the ones that have arrived.
+  const wonRe="\\[browser-event\\] match-end result=won";
+  for(let attempt=1;attempt<=24&&!(await seen(wonRe,1,0));attempt++){
+    from=await mark();
+    await request(2);
+    if(!await seen("\\[browser-event\\] test-target name=",10000,from))throw Error("The test hook did not report the target");
+    const shown=await grab("\\[browser-event\\] test-target name=(\\S+) x=(-?\\d+) y=(-?\\d+)",from);
+    if(!shown){
+      // The building is gone; clear anything the computer still has (for
+      // example a unit that was inside a building) so its defeat registers.
+      step("target-destroyed",{attempt});
+      await request(1);
+      await seen(wonRe,30000,0);
+      break;
+    }
+    const x=Number(shown[2]),y=Number(shown[3]);
+    if(attempt>1)await selectVisibleUnits("target");
+    await clickGame(x,y,"Attack "+target);
+    step("attack-order",{attempt,at:[x,y]});
+    if(attempt===1)await screenshot("win-attack");
+    if(await seen(wonRe,45000,0))break;
+    if(attempt%4===0){from=await mark();await request(1);}
+  }
+  const text=await logText();
+  if(!new RegExp(wonRe).test(text))throw Error("The match was not won: "+JSON.stringify(steps.steps.slice(-6)));
+  const killed=text.match(new RegExp("\\[browser-event\\] killed name="+target+" house="+aiHouse+" by=(\\S+)"));
+  if(!killed||killed[1]!==playerHouse)throw Error("The last building was not destroyed by the player: "+(killed?killed[0]:"no kill event"));
+  step("won",{target,killedBy:killed[1]});
+}
+
 async function main(){
   let browser,page;
   try{
@@ -275,6 +356,8 @@ async function main(){
         if(e.error&&e.error.stack)console.log("[browser-error] "+e.error.stack.replace(/\n/g," | "));
       });
     });
+    const winMode=process.env.STOCK_SCENARIO_WIN==="1";
+    if(winMode)await page.addInitScript(()=>{window.WCTestArgs=["--browser-test-hooks"];});
     await page.goto("http://127.0.0.1:"+server.address().port+"/"+pagePath,
       {waitUntil:"domcontentloaded",timeout:90000});
     await page.waitForFunction(()=>document.body.dataset.runtime==="ready",null,{timeout:90000});
@@ -395,7 +478,11 @@ async function main(){
     audit.sidebar=sidebar;
     if(sidebar.nonBlackShare<0.25)throw Error("Sidebar did not appear after deploying: "+JSON.stringify(sidebar));
     if(sidebar.cameoSlotsDrawn<2)throw Error("Sidebar shows no buildable cameos: "+JSON.stringify(sidebar));
+    // The hooks must be off unless this test asked for them.
+    const hooksOn=(await logText()).includes("[browser-test] test hooks enabled");
+    if(hooksOn!==winMode)throw Error("Test hooks are "+(hooksOn?"on":"off")+" but STOCK_SCENARIO_WIN is "+(winMode?"set":"not set"));
     if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
+    if(winMode)await winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
     // M3: let the match run with no further player input and record what the
     // computer players do (STOCK_SCENARIO_OBSERVE_MINUTES, default off).
     const observe=Number(process.env.STOCK_SCENARIO_OBSERVE_MINUTES||0);
@@ -422,6 +509,7 @@ async function main(){
       // The end-of-match score screen (score.cpp Multi_Score_Presentation)
       // waits for a click, then the game returns to the main menu.
       audit.matchEnd={result:end[1]};
+      if(winMode&&end[1]!=="won")throw Error("Expected a win but the match ended: "+end[1]);
       for(let t=1;t<=12;t++){
         await page.waitForTimeout(5000);
         if(t%3===0)await screenshot("score-"+t*5+"s");
@@ -532,5 +620,6 @@ async function main(){
   if(audit.houses)console.log("Houses:",JSON.stringify(audit.houses));
   if(audit.matchEnd)console.log("Match end:",JSON.stringify(audit.matchEnd));
   if(audit.computerPlayer)console.log("Computer player:",JSON.stringify(audit.computerPlayer));
+  if(audit.win)console.log("Win steps:",JSON.stringify(audit.win.steps));
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});

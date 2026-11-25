@@ -288,7 +288,10 @@ body.play-view>*:not(#play-view){display:none!important}
       }
       assetReady = true;
       loadingAssets = false;
-      run([], "game");
+      // CI tests may set window.WCTestArgs (an init script) to pass engine
+      // flags such as --browser-test-hooks; the page itself never sets it.
+      const testArgs = Array.isArray(window.WCTestArgs) ? window.WCTestArgs.map(String) : [];
+      run(testArgs, "game");
     } catch (error) {
       report("[browser-game] pack load failed: " + error.message, true);
       status("Boot pack unavailable or invalid: " + error.message, "error");

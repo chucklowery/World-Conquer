@@ -50,6 +50,7 @@ int Browser_Cooperative_Probe();
 int Browser_Data_Probe(const char* argv0);
 int Browser_Shape_Probe(const char* argv0);
 int Browser_Wireframe_Probe(const char* argv0);
+#include "browser/engine/test_hooks.h"
 #endif
 
 bool Read_Private_Config_Struct(FileClass& file, NewConfigType* config);
@@ -230,6 +231,8 @@ int main(int argc, char** argv)
     if (argc > 1 && strcmp(argv[1], "--browser-wireframe-probe") == 0) {
         return Browser_Wireframe_Probe(argv[0]);
     }
+    // CI-only: --browser-test-hooks (browser/engine/test_hooks.cpp).
+    Browser_Test_Hooks_Parse(argc, argv);
     std::printf("[browser-game] game startup entered; initializing paths and SDL2.\n");
 #endif
     UtfArgs args(argc, argv);
