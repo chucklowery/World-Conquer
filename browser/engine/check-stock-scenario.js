@@ -307,10 +307,21 @@ async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
   const target=reduced[2],aiHouse=reduced[3];
   step("reduced",{removed:Number(reduced[1]),target,house:aiHouse,cell:[Number(reduced[4]),Number(reduced[5])]});
   await screenshot("win-reduced");
-  // 3. Select the player's starting units at home (H centres on the base).
-  await page.keyboard.press("h");await page.waitForTimeout(800);
-  await page.keyboard.press("Home");await page.waitForTimeout(800);
-  await selectVisibleUnits("base");
+  // 3. Select the player's starting units where they are (they start around
+  //    the MCV's spawn cell, which the deploy step may have moved away from),
+  //    and check that the box selection took.
+  from=await mark();
+  await request(3);
+  if(!await seen("\\[browser-event\\] test-units ",10000,from))throw Error("The test hook did not report the player's units");
+  const units=await grab("\\[browser-event\\] test-units total=(\\d+) visible=(\\d+)",from);
+  if(Number(units[2])<1)throw Error("None of the player's "+units[1]+" units are on screen to select");
+  await selectVisibleUnits("units");
+  from=await mark();
+  await page.keyboard.press("Home");
+  await page.waitForTimeout(1000);
+  const selected=((await logText()).slice(from).match(/\[browser-event\] centered name=/g)||[]).length;
+  if(selected<1)throw Error("Box selection picked none of the "+units[2]+" visible units");
+  step("selected",{units:Number(units[1]),visible:Number(units[2]),selected});
   // 4. Centre on the target and order the attack with a normal click; repeat
   //    while units travel, reselecting the ones that have arrived.
   const wonRe="\\[browser-event\\] match-end result=won";

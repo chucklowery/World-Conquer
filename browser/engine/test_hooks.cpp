@@ -20,8 +20,15 @@
 //     itself (building.cpp:1187). In CI run 45551864057 the computer sold the
 //     kept building (logged as a kill with no attacker) before the player's
 //     units arrived. Safe to repeat.
+//     The area around the kept building is revealed to the player, so a
+//     click on it is an attack order rather than a move into the shroud
+//     (run 45556700656).
 //   request 2 ("show"): centres the view on the kept building and, on the
 //     next frame, logs its screen position.
+//   request 3 ("units"): centres the view on the player's own units and, on
+//     the next frame, logs how many there are and how many are on screen, so
+//     the test can box-select them. They start around the MCV's spawn cell,
+//     which the test may have driven away from before deploying.
 //
 // The test then destroys the last building with real units and real input,
 // so the engine's own defeat check, win screen and restart all run.
@@ -37,8 +44,9 @@
 
 namespace {
 bool enabled = false;
-int pending = 0;          // 0 none, 1 reduce, 2 show
+int pending = 0;          // 0 none, 1 reduce, 2 show, 3 units
 bool reportNextFrame = false;
+bool reportUnitsNextFrame = false;
 BuildingClass* target = nullptr;
 
 bool Is_Computer_House(HouseClass* house)
@@ -122,6 +130,7 @@ void Reduce()
         }
     }
     if (target) {
+        Map.Sight_From(PlayerPtr, Coord_Cell(target->Center_Coord()), 4, false);
         printf("[browser-event] test-reduced removed=%d target=%s house=%s cell=%d,%d\n",
                count,
                target->Class->IniName,
@@ -133,11 +142,27 @@ void Reduce()
     }
     fflush(stdout);
 }
+// The player's mobile units (not in limbo); fills `out` and returns the count.
+int Player_Units(FootClass** out, int max)
+{
+    int count = 0;
+    for (int i = 0; i < Units.Count() && count < max; i++) {
+        UnitClass* u = Units.Ptr(i);
+        if (u->IsActive && !u->IsInLimbo && u->House == PlayerPtr)
+            out[count++] = u;
+    }
+    for (int i = 0; i < Infantry.Count() && count < max; i++) {
+        InfantryClass* n = Infantry.Ptr(i);
+        if (n->IsActive && !n->IsInLimbo && n->House == PlayerPtr)
+            out[count++] = n;
+    }
+    return count;
+}
 } // namespace
 
 extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Test_Request(int request)
 {
-    if (!enabled || request < 1 || request > 2)
+    if (!enabled || request < 1 || request > 3)
         return 0;
     pending = request;
     return 1;
@@ -177,6 +202,18 @@ void Browser_Test_Hooks_Frame()
         }
         fflush(stdout);
     }
+    if (reportUnitsNextFrame) {
+        reportUnitsNextFrame = false;
+        FootClass* units[256];
+        int total = Player_Units(units, 256), visible = 0;
+        for (int i = 0; i < total; i++) {
+            int x, y;
+            if (Map.Coord_To_Pixel(units[i]->Center_Coord(), x, y))
+                visible++;
+        }
+        printf("[browser-event] test-units total=%d visible=%d\n", total, visible);
+        fflush(stdout);
+    }
     int request = pending;
     pending = 0;
     if (request == 1) {
@@ -187,6 +224,19 @@ void Browser_Test_Hooks_Frame()
             Map.Flag_To_Redraw(true);
         }
         reportNextFrame = true;
+    } else if (request == 3) {
+        FootClass* units[256];
+        int total = Player_Units(units, 256);
+        if (total) {
+            long x = 0, y = 0;
+            for (int i = 0; i < total; i++) {
+                x += Coord_X(units[i]->Center_Coord());
+                y += Coord_Y(units[i]->Center_Coord());
+            }
+            Map.Center_Map(XY_Coord((int)(x / total), (int)(y / total)));
+            Map.Flag_To_Redraw(true);
+        }
+        reportUnitsNextFrame = true;
     }
 }
 #endif

@@ -172,12 +172,22 @@ unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
   logs as a kill with no attacker (`building.cpp:4274`). 45553930818 cleared
   `IsBaseBuilding` only; the engine set it again and the AI still sold the
   building (crew left, and no `destroyed` event, which every real
-  destruction logs).
+  destruction logs). 45556700656 stopped the sale, but the player never
+  attacked in 24 orders over 18 minutes: the box selection was made around
+  the base while the units were still at the spawn cell, and the target was
+  under the shroud.
+- **Reveal.** Request 1 also reveals the area around the kept building to
+  the player (`Map.Sight_From`), so the click is an attack order, not a
+  move into the shroud.
+- **Request 3 (units).** Centres the view on the player's own units and logs
+  how many are on screen. They start around the MCV's spawn cell, which the
+  deploy step may have left. The test box-selects them and checks with Home
+  (`centered` events) that the selection took.
 - **Request 2 (show).** Centres the view on the kept building and logs its
   screen position on the next frame (`[browser-event] test-target`).
 - **Test** (`STOCK_SCENARIO_WIN=1`, CI job `win-match`). Waits until the
   computer has placed two buildings, reduces it, box-selects the player's
-  starting units at home, centres on the target and attacks with a normal
+  starting units where they are, centres on the target and attacks with a normal
   click, repeating every 45 s and reselecting units that have arrived. It
   requires `match-end result=won`, a kill of the target credited to the
   player, the score screen, and a restart.
