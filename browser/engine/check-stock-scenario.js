@@ -306,6 +306,15 @@ async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
   if(!reduced)throw Error("The computer player had no building to keep");
   const target=reduced[2],aiHouse=reduced[3];
   step("reduced",{destroyed:Number(reduced[1]),target,house:aiHouse,cell:[Number(reduced[4]),Number(reduced[5])]});
+  // Weaken the target only after the other buildings' death explosions,
+  // which damage their neighbours some frames later.
+  await page.waitForTimeout(8000);
+  from=await mark();
+  await request(3);
+  if(!await seen("\\[browser-event\\] test-weakened ",10000,from))throw Error("The test hook did not weaken the target");
+  const weakened=await grab("\\[browser-event\\] test-weakened target=(\\S+)(?: strength=(\\d+))?",from);
+  if(!weakened||weakened[1]!==target)throw Error("The kept "+target+" did not survive the other buildings' explosions");
+  step("weakened",{target,strength:Number(weakened[2])});
   await screenshot("win-reduced");
   // 3. Select the player's starting units at home (H centres on the base).
   await page.keyboard.press("h");await page.waitForTimeout(800);

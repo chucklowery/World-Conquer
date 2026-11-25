@@ -7,11 +7,15 @@
 //
 //   request 1 ("reduce"): every computer house loses all of its units,
 //     infantry, aircraft and all buildings but one. The kept building is the
-//     first one that neither builds nor shoots, and is left at 10% strength.
-//     Objects are destroyed through Take_Damage, so the normal death path
-//     runs. Safe to repeat (for example after a unit leaves a building).
+//     first one that neither builds nor shoots. Objects are destroyed
+//     through Take_Damage, so the normal death path runs. Safe to repeat
+//     (for example after a unit leaves a building).
 //   request 2 ("show"): centres the view on the kept building and, on the
 //     next frame, logs its screen position.
+//   request 3 ("weaken"): sets the kept building to 10% strength. Ask for it
+//     a few seconds after request 1: building death explosions damage their
+//     neighbours some frames later, and would destroy a weakened target
+//     before the player's units can.
 //
 // The test then destroys the last building with real units and real input,
 // so the engine's own defeat check, win screen and restart all run.
@@ -27,7 +31,7 @@
 
 namespace {
 bool enabled = false;
-int pending = 0;          // 0 none, 1 reduce, 2 show
+int pending = 0;          // 0 none, 1 reduce, 2 show, 3 weaken
 bool reportNextFrame = false;
 BuildingClass* target = nullptr;
 
@@ -100,9 +104,6 @@ void Reduce()
     for (int i = 0; i < count; i++)
         Destroy(doomed[i]);
     if (target) {
-        int weak = target->Class->MaxStrength / 10;
-        if (target->Strength > weak)
-            target->Strength = weak > 0 ? weak : 1;
         printf("[browser-event] test-reduced destroyed=%d target=%s house=%s cell=%d,%d\n",
                count,
                target->Class->IniName,
@@ -114,11 +115,23 @@ void Reduce()
     }
     fflush(stdout);
 }
+void Weaken()
+{
+    if (Target_Alive()) {
+        int weak = target->Class->MaxStrength / 10;
+        if (target->Strength > weak)
+            target->Strength = weak > 0 ? weak : 1;
+        printf("[browser-event] test-weakened target=%s strength=%d\n", target->Class->IniName, (int)target->Strength);
+    } else {
+        printf("[browser-event] test-weakened target=none\n");
+    }
+    fflush(stdout);
+}
 } // namespace
 
 extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Test_Request(int request)
 {
-    if (!enabled || request < 1 || request > 2)
+    if (!enabled || request < 1 || request > 3)
         return 0;
     pending = request;
     return 1;
@@ -168,6 +181,8 @@ void Browser_Test_Hooks_Frame()
             Map.Flag_To_Redraw(true);
         }
         reportNextFrame = true;
+    } else if (request == 3) {
+        Weaken();
     }
 }
 #endif

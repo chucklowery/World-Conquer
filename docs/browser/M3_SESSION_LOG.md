@@ -159,11 +159,15 @@ unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
   and all buildings but one, through `Take_Damage` (strength set to 1 first,
   so armour cannot save them). The kept building is the first one that
   neither builds (`ToBuild == RTTI_NONE`) nor shoots (`Primary ==
-  WEAPON_NONE`), left at 10% strength. It is safe to repeat.
+  WEAPON_NONE`). It is safe to repeat.
+- **Request 3 (weaken).** Sets the kept building to 10% strength. The test
+  asks for it 8 s after request 1: the first CI run (45546655452) weakened
+  the target at once, and the other buildings' death explosions, which
+  damage their neighbours a few frames later, destroyed it (`by=none`).
 - **Request 2 (show).** Centres the view on the kept building and logs its
   screen position on the next frame (`[browser-event] test-target`).
 - **Test** (`STOCK_SCENARIO_WIN=1`, CI job `win-match`). Waits until the
-  computer has placed two buildings, reduces it, box-selects the player's
+  computer has placed two buildings, reduces it, weakens the target, box-selects the player's
   starting units at home, centres on the target and attacks with a normal
   click, repeating every 45 s and reselecting units that have arrived. It
   requires `match-end result=won`, a kill of the target credited to the
