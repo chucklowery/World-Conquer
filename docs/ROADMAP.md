@@ -203,6 +203,8 @@ Progress: 2026-11-23 · `8ccae03ee5039cc87e698bc2101dc3bdf9245b09` · [CI run](h
 
 Progress: 2026-11-23 · `977d4f6e5d2344b51f6edea421d24c629f901d8b` · [publish run](https://github.com/chucklowery/World-Conquer/actions/runs/45262345913) · headless Chromium · the packaged play site started a skirmish and deployed the base through its play view, then deployed to GitHub Pages.
 
+Progress: 2026-11-25 · `86d4cfc56478c7a194377fd60a3cfe48d3f5aca6` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45514602700) · headless Chromium (Playwright 1.56.1) · legacy demos removed: WASM build, engine diagnostics, `stock-engine`, strict `stock-scenario` and `ai-match` on all three maps passed; the `wasm-vanillatd` job now takes about 3.5 minutes.
+
 ### M4: Load, budgets and browser reach (2–3 sessions)
 
 Every visitor pays for load time before seeing anything, so this comes before
