@@ -97,7 +97,7 @@ requests, all three on `vanilla` and manual runs.
 
 ## Open
 
-- **Win path** (test added 2026-11-25; CI evidence pending): see "Automated win" below.
+- **Win path** (closed 2026-11-25, [run 45562526792](https://github.com/chucklowery/World-Conquer/actions/runs/45562526792)): see "Automated win" below.
 - **Publishing** went live on 2026-11-23 (publish run 45262345913).
 
 ## Publishing (step 4)
@@ -191,3 +191,11 @@ unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
   click, repeating every 45 s and reselecting units that have arrived. It
   requires `match-end result=won`, a kill of the target credited to the
   player, the score screen, and a restart.
+
+**Evidence.** [Run 45562526792](https://github.com/chucklowery/World-Conquer/actions/runs/45562526792)
+on `55b3042`: the computer had placed NUKE, HAND and PROC; the hook removed
+12 objects and kept the NUKE at cell 31,11; all 6 of the player's starting
+units were on screen and selected; after three attack orders the NUKE was
+destroyed by `Multi1` (the player) at 112 s; the match ended `won`, the score
+screen drew (99% non-black) and a new match started. Every other job in the
+run passed.

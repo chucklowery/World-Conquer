@@ -175,11 +175,11 @@ Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
 - [x] Publish to GitHub Pages from `vanilla`
       ([run 45262345913](https://github.com/chucklowery/World-Conquer/actions/runs/45262345913)).
 - [x] A scripted Chromium acceptance test (`stock-scenario`).
-- [ ] **Automated win.** A test drives the human side to destroy the
+- [x] **Automated win.** A test drives the human side to destroy the
       computer's base on at least one map and sees the win screen and restart.
-      A debug-only, `__EMSCRIPTEN__`-guarded test hook (for example, reveal
-      the map and grant credits) is acceptable if it is off in the play
-      build.
+      Done with a CI-only test hook (`browser/engine/test_hooks.cpp`, off
+      unless the test passes `--browser-test-hooks`) and the `win-match` job;
+      design and the failed runs that shaped it are in the M3 session log.
 - [x] **Remove the legacy demos.** Delete `rts_world.h`,
       `production_orders.h`, `rts_weapon_system.h`, `rts_live_match.h`, the
       Courier sources and their JS (`tactical-hud.js`,
@@ -197,13 +197,16 @@ Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
 
 **Exit gate (CI):** on `vanilla`, `ai-match` covers both a loss and a win,
 per-PR CI runs only the native matrix, the WASM build and the stock-engine
-jobs, and the published site contains no legacy demo files.
+jobs, and the published site contains no legacy demo files. (Met on the
+branch; on `vanilla` once it is merged and published.)
 
 Progress: 2026-11-23 · `8ccae03ee5039cc87e698bc2101dc3bdf9245b09` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45222236369) · headless Chromium (Playwright 1.56.1) · on all three maps the computer player built 9-11 structures, made 131-224 harvest deliveries and 9-13 kills, and destroyed the idle player's base; the score screen drew and the game restarted from the skirmish dialog; zero required or unclassified misses.
 
 Progress: 2026-11-23 · `977d4f6e5d2344b51f6edea421d24c629f901d8b` · [publish run](https://github.com/chucklowery/World-Conquer/actions/runs/45262345913) · headless Chromium · the packaged play site started a skirmish and deployed the base through its play view, then deployed to GitHub Pages.
 
 Progress: 2026-11-25 · `86d4cfc56478c7a194377fd60a3cfe48d3f5aca6` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45514602700) · headless Chromium (Playwright 1.56.1) · legacy demos removed: WASM build, engine diagnostics, `stock-engine`, strict `stock-scenario` and `ai-match` on all three maps passed; the `wasm-vanillatd` job now takes about 3.5 minutes.
+
+Progress: 2026-11-25 · `55b3042f8f2b80d39decacc711883664289b78b6` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45562526792) · headless Chromium (Playwright 1.56.1) · automated win: the hook left the computer one power plant; the player's 6 starting units, box-selected with real input, destroyed it 112 s later (kill credited to the player); `match-end result=won`, score screen drawn, new match started. Every job in the run passed, including `ai-match` (losses) on all three maps.
 
 ### M4: Load, budgets and browser reach (2–3 sessions)
 
