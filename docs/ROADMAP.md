@@ -60,11 +60,8 @@ four tracks:
 - **Weak for a player:** every terrain cell is grass; units and buildings
   are wireframe placeholders; there is no sound; only headless Chromium is
   tested; there is no human playtest on record.
-- **Debt:** the frozen legacy demos still ship. `package-play.js` packages
-  `tactical-hud.js`, `simulation-bridge.js`, `rts-camera.js` and
-  `rts-input-ui.js` into the public site. `rts-foundation.yml` and
-  `validate-rts-roadmap.yml` still run on every pull request, and
-  `docs/browser/BACKLOG.md` still describes a GDI mission.
+- **Cleaned up (2026-11-24):** the legacy demos, their scripts, content and
+  workflows are removed; the play site ships only engine files.
 
 ## How milestones work
 
@@ -183,7 +180,7 @@ Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
       A debug-only, `__EMSCRIPTEN__`-guarded test hook (for example, reveal
       the map and grant credits) is acceptable if it is off in the play
       build.
-- [ ] **Remove the legacy demos.** Delete `rts_world.h`,
+- [x] **Remove the legacy demos.** Delete `rts_world.h`,
       `production_orders.h`, `rts_weapon_system.h`, `rts_live_match.h`, the
       Courier sources and their JS (`tactical-hud.js`,
       `simulation-bridge.js`, `rts-camera.js`, `rts-input-ui.js`,
@@ -194,7 +191,7 @@ Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
       launcher panel. Keep any
       C++ test that checks *engine* behaviour by moving it under `tests/`.
       `package-play.js` then ships only engine files.
-- [ ] **Docs housekeeping.** Rewrite `docs/browser/BACKLOG.md` as an index
+- [x] **Docs housekeeping.** Rewrite `docs/browser/BACKLOG.md` as an index
       of this roadmap; fix the title and status in `BROWSER_PORT.md`; mark
       `docs/rts-milestones/` as archived in its README only (no validator).
 
@@ -427,8 +424,8 @@ release.
 | WASM build, Asyncify loop, asset importer, native CI matrix | **Keep**: the platform foundation |
 | R04 map pipeline, R05 art, SHP/PAL/MIX encoders, wireframe catalog | **Keep**: the core of the data pack |
 | R01 camera/selection/input UX | **Port** the ideas as engine-side input options (M6) |
-| R20 soak harness and metrics | **Reuse** in the M4 budget job and the M6 soak |
-| `rts_world.h`, `production_orders.h`, `rts_weapon_system.h`, Courier, v3 snapshot bridge, JS tactical HUD, legacy workflows | **Remove** in M3 |
+| R20 soak harness and metrics | **Removed** with the demos it measured (M3); the M4 budget job and M6 soak are written for the stock engine |
+| `rts_world.h`, `production_orders.h`, `rts_weapon_system.h`, Courier, v3 snapshot bridge, JS tactical HUD, legacy workflows | **Removed** in M3 (2026-11-24); kept in git history |
 | R06–R17, R19 prompts | **Superseded**: covered by engine features configured through M4–M9 |
 
 ## Evidence

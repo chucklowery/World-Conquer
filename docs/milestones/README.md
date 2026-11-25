@@ -86,8 +86,8 @@ first phase of <S> not marked done."
 3. No binary game data is committed; generated outputs live only in CI
    artifacts. Run `git diff --stat` and look for `.MIX`, `.SHP`, `.PAL`,
    `.CPS`, `.FNT`, `.TEM` or `.BIN` files.
-4. No changes to the frozen legacy demo files (`rts_world.h` and the others
-   listed in AGENT_GUIDE.md rule 1) beyond keeping tests green.
+4. No parallel simulation code (AGENT_GUIDE.md rule 1); the legacy demos
+   were removed in M3.
 5. Engine C++ changes are small, `#ifdef __EMSCRIPTEN__`-guarded, limited to
    the kinds the M2 file allows, and the native build jobs are green.
 6. The session log has a handoff for the next session. For M2d, the

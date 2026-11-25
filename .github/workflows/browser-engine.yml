@@ -2,18 +2,12 @@ name: Browser VanillaTD engine compile
 
 on:
   workflow_dispatch:
-    inputs:
-      legacy_soak:
-        description: Run the frozen legacy demo soak (5 minutes per map) in wasm-vanillatd
-        type: boolean
-        default: true
   push:
     branches: [vanilla]
     paths:
       - 'CMakeLists.txt'
       - 'tiberiandawn/**'
       - 'browser/engine/**'
-      - 'scripts/summarize-r20-metrics.js'
       - 'game/content/**'
       - 'tools/content/**'
       - 'common/**'
@@ -110,19 +104,6 @@ jobs:
           cp browser/engine/pack-loader.js build/browser-engine/pack-loader.js
           cp browser/engine/original-asset.js build/browser-engine/original-asset.js
           cp browser/engine/wireframe-asset.js build/browser-engine/wireframe-asset.js
-          cp browser/engine/cargo-hd.js build/browser-engine/cargo-hd.js
-          cp browser/engine/vertical-slice.js build/browser-engine/vertical-slice.js
-          cp browser/engine/mission-pack.js build/browser-engine/mission-pack.js
-          cp browser/engine/tactical-hud.js build/browser-engine/tactical-hud.js
-          cp browser/engine/simulation-bridge.js build/browser-engine/simulation-bridge.js
-          cp browser/engine/rts-camera.js browser/engine/rts-input-ui.js build/browser-engine/
-          cp browser/engine/play.html build/browser-engine/play.html
-          mkdir -p build/browser-engine/missions
-          cp game/content/missions/*.map game/content/missions/manifest.json build/browser-engine/missions/
-          mkdir -p build/browser-engine/r18
-          cp game/content/r18/definitions.rts build/browser-engine/r18/definitions.rts
-          mkdir -p build/browser-engine/cargo-hd
-          cp game/content/wireframes/hd/WF-0002/*.png game/content/wireframes/hd/WF-0002/manifest.json build/browser-engine/cargo-hd/
           # Verify we generated the custom deferred-start launcher.
           grep -q 'id="canvas"' build/browser-engine/vanillatd.html
           grep -q 'id="run-probe"' build/browser-engine/vanillatd.html
@@ -133,50 +114,6 @@ jobs:
           node browser/engine/test-asset-import.js
           node browser/engine/test-original-asset.js
           node browser/engine/test-wireframe-asset.js
-          node browser/engine/test-cargo-hd.js
-          node browser/engine/test-vertical-slice.js
-          node browser/engine/test-mission-pack.js
-          node browser/engine/validate-maps.js
-          node browser/engine/test-tactical-hud.js
-          node browser/engine/test-simulation-bridge.js
-          node browser/engine/test-r20-metrics.js
-          node browser/engine/test-r20-soak-wait.js
-          node tools/content/test-r18.js
-          node browser/engine/test-rts-camera.js
-          node browser/engine/test-package-alpha.js
-          node docs/rts-milestones/validate-roadmap.js
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-native-slice.cpp -o build/browser-engine/test-native-slice
-          build/browser-engine/test-native-slice
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-world-plan.cpp -o build/browser-engine/test-world-plan
-          build/browser-engine/test-world-plan
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-map-pipeline.cpp -o build/browser-engine/test-map-pipeline
-          build/browser-engine/test-map-pipeline
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-combat.cpp -o build/browser-engine/test-combat
-          build/browser-engine/test-combat
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-weapons.cpp -o build/browser-engine/test-rts-weapons
-          build/browser-engine/test-rts-weapons
-          node docs/rts-milestones/validate-roadmap.js
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-simulation-contract.cpp -o build/browser-engine/test-simulation-contract
-          build/browser-engine/test-simulation-contract
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-production-orders.cpp -o build/browser-engine/test-production-orders
-          build/browser-engine/test-production-orders
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-world.cpp -o build/browser-engine/test-rts-world
-          build/browser-engine/test-rts-world
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-world-ports.cpp -o build/browser-engine/test-rts-world-ports
-          build/browser-engine/test-rts-world-ports
-          node browser/engine/test-rts-world-bridge.js build/browser-engine/test-rts-world
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/test-rts-live-match.cpp -o build/browser-engine/test-rts-live-match
-          build/browser-engine/test-rts-live-match
-          node browser/engine/test-rts-live-bridge.js build/browser-engine/test-rts-live-match
-          g++ -std=c++11 -Wall -Wextra -Werror -Ibrowser/engine browser/engine/replay-native-slice.cpp -o build/browser-engine/replay-native-slice
-          node browser/engine/test-replay-parity.js build/browser-engine/replay-native-slice
-          # The historical engine headers require the same compile definitions as VanillaTD.
-          # Compile-only here; the linked WASM runtime exercises target encoding in Chromium.
-          g++ -std=c++11 -DTRUE_FALSE_DEFINED -DMEGAMAPS -isystem . -isystem common -Ibrowser/engine -c browser/engine/test-engine-target.cpp -o build/browser-engine/test-engine-target.o
-          g++ -std=c++11 -DTRUE_FALSE_DEFINED -DMEGAMAPS -isystem . -isystem common -Ibrowser/engine -c browser/engine/test-engine-foot.cpp -o build/browser-engine/test-engine-foot.o
-          g++ -std=c++11 -DTRUE_FALSE_DEFINED -DMEGAMAPS -isystem . -isystem common -Ibrowser/engine -c browser/engine/test-engine-map.cpp -o build/browser-engine/test-engine-map.o
-          test -s browser/engine/play.html
-          test -s build/browser-engine/play.html
       - name: Verify original content pipeline
         run: |
           node tools/content/test-build.js
@@ -226,28 +163,10 @@ jobs:
             npm exec --prefix browser/engine -- playwright install-deps chromium
             node -e 'const {chromium}=require("./browser/engine/node_modules/playwright"); chromium.launch({headless:true,args:["--no-sandbox"]}).then(browser=>browser.close()).catch(err=>{console.error(err);process.exitCode=1;})'
           fi
-      # Pull requests use a fast smoke; branch pushes run the functional
-      # regression without a soak (ADR-0003: soak budgets move to M4).
-      # Manual workflow_dispatch is the optional FND-006 soak tier:
-      # 48 epochs/map, minimum 300 elapsed seconds/map, enforced tick/heap
-      # thresholds, and retained raw JSON for three independent SHA-matched runs.
-      - name: Test actual engine in headless Chromium
-        env:
-          # Manual runs soak the frozen legacy demos unless legacy_soak is off
-          # (then they run in the fast mode used on pull requests).
-          BROWSER_CI_FAST: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && !inputs.legacy_soak)) && '1' || '0' }}
-          R20_WASM_SOAK_EPOCHS: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '48' || '0' }}
-          # Manual candidate runs require at least 5 real minutes *per map*;
-          # vanilla-push runs are regression-only, not soak evidence.
-          R20_WASM_SOAK_SECONDS_PER_MAP: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '300' || '0' }}
-          R20_WASM_MAX_TICK_P95_US: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '50000' || '0' }}
-          R20_WASM_MAX_HEAP_DELTA_BYTES: ${{ (github.event_name == 'workflow_dispatch' && inputs.legacy_soak) && '16777216' || '0' }}
+      - name: Test engine diagnostics in headless Chromium
         run: |
-          node browser/engine/check-r01-ui.js
           node browser/engine/check-runtime.js
           node browser/engine/check-r05-gallery.js build/browser-engine/r05
-      - name: Package Pages-ready native tactical alpha
-        run: node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site "$GITHUB_SHA"
       - name: Upload browser probe evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -256,23 +175,8 @@ jobs:
           path: |
             build/browser-engine/browser-probe.png
             build/browser-engine/browser-probe.log
-            build/browser-engine/r20-wasm-metrics.json
-            build/browser-engine/r01-desktop.png
-            build/browser-engine/r01-compact.png
             build/browser-engine/r05/gallery-proof.png
-            build/browser-engine/r02-orders.png
-            build/browser-engine/r03-defeat.png
           if-no-files-found: ignore
-      - name: Upload standalone original-content mission
-        uses: actions/upload-artifact@v4
-        with:
-          name: world-conquer-courier-playable
-          path: |
-            build/browser-engine/play.html
-            build/browser-engine/vertical-slice.js
-            build/browser-engine/mission-pack.js
-            build/browser-engine/missions/**
-          if-no-files-found: error
       - name: Upload original M2 data pack
         if: always()
         uses: actions/upload-artifact@v4
@@ -294,29 +198,10 @@ jobs:
             build/browser-engine/pack-loader.js
             build/browser-engine/original-asset.js
             build/browser-engine/wireframe-asset.js
-            build/browser-engine/cargo-hd.js
-            build/browser-engine/vertical-slice.js
-            build/browser-engine/mission-pack.js
-            build/browser-engine/tactical-hud.js
-            build/browser-engine/simulation-bridge.js
-            build/browser-engine/rts-camera.js
-            build/browser-engine/rts-input-ui.js
-            build/browser-engine/missions/**
-            build/browser-engine/play.html
-            build/browser-engine/cargo-hd/**
             build/browser-engine/content/**
             build/browser-engine/wireframes/**
             build/browser-engine/r05/**
-            build/browser-engine/r18/**
           if-no-files-found: error
-      - name: Upload Pages-ready native tactical alpha
-        uses: actions/upload-artifact@v4
-        with:
-          name: world-conquer-tactical-alpha-site
-          path: build/tactical-alpha-site/**
-          include-hidden-files: true
-          if-no-files-found: error
-
 
   stock-engine:
     name: stock-engine

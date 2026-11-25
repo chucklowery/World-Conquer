@@ -1,5 +1,9 @@
 # Architecture and Source Map
 
+> **Historical (removed 2026-11-24).** This document describes the parallel
+> world layer and legacy demos deleted in M3 (see `docs/ROADMAP.md`). The
+> code is in git history before the M3 cleanup commit.
+
 ## R18 — native world, houses and gameplay-definition registry (v3)
 
 `browser/engine/rts_world.h` provides the authoritative world/lifecycle

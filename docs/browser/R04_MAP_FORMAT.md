@@ -1,5 +1,9 @@
 # R04 — Original-content map format, validation and migration
 
+> **Historical (removed 2026-11-24).** This document describes the parallel
+> world layer and legacy demos deleted in M3 (see `docs/ROADMAP.md`). The
+> code is in git history before the M3 cleanup commit.
+
 The tactical alpha now supports a **versioned map pack** with multiple playable
 dimensions and terrain types. All maps are project-authored text: no historical
 VanillaTD theater data or proprietary media is imported. The full VanillaTD

@@ -1,5 +1,9 @@
 # R02 — Production-unit orders and bounded navigation
 
+> **Historical (removed 2026-11-24).** This document describes the parallel
+> world layer and legacy demos deleted in M3 (see `docs/ROADMAP.md`). The
+> code is in git history before the M3 cleanup commit.
+
 This opt-in mode uses **four real VanillaTD `InfantryClass` objects** owned
 by a player `HouseClass`, placed on the authored Courier 18×11 obstacle map
 through `MapClass`. Courier Extraction continues unchanged, with its

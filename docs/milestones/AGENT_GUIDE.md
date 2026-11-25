@@ -18,11 +18,9 @@ This guide is self-contained. You do not need earlier conversations.
 
 1. **The stock engine is the only gameplay authority.** Harvesting, building,
    power, production, combat, AI, shroud and scenarios come from
-   `tiberiandawn/`. Do **not** add or extend parallel simulation layers. In
-   particular, `browser/engine/rts_world.h`, `production_orders.h`,
-   `rts_weapon_system.h`, `rts_live_match.h`, `simulation_contract.h` and the
-   JS tactical HUD are **frozen legacy demos**. Do not modify them except to
-   keep their existing tests passing.
+   `tiberiandawn/`. Do **not** add parallel simulation layers. The earlier
+   parallel world (`rts_world.h`, the Courier and R02/R03 demos and the JS
+   tactical HUD) was removed in M3; do not restore it.
 2. **No EA or Westwood media, ever.** Do not commit, download, upload to CI,
    trace, redraw from, or describe the contents of original game files
    (MIX, SHP, PAL, AUD, VQA, CPS, FNT, INI or BIN files from any C&C release).
@@ -80,21 +78,18 @@ cmake --build build/native
 
 Existing checks you must keep passing:
 
-- `node docs/rts-milestones/validate-roadmap.js`
-- `bash scripts/check-rts-foundation.sh` (legacy demo regression)
 - `.github/workflows/browser-engine.yml`, which runs
-  `browser/engine/check-r01-ui.js` and `browser/engine/check-runtime.js` in
-  headless Chromium. Playwright is installed under `browser/engine/node_modules`
-  by the workflow.
+  `browser/engine/check-runtime.js` (engine diagnostics: SDL2 probe,
+  cooperative loop, SHP drawing, file staging) and
+  `browser/engine/check-r05-gallery.js` in headless Chromium. Playwright is
+  installed under `browser/engine/node_modules` by the workflow.
 
 - `browser/engine/check-stock-engine.js` (CI job `stock-engine`, added in
   M1): the unmodified engine reaches its menu on generated data, and clicks
   land at the right game position.
 
-**Known pre-existing CI failure:** the `publish-release` job in the Linux,
-Windows, MinGW and macOS workflows fails with "file_count limited to 1000
-assets per release". It is not caused by your change. Judge platform health
-by the **build** jobs.
+- `browser/engine/check-stock-scenario.js` (CI jobs `stock-scenario` and
+  `ai-match`): a full skirmish on the original data pack.
 
 ## 4. Key code locations
 
@@ -113,12 +108,12 @@ by the **build** jobs.
 | Scenario loading | `tiberiandawn/scenarioini.cpp` |
 | Browser launcher page | `browser/engine/shell.html` (first panel = stock engine) |
 | Local file import into MEMFS | `browser/engine/asset-import.js` |
-| Chromium acceptance driver | `browser/engine/check-runtime.js` |
+| Chromium acceptance drivers | `browser/engine/check-stock-engine.js`, `check-stock-scenario.js` (game); `check-runtime.js` (diagnostics) |
 | SHP/PAL encoders | `tools/content/encode-shape.js`, `encode-palette.js`, `build.js` |
 | 295 engine asset slots and placeholders | `docs/browser/WIREFRAME_REPLACEMENT_CATALOG.md`, `tools/content/wireframes.js`, `game/content/wireframes/` |
 | MIX archive builder (native tool) | `tools/mixtool/` (`--create`, `--directory`, `--manifest`, `--file`) |
 | Original R05 faction art | `game/content/r05/`, `tools/content/r05.js` |
-| Map pipeline (legacy format, to retarget) | `browser/engine/mission-pack.js`, `docs/browser/R04_MAP_FORMAT.md` |
+| Skirmish maps (scenario INI/BIN) | `game/content/scenarios/*.json`, `tools/content/scenario.js` |
 
 ## 5. Workflow for each work package
 

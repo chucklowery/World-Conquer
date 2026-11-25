@@ -4,6 +4,8 @@
 > plan is [`docs/ROADMAP.md`](../ROADMAP.md), per ADR-0003 in
 > [`docs/browser/DECISIONS.md`](../browser/DECISIONS.md). Do not start new
 > R-milestones; the prompts and evidence below are kept as historical records.
+> The code they built, `validate-roadmap.js` and the legacy CI workflows were
+> removed on 2026-11-24 (M3 cleanup), so commands named below no longer run.
 
 This directory is a set of **independently executable milestone briefs**, not a
 claim that the full RTS already exists. Start with [MANIFEST.md](MANIFEST.md).

@@ -1,5 +1,9 @@
 # R20 native extension contracts — R06 economy and R09 visibility
 
+> **Historical (removed 2026-11-24).** This document describes the parallel
+> world layer and legacy demos deleted in M3 (see `docs/ROADMAP.md`). The
+> code is in git history before the M3 cleanup commit.
+
 **Status: FND-004/005 native/JS host economy ports and opt-in real-WASM
 publication are implemented; maintainer approval of the contract is pending.
 R09 visibility remains proposed and unimplemented.** The explicit owner
