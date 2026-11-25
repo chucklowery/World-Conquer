@@ -158,17 +158,21 @@ unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
 - **Request 1 (reduce).** Removes every computer unit, infantry, aircraft
   and all buildings but one the way the engine removes a sabotaged building
   (`Limbo()` then `delete`, `scenario.cpp:593`): no death, no explosion.
-  Destroying them through `Take_Damage` killed the kept building with their
-  death explosions in two CI runs (45546655452 weakened at once;
-  45549805362 at full strength). The kept building is the first one that
-  neither builds (`ToBuild == RTTI_NONE`) nor shoots (`Primary ==
-  WEAPON_NONE`). It is safe to repeat.
-- **Request 3 (weaken).** Sets the kept building to 10% strength; the test
-  asks for it 3 s after request 1.
+  The kept building is the first one that neither builds (`ToBuild ==
+  RTTI_NONE`) nor shoots (`Primary == WEAPON_NONE`). The house's expert AI
+  is switched off (`IsBaseBuilding`, `house.cpp:1596`, so no fire sale or
+  power sale) and it gets at least 5000 credits, so a damaged building
+  repairs instead of selling itself (`building.cpp:1187`). Safe to repeat.
+- **Why each of those** (CI runs on this branch): 45546655452 weakened the
+  kept building and destroyed its neighbours through `Take_Damage`; their
+  death explosions killed it (`by=none`). 45549805362 kept it at full
+  strength; the explosions still killed it. 45551864057 removed the others
+  quietly; the computer then sold the weakened building, which the engine
+  logs as a kill with no attacker (`building.cpp:4274`).
 - **Request 2 (show).** Centres the view on the kept building and logs its
   screen position on the next frame (`[browser-event] test-target`).
 - **Test** (`STOCK_SCENARIO_WIN=1`, CI job `win-match`). Waits until the
-  computer has placed two buildings, reduces it, weakens the target, box-selects the player's
+  computer has placed two buildings, reduces it, box-selects the player's
   starting units at home, centres on the target and attacks with a normal
   click, repeating every 45 s and reselecting units that have arrived. It
   requires `match-end result=won`, a kill of the target credited to the

@@ -264,7 +264,7 @@ async function playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas})
 // M3 automated win (STOCK_SCENARIO_WIN=1). The engine declares a win only
 // when the computer has no buildings or units left. The CI-only test hook
 // (browser/engine/test_hooks.cpp, enabled by --browser-test-hooks) removes
-// all of the computer's forces but one weakened building; the player's own
+// all of the computer's forces but one building and stops it selling; the player's own
 // starting units then destroy it with real selection and attack orders, and
 // the engine's defeat check, win screen and restart run as in normal play.
 async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
@@ -298,7 +298,7 @@ async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
   }
   if(placed<2)throw Error("The computer player placed "+placed+" buildings in 10 minutes");
   step("computer-built",{placed});
-  // 2. Remove all of the computer's forces but one weakened building.
+  // 2. Remove all of the computer's forces but one building.
   let from=await mark();
   await request(1);
   if(!await seen("\\[browser-event\\] test-reduced ",10000,from))throw Error("The test hook did not run");
@@ -306,14 +306,6 @@ async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
   if(!reduced)throw Error("The computer player had no building to keep");
   const target=reduced[2],aiHouse=reduced[3];
   step("reduced",{removed:Number(reduced[1]),target,house:aiHouse,cell:[Number(reduced[4]),Number(reduced[5])]});
-  // Weaken the target a moment later, once the removals have settled.
-  await page.waitForTimeout(3000);
-  from=await mark();
-  await request(3);
-  if(!await seen("\\[browser-event\\] test-weakened ",10000,from))throw Error("The test hook did not weaken the target");
-  const weakened=await grab("\\[browser-event\\] test-weakened target=(\\S+)(?: strength=(\\d+))?",from);
-  if(!weakened||weakened[1]!==target)throw Error("The kept "+target+" was destroyed before the attack: "+(weakened?weakened[0]:"no report"));
-  step("weakened",{target,strength:Number(weakened[2])});
   await screenshot("win-reduced");
   // 3. Select the player's starting units at home (H centres on the base).
   await page.keyboard.press("h");await page.waitForTimeout(800);
@@ -417,14 +409,16 @@ async function main(){
     await page.waitForTimeout(7000);
     await screenshot("after-confirm");
     // Phase 7 gate: the battlefield must actually be drawn (terrain plus
-    // units/resources), not just loaded. Thresholds come from a good run:
-    // the revealed start area covers well over 10% of the view.
+    // units/resources), not just loaded. Thresholds come from good runs. A
+    // start slot at the map edge leaves much of the view outside the map:
+    // run 45551864057 drew a correct battlefield at 8.1% non-black from cell
+    // 31,8, so the floor is 5%; the object check still requires units.
     await page.evaluate(()=>{window.WCWatchdog.maxStallMs=0;});
     await page.waitForTimeout(3000);
     const field=await battlefieldStats(page,await canvas.screenshot(),false);
     audit.battlefield=field;
     audit.matchStallMs=await page.evaluate(()=>window.WCWatchdog.maxStallMs);
-    if(field.nonBlackShare<0.10)throw Error("Battlefield is mostly black: "+JSON.stringify(field));
+    if(field.nonBlackShare<0.05)throw Error("Battlefield is mostly black: "+JSON.stringify(field));
     if(field.objectShare<0.002)throw Error("No units or resources visible on the battlefield: "+JSON.stringify(field));
     if(audit.matchStallMs>1000)throw Error("Main-thread stall after match start: "+audit.matchStallMs+"ms");
 

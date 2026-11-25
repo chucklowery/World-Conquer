@@ -11,14 +11,15 @@
 //     way the engine removes a sabotaged building (Limbo, then delete;
 //     scenario.cpp): no death and no explosion. Destroying them instead
 //     killed the kept building with their death explosions (CI runs
-//     45546655452 and 45549805362). Safe to repeat (for example after a
-//     unit leaves a building).
+//     45546655452 and 45549805362).
+//     The house also stops selling: its expert AI is switched off
+//     (IsBaseBuilding, house.cpp:1596; no fire sale or power sale) and it is
+//     given enough credits that a damaged building repairs rather than sells
+//     itself (building.cpp:1187). In CI run 45551864057 the computer sold the
+//     kept building (logged as a kill with no attacker) before the player's
+//     units arrived. Safe to repeat.
 //   request 2 ("show"): centres the view on the kept building and, on the
 //     next frame, logs its screen position.
-//   request 3 ("weaken"): sets the kept building to 10% strength. Ask for it
-//     a few seconds after request 1: building death explosions damage their
-//     neighbours some frames later, and would destroy a weakened target
-//     before the player's units can.
 //
 // The test then destroys the last building with real units and real input,
 // so the engine's own defeat check, win screen and restart all run.
@@ -34,7 +35,7 @@
 
 namespace {
 bool enabled = false;
-int pending = 0;          // 0 none, 1 reduce, 2 show, 3 weaken
+int pending = 0;          // 0 none, 1 reduce, 2 show
 bool reportNextFrame = false;
 BuildingClass* target = nullptr;
 
@@ -105,6 +106,16 @@ void Reduce()
     }
     for (int i = 0; i < count; i++)
         Remove(doomed[i]);
+    // Stop the computer selling what is left (see the file comment).
+    for (int h = HOUSE_MULTI1; h <= HOUSE_MULTI6; h++) {
+        HouseClass* house = HouseClass::As_Pointer((HousesType)h);
+        if (Is_Computer_House(house)) {
+            house->IsBaseBuilding = false;
+            house->State = STATE_BUILDUP;
+            if (house->Credits < 5000)
+                house->Credits = 5000;
+        }
+    }
     if (target) {
         printf("[browser-event] test-reduced removed=%d target=%s house=%s cell=%d,%d\n",
                count,
@@ -117,23 +128,11 @@ void Reduce()
     }
     fflush(stdout);
 }
-void Weaken()
-{
-    if (Target_Alive()) {
-        int weak = target->Class->MaxStrength / 10;
-        if (target->Strength > weak)
-            target->Strength = weak > 0 ? weak : 1;
-        printf("[browser-event] test-weakened target=%s strength=%d\n", target->Class->IniName, (int)target->Strength);
-    } else {
-        printf("[browser-event] test-weakened target=none\n");
-    }
-    fflush(stdout);
-}
 } // namespace
 
 extern "C" EMSCRIPTEN_KEEPALIVE int Browser_Test_Request(int request)
 {
-    if (!enabled || request < 1 || request > 3)
+    if (!enabled || request < 1 || request > 2)
         return 0;
     pending = request;
     return 1;
@@ -183,8 +182,6 @@ void Browser_Test_Hooks_Frame()
             Map.Flag_To_Redraw(true);
         }
         reportNextFrame = true;
-    } else if (request == 3) {
-        Weaken();
     }
 }
 #endif
