@@ -20,9 +20,10 @@ removed in M3. They are in git history before that cleanup commit.
 | `asset-audit.js` | Parses `[asset-hit]` / `[asset-miss]` log lines into `window.WCAssetAudit` |
 | `original-asset.js`, `wireframe-asset.js` | Verify and stage the sample SHP and six wireframe shapes for the diagnostics |
 | `probe.cpp`, `data_probe.cpp`, `shape_probe.cpp` | Diagnostic `--browser-*` modes compiled into the engine (`tiberiandawn/startup.cpp`) |
+| `test_hooks.cpp`, `test_hooks.h` | CI-only test hook for the automated win; inert unless `main()` gets `--browser-test-hooks`, which only `check-stock-scenario.js` passes (through `window.WCTestArgs`) |
 | `cooperative.h` | `Browser_Cooperative_Yield()`, the Asyncify yield used by `Call_Back()` and `Frame_Limiter()` |
 | `check-stock-engine.js` | CI `stock-engine`: the unmodified engine reaches its menu on original data |
-| `check-stock-scenario.js` | CI `stock-scenario` and `ai-match`: a full skirmish on the original data pack |
+| `check-stock-scenario.js` | CI `stock-scenario`, `ai-match` and `win-match`: a full skirmish on the original data pack, a loss to the computer player, and a win |
 | `check-runtime.js` | Engine diagnostics in Chromium: SDL2 probe, cooperative loop, SHP drawing, file staging |
 | `check-r05-gallery.js`, `r05-gallery.*` | The R05 Aster/Forge art gallery (an art reference, not a game mode) |
 | `package-play.js` | Packages the public play site published by `publish-play.yml` |

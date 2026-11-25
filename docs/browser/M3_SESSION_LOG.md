@@ -97,11 +97,8 @@ requests, all three on `vanilla` and manual runs.
 
 ## Open
 
-- **Win path.** Only losses are automated (the idle human always loses).
-  `Do_Win` uses the same score screen and restart path; a scripted win
-  needs the test to find and destroy the computer's base.
-- **Publishing** is set up (approved by the owner); it goes live after this
-  branch is merged and Pages is set to deploy from GitHub Actions.
+- **Win path** (test added 2026-11-25; CI evidence pending): see "Automated win" below.
+- **Publishing** went live on 2026-11-23 (publish run 45262345913).
 
 ## Publishing (step 4)
 
@@ -143,3 +140,31 @@ three maps.
 Manual runs with the default `legacy_soak` on also run the frozen legacy
 demo soak; its R02 order check timed out once in that slow path (pull
 requests run it in fast mode). It does not involve the stock engine path.
+
+## Automated win (2026-11-25)
+
+The engine declares a skirmish won only when every other house has no
+buildings, units, infantry or aircraft (`house.cpp:1445`,
+`MPlayer_Defeated`). Beating the computer by scripted play is slow and
+unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
+
+- **Hook.** `browser/engine/test_hooks.cpp`, compiled into the Emscripten
+  build only. `main()` strips `--browser-test-hooks` before the engine's own
+  command-line parser and enables the hook; without it,
+  `Browser_Test_Request()` returns 0. The play page passes no arguments; the
+  test supplies the flag through `window.WCTestArgs` in an init script.
+  `check-stock-scenario.js` fails if the hooks are on when a test did not
+  ask for them.
+- **Request 1 (reduce).** Destroys every computer unit, infantry, aircraft
+  and all buildings but one, through `Take_Damage` (strength set to 1 first,
+  so armour cannot save them). The kept building is the first one that
+  neither builds (`ToBuild == RTTI_NONE`) nor shoots (`Primary ==
+  WEAPON_NONE`), left at 10% strength. It is safe to repeat.
+- **Request 2 (show).** Centres the view on the kept building and logs its
+  screen position on the next frame (`[browser-event] test-target`).
+- **Test** (`STOCK_SCENARIO_WIN=1`, CI job `win-match`). Waits until the
+  computer has placed two buildings, reduces it, box-selects the player's
+  starting units at home, centres on the target and attacks with a normal
+  click, repeating every 45 s and reselecting units that have arrived. It
+  requires `match-end result=won`, a kill of the target credited to the
+  player, the score screen, and a restart.
