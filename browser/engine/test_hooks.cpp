@@ -7,9 +7,12 @@
 //
 //   request 1 ("reduce"): every computer house loses all of its units,
 //     infantry, aircraft and all buildings but one. The kept building is the
-//     first one that neither builds nor shoots. Objects are destroyed
-//     through Take_Damage, so the normal death path runs. Safe to repeat
-//     (for example after a unit leaves a building).
+//     first one that neither builds nor shoots. The others are removed the
+//     way the engine removes a sabotaged building (Limbo, then delete;
+//     scenario.cpp): no death and no explosion. Destroying them instead
+//     killed the kept building with their death explosions (CI runs
+//     45546655452 and 45549805362). Safe to repeat (for example after a
+//     unit leaves a building).
 //   request 2 ("show"): centres the view on the kept building and, on the
 //     next frame, logs its screen position.
 //   request 3 ("weaken"): sets the kept building to 10% strength. Ask for it
@@ -41,13 +44,12 @@ bool Is_Computer_House(HouseClass* house)
            && house->Class->House <= HOUSE_MULTI6;
 }
 
-void Destroy(TechnoClass* object)
+void Remove(TechnoClass* object)
 {
-    // Through Take_Damage, so kill events, explosions and scans update as
-    // in normal play. Strength 1 makes the outcome independent of armour.
-    object->Strength = 1;
-    int damage = 1000;
-    object->Take_Damage(damage, 0, WARHEAD_HE, nullptr);
+    // As scenario.cpp removes a sabotaged building: off the map and out of
+    // the logic list, then deleted. No death, so nothing explodes.
+    object->Limbo();
+    delete object;
 }
 
 bool Target_Alive()
@@ -80,7 +82,7 @@ void Reduce()
         if (!b->IsInLimbo && Is_Computer_House(b->House))
             target = b;
     }
-    // Collect first: destroying objects changes the lists being walked.
+    // Collect first: removing objects changes the lists being walked.
     for (int i = 0; i < Buildings.Count() && count < 1024; i++) {
         BuildingClass* b = Buildings.Ptr(i);
         if (b != target && !b->IsInLimbo && Is_Computer_House(b->House))
@@ -102,16 +104,16 @@ void Reduce()
             doomed[count++] = a;
     }
     for (int i = 0; i < count; i++)
-        Destroy(doomed[i]);
+        Remove(doomed[i]);
     if (target) {
-        printf("[browser-event] test-reduced destroyed=%d target=%s house=%s cell=%d,%d\n",
+        printf("[browser-event] test-reduced removed=%d target=%s house=%s cell=%d,%d\n",
                count,
                target->Class->IniName,
                target->House->Class->IniName,
                Cell_X(Coord_Cell(target->Coord)),
                Cell_Y(Coord_Cell(target->Coord)));
     } else {
-        printf("[browser-event] test-reduced destroyed=%d target=none\n", count);
+        printf("[browser-event] test-reduced removed=%d target=none\n", count);
     }
     fflush(stdout);
 }

@@ -155,15 +155,16 @@ unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
   test supplies the flag through `window.WCTestArgs` in an init script.
   `check-stock-scenario.js` fails if the hooks are on when a test did not
   ask for them.
-- **Request 1 (reduce).** Destroys every computer unit, infantry, aircraft
-  and all buildings but one, through `Take_Damage` (strength set to 1 first,
-  so armour cannot save them). The kept building is the first one that
+- **Request 1 (reduce).** Removes every computer unit, infantry, aircraft
+  and all buildings but one the way the engine removes a sabotaged building
+  (`Limbo()` then `delete`, `scenario.cpp:593`): no death, no explosion.
+  Destroying them through `Take_Damage` killed the kept building with their
+  death explosions in two CI runs (45546655452 weakened at once;
+  45549805362 at full strength). The kept building is the first one that
   neither builds (`ToBuild == RTTI_NONE`) nor shoots (`Primary ==
   WEAPON_NONE`). It is safe to repeat.
-- **Request 3 (weaken).** Sets the kept building to 10% strength. The test
-  asks for it 8 s after request 1: the first CI run (45546655452) weakened
-  the target at once, and the other buildings' death explosions, which
-  damage their neighbours a few frames later, destroyed it (`by=none`).
+- **Request 3 (weaken).** Sets the kept building to 10% strength; the test
+  asks for it 3 s after request 1.
 - **Request 2 (show).** Centres the view on the kept building and logs its
   screen position on the next frame (`[browser-event] test-target`).
 - **Test** (`STOCK_SCENARIO_WIN=1`, CI job `win-match`). Waits until the

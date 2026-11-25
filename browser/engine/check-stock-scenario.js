@@ -302,18 +302,17 @@ async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
   let from=await mark();
   await request(1);
   if(!await seen("\\[browser-event\\] test-reduced ",10000,from))throw Error("The test hook did not run");
-  const reduced=await grab("\\[browser-event\\] test-reduced destroyed=(\\d+) target=(\\S+) house=(\\S+) cell=(\\d+),(\\d+)",from);
+  const reduced=await grab("\\[browser-event\\] test-reduced removed=(\\d+) target=(\\S+) house=(\\S+) cell=(\\d+),(\\d+)",from);
   if(!reduced)throw Error("The computer player had no building to keep");
   const target=reduced[2],aiHouse=reduced[3];
-  step("reduced",{destroyed:Number(reduced[1]),target,house:aiHouse,cell:[Number(reduced[4]),Number(reduced[5])]});
-  // Weaken the target only after the other buildings' death explosions,
-  // which damage their neighbours some frames later.
-  await page.waitForTimeout(8000);
+  step("reduced",{removed:Number(reduced[1]),target,house:aiHouse,cell:[Number(reduced[4]),Number(reduced[5])]});
+  // Weaken the target a moment later, once the removals have settled.
+  await page.waitForTimeout(3000);
   from=await mark();
   await request(3);
   if(!await seen("\\[browser-event\\] test-weakened ",10000,from))throw Error("The test hook did not weaken the target");
   const weakened=await grab("\\[browser-event\\] test-weakened target=(\\S+)(?: strength=(\\d+))?",from);
-  if(!weakened||weakened[1]!==target)throw Error("The kept "+target+" did not survive the other buildings' explosions");
+  if(!weakened||weakened[1]!==target)throw Error("The kept "+target+" was destroyed before the attack: "+(weakened?weakened[0]:"no report"));
   step("weakened",{target,strength:Number(weakened[2])});
   await screenshot("win-reduced");
   // 3. Select the player's starting units at home (H centres on the base).
