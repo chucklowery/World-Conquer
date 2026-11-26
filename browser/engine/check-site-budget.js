@@ -13,8 +13,8 @@
 //  2. In Chromium: the play view is loaded with network throttling (20 Mbps
 //     down, 5 Mbps up, 40 ms latency), Play is pressed, and the time to the
 //     engine's menu and the bytes received (encodedDataLength, from the
-//     DevTools protocol) are recorded. A second visit in the same browser
-//     context measures what the HTTP cache and the pack loader's Cache
+//     DevTools protocol) are recorded. A second visit with the same on-disk
+//     profile measures what the HTTP cache and the pack loader's Cache
 //     Storage save.
 const fs = require("node:fs");
 const path = require("node:path");
@@ -121,14 +121,18 @@ async function main() {
   const sum = (list, key) => list.reduce((n, f) => n + f[key], 0);
   report.totals = {files: files.files.length, rawBytes: sum(files.files, "bytes"), sentBytes: sum(files.files, "sent"),
     byEncoding: files.files.reduce((m, f) => { m[f.encoding] = (m[f.encoding] || 0) + f.sent; return m; }, {})};
-  const browser = await chromium.launch({headless: true, args: ["--no-sandbox"]});
+  // A fresh on-disk profile, so the repeat visit uses a real disk cache. An
+  // in-memory (incognito-style) context cannot hold the 27 MB WebAssembly
+  // file and re-downloaded it (run 45726607953), unlike a visitor's browser.
+  const profile = fs.mkdtempSync(path.join(require("node:os").tmpdir(), "site-budget-"));
+  const context = await chromium.launchPersistentContext(profile,
+    {headless: true, args: ["--no-sandbox"], viewport: {width: 1100, height: 900}});
   try {
-    const context = await browser.newContext({viewport: {width: 1100, height: 900}});
     report.firstVisit = await visit(context, "first");
     report.repeatVisit = await visit(context, "repeat");
-    await context.close();
   } finally {
-    await browser.close();
+    await context.close();
+    fs.rmSync(profile, {recursive: true, force: true});
   }
   const check = (value, budget) => ({value, budget, within: value <= budget});
   report.results = {
