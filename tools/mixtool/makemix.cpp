@@ -473,7 +473,7 @@ int main(int argc, char* argv[])
             {"create", no_argument, &create_file, 'c'},
             {"extract", no_argument, &extracting, 'x'},
             {"list", no_argument, &listing, 'l'},
-            {"checksum", no_argument, 0, 0},
+            {"checksum", no_argument, 0, 3},
             {"crc32", no_argument, 0, 1},
             {"encrypt", no_argument, 0, 'e'},
             {"verbose", no_argument, 0, 'v'},
@@ -496,6 +496,10 @@ int main(int argc, char* argv[])
 
         switch (c) {
         case 0:
+            // getopt_long returns 0 for the long options that set a flag
+            // (--create, --extract, --list); --checksum has its own value.
+            break;
+        case 3:
             Checksum = true;
             break;
         case 1:
