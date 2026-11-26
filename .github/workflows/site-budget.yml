@@ -1,9 +1,10 @@
 name: Play site budget
 
-# M4 step 1: measure what a visitor to the published play site downloads and
-# how long the game takes to reach its menu (browser/engine/check-site-budget.js).
-# Report only: the numbers are recorded against the roadmap M4 targets but do
-# not fail the job. Runs after each Pages publish, or by hand against any URL.
+# M4: measure what a visitor to the published play site downloads and how long
+# the game takes to reach its menu (browser/engine/check-site-budget.js), and
+# fail if a roadmap M4 budget is exceeded. Runs after each Pages publish, or by
+# hand against any URL (with report_only to measure without failing). A failure
+# after a publish means the deployed site broke a budget: fix it or revert.
 on:
   workflow_run:
     workflows: ["Publish World-Conquer to GitHub Pages"]
@@ -20,6 +21,10 @@ on:
         description: Site to measure
         default: https://chucklowery.github.io/World-Conquer/
         required: true
+      report_only:
+        description: Report the numbers without failing on a missed budget
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -45,6 +50,7 @@ jobs:
       - name: Measure the published site
         env:
           SITE_URL: ${{ inputs.url || 'https://chucklowery.github.io/World-Conquer/' }}
+          SITE_BUDGET_REPORT_ONLY: ${{ inputs.report_only && '1' || '0' }}
         run: node browser/engine/check-site-budget.js "$SITE_URL" build/site-budget
       - name: Publish the measurement
         if: always()

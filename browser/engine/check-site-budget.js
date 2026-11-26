@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 "use strict";
-// M4 step 1: measure what a visitor to the published play site downloads and
-// how long the game takes to reach its menu. Report only: budgets are
-// recorded against the roadmap targets but do not fail the job yet.
+// M4: measure what a visitor to the published play site downloads and how
+// long the game takes to reach its menu, and fail if a roadmap budget is
+// exceeded. SITE_BUDGET_REPORT_ONLY=1 reports without failing.
 //
 //   node browser/engine/check-site-budget.js <site-url> [out-dir]
 //
@@ -29,7 +29,7 @@ if (!/^https?:\/\//.test(base)) {
   process.exit(2);
 }
 
-// Roadmap M4 targets (docs/ROADMAP.md). Report only for now.
+// Roadmap M4 targets (docs/ROADMAP.md).
 const BUDGETS = {
   firstVisitTransferBytes: 15 * 1024 * 1024,
   repeatVisitTransferBytes: 100 * 1024,
@@ -141,11 +141,14 @@ async function main() {
     firstVisitTimeToMenuMs: check(report.firstVisit.timeToMenuMs, BUDGETS.firstVisitTimeToMenuMs),
     repeatVisitTimeToMenuMs: check(report.repeatVisit.timeToMenuMs, BUDGETS.repeatVisitTimeToMenuMs),
   };
+  const reportOnly = process.env.SITE_BUDGET_REPORT_ONLY === "1";
+  const over = Object.entries(report.results).filter(([, r]) => !r.within).map(([k]) => k);
+  report.overBudget = over;
   fs.writeFileSync(path.join(outDir, "site-budget.json"), JSON.stringify(report, null, 1) + "\n");
 
   const largest = [...files.files].sort((a, b) => b.sent - a.sent).slice(0, 12);
   const lines = [
-    "## Play site budget (report only)",
+    "## Play site budget" + (reportOnly ? " (report only)" : ""),
     "",
     "Site `" + base + "` (commit `" + String(files.commit).slice(0, 12) + "`), " +
       "throttled to 20 Mbps down / 40 ms in Chromium.",
@@ -177,6 +180,10 @@ async function main() {
   if (errors.length) {
     console.error("Page errors during the measurement:\n" + errors.join("\n"));
     process.exitCode = 1;
+  }
+  if (over.length) {
+    console.error("Over budget: " + over.join(", ") + (reportOnly ? " (report only, not failing)" : ""));
+    if (!reportOnly) process.exitCode = 1;
   }
 }
 main().catch(e => { console.error(e.stack || e); process.exitCode = 1; });
