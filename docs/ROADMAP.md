@@ -211,7 +211,7 @@ Progress: 2026-11-25 · `55b3042f8f2b80d39decacc711883664289b78b6` · [CI run](h
 
 Evidence: 2026-11-26 · `c9ec628d10660a7bc1ee8940eb769ebd241e7199` · [vanilla CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45725682642), [publish run](https://github.com/chucklowery/World-Conquer/actions/runs/45728265932) (attempt 2; attempt 1 failed in `deploy-pages` with a GitHub artifact-metadata error), [site measurement](https://github.com/chucklowery/World-Conquer/actions/runs/45728790265) · headless Chromium (Playwright 1.56.1) · on `vanilla`: `ai-match` lost to the computer on all three maps and `win-match` won; per-PR CI runs only the native matrix, the WASM build and the stock-engine jobs; the published site (34 files, down from 41) has no legacy demo files.
 
-### M4: Load, budgets and browser reach (2–3 sessions)
+### M4: Load, budgets and browser reach — done
 
 Every visitor pays for load time before seeing anything, so this comes before
 art and features. Track: Platform.
@@ -239,8 +239,10 @@ art and features. Track: Platform.
       A versioned service worker caches the engine and pack by
       SHA-256 from `site.json`, so a second visit loads from cache and a new
       deploy replaces only changed files.
-- [ ] **Loading screen.** A progress bar in the browser shell (outside the
-      canvas) with bytes loaded and a clear error message on failure.
+- [x] **Loading screen.** A progress bar in the browser shell (outside the
+      canvas) with a clear error message on failure (`b692f75`): a moving
+      bar while the engine downloads and compiles, then files loaded of
+      total while the pack loads. It counts files, not bytes.
 - [x] **Browser reach.** Run `stock-engine` and `stock-scenario` in Playwright
       Firefox and WebKit as well as Chromium. The required `browser-reach`
       job does this on the Release build; both browsers reached the menu and
@@ -248,8 +250,10 @@ art and features. Track: Platform.
       ([run 45744231306](https://github.com/chucklowery/World-Conquer/actions/runs/45744231306)),
       with nothing to fix. WebKit on Linux is Safari's engine, not macOS or
       iOS Safari, which stay untested.
-- [ ] **Unsupported-browser message.** A browser without WebAssembly or the
-      features the engine needs shows a message instead of a blank canvas.
+- [x] **Unsupported-browser message.** A browser without WebAssembly, Web
+      Crypto (needs a secure page) or `fetch` shows a message naming what is
+      missing, with Play disabled, instead of a blank canvas (`b692f75`;
+      `check-runtime.js` tests it with WebAssembly removed).
 - [x] **Budgets in CI** (fail the job when exceeded). The four load budgets
       are enforced by `site-budget.yml` after every publish (it fails and
       names each budget missed); it passed strictly on the Release build
@@ -260,22 +264,29 @@ art and features. Track: Platform.
 
 | Budget | Target | Current |
 | --- | --- | --- |
-| First-visit transfer (engine and pack) | ≤ 15 MB | 6.28 MB (76.2 MB raw; WASM 3.91 MB) |
-| Repeat-visit transfer | ≤ 100 KB | 0 B |
-| Time to menu, 20 Mbps, first visit | ≤ 8 s | 4.7 s |
-| Time to menu, repeat visit | ≤ 2 s | 0.8 s |
+| First-visit transfer (engine and pack) | ≤ 15 MB | 6.27 / 6.28 / 6.27 MB (76.2 MB raw; WASM 3.91 MB) |
+| Repeat-visit transfer | ≤ 100 KB | 0 B in all three |
+| Time to menu, 20 Mbps, first visit | ≤ 8 s | 4.7 / 5.4 / 5.0 s |
+| Time to menu, repeat visit | ≤ 2 s | 0.8 / 1.6 / 1.4 s |
 | Match frame time p95 | ≤ 20 ms | 16.7 ms |
 | Heap growth over a 10-minute match | ≤ 5% | flat over 2 minutes |
 | Longest main-thread stall after start | ≤ 250 ms | 0 ms |
 
-Current values for the first four rows: live site at `72b8af6` (Release
-build), 2026-11-26, [site-budget run 45743304446](https://github.com/chucklowery/World-Conquer/actions/runs/45743304446).
+Current values for the first four rows, Chromium / Firefox / WebKit: live
+site at `b692f75`, 2026-11-26, through the throttling proxy,
+[site-budget run 45757910056](https://github.com/chucklowery/World-Conquer/actions/runs/45757910056).
+On a repeat visit the engine is ready after 0.1-0.2 s in all three; the rest
+is loading the cached pack, which the loader stopped re-hashing in a later
+commit. Chromium alone, with DevTools throttling: 6.28 MB, 0 B, 4.7 s,
+0.8 s ([run 45743304446](https://github.com/chucklowery/World-Conquer/actions/runs/45743304446)).
 The Debug build before it measured 9.16 MB, 0 B, 8.0 s and 2.8 s
 ([run 45728790265](https://github.com/chucklowery/World-Conquer/actions/runs/45728790265)).
 
 **Exit gate (CI and budget):** the budget job passes on `vanilla` in
 Chromium, Firefox and WebKit, and a repeat visit to the published site
 starts from cache.
+
+Evidence: 2026-11-26 · `b692f750f9893f72dae1da7762b527b26b0bc7ac` · [browser CI](https://github.com/chucklowery/World-Conquer/actions/runs/45750338236), [site budget](https://github.com/chucklowery/World-Conquer/actions/runs/45757910056) · Playwright 1.56.1 Chromium, Firefox, WebKit · strict budget run on the live site passed in all three browsers: first visit 6.27-6.28 MB and 4.7-5.4 s to the menu, repeat visit 0 B (all from cache) and 0.8-1.6 s; browser CI green including `browser-reach` (Firefox and WebKit play the strict skirmish), the unsupported-browser check, `ai-match` on three maps and `win-match`. The optional service worker ("Cache it") stays open.
 
 ### M5: Readable vertical slice (4–6 sessions)
 
