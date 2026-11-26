@@ -93,6 +93,19 @@ void Reduce()
         if (!b->IsInLimbo && Is_Computer_House(b->House))
             target = b;
     }
+    // Production in progress is a unit in limbo inside a factory, and the
+    // house counts it (UScan, house.cpp:1444), so the house could never be
+    // defeated once its factory building was removed (CI run 45906085064:
+    // the last building was destroyed, the computer kept a half-built unit).
+    // Abandon it the engine's way (house.cpp:2529): delete, refund, free.
+    for (int h = HOUSE_MULTI1; h <= HOUSE_MULTI6; h++) {
+        HouseClass* house = HouseClass::As_Pointer((HousesType)h);
+        if (Is_Computer_House(house)) {
+            static const RTTIType kinds[] = {RTTI_UNITTYPE, RTTI_INFANTRYTYPE, RTTI_AIRCRAFTTYPE, RTTI_BUILDINGTYPE};
+            for (RTTIType kind : kinds)
+                house->Abandon_Production(kind);
+        }
+    }
     // Collect first: removing objects changes the lists being walked.
     for (int i = 0; i < Buildings.Count() && count < 1024; i++) {
         BuildingClass* b = Buildings.Ptr(i);
