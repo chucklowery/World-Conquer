@@ -166,8 +166,11 @@ wireframes; and each side owns only part of the minimum roster.
    the Emscripten target) makes exactly the roster buildable, by both sides:
    power plant, refinery, barracks, vehicle factory, guard tower, harvester,
    rifle infantry, light vehicle and medium tank; the construction yard comes
-   from the mobile base vehicle as before (`browser/engine/roster.cpp`,
-   starting units in `scenarioini.cpp`). Native builds keep the stock rules.
+   from the mobile base vehicle as before (`browser/engine/roster.cpp`).
+   Every other source of units stays inside the roster too: starting units,
+   crews leaving a construction yard (no engineer) or an unarmed vehicle
+   (riflemen, not civilians), and crates, which are not placed. Native
+   builds keep the stock rules.
    M7 widens the roster as content arrives.
 2. **Art is generated from code, not drawn by hand.** `tools/content/art/`
    ray-traces small models (boxes, wedges, cylinders, spheres) into

@@ -248,26 +248,26 @@ void UnitClass::Debug_Dump(MonoClass* mono) const
 {
     Validate();
     mono->Set_Cursor(0, 0);
-    mono->Print("ÚName:ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂMission:ÄÄÄÂTarCom:ÂNavCom:ÂRadio:ÂCoord:ÄÄÂHeadTo:ÄÂSt:Ä¿\n"
-                "³                   ³           ³       ³       ³      ³        ³        ³    ³\n"
-                "ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂNÂYÂHealth:ÄÂBody:ÂTurret:ÂSpeed:ÂPath:ÁÄÄÄÄÄÄÂCargo:ÄÄÄÄÁÄÄÄÄ´\n"
-                "³Active........³ ³ ³        ³     ³       ³      ³            ³               ³\n"
-                "³Limbo.........³ ³ ÃÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n"
-                "³Owned.........³ ³ ³Last Message:                                             ³\n"
-                "³Discovered....³ ³ ÃTimer:ÂArm:ÂTrack:ÂTiberium:ÂFlash:ÂStage:ÂTeam:ÄÄÄÄÂArch:´\n"
-                "³Selected......³ ³ ³      ³    ³      ³         ³      ³      ³         ³     ³\n"
-                "³Teathered.....³ ³ ÃÄÄÄÄÄÄÁÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÙ\n"
-                "³Locked on Map.³ ³ ³                                                           \n"
-                "³Turret Locked.³ ³ ³                                                           \n"
-                "³Is A Loaner...³ ³ ³                                                           \n"
-                "³Deploying.....³ ³ ³                                                           \n"
-                "³Rotating......³ ³ ³                                                           \n"
-                "³Firing........³ ³ ³                                                           \n"
-                "³Driving.......³ ³ ³                                                           \n"
-                "³To Look.......³ ³ ³                                                           \n"
-                "³Recoiling.....³ ³ ³                                                           \n"
-                "³To Display....³ ³ ³                                                           \n"
-                "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÁÄÙ                                                           \n");
+    mono->Print("ÃšName:Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã‚Mission:Ã„Ã„Ã„Ã‚TarCom:Ã‚NavCom:Ã‚Radio:Ã‚Coord:Ã„Ã„Ã‚HeadTo:Ã„Ã‚St:Ã„Â¿\n"
+                "Â³                   Â³           Â³       Â³       Â³      Â³        Â³        Â³    Â³\n"
+                "ÃƒÃ„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã‚NÃ‚YÃ‚Health:Ã„Ã‚Body:Ã‚Turret:Ã‚Speed:Ã‚Path:ÃÃ„Ã„Ã„Ã„Ã„Ã„Ã‚Cargo:Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Â´\n"
+                "Â³Active........Â³ Â³ Â³        Â³     Â³       Â³      Â³            Â³               Â³\n"
+                "Â³Limbo.........Â³ Â³ ÃƒÃ„Ã„Ã„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Â´\n"
+                "Â³Owned.........Â³ Â³ Â³Last Message:                                             Â³\n"
+                "Â³Discovered....Â³ Â³ ÃƒTimer:Ã‚Arm:Ã‚Track:Ã‚Tiberium:Ã‚Flash:Ã‚Stage:Ã‚Team:Ã„Ã„Ã„Ã„Ã‚Arch:Â´\n"
+                "Â³Selected......Â³ Â³ Â³      Â³    Â³      Â³         Â³      Â³      Â³         Â³     Â³\n"
+                "Â³Teathered.....Â³ Â³ ÃƒÃ„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„ÃÃ„Ã„Ã„Ã„Ã„Ã™\n"
+                "Â³Locked on Map.Â³ Â³ Â³                                                           \n"
+                "Â³Turret Locked.Â³ Â³ Â³                                                           \n"
+                "Â³Is A Loaner...Â³ Â³ Â³                                                           \n"
+                "Â³Deploying.....Â³ Â³ Â³                                                           \n"
+                "Â³Rotating......Â³ Â³ Â³                                                           \n"
+                "Â³Firing........Â³ Â³ Â³                                                           \n"
+                "Â³Driving.......Â³ Â³ Â³                                                           \n"
+                "Â³To Look.......Â³ Â³ Â³                                                           \n"
+                "Â³Recoiling.....Â³ Â³ Â³                                                           \n"
+                "Â³To Display....Â³ Â³ Â³                                                           \n"
+                "Ã€Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„ÃÃ„ÃÃ„Ã™                                                           \n");
     mono->Set_Cursor(1, 1);
     mono->Printf("%s:%s", House->Class->IniName, Class->IniName);
     CargoClass::Debug_Dump(mono);
@@ -4371,6 +4371,10 @@ void const* UnitClass::Remap_Table(void)
 InfantryType UnitClass::Crew_Type(void) const
 {
     Validate();
+#ifdef WC_MINIMUM_ROSTER
+    // The M5 roster has no civilians: unarmed vehicles bail out riflemen.
+    return (INFANTRY_E1);
+#endif
     if (Class->Primary == WEAPON_NONE) {
         if (Random_Pick(0, 1) == 0) {
             return (INFANTRY_C1);

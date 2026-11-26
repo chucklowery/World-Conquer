@@ -17,8 +17,11 @@
 // - The construction yard keeps its stock IsBuildable (it comes from the
 //   mobile base vehicle); the base vehicle itself is not buildable.
 //
-// Starting units for "bases off" matches are limited the same way in
-// scenarioini.cpp (Create_Units, under WC_MINIMUM_ROSTER).
+// The same macro keeps every other source of units inside the roster:
+// starting units (scenarioini.cpp Create_Units), crews that leave a sold or
+// destroyed construction yard (building.cpp Crew_Type, no engineer) or an
+// unarmed vehicle (unit.cpp Crew_Type, riflemen instead of civilians), and
+// crates, which are not placed at all (map.cpp Place_Random_Crate).
 #ifdef WC_MINIMUM_ROSTER
 #include "roster.h"
 #include "tiberiandawn/function.h"

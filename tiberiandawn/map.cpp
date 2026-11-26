@@ -1561,6 +1561,11 @@ int MapClass::Cell_Threat(CELL cell, HousesType house)
  *=============================================================================================*/
 bool MapClass::Place_Random_Crate(void)
 {
+#ifdef WC_MINIMUM_ROSTER
+    // No crates in the M5 roster build: their rewards (random units, squads,
+    // special weapons) are outside the roster (browser/engine/roster.cpp).
+    return (false);
+#endif
     int old = ScenarioInit;
     ScenarioInit = 0;
     for (int index = 0; index < 100; index++) {
