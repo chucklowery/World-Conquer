@@ -73,7 +73,7 @@ These are source-audited rendering rules for the [representative roster](../../g
 **Source evidence:**
 
 - [`tiberiandawn/udata.cpp:264`](../../tiberiandawn/udata.cpp#L264) — `static UnitTypeClass const UnitMTank(UNIT_MTANK`
-- [`tiberiandawn/unit.cpp:2226`](../../tiberiandawn/unit.cpp#L2226) — `shapenum = TechnoClass::BodyShape[tfacing] + 32;`
+- [`tiberiandawn/unit.cpp:2232`](../../tiberiandawn/unit.cpp#L2232) — `shapenum = TechnoClass::BodyShape[tfacing] + 32;`
 
 **Frame indexing rules:**
 

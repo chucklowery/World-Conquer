@@ -342,7 +342,7 @@
         },
         {
           "source": "tiberiandawn/unit.cpp",
-          "line": 2226,
+          "line": 2232,
           "evidence": "shapenum = TechnoClass::BodyShape[tfacing] + 32;"
         }
       ],
