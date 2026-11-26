@@ -221,7 +221,7 @@ art and features. Track: Platform.
       file as served (bytes and encoding), and a Chromium visit at 20 Mbps
       / 40 ms timing Play to the engine's menu, then a repeat visit with the
       same disk cache. Report only until "Budgets in CI".
-- [ ] **Shrink the transfer.** The measurement changed the order. Pages
+- [x] **Shrink the transfer.** The measurement changed the order. Pages
       already gzips every file, including `.MIX` archives (the pack is 2.3 MB
       as served), so precompressing archives is not needed. The engine is
       the cost: `vanillatd.wasm` is 6.8 MB of the 9.2 MB first visit because
@@ -230,6 +230,9 @@ art and features. Track: Platform.
       assertions, CI tests run against the same build); then lazy loading of
       data not needed for the menu if time to menu is still over budget.
       Do not change engine file formats.
+      Done with the release build alone (`72b8af6`): the engine went from
+      6.78 MB to 3.91 MB sent (18.19 MB to 11.68 MB raw) and every load
+      budget is met, so lazy loading is not needed now.
 - [ ] **Cache it.** A versioned service worker caches the engine and pack by
       SHA-256 from `site.json`, so a second visit loads from cache and a new
       deploy replaces only changed files.
@@ -242,16 +245,18 @@ art and features. Track: Platform.
 
 | Budget | Target | Current |
 | --- | --- | --- |
-| First-visit transfer (engine and pack) | ≤ 15 MB | 9.16 MB (82.7 MB raw; WASM 6.78 MB) |
+| First-visit transfer (engine and pack) | ≤ 15 MB | 6.28 MB (76.2 MB raw; WASM 3.91 MB) |
 | Repeat-visit transfer | ≤ 100 KB | 0 B |
-| Time to menu, 20 Mbps, first visit | ≤ 8 s | 8.0 s |
-| Time to menu, repeat visit | ≤ 2 s | 2.8 s (over) |
+| Time to menu, 20 Mbps, first visit | ≤ 8 s | 4.7 s |
+| Time to menu, repeat visit | ≤ 2 s | 0.8 s |
 | Match frame time p95 | ≤ 20 ms | 16.7 ms |
 | Heap growth over a 10-minute match | ≤ 5% | flat over 2 minutes |
 | Longest main-thread stall after start | ≤ 250 ms | 0 ms |
 
-Current values for the first four rows: live site at `c9ec628`, 2026-11-26,
-[site-budget run 45728790265](https://github.com/chucklowery/World-Conquer/actions/runs/45728790265).
+Current values for the first four rows: live site at `72b8af6` (Release
+build), 2026-11-26, [site-budget run 45743304446](https://github.com/chucklowery/World-Conquer/actions/runs/45743304446).
+The Debug build before it measured 9.16 MB, 0 B, 8.0 s and 2.8 s
+([run 45728790265](https://github.com/chucklowery/World-Conquer/actions/runs/45728790265)).
 
 **Exit gate (CI and budget):** the budget job passes on `vanilla` in
 Chromium, Firefox and WebKit, and a repeat visit to the published site
