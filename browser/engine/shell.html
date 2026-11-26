@@ -34,6 +34,10 @@ body.play-view>*:not(#play-view){display:none!important}
 #play-view .play-how{margin-top:14px;padding:12px 16px;background:#1b2736;border:1px solid #394d60;border-radius:10px}
 #play-view .play-how ol{margin:6px 0 0;padding-left:20px;color:#b8c8d8;line-height:1.6}
 #play-view #play-stock{font-size:1.05rem;padding:12px 22px}
+/* M4: loading progress and the unsupported-browser message. */
+#load-progress{display:block;width:100%;max-width:520px;height:10px;margin:-10px 0 18px;accent-color:#69dfb2}
+#load-progress[hidden]{display:none}
+#unsupported{border-color:#c98b5f;background:#3a2a20;color:#ffd9bd}
 </style>
 </head>
 <body data-runtime="loading" data-mode="idle">
@@ -56,6 +60,8 @@ body.play-view>*:not(#play-view){display:none!important}
 <div class="eyebrow">World-Conquer · VanillaTD engine in WebAssembly</div>
 <p>The stock VanillaTD engine running in your browser on an original data pack. <a href="?play" style="color:#69dfb2">Open the play view</a> for just the game.</p>
 <div class="status" role="status" aria-live="polite" id="runtime-state">Loading engine runtime…</div>
+<progress id="load-progress" aria-label="Loading progress"></progress>
+<p id="unsupported" class="status" role="alert" hidden></p>
 <div class="grid">
 <section class="panel">
 <h2>Play: stock VanillaTD engine</h2>
@@ -107,9 +113,27 @@ body.play-view>*:not(#play-view){display:none!important}
   const assetStatus = document.getElementById("asset-status");
   const canvas = document.getElementById("canvas");
   const pointerToggle = document.getElementById("pointer-lock-stock");
+  const progress = document.getElementById("load-progress");
+  const unsupportedNote = document.getElementById("unsupported");
+  // M4: say plainly when this browser cannot run the game, instead of leaving
+  // a blank canvas. The pack loader verifies files with Web Crypto, which
+  // browsers only offer on secure (https or localhost) pages.
+  const missing = [];
+  if (typeof WebAssembly !== "object" || typeof WebAssembly.instantiate !== "function") missing.push("WebAssembly");
+  if (!window.isSecureContext || !(window.crypto && window.crypto.subtle)) missing.push("Web Crypto (a secure https page)");
+  if (typeof fetch !== "function") missing.push("fetch");
+  if (missing.length) {
+    unsupportedNote.textContent = "This browser cannot run World-Conquer: it is missing " + missing.join(", ") +
+      ". Please use a current version of Chrome, Edge, Firefox or Safari.";
+    unsupportedNote.hidden = false;
+    progress.hidden = true;
+    state.textContent = "Unsupported browser";
+    document.body.dataset.runtime = "unsupported";
+    window.WCUnsupported = missing;
+  }
   if (new URLSearchParams(location.search).has("play")) {
     const stage = document.getElementById("play-view-stage");
-    stage.append(document.getElementById("runtime-state"), stockPlay, pointerToggle, canvas);
+    stage.append(document.getElementById("runtime-state"), progress, unsupportedNote, stockPlay, pointerToggle, canvas);
     stockPlay.textContent = "Play";
     stockPlay.classList.add("primary");
     document.getElementById("play-view").hidden = false;
@@ -195,9 +219,23 @@ body.play-view>*:not(#play-view){display:none!important}
     (isError ? console.error : console.log)(value);
   }
   function status(message, kind) {
+    if (window.WCUnsupported) {
+      state.textContent = "Unsupported browser";
+      document.body.dataset.runtime = "unsupported";
+      progress.hidden = true;
+      return;
+    }
     state.textContent = window.WCAssetAudit.fatal && kind !== "error"
       ? "Engine fatal: " + window.WCAssetAudit.fatal : message;
     document.body.dataset.runtime = window.WCAssetAudit.fatal ? "error" : kind;
+    // A moving bar while loading without a known size; hidden otherwise.
+    if (kind !== "loading" || window.WCAssetAudit.fatal) progress.hidden = true;
+  }
+  // Determinate progress (the pack loader reports files done of total).
+  function showProgress(done, total) {
+    progress.hidden = false;
+    progress.max = total;
+    progress.value = done;
   }
   function controls() {
     probe.disabled = !ready || started;
@@ -270,10 +308,14 @@ body.play-view>*:not(#play-view){display:none!important}
     loadingAssets = true;
     controls();
     status("Verifying original boot pack…", "loading");
+    progress.hidden = false;
+    progress.removeAttribute("value");
     try {
       const loaded = await WCPackLoader.load(Module.FS, "data", fetch, (done,total,name) => {
-        status("Verified " + done + "/" + total + " assets: " + name, "loading");
+        status("Loading game data: " + done + " of " + total + " files (" + name + ")", "loading");
+        showProgress(done, total);
       });
+      progress.hidden = true;
       report("[browser-game] verified pack version=" + loaded.manifest.packVersion +
              " files=" + loaded.count);
       // On a clean profile the stock engine defaults Intro.PlayIntro to true,
@@ -294,7 +336,7 @@ body.play-view>*:not(#play-view){display:none!important}
       run(testArgs, "game");
     } catch (error) {
       report("[browser-game] pack load failed: " + error.message, true);
-      status("Boot pack unavailable or invalid: " + error.message, "error");
+      status("The game data could not be loaded (" + error.message + "). Check your connection and reload the page.", "error");
       loadingAssets = false;
       controls();
     }
@@ -368,7 +410,10 @@ body.play-view>*:not(#play-view){display:none!important}
     print: (...args) => report(args.join(" ")),
     printErr: (...args) => report(args.join(" "), true),
     setStatus: message => { if (!ready) status(message || "Loading engine…", "loading"); },
-    onAbort: reason => { status("Engine aborted", "error"); report(reason, true); },
+    onAbort: reason => {
+      status("The game engine stopped (" + String(reason).slice(0, 160) + "). Reload the page to try again.", "error");
+      report(reason, true);
+    },
     onRuntimeInitialized: async () => {
       await mountUser();
       ready = true;

@@ -148,6 +148,17 @@ async function main() {
     assert(assetLog.includes("path lookup only"), "Engine must distinguish path check from asset integrity");
     await page.screenshot({path: path.join(root, "browser-probe.png"), fullPage: true});
     messages.push("PASS: synthetic file staging resolved through real engine CCFileClass search");
+    // M4: a browser without WebAssembly gets a plain message, not a blank
+    // canvas. A separate page, because the engine script then throws by design.
+    const bare = await browser.newPage();
+    await bare.addInitScript(() => { delete window.WebAssembly; });
+    await bare.goto("http://127.0.0.1:" + port + "/vanillatd.html?play", {waitUntil: "load", timeout: 90000});
+    await bare.waitForFunction(() => document.body.dataset.runtime === "unsupported", undefined, {timeout: 15000});
+    const note = await bare.locator("#unsupported").textContent();
+    assert(note.includes("missing WebAssembly"), "Unsupported-browser message missing: " + note);
+    assert.equal(await bare.locator("#play-stock").isDisabled(), true, "Play must stay disabled without WebAssembly");
+    await bare.close();
+    messages.push("PASS: without WebAssembly the play view shows the unsupported-browser message");
     assert.equal(messages.filter(m=>m.startsWith("PAGE ERROR:")).length, 0, "Browser page error occurred");
   } catch (err) {
     messages.push("FAIL: " + (err.stack || err));
