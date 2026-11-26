@@ -17,6 +17,14 @@ p{color:#b8c8d8;line-height:1.55}
 canvas{box-sizing:border-box;display:block;width:100%;height:auto;aspect-ratio:9/5;background:#0c131d;border:1px solid #516276;border-radius:8px;outline:none;margin:12px 0}
 canvas:focus{border-color:#68dfb6;box-shadow:0 0 0 2px #68dfb633}
 #canvas{cursor:crosshair;touch-action:manipulation}
+/* F12 full screen: the frame fills the screen and the canvas is sized to the
+   largest fit that keeps the game's aspect ratio (sizeStockCanvas). The frame,
+   not the canvas, goes full screen: a full-screen canvas is letterboxed with
+   object-fit, which SDL's mouse mapping (the element box) does not know. */
+#game-frame:fullscreen{display:flex;align-items:center;justify-content:center;width:100vw;height:100vh;background:#000}
+#game-frame:-webkit-full-screen{display:flex;align-items:center;justify-content:center;width:100vw;height:100vh;background:#000}
+#game-frame:fullscreen canvas{margin:0;border:0;border-radius:0;box-shadow:none}
+#game-frame:-webkit-full-screen canvas{margin:0;border:0;border-radius:0;box-shadow:none}
 button,label.pick{display:inline-block;margin:5px 5px 5px 0;padding:10px 13px;border:1px solid #64848a;border-radius:8px;background:#234452;color:#eefcf8;font:600 .9rem system-ui;cursor:pointer}
 button.primary{background:#237357;border-color:#4dac84}
 button:disabled{opacity:.45;cursor:default}
@@ -76,6 +84,7 @@ body.play-view>*:not(#play-view){display:none!important}
 <li><b>Deselect</b>: right-click.</li>
 <li><b>Sell / repair</b>: the buttons above the sidebar, then click a building.</li>
 <li><b>Options</b>: the tab at the top left (also <kbd>Esc</kbd>).</li>
+<li><b>Full screen</b>: <kbd>F12</kbd> (again, or <kbd>Esc</kbd>, to leave).</li>
 </ul>
 <h3>Your forces</h3>
 <ul class="roster" id="roster-guide">
@@ -113,7 +122,7 @@ body.play-view>*:not(#play-view){display:none!important}
 <button type="button" id="run-game" disabled>Launch experimental game</button>
 <p class="note">The experimental launch runs the engine on game data you staged above, for development only. Imported data stays local and is cleared on reload. Reload to retry.</p>
 <!-- SDL2 on Emscripten targets the CSS selector #canvas by default. -->
-<canvas id="canvas" tabindex="0" width="720" height="440" aria-label="World-Conquer battlefield"></canvas>
+<div id="game-frame"><canvas id="canvas" tabindex="0" width="720" height="440" aria-label="World-Conquer battlefield"></canvas></div>
 </section>
 <section class="panel" aria-labelledby="diagnostics-title">
 <h2 id="diagnostics-title">Engine diagnostics</h2>
@@ -218,7 +227,7 @@ body.play-view>*:not(#play-view){display:none!important}
   }
   if (new URLSearchParams(location.search).has("play")) {
     const stage = document.getElementById("play-view-stage");
-    stage.append(document.getElementById("runtime-state"), progress, unsupportedNote, stockPlay, pointerToggle, canvas);
+    stage.append(document.getElementById("runtime-state"), progress, unsupportedNote, stockPlay, pointerToggle, document.getElementById("game-frame"));
     stockPlay.textContent = "Play";
     stockPlay.classList.add("primary");
     document.getElementById("play-view").hidden = false;
@@ -239,8 +248,22 @@ body.play-view>*:not(#play-view){display:none!important}
   // Keep the SDL back buffer at the engine's own resolution. Only its CSS
   // presentation is scaled, so native hit-testing uses the standard SDL path.
   canvas.style.imageRendering = "pixelated";
+  const gameFrame = document.getElementById("game-frame");
+  const fullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
   function sizeStockCanvas() {
-    if (document.body.dataset.mode !== "game") return;
+    if (fullscreenElement() === gameFrame) {
+      // Largest size with the game's aspect ratio that fits the screen.
+      const w = canvas.width || 640, h = canvas.height || 400;
+      const scale = Math.min(gameFrame.clientWidth / w, gameFrame.clientHeight / h);
+      canvas.style.width = Math.floor(w * scale) + "px";
+      canvas.style.height = Math.floor(h * scale) + "px";
+      canvas.style.aspectRatio = "auto";
+      return;
+    }
+    if (document.body.dataset.mode !== "game") {
+      canvas.style.width = canvas.style.height = canvas.style.aspectRatio = "";
+      return;
+    }
     canvas.style.width = "100%";
     canvas.style.height = "auto";
     if (canvas.width && canvas.height)
@@ -248,6 +271,36 @@ body.play-view>*:not(#play-view){display:none!important}
     canvas.dataset.devicePixelRatio = String(window.devicePixelRatio || 1);
   }
   window.addEventListener("resize", sizeStockCanvas);
+  // F12 toggles full screen. Caught in the capture phase so it reaches
+  // neither the browser's developer tools nor the engine (whose default F12
+  // is view bookmark 4).
+  function toggleFullscreen() {
+    if (fullscreenElement()) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      return;
+    }
+    const request = gameFrame.requestFullscreen || gameFrame.webkitRequestFullscreen;
+    if (!request) return;
+    Promise.resolve(request.call(gameFrame)).catch(error =>
+      report("[browser-game] full screen: " + error.message, true));
+  }
+  for (const type of ["keydown", "keyup", "keypress"]) {
+    window.addEventListener(type, event => {
+      if (event.key !== "F12" && event.code !== "F12") return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (type === "keydown" && !event.repeat) toggleFullscreen();
+    }, { capture: true });
+  }
+  for (const type of ["fullscreenchange", "webkitfullscreenchange"]) {
+    document.addEventListener(type, () => {
+      sizeStockCanvas();
+      requestAnimationFrame(sizeStockCanvas);
+      report("[browser-event] fullscreen " + (fullscreenElement() === gameFrame ? "on" : "off"));
+      canvas.focus();
+    });
+  }
+  window.WCToggleFullscreen = toggleFullscreen;
   canvas.addEventListener("contextmenu", event => event.preventDefault());
   canvas.addEventListener("click", () => canvas.focus());
   window.addEventListener("keydown", event => {

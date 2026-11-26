@@ -399,6 +399,25 @@ async function main(){
       null,{timeout:45000});
     await screenshot("menu");
     const canvas=page.locator("#canvas");
+    // STOCK_SCENARIO_FULLSCREEN=1: F12 puts the game frame in full screen
+    // (shell.html); the canvas must fill the viewport at the game's aspect
+    // ratio and every click below must land on its game pixel.
+    const fullscreen=process.env.STOCK_SCENARIO_FULLSCREEN==="1";
+    if(fullscreen){
+      await canvas.focus();
+      await page.keyboard.press("F12");
+      await page.waitForFunction(()=>(document.fullscreenElement||document.webkitFullscreenElement)?.id==="game-frame",
+        null,{timeout:5000});
+      await page.waitForTimeout(500);
+      const geo=await page.evaluate(()=>{const r=document.getElementById("canvas").getBoundingClientRect();
+        return {vw:innerWidth,vh:innerHeight,x:r.left,y:r.top,w:r.width,h:r.height,cw:canvas.width,ch:canvas.height};});
+      audit.fullscreen=geo;
+      const fill=Math.max(geo.w/geo.vw,geo.h/geo.vh);
+      if(fill<0.99)throw Error("Full screen canvas does not fill the viewport: "+JSON.stringify(geo));
+      if(Math.abs(geo.w/geo.h-geo.cw/geo.ch)>0.01)throw Error("Full screen canvas is distorted: "+JSON.stringify(geo));
+      if(Math.abs(geo.x+geo.w/2-geo.vw/2)>1||Math.abs(geo.y+geo.h/2-geo.vh/2)>1)throw Error("Full screen canvas is not centred: "+JSON.stringify(geo));
+      await screenshot("fullscreen-menu");
+    }
     async function skirmishDialog(){
       const text=await page.evaluate(()=>document.getElementById("log").textContent);
       const all=[...text.matchAll(/\[browser-event\] skirmish-dialog ok=(\d+),(\d+),(\d+),(\d+) cancel=\S+ maps=(\d+),(\d+),(\d+),(\d+) row=(\d+)/g)];
@@ -414,7 +433,10 @@ async function main(){
       await page.waitForFunction(m=>/\[browser-input\] mouse-down x=(-?\d+) y=(-?\d+)/.test(
         document.getElementById("log").textContent.slice(m)),marker,{timeout:5000});
       const log=await page.evaluate(m=>document.getElementById("log").textContent.slice(m),marker);
-      audit.input.push({label,target:[x,y],observed:log.match(/\[browser-input\] mouse-down x=(-?\d+) y=(-?\d+)/)?.slice(1)||null});
+      const observed=log.match(/\[browser-input\] mouse-down x=(-?\d+) y=(-?\d+)/)?.slice(1).map(Number)||null;
+      audit.input.push({label,target:[x,y],observed});
+      if(fullscreen&&(!observed||Math.abs(observed[0]-x)>2||Math.abs(observed[1]-y)>2))
+        throw Error("Full screen click "+label+" landed at "+observed+", not "+[x,y]);
     }
     // NEWMENU (defines.h): Multiplayer center y=119, not the Intro row y=151.
     // Select_MPlayer_Game uses the Skirmish row; nulldlg OK center y=359.
