@@ -343,8 +343,13 @@ async function winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas}){
       // The building is gone; clear anything the computer still has (for
       // example a unit that was inside a building) so its defeat registers.
       step("target-destroyed",{attempt});
-      await request(1);
-      await seen(wonRe,30000,0);
+      // Repeat: a crew still leaving the building is in limbo at first and
+      // is only removed once it is on the map (run 45834028942: a rifleman
+      // left the destroyed power plant after the first clean-up).
+      for(let k=0;k<12&&!(await seen(wonRe,1,0));k++){
+        await request(1);
+        await seen(wonRe,5000,0);
+      }
       break;
     }
     const x=Number(shown[2]),y=Number(shown[3]);
