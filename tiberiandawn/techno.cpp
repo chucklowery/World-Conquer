@@ -3733,6 +3733,11 @@ void TechnoClass::Kill_Cargo(TechnoClass* source)
  *=============================================================================================*/
 InfantryType TechnoClass::Crew_Type(void) const
 {
+#ifdef WC_MINIMUM_ROSTER
+    // The M5 roster has no civilians: every crew is riflemen
+    // (browser/engine/roster.cpp).
+    return (INFANTRY_E1);
+#endif
     InfantryType infantry = INFANTRY_E1;
     if (House->ActLike == HOUSE_NEUTRAL) {
         infantry = Random_Pick(INFANTRY_C1, INFANTRY_C9);
