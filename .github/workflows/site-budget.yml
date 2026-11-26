@@ -1,0 +1,55 @@
+name: Play site budget
+
+# M4 step 1: measure what a visitor to the published play site downloads and
+# how long the game takes to reach its menu (browser/engine/check-site-budget.js).
+# Report only: the numbers are recorded against the roadmap M4 targets but do
+# not fail the job. Runs after each Pages publish, or by hand against any URL.
+on:
+  workflow_run:
+    workflows: ["Publish World-Conquer to GitHub Pages"]
+    types: [completed]
+    branches: [vanilla]
+  # A change to the measurement itself is checked against the live site.
+  pull_request:
+    paths:
+      - 'browser/engine/check-site-budget.js'
+      - '.github/workflows/site-budget.yml'
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Site to measure
+        default: https://chucklowery.github.io/World-Conquer/
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-budget
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install headless Chromium
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install chromium
+          npm exec --prefix browser/engine -- playwright install-deps chromium
+      - name: Measure the published site
+        env:
+          SITE_URL: ${{ inputs.url || 'https://chucklowery.github.io/World-Conquer/' }}
+        run: node browser/engine/check-site-budget.js "$SITE_URL" build/site-budget
+      - name: Publish the measurement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-budget
+          path: build/site-budget/**
+          if-no-files-found: warn
