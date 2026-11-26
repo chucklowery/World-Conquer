@@ -255,7 +255,9 @@ if(BUILD_VANILLATD)
             "-sFORCE_FILESYSTEM=1"
             "-lidbfs.js"
             "-sALLOW_MEMORY_GROWTH=1"
-            "-sASSERTIONS=1"
+            # Runtime assertions only in Debug builds; the published site uses a
+            # Release build (M4: they cost size and startup time).
+            "$<$<CONFIG:Debug>:-sASSERTIONS=1>"
         )
     endif()
     if(MAP_EDITORTD)

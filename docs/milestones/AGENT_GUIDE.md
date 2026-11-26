@@ -55,7 +55,7 @@ Browser engine build (the same command CI uses):
 
 ```bash
 emcmake cmake -S . -B build/browser-engine -G Ninja \
-  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF \
   -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
   -DNETWORKING=OFF -DOPENAL=OFF -DSDL2=ON \

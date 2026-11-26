@@ -61,13 +61,15 @@ Requires Emscripten SDK 3.1.68 and Ninja.
 ~~~bash
 # From the project root, after sourcing emsdk_env.sh:
 emcmake cmake -S . -B build/browser-engine -G Ninja \
-  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF \
   -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
   -DNETWORKING=OFF -DOPENAL=OFF -DSDL2=ON \
   -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF
 cmake --build build/browser-engine --target VanillaTD --parallel 2
 ~~~
+
+CI and the published site use this Release build. For Emscripten runtime assertions while debugging, configure with `-DCMAKE_BUILD_TYPE=Debug` instead.
 
 Output (verified in engine CI): `build/browser-engine/vanillatd.html`, `vanillatd.js`, `vanillatd.wasm`. A linked game is not proof of a browser-friendly event loop or playable mission.
 
