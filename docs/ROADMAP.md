@@ -309,12 +309,14 @@ UI track (UI-B to UI-E) is delivered inside this milestone. Decisions:
       fire (`tools/content/art/`), generated from models in the engine's
       exact frame layouts; house colour through the remap band. *The
       per-slot entries in the wireframe catalog are not ticked yet.*
-- [ ] **Command interface.** Done: sidebar plates, buttons with
-      pictograms, power gauge and drain marker, build clock, READY/HOLD
-      tags, scroll arrows, tabs, radar housing and placement grid
-      (`tools/content/art/ui.js`). Open: cursors (`MOUSE.SHP`, UI-D),
-      fonts, menus and dialogs (UI-E). UI-F stays optional and
-      approval-gated.
+- [x] **Command interface.** Sidebar plates, buttons with pictograms,
+      power gauge and drain marker, build clock, READY/HOLD tags, scroll
+      arrows, tabs, radar housing and placement grid (`art/ui.js`); all 178
+      cursor frames of the engine's cursor table (`art/cursors.js`, UI-D);
+      title screen, dialog decorations and dialog texture (UI-E). *Not
+      restyled: the bitmap fonts and the engine-drawn dialog boxes, which
+      keep the M2 fonts and the teal dialog colours.* UI-F stays optional
+      and approval-gated.
 - [x] **Sound.** The engine's OpenAL backend on Emscripten's Web Audio
       OpenAL; synthesised effects and spoken unit replies and COMMS lines
       (flite) in `SOUNDS.MIX` and `SPEECH.MIX` (`tools/content/sound.js`).

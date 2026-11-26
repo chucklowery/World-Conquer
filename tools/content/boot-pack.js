@@ -216,8 +216,12 @@ function build(outdir,options={}) {
   const palette=encodePalette({colors:indexedColors.map(toHex)});
   const font=encodeFont();verifyFont(font);
   const cps=encodeCPS(TITLE_BACKGROUND);if(decodeCPS(cps).length!==64000)throw Error("CPS round-trip failed");
-  const pcx=encodePCX(640,400,TITLE_BACKGROUND,indexedColors);verifyPCX(pcx);
-  const mouse=shape(16,16,16,15),texture=shape(64,20,20,10);
+  // M5 (UI-E): the title screen behind the main menu (art/ui.js).
+  const ui=require("./art/ui.js");
+  const pcx=ui.encodePCXImage(ui.title(),indexedColors);verifyPCX(pcx);
+  // M5 cursors (UI-D): every frame of the engine's cursor table
+  // (tools/content/art/cursors.js, mouse.cpp:304-341).
+  const mouse=require("./art/cursors.js").encode(),texture=encodeShape({frames:ui.texture()});
   const strings=stringTable();
   const fontNames=["3POINT.FNT","6POINT.FNT","8POINT.FNT","6POINT.FNT",
     "LED.FNT","VCR.FNT","GRAD6FNT.FNT","8FAT.FNT","12GREEN.FNT","12GRNGRD.FNT","SCOREFNT.FNT"];

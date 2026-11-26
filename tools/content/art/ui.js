@@ -185,6 +185,86 @@ function placementGrid(){
   return encodeIconset({icons:[icon(rampIndex("crystal",1)),icon(S(8)),icon(rampIndex("fire",8))]});
 }
 
+// Dialog decorations (OPTIONS.SHP, goptions.cpp:570, defines.h
+// OptionControlType): pairs of left/right corner emblems, slider thumbs and
+// arrows, 32 frames.
+function options(){
+  const out=[];
+  for(let i=0;i<32;i++){
+    const f=frame(24,24);
+    if(i===18||i===19){plate(f,6,4,12,16,{face:7});rect(f,11,6,2,12,accent(1));}
+    else if(i>=24&&i<28){const up=i<26;plate(f,2,2,20,20,{face:(i%2)?11:8,sunk:(i%2)===1});
+      for(let k=0;k<5;k++)rect(f,12-k-1,up?8+k:15-k,2*k+2,1,S(1));}
+    else{
+      const right=i%2===1;
+      // An L-shaped steel bracket with a teal inlay, mirrored for the right.
+      for(let y=0;y<24;y++)for(let x=0;x<24;x++){
+        const X=right?23-x:x;
+        if((X<5&&y<20)||(y<5&&X<20))f.pixels[y*24+x]=(X===0||y===0)?S(3):(X===4||y===4)?S(14):S(9);
+        if((X===2&&y>2&&y<17)||(y===2&&X>2&&X<17))f.pixels[y*24+x]=accent(1);
+      }
+      rivet(f,right?19:3,19);rivet(f,right?3:19,3);
+    }
+    out.push(f);
+  }
+  return out;
+}
+// Dialog fill texture (BTEXTURE.SHP, tiled by CC_Texture_Fill, dialog.cpp:
+// 148): frame 0 menus, 1 in game. Dark brushed steel.
+function texture(){
+  return [0,1].map(k=>{const f=frame(32,32);
+    for(let y=0;y<32;y++)for(let x=0;x<32;x++)f.pixels[y*32+x]=S(((x*3+y*7+k)%17===0)?12:13+((y>>3)&1&k));
+    return f;});
+}
+// Title screen (HTITLE.PCX, 640x400, behind the main menu): rendered units
+// either side of the menu and the wordmark along the bottom.
+function title(){
+  const W=640,H=400,px=new Array(W*H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const v=11+Math.round(y/H*4)+(((x*7+y*13)%29===0)?1:0);
+    px[y*W+x]=S(Math.min(15,v));
+  }
+  const {render,frameHeading}=require("./render.js");const m=require("./models.js");
+  const stamp=(parts,cx,cy,scale,k,w,h)=>{const r=render(parts,{width:w,height:h,origin:[w/2,h/2+10],heading:frameHeading(k),scale,groundShadow:false});
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){const v=r[y*w+x];if(v&&v!==4){const X=cx-w/2+x,Y=cy-h/2+y;if(X>=0&&Y>=0&&X<W&&Y<H)px[Y*W+X]=v;}}};
+  stamp(m.tankBody().concat(m.tankTurret()),85,150,4.2,28,160,160);
+  stamp(m.harvester(0),85,265,3.0,30,140,110);
+  stamp(m.constructionYard(),555,150,1.5,2,150,120);
+  stamp(m.jeepBody().concat(m.jeepTurret()),555,262,4.0,4,140,110);
+  // Wordmark: 5x7 block letters, scaled 5x, with a drop shadow.
+  const F={W:"10001100011000110101101011101110001",O:"01110100011000110001100011000101110",
+    R:"11110100011000111110101001001010001",L:"10000100001000010000100001000011111",
+    D:"11110100011000110001100011000111110","-":"00000000000000111110000000000000000",
+    C:"01111100001000010000100001000001111",N:"10001110011010110101100111000110001",
+    Q:"01110100011000110001101011001001101",U:"10001100011000110001100011000101110",
+    E:"11111100001000011110100001000011111"};
+  const word="WORLD-CONQUER",sc=5,adv=6*sc,x0=Math.round((W-word.length*adv+sc)/2),y0=330;
+  [...word].forEach((ch,i)=>{const g=F[ch];for(let k=0;k<35;k++)if(g[k]==="1"){
+    const gx=x0+i*adv+(k%5)*sc,gy=y0+Math.floor(k/5)*sc;
+    for(let y=0;y<sc;y++)for(let x=0;x<sc;x++)px[(gy+y+3)*W+gx+x+3]=S(15);
+    for(let y=0;y<sc;y++)for(let x=0;x<sc;x++)px[(gy+y)*W+gx+x]=(y===0||x===0)?accent(0):accent(1+(y===sc-1?1:0));}});
+  return {width:W,height:H,pixels:px};
+}
+function encodePCXImage({width,height,pixels},colors){
+  const head=Buffer.alloc(128);
+  head[0]=10;head[1]=5;head[2]=1;head[3]=8;
+  head.writeUInt16LE(width-1,8);head.writeUInt16LE(height-1,10);
+  head.writeUInt16LE(width,12);head.writeUInt16LE(height,14);
+  head[65]=1;head.writeUInt16LE(width+(width&1),66);head.writeUInt16LE(1,68);
+  const bytes=[];
+  for(let y=0;y<height;y++){
+    const row=pixels.slice(y*width,(y+1)*width);if(width&1)row.push(0);
+    for(let i=0;i<row.length;){
+      let n=1;while(i+n<row.length&&row[i+n]===row[i]&&n<63)n++;
+      if(n>1||row[i]>=192)bytes.push(0xC0|n,row[i]);else bytes.push(row[i]);
+      i+=n;
+    }
+  }
+  const pal=Buffer.alloc(769);pal[0]=12;
+  for(let i=0;i<256;i++)for(let c=0;c<3;c++)pal[1+i*3+c]=colors[i][c];
+  return Buffer.concat([head,Buffer.from(bytes),pal]);
+}
+
 function files(){
   return {
     "HSIDE1.SHP":sidebarPanel(true),"HSIDE2.SHP":sidebarPanel(false),
@@ -192,6 +272,7 @@ function files(){
     "HSTRIPUP.SHP":arrow(true),"HSTRIPDN.SHP":arrow(false),"HSTRIP.SHP":stripFiller(),
     "HCLOCK.SHP":clock(),"HPIPS.SHP":pips(),"HPWRBAR.SHP":powerBar(),"HPOWER.SHP":drainMarker(),
     "HTABS.SHP":tabs(),"HRADAR.GDI":radar(),"HRADAR.NOD":radar(),
+    "OPTIONS.SHP":options(),
   };
 }
-module.exports={files,placementGrid};
+module.exports={files,placementGrid,texture,title,encodePCXImage};

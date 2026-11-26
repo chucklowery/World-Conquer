@@ -76,3 +76,17 @@ const fx=effects();
 for(const name of ["GUN18","MGUN2","GUN19","GUN5","TNKFIRE6","XPLOS","XPLOSML2","BUTTON","SCOLD2","CONSTRU2"])
   assert.ok(fx[name]&&fx[name].length>100,name+" effect exists");
 console.log("PASS: AUD encoding and "+Object.keys(fx).length+" effects");
+
+// Cursors: every frame the engine's cursor table reaches, with each hotspot
+// inside the frame (mouse.cpp:304-341).
+{
+  const c=require("./cursors.js");
+  const fr=c.frames();
+  for(const [name,[start,count,small,hx,hy]] of Object.entries(c.TABLE)){
+    assert.ok(start+count<=fr.length,name+" frames");
+    if(small>=0)assert.ok(small+Math.max(1,count)<=fr.length,name+" small frames");
+    assert.ok(hx<fr[start].width&&hy<fr[start].height,name+" hotspot inside the frame");
+  }
+  assert.ok(fr.every(f=>f.pixels.some(p=>p)),"no empty cursor frame");
+  console.log("PASS: "+fr.length+" cursor frames cover the engine's cursor table");
+}
