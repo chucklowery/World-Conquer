@@ -220,7 +220,7 @@ art and features. Track: Platform.
       `site-budget.yml` measure the **live** site after each publish: every
       file as served (bytes and encoding), and a Chromium visit at 20 Mbps
       / 40 ms timing Play to the engine's menu, then a repeat visit with the
-      same disk cache. Report only until "Budgets in CI".
+      same disk cache. It fails on a missed budget (see "Budgets in CI").
 - [x] **Shrink the transfer.** The measurement changed the order. Pages
       already gzips every file, including `.MIX` archives (the pack is 2.3 MB
       as served), so precompressing archives is not needed. The engine is
@@ -233,15 +233,30 @@ art and features. Track: Platform.
       Done with the release build alone (`72b8af6`): the engine went from
       6.78 MB to 3.91 MB sent (18.19 MB to 11.68 MB raw) and every load
       budget is met, so lazy loading is not needed now.
-- [ ] **Cache it.** A versioned service worker caches the engine and pack by
+- [ ] **Cache it.** Repeat visits already download 0 B (the HTTP cache holds
+      the engine; the pack loader's Cache Storage holds the pack), so this is
+      now only about a new deploy re-downloading unchanged files.
+      A versioned service worker caches the engine and pack by
       SHA-256 from `site.json`, so a second visit loads from cache and a new
       deploy replaces only changed files.
 - [ ] **Loading screen.** A progress bar in the browser shell (outside the
       canvas) with bytes loaded and a clear error message on failure.
-- [ ] **Browser reach.** Run `stock-engine` and `stock-scenario` in Playwright
-      Firefox and WebKit as well as Chromium. Fix or document each failure;
-      an unsupported browser shows a message instead of a blank canvas.
-- [ ] **Budgets in CI** (fail the job when exceeded):
+- [x] **Browser reach.** Run `stock-engine` and `stock-scenario` in Playwright
+      Firefox and WebKit as well as Chromium. The required `browser-reach`
+      job does this on the Release build; both browsers reached the menu and
+      played the strict skirmish first time
+      ([run 45744231306](https://github.com/chucklowery/World-Conquer/actions/runs/45744231306)),
+      with nothing to fix. WebKit on Linux is Safari's engine, not macOS or
+      iOS Safari, which stay untested.
+- [ ] **Unsupported-browser message.** A browser without WebAssembly or the
+      features the engine needs shows a message instead of a blank canvas.
+- [x] **Budgets in CI** (fail the job when exceeded). The four load budgets
+      are enforced by `site-budget.yml` after every publish (it fails and
+      names each budget missed); it passed strictly on the Release build
+      ([run 45748629132](https://github.com/chucklowery/World-Conquer/actions/runs/45748629132)).
+      Frame time, heap growth and stall are checked per match by
+      `stock-scenario` (stall over 1 s fails) and get their 10-minute soak in
+      M6.
 
 | Budget | Target | Current |
 | --- | --- | --- |

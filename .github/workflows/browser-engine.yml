@@ -373,15 +373,13 @@ jobs:
           if-no-files-found: warn
 
   # M4 browser reach: the stock engine and a full skirmish in Firefox and
-  # WebKit (Safari's engine) as well as Chromium. Report first: these runs
-  # find out what fails, so they do not block publishing yet. Each failure is
-  # fixed or documented in docs/ROADMAP.md, then this job becomes required.
+  # WebKit (Safari's engine) as well as Chromium. Required: both passed on
+  # their first run (45744231306), so a failure here now blocks publishing.
   browser-reach:
     name: browser-reach (${{ matrix.browser }})
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     needs: wasm-vanillatd
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
