@@ -40,6 +40,10 @@ bool Force_CD_Available(int);
 void Emergency_Exit(int);
 #ifdef WC_ASSET_AUDIT
 void WC_Log_Asset(const char* name, const char* source);
+// Remembers which file a resident data pointer came from, so a draw call can
+// report it ([asset-draw], WC_Log_Draw in ccfile.cpp).
+void WC_Register_Shape(const void* data, const char* name);
+void WC_Log_Draw(const void* data);
 #endif
 extern int RequiredCD;
 extern bool RunningAsDLL;
@@ -507,6 +511,8 @@ template <class T, class TCRC> void const* MixFileClass<T, TCRC>::Retrieve(char 
 #ifdef WC_ASSET_AUDIT
     if (!found)
         WC_Log_Asset(filename, NULL);
+    else if (ptr)
+        WC_Register_Shape(ptr, filename);
 #endif
     return (ptr);
 };

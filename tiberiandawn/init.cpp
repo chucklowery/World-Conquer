@@ -41,6 +41,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_MINIMUM_ROSTER
+#include "browser/engine/roster.h"
+#endif
 #ifdef __EMSCRIPTEN__
 #include <cstdio>
 #include <emscripten.h>
@@ -570,6 +573,9 @@ bool Init_Game(int, char*[])
     AnimTypeClass::One_Time();
     AircraftTypeClass::One_Time();
     HouseClass::One_Time();
+#ifdef WC_MINIMUM_ROSTER
+    Browser_Apply_Roster();
+#endif
 
     /*
     **	Speech holding tank buffer. Since speech does not mix, it can be placed

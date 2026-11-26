@@ -2524,6 +2524,9 @@ void CC_Texture_Fill(void const* shapefile, int shapenum, int xpos, int ypos, in
     // int x,y;
 
     if (shapefile && shapenum != -1) {
+#ifdef WC_ASSET_AUDIT
+        WC_Log_Draw(shapefile);
+#endif
 
         /*
         ** Build frame returns a pointer now instead of the shapes length
@@ -2700,6 +2703,9 @@ void CC_Draw_Shape(void const* shapefile,
     uintptr_t shape_size;
 
     if (shapefile && shapenum != -1) {
+#ifdef WC_ASSET_AUDIT
+        WC_Log_Draw(shapefile);
+#endif
 
         /*
         ** Build frame returns a pointer now instead of the shapes length

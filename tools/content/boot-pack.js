@@ -244,7 +244,16 @@ function build(outdir,options={}) {
   for(const name of extra.files)fs.copyFileSync(path.join(extra.dir,name),path.join(stage,name));
   archive(tool,stage,game,"CONQUER.MIX",[...new Set(["MOUSE.SHP","CONQUER.ENG",...extra.files])].sort());
   archive(tool,stage,game,"GENERAL.MIX",["BTEXTURE.SHP","PREPICK.CPS","TITLE.CPS","HTITLE.PCX"]);
-  archive(tool,stage,game,"SOUNDS.MIX",["WCBOOT.DAT"]);
+  // M5 sound (tools/content/sound.js): effects and unit replies in SOUNDS.MIX
+  // (cached, init.cpp:467), COMMS lines in SPEECH.MIX (init.cpp:463).
+  const sounds=options.sounds||{dir:null,files:[]};
+  for(const name of sounds.files)fs.copyFileSync(path.join(sounds.dir,name),path.join(stage,name));
+  archive(tool,stage,game,"SOUNDS.MIX",["WCBOOT.DAT",...sounds.files].sort());
+  const speech=options.speech||{dir:null,files:[]};
+  if(speech.files.length){
+    for(const name of speech.files)fs.copyFileSync(path.join(speech.dir,name),path.join(stage,name));
+    archive(tool,stage,game,"SPEECH.MIX",[...speech.files].sort());
+  }
   write(game,"TEMPERAT.PAL",palette);
   write(game,"CONQUER.ENG",strings);
   // Loose decoder fixtures are also usable by the stock engine's fallback lookup.

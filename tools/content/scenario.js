@@ -34,7 +34,7 @@ function validate(input){
      !Array.isArray(input.trees)||!Array.isArray(input.units))throw Error("Invalid scenario features");
   input.terrain.cells.forEach(e=>{
     inMap(e.at);
-    if(![0,1].includes(e.template)||!Number.isInteger(e.icon)||e.icon<0||e.icon>255)
+    if(!Number.isInteger(e.template)||!TEMPLATE_IDS.has(e.template)||!Number.isInteger(e.icon)||e.icon<0||e.icon>255)
       throw Error("Invalid terrain template/icon");
   });
   for(const e of [...input.overlays,...input.trees]){
@@ -50,7 +50,26 @@ function validate(input){
   input.units.forEach(u=>{inMap(u.at);identifier(u.house);identifier(u.type);});
   return input;
 }
+// Temperate terrain templates by name (the engine's table, extracted by
+// tools/content/art/extract-templates.js): id is the TemplateType number the
+// BIN stores, w/h the size in cells.
+const TEMPLATES=new Map(require("./art/templates.json").filter(t=>t.temperate).map(t=>[t.name,t]));
+const TEMPLATE_IDS=new Set([...TEMPLATES.values()].map(t=>t.id));
+function stamp(out,name,[x0,y0]){
+  const t=TEMPLATES.get(name);
+  if(!t)throw Error("Unknown temperate template "+name);
+  for(let iy=0;iy<t.h;iy++)for(let ix=0;ix<t.w;ix++)
+    out.push({at:[x0+ix,y0+iy],template:t.id,icon:iy*t.w+ix,_land:landAt(t,ix,iy)});
+}
+function landAt(t,ix,iy){const i=iy*t.w+ix;return t.altIcons.includes(i)?t.altLand:t.land;}
 // Compact authoring features, expanded before validation:
+//   stamps:  [{template:"S03", at:[x,y]}]          one template, top-left at x,y
+//   ridges:  [{from:[x,y], to:[x,y], template:"S03"}]  a straight line of rock
+//            templates (horizontal or vertical), stepping by the template size
+//   ponds:   [{at:[x,y]}]  a 6x6 pond: sandy north shore, 2x2 water centre
+//   patches: [{at:[x,y], template:"P01"}]  rough or dirt ground (cosmetic)
+//   roads:   [{from:[x,y], to:[x,y]}]  a straight dirt road (cosmetic, clear land)
+// Terrain features are expanded into terrain.cells before validation.
 //   fields:    [{center:[x,y], radius:r, type:"TI1"}]  round resource fields
 //   treeLines: [{from:[x,y], to:[x,y], type:"T01", step:3}]  spaced trees
 // Start positions (waypoints) must stay clear so the mobile base can deploy.
@@ -70,6 +89,38 @@ function expand(input){
       out.trees.push({at:[Math.round(x0+(x1-x0)*i/(n||1)),Math.round(y0+(y1-y0)*i/(n||1))],type:t.type});
     }
   }
+  const placed=[];
+  for(const st of input.stamps||[])stamp(placed,st.template,st.at);
+  for(const r of input.ridges||[]){
+    const t=TEMPLATES.get(r.template||"S03");if(!t)throw Error("Unknown ridge template "+r.template);
+    const [x0,y0]=r.from,[x1,y1]=r.to;
+    if(x0!==x1&&y0!==y1)throw Error("Ridges must be horizontal or vertical");
+    const dx=Math.sign(x1-x0)*t.w,dy=Math.sign(y1-y0)*t.h;
+    for(let x=x0,y=y0;;x+=dx,y+=dy){stamp(placed,t.name,[x,y]);if((dx&&(x+dx-x1)*Math.sign(dx)>0)||(dy&&(y+dy-y1)*Math.sign(dy)>0)||(!dx&&!dy))break;}
+  }
+  for(const p of input.ponds||[]){
+    const [x,y]=p.at;
+    stamp(placed,"SH8",[x,y]);stamp(placed,"SH9",[x+3,y]);
+    stamp(placed,"SH33",[x,y+3]);stamp(placed,"SH32",[x+3,y+3]);
+  }
+  for(const p of input.patches||[])stamp(placed,p.template||"P01",p.at);
+  for(const r of input.roads||[]){
+    const [x0,y0]=r.from,[x1,y1]=r.to;
+    if(y0===y1){for(let x=Math.min(x0,x1);x+4<=Math.max(x0,x1)+1;x+=4)stamp(placed,"D10",[x,y0]);}
+    else if(x0===x1){for(let y=Math.min(y0,y1);y+2<=Math.max(y0,y1)+1;y+=2)stamp(placed,"D03",[x0,y]);}
+    else throw Error("Roads must be horizontal or vertical");
+  }
+  // Start positions must stay passable and clear for deploying.
+  for(const w of input.waypoints||[])for(const c of placed){
+    if(c._land!=="LAND_CLEAR"&&Math.abs(c.at[0]-w[0])<=CLEAR_RADIUS&&Math.abs(c.at[1]-w[1])<=CLEAR_RADIUS)
+      throw Error("Start position "+w+" is blocked by terrain at "+c.at);
+  }
+  const cellAt=new Map(placed.map(c=>[c.at.join(","),c]));
+  out.terrain={...input.terrain,cells:[...(input.terrain?input.terrain.cells:[]),...placed.map(({_land,...c})=>c)]};
+  // Resources and trees only on clear ground.
+  const onClear=e=>{const c=cellAt.get(e.at.join(","));return !c||c._land==="LAND_CLEAR";};
+  out.overlays=out.overlays.filter(onClear);out.trees=out.trees.filter(onClear);
+  delete out.stamps;delete out.ridges;delete out.ponds;delete out.patches;delete out.roads;
   const seen=new Set();
   out.overlays=out.overlays.filter(o=>{const k=o.at.join(",");if(seen.has(k))return false;seen.add(k);return true;});
   // Only generated features are checked; explicit cells are the author's call.

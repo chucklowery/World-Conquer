@@ -972,6 +972,9 @@ void CellClass::Draw_It(int x, int y, int draw_type) const
             **	This is the underlying terrain icon.
             */
             if (ttype->Get_Image_Data()) {
+#ifdef WC_ASSET_AUDIT
+                WC_Log_Draw(ttype->Get_Image_Data());
+#endif
                 LogicPage->Draw_Stamp(ttype->Get_Image_Data(), icon, x, y, NULL, WINDOW_TACTICAL);
                 if (remap) {
                     LogicPage->Remap(x + Map.TacPixelX, y + Map.TacPixelY, ICON_PIXEL_W, ICON_PIXEL_H, remap);
@@ -1116,6 +1119,9 @@ void CellClass::Draw_It(int x, int y, int draw_type) const
                 /*
                 **	Draw the hash-mark cursor:
                 */
+#ifdef WC_ASSET_AUDIT
+                WC_Log_Draw(Map.TransIconset);
+#endif
                 if (Map.ProximityCheck && Is_Generally_Clear()) {
                     LogicPage->Draw_Stamp(Map.TransIconset, 0, x, y, NULL, WINDOW_TACTICAL);
                 } else {

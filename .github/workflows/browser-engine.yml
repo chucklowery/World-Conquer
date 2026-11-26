@@ -54,12 +54,15 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_VANILLATD=ON -DBUILD_VANILLARA=OFF \
             -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
-            -DNETWORKING=OFF -DOPENAL=OFF -DSDL2=ON \
+            -DNETWORKING=OFF -DOPENAL=ON -DSDL2=ON \
             -DBUILD_TOOLS=OFF -DBUILD_TESTS=OFF
       - name: Compile actual VanillaTD engine
         run: cmake --build build/browser-engine --target VanillaTD --parallel 2
       - name: Generate original M1 boot data
         run: |
+          # M5: the sound pack's voices are spoken by flite (tools/content/sound.js).
+          sudo apt-get install -y -o Acquire::Retries=3 flite || (sudo apt-get update && sudo apt-get install -y -o Acquire::Retries=3 flite)
+          flite -lv
           cmake -S . -B build/native -G Ninja \
             -DBUILD_VANILLATD=OFF -DBUILD_VANILLARA=OFF \
             -DBUILD_REMASTERTD=OFF -DBUILD_REMASTERRA=OFF \
@@ -78,6 +81,7 @@ jobs:
           node tools/content/test-iconset.js
           node tools/content/test-wsa.js
           node tools/content/test-scenario.js
+          node tools/content/art/test-art.js
           node -e 'require("fs").writeFileSync("build/native/test-m2.icn",require("./tools/content/encode-iconset.js").encodeIconset({icons:[Array(576).fill(42)]}))'
           g++ -std=c++11 -DTRUE_FALSE_DEFINED -include cstdint -I. -Icommon -Itiberiandawn tests/test-m2-iconset.cpp tiberiandawn/iconset.cpp build/native/common/libcommon.a -lpthread -ldl -o build/native/test-m2-iconset
           build/native/test-m2-iconset build/native/test-m2.icn
@@ -263,11 +267,13 @@ jobs:
       # Strict: a full skirmish on original data with real input only --
       # deploy, build, harvest, train, command, scroll, 2 minutes of play --
       # with zero required or unclassified misses, no fatal or page error and
-      # no stall over 1s.
+      # no stall over 1s. M5: no wireframe placeholder is drawn (every match
+      # job checks that), and sound plays after the first click.
       - name: Play a skirmish match on original data (strict)
         env:
           # The public play view (published by publish-play.yml).
           STOCK_SCENARIO_PAGE: vanillatd.html?play
+          STOCK_SCENARIO_REQUIRE_AUDIO: '1'
         run: node browser/engine/check-stock-scenario.js
       - name: Publish stock-scenario audit
         if: always()

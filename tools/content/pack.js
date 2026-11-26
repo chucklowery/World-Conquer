@@ -83,7 +83,11 @@ function build(outdir){
     }
   }
   fs.rmSync(wireframeStage,{recursive:true,force:true});
-  const placeholderNames=new Set(require("./placeholders.js").build(contentStage,wireframeNames));
+  // M5 roster art (tools/content/art) replaces the wireframes for the
+  // objects a skirmish can show, plus their build-up animations and cameos.
+  const artNames=new Set(require("./art/build.js").build(contentStage));
+  for(const name of artNames)wireframeNames.delete(name);
+  const placeholderNames=new Set(require("./placeholders.js").build(contentStage,new Set([...wireframeNames,...artNames])));
   // Audited frame contracts: the engine indexes frames up to minFrames-1 for
   // these objects (requirements.json minFramesEvidence). Fail the build if a
   // generated sprite is shorter, since the engine would read past its end.
@@ -96,9 +100,15 @@ function build(outdir){
     const frames=fs.readFileSync(file).readUInt16LE(0);
     if(frames<min)throw Error(entry.name+" has "+frames+" frames; the engine uses up to "+min);
   }
-  const conquerMembers=[...wireframeNames,...placeholderNames].filter(n=>!n.endsWith(".TEM")&&n!=="TEMPERAT.PAL").sort();
-  const theaterMembers=[...placeholderNames].filter(n=>n.endsWith(".TEM")||n==="TEMPERAT.PAL").sort();
-  buildBoot(outdir,{conquerExtra:{dir:contentStage,files:conquerMembers}});
+  const conquerMembers=[...wireframeNames,...artNames,...placeholderNames].filter(n=>!n.endsWith(".TEM")&&n!=="TEMPERAT.PAL").sort();
+  const theaterMembers=[...placeholderNames,...artNames].filter(n=>n.endsWith(".TEM")||n==="TEMPERAT.PAL").sort();
+  const soundStage=path.join(outdir,"_sounds"),speechStage=path.join(outdir,"_speech");
+  fs.mkdirSync(soundStage,{recursive:true});fs.mkdirSync(speechStage,{recursive:true});
+  const audio=require("./sound.js").build(soundStage,speechStage);
+  const soundNames=new Set([...audio.sounds,...audio.speech]);
+  buildBoot(outdir,{conquerExtra:{dir:contentStage,files:conquerMembers},
+    sounds:{dir:soundStage,files:audio.sounds},speech:{dir:speechStage,files:audio.speech}});
+  fs.rmSync(soundStage,{recursive:true,force:true});fs.rmSync(speechStage,{recursive:true,force:true});
   fs.copyFileSync(path.join(outdir,"game","TEMPERAT.PAL"),path.join(contentStage,"TEMPERAT.PAL"));
   const scenarioNames=new Set(require("./scenario.js").build(path.join(outdir,"game")));
   const theaterNames=new Set(require("./theater.js").build(path.join(outdir,"game"),
@@ -124,7 +134,7 @@ function build(outdir){
       ["tools/content/wireframes.js","game/content/wireframes/catalog.json","game/content/source/placeholder.palette.json"]:
       entry.path.toUpperCase().endsWith(".MIX")?
       ["tools/content/boot-pack.js","tools/content/placeholders.js","tools/content/fading.js","tools/content/theater.js",
-        "tools/content/wireframes.js","game/content/pack/requirements.json"]:
+        "tools/content/wireframes.js","tools/content/art/build.js","tools/content/sound.js","game/content/pack/requirements.json"]:
       ["tools/content/boot-pack.js","game/content/pack/boot-requirements.json"],
     license:"CC0-1.0",sourceRevision:revision
   }]));
@@ -166,6 +176,9 @@ function build(outdir){
   // which only sees registered MIX archives, so members are what count.
   for(const name of Object.keys(archiveMembers))archiveMembers[name].sort();
   const memberSource=name=>name.endsWith(".MRF")?"tools/content/fading.js":
+    artNames.has(name)?"tools/content/art/build.js":
+    soundNames.has(name)?"tools/content/sound.js":
+    (require("./theater.js").build.artFiles||[]).includes(name)?"tools/content/art/terrain.js":
     theaterMembers.includes(name)||placeholderNames.has(name)?"tools/content/placeholders.js":
     wireframeNames.has(name)?"tools/content/wireframes.js":
     ["CLEAR1.TEM","W1.TEM","T01.TEM"].includes(name)||/^TI\d+\.TEM$/.test(name)?"tools/content/theater.js":

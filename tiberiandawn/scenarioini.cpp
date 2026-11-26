@@ -1414,6 +1414,18 @@ static void Create_Units(void)
         int NODCount;
         UnitType NODType;
     } utable[] = {
+#ifdef WC_MINIMUM_ROSTER
+        // M5 roster only (browser/engine/roster.cpp): both sides get the
+        // medium tank and the light vehicle.
+        {0, 1, UNIT_MTANK, 2, UNIT_MTANK},
+        {2, 1, UNIT_JEEP, 1, UNIT_JEEP},
+        {3, 1, UNIT_MTANK, 1, UNIT_MTANK},
+        {4, 1, UNIT_JEEP, 2, UNIT_JEEP},
+        {5, 1, UNIT_JEEP, 1, UNIT_JEEP},
+        {5, 2, UNIT_JEEP, 1, UNIT_JEEP},
+        {6, 1, UNIT_MTANK, 1, UNIT_MTANK},
+        {7, 1, UNIT_MTANK, 2, UNIT_MTANK},
+#else
         {0, 1, UNIT_MTANK, 2, UNIT_LTANK},
         {2, 1, UNIT_JEEP, 1, UNIT_BUGGY},
         {3, 1, UNIT_MLRS, 1, UNIT_ARTY},
@@ -1422,6 +1434,7 @@ static void Create_Units(void)
         {5, 2, UNIT_JEEP, 1, UNIT_FTANK},
         {6, 1, UNIT_MSAM, 1, UNIT_MSAM},
         {7, 1, UNIT_HTANK, 2, UNIT_STANK},
+#endif
     };
     static int num_units[NUM_UNIT_CATEGORIES]; // # of each type of unit to create
     int tot_units;                             // total # units to create
@@ -1434,11 +1447,20 @@ static void Create_Units(void)
         int NODCount;
         InfantryType NODType;
     } itable[] = {
+#ifdef WC_MINIMUM_ROSTER
+        // M5 roster only: rifle infantry for both sides.
+        {0, 1, INFANTRY_E1, 1, INFANTRY_E1},
+        {1, 1, INFANTRY_E1, 1, INFANTRY_E1},
+        {3, 1, INFANTRY_E1, 1, INFANTRY_E1},
+        {5, 1, INFANTRY_E1, 1, INFANTRY_E1},
+        {7, 1, INFANTRY_E1, 1, INFANTRY_E1},
+#else
         {0, 1, INFANTRY_E1, 1, INFANTRY_E1},
         {1, 1, INFANTRY_E2, 1, INFANTRY_E3},
         {3, 1, INFANTRY_E3, 1, INFANTRY_E3},
         {5, 1, INFANTRY_E3, 1, INFANTRY_E4},
         {7, 1, INFANTRY_RAMBO, 1, INFANTRY_RAMBO},
+#endif
     };
     static int num_infantry[NUM_INFANTRY_CATEGORIES]; // # of each type of infantry to create
     int tot_infantry;                                 // total # infantry to create

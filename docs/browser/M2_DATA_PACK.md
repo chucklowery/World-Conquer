@@ -100,6 +100,26 @@ overlays, trees, six start waypoints) and generate it with
 `SCM94EA.INI`/`.BIN`. The skirmish dialog lists maps by their `[Basic]
 Name`.
 
+## M5 art and sound
+
+`pack.js` now layers generated, original art over the placeholders
+(ADR-0005):
+
+| Generator | What it makes |
+| --- | --- |
+| `tools/content/art/build.js` (`models.js`, `render.js`) | The roster: units, structures, build-ups, damaged frames, cameos |
+| `tools/content/art/effects.js` | Explosions, hits, muzzle flashes, fire, smoke, projectiles |
+| `tools/content/art/ui.js` | Sidebar, buttons, power gauge, build clock, tags, tabs, radar housing, placement grid |
+| `tools/content/art/terrain.js` (via `theater.js`) | Every temperate template from its land mask, crystals, trees, aprons, craters |
+| `tools/content/sound.js` | Effects, unit replies and COMMS lines (`SOUNDS.MIX`, `SPEECH.MIX`); needs `flite` |
+| `tools/content/art/palette.js` | The palette: named ramps and house colours for every remap table |
+
+Previews: `node tools/content/art/map-preview.js <map.json> <out.png>`
+renders a map with the terrain art. Tests: `node tools/content/art/test-art.js`
+(palette, template table, frame contracts, AUD), plus the existing pack,
+theater and scenario tests. `PROVENANCE.json` names the generator of every
+archive member; the match audit uses it to fail on any wireframe draw.
+
 ## Replace placeholder art later (M5)
 
 Keep the file contracts and swap the generator: the engine only cares about

@@ -23,39 +23,39 @@ function archive(game,stage,name,files){
 function build(game,extra={dir:null,files:[]}){
   const stage=path.join(path.dirname(game),"_m2_theater");
   fs.mkdirSync(stage,{recursive:true});
-  // Flat green clear ground and flat blue water are intentional schematic art
-  // (TEMPERAT.PAL terrain entries from boot-colors.js TERRAIN).
-  const {TERRAIN}=require("./boot-colors.js");
-  const files=["CLEAR1.TEM","W1.TEM"];
-  fs.writeFileSync(path.join(stage,files[0]),encodeIconset({icons:[tile(TERRAIN.grass,TERRAIN.grassEdge)],map:Array(16).fill(0)}));
-  fs.writeFileSync(path.join(stage,files[1]),encodeIconset({icons:[tile(TERRAIN.water,TERRAIN.waterEdge)]}));
-  // odata.cpp:162-353 declares 12 separate harvestable overlay types;
-  // odata.cpp:828-839 indexes OverlayData directly as a tactical frame.
-  // Supply 16 non-copyrighted growth/adjacency frames for each type.
-  const schematic=(seed,frame,width=24,height=24)=>{
-    const pixels=Array.from({length:width*height},(_,i)=>{
-      const x=i%width,y=Math.floor(i/width);
-      const center=Math.abs(x-width/2)+Math.abs(y-height/2);
-      if(center>width*0.65)return 0;
-      return ((x*7+y*11+frame*5+seed*13)%19)<(4+(frame%12)) ? 74+(seed%12) : 0;
-    });
-    return {width,height,pixels};
-  };
+  // M5 terrain art (tools/content/art/terrain.js): every temperate template
+  // painted from the engine's own land mask, the crystal overlay and trees.
+  const terrain=require("./art/terrain.js");
+  const files=[];
+  const artFiles=[];
+  for(const [name,{t,icons}] of Object.entries(terrain.templates())){
+    fs.writeFileSync(path.join(stage,name),encodeIconset({icons,map:icons.map((_,i)=>i)}));
+    files.push(name);artFiles.push(name);
+  }
+  // odata.cpp:162-353 declares 12 harvestable overlay types; odata.cpp:
+  // 828-839 draws OverlayData (growth stage 0..11) as the frame.
   for(let n=1;n<=12;n++){
     const name="TI"+n+".TEM";
-    const frames=Array.from({length:16},(_,i)=>schematic(n,i));
-    fs.writeFileSync(path.join(stage,name),encodeTacticalShape({frames}));
-    files.push(name);
+    fs.writeFileSync(path.join(stage,name),encodeTacticalShape({frames:terrain.crystalFrames(n)}));
+    files.push(name);artFiles.push(name);
   }
   // Theater-specific tree source: tdata.cpp:77, terrain.cpp:357.
-  const treeName="T01.TEM";
-  fs.writeFileSync(path.join(stage,treeName),
-    encodeTacticalShape({frames:Array.from({length:16},(_,i)=>schematic(20,i,32,32))}));
-  files.push(treeName);
+  fs.writeFileSync(path.join(stage,"T01.TEM"),encodeTacticalShape({frames:terrain.treeFrames()}));
+  files.push("T01.TEM");artFiles.push("T01.TEM");
+  // Building aprons, craters and scorch marks (sdata.cpp).
+  for(const [name,frames] of Object.entries(terrain.smudges())){
+    fs.writeFileSync(path.join(stage,name),encodeTacticalShape({frames}));
+    files.push(name);artFiles.push(name);
+  }
+  build.artFiles=artFiles;
 
   // Theater data (palette, templates, terrain objects, smudges) is fetched
   // with MFCD::Retrieve, which only searches registered MIX archives.
-  for(const name of extra.files){fs.copyFileSync(path.join(extra.dir,name),path.join(stage,name));files.push(name);}
+  // Placeholders cover the rest; generated terrain art wins on a name clash.
+  for(const name of extra.files){
+    if(files.includes(name))continue;
+    fs.copyFileSync(path.join(extra.dir,name),path.join(stage,name));files.push(name);
+  }
   // display.cpp:129 and sidebar.cpp:84 define _RETRIEVE: the engine reads its
   // palette fading/translucency tables from data. Build them from our palette.
   const paletteFile=path.join(stage,"TEMPERAT.PAL");

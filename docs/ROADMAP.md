@@ -288,39 +288,49 @@ starts from cache.
 
 Evidence: 2026-11-26 · `b692f750f9893f72dae1da7762b527b26b0bc7ac` · [browser CI](https://github.com/chucklowery/World-Conquer/actions/runs/45750338236), [site budget](https://github.com/chucklowery/World-Conquer/actions/runs/45757910056) · Playwright 1.56.1 Chromium, Firefox, WebKit · strict budget run on the live site passed in all three browsers: first visit 6.27-6.28 MB and 4.7-5.4 s to the menu, repeat visit 0 B (all from cache) and 0.8-1.6 s; browser CI green including `browser-reach` (Firefox and WebKit play the strict skirmish), the unsupported-browser check, `ai-match` on three maps and `win-match`. The optional service worker ("Cache it") stays open.
 
-### M5: Readable vertical slice (4–6 sessions)
+### M5: Readable vertical slice (4–6 sessions) — CI gate implemented; player gate open
 
 The goal is a game a stranger can read at a glance. It covers the existing
 minimum roster only; more content waits for M7. Tracks: Data and Design. The
-UI track (UI-B to UI-E) is delivered inside this milestone.
+UI track (UI-B to UI-E) is delivered inside this milestone. Decisions:
+[ADR-0005](browser/DECISIONS.md).
 
-- [ ] **One real theater.** Temperate templates for clear ground, water,
-      shore, cliffs, roads and rough ground, with passability from the
-      template data. Each map uses them for chokepoints and expansions, not
-      decoration only.
-- [ ] **Final art for the minimum roster.** About 6 structures (yard, power,
-      refinery, barracks, factory, defence), about 4 units (harvester, rifle
-      infantry, light vehicle, heavy vehicle), the resource overlay,
-      projectiles, explosions and smudges. Each is distinguishable by
-      silhouette at 1× zoom, shows house colour through the remap band and
-      passes the per-slot audit in the wireframe catalog.
-- [ ] **Command interface.** UI-B to UI-E from
-      [`UI-command-interface.md`](milestones/UI-command-interface.md):
-      command bar, build strip, cursors, menus. UI-F stays optional and
+- [x] **Minimum roster in skirmish.** The browser build (`WC_MINIMUM_ROSTER`,
+      `browser/engine/roster.cpp`) lets both sides build exactly the roster;
+      native builds keep the stock rules.
+- [x] **One real theater.** Every temperate template is painted from the
+      engine's own land mask (`tools/content/art/terrain.js`, table extracted
+      from `cdata.cpp`): grass, animated water, sand, shaded rock, dirt and
+      roads. The three maps use rock ridges for chokepoints, ponds, rough
+      ground and roads (`tools/content/scenario.js` terrain features).
+- [x] **Final art for the minimum roster.** Six structures, the four units,
+      the mobile base vehicle, build-ups, damaged frames, cameos, the crystal
+      overlay, trees, building aprons, craters, projectiles, explosions and
+      fire (`tools/content/art/`), generated from models in the engine's
+      exact frame layouts; house colour through the remap band. *The
+      per-slot entries in the wireframe catalog are not ticked yet.*
+- [ ] **Command interface.** Done: sidebar plates, buttons with
+      pictograms, power gauge and drain marker, build clock, READY/HOLD
+      tags, scroll arrows, tabs, radar housing and placement grid
+      (`tools/content/art/ui.js`). Open: cursors (`MOUSE.SHP`, UI-D),
+      fonts, menus and dialogs (UI-E). UI-F stays optional and
       approval-gated.
-- [ ] **Sound.** SDL2 audio through Emscripten with original or CC0 sounds:
-      weapon fire, explosions, unit acknowledgements, construction, and
-      COMMS voice lines for the key cues (construction complete, unit ready,
-      base under attack, low power, insufficient funds). Web Audio unlocks
-      on the first user gesture; mute and volume persist.
-- [ ] **Onboarding text.** A short how-to in the play view (controls and the
-      goal of a match); in-engine tooltips use the authored names.
-- [ ] **Playtest log.** Create `docs/browser/PLAYTESTS.md` and run the
-      protocol.
+- [x] **Sound.** The engine's OpenAL backend on Emscripten's Web Audio
+      OpenAL; synthesised effects and spoken unit replies and COMMS lines
+      (flite) in `SOUNDS.MIX` and `SPEECH.MIX` (`tools/content/sound.js`).
+      Audio starts on the first click; mute and volume persist.
+- [x] **Onboarding text.** The play view has the goal, the controls and what
+      each roster object is for; in-engine tooltips use the authored names.
+- [ ] **Playtest log.** [`docs/browser/PLAYTESTS.md`](browser/PLAYTESTS.md)
+      is created with the protocol and the M5 form; the session itself needs
+      three outside testers (owner).
 
 **Exit gate (CI):** no wireframe slot is drawn during the default skirmish
 (the audit fails on any `wireframe` provenance in a scripted match), sound
 plays in Chromium after the first click, and the M4 budgets still pass.
+*Implemented:* the engine logs each file's first draw (`[asset-draw]`) and
+every match job fails on a wireframe draw; the default skirmish job fails
+unless an audio context is running and buffers were played.
 
 **Exit gate (player):** at least 3 of 3 testers start a match unaided, at
 least 2 of 3 finish a match against the AI, and every tester can name what

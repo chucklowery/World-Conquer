@@ -78,6 +78,7 @@ async function sidebarStats(page,png){
 const audit={schema:1,pathDecision:"pending (Skirmish candidate)",status:"incomplete",
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
   pageErrors:[],screenshots:[],input:[],requiredMisses:[],optionalMisses:[],unclassifiedMisses:[],
+  drawn:[],drawnBySource:{},wireframeDrawn:[],
   ciSha:process.env.GITHUB_SHA||"local"};
 const consoleLines=[];
 function parse(rawLine){
@@ -89,6 +90,9 @@ function parse(rawLine){
   if(line.startsWith("[browser-event]")&&!line.startsWith("[browser-event] credits "))audit.lastEventLines.push(line);
   if(audit.lastGameLines.length>60)audit.lastGameLines.shift();
   if(audit.lastEventLines.length>60)audit.lastEventLines.shift();
+  // M5: every file drawn at least once ([asset-draw], common/ccfile.cpp).
+  const drawn=line.match(/^\[asset-draw\] (\S+)/);
+  if(drawn&&!audit.drawn.includes(drawn[1]))audit.drawn.push(drawn[1]);
   const miss=line.match(/^\[asset-miss\] (\S+)/);
   if(miss&&!audit.misses.some(x=>x.name===miss[1]))audit.misses.push({name:miss[1],firstSeenStage:audit.stage});
   const fatal=line.match(/^\[browser-game\] fatal=(.*)/);
@@ -503,6 +507,16 @@ async function main(){
     if(hooksOn!==winMode)throw Error("Test hooks are "+(hooksOn?"on":"off")+" but STOCK_SCENARIO_WIN is "+(winMode?"set":"not set"));
     if(process.env.STOCK_SCENARIO_SKIP_GAMEPLAY!=="1")await playMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
     if(winMode)await winMatch(page,{clickGame,screenshot,logText,playerHouse,canvas});
+    // M5: sound plays after the first click. The page wraps every Web Audio
+    // context the engine's OpenAL creates (shell.html, WCAudio); by now the
+    // match has played effects and COMMS lines.
+    audit.audio=await page.evaluate(()=>window.WCAudio?{...window.WCAudio.stats,
+      states:window.WCAudio.contexts.map(c=>c.state)}:null);
+    if(process.env.STOCK_SCENARIO_REQUIRE_AUDIO==="1"){
+      const a=audit.audio;
+      if(!a||!a.contexts||!a.running||a.sourcesStarted<1||a.secondsQueued<=0)
+        throw Error("No sound played after the first click: "+JSON.stringify(a));
+    }
     // M3: let the match run with no further player input and record what the
     // computer players do (STOCK_SCENARIO_OBSERVE_MINUTES, default off).
     const observe=Number(process.env.STOCK_SCENARIO_OBSERVE_MINUTES||0);
@@ -604,15 +618,30 @@ async function main(){
       else if(stage)audit.requiredMisses.push(miss);
       else audit.unclassifiedMisses.push(miss);
     }
+    // M5 exit gate: no wireframe placeholder may be drawn. PROVENANCE.json
+    // names the generator of every archive member.
+    try{
+      const prov=JSON.parse(fs.readFileSync(path.join(root,"data","PROVENANCE.json"),"utf8"));
+      const source=new Map();
+      for(const members of Object.values(prov.members||{}))
+        for(const [name,info] of Object.entries(members))source.set(name.toUpperCase(),info.generator);
+      for(const name of audit.drawn){
+        const gen=source.get(name.toUpperCase())||"unknown";
+        (audit.drawnBySource[gen]=audit.drawnBySource[gen]||[]).push(name);
+        if(/wireframes\.js$/.test(gen))audit.wireframeDrawn.push(name);
+      }
+    }catch(e){audit.drawnBySource.error=[String(e.message)];}
     const reached=audit.lastGameLines.some(x=>x.includes("scenario.request="));
     if(reached)audit.pathDecision="Skirmish (scenario.request observed)";
     if(!audit.error)audit.status=reached?"scenario-request":"blocked-before-scenario";
     if(process.env.STOCK_SCENARIO_REPORT_ONLY!=="1"&&
         (!audit.lastGameLines.some(x=>x.includes("scenario.loaded="))||
           audit.requiredMisses.length||audit.unclassifiedMisses.length||
+          (process.env.STOCK_SCENARIO_ALLOW_WIREFRAMES!=="1"&&audit.wireframeDrawn.length)||
           audit.fatal||audit.pageErrors.length||audit.error)){
       audit.error=audit.error||("Scenario probe failed: stage="+audit.stage+
-        " fatal="+audit.fatal+" pageErrors="+audit.pageErrors.length);
+        " fatal="+audit.fatal+" pageErrors="+audit.pageErrors.length+
+        (audit.wireframeDrawn.length?" wireframes drawn="+audit.wireframeDrawn.join(","):""));
       audit.status="error";
       process.exitCode=1;
     }
@@ -628,6 +657,8 @@ async function main(){
     "optional:",audit.optionalMisses.length);
   // Put the failure and progress in the job log itself; the artifact is not
   // always reachable from where the log is read.
+  console.log("Drawn files by source:",JSON.stringify(audit.drawnBySource));
+  if(audit.audio!==undefined)console.log("Audio:",JSON.stringify(audit.audio));
   if(audit.error)console.log("Error:",audit.error);
   if(audit.gameplay)console.log("Gameplay steps:",JSON.stringify(audit.gameplay.steps));
   if(audit.error){

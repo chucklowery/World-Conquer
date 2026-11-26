@@ -162,7 +162,16 @@ if(SDL2)
 endif()
 
 if(OPENAL)
-    find_package(OpenAL REQUIRED)
+    if(EMSCRIPTEN)
+        # Emscripten ships OpenAL on top of Web Audio (-lopenal); its headers
+        # are in the sysroot under AL/, and the engine includes <al.h>.
+        add_library(OpenAL::OpenAL INTERFACE IMPORTED)
+        set_target_properties(OpenAL::OpenAL PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${EMSCRIPTEN_SYSROOT}/include/AL"
+            INTERFACE_LINK_LIBRARIES "-lopenal")
+    else()
+        find_package(OpenAL REQUIRED)
+    endif()
     list(APPEND VANILLA_LIBS OpenAL::OpenAL)
     set(DSOUND OFF)
 endif()

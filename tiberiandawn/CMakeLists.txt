@@ -242,7 +242,10 @@ if(BUILD_VANILLATD)
             ${CMAKE_SOURCE_DIR}/browser/engine/data_probe.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/shape_probe.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/test_hooks.cpp
+            ${CMAKE_SOURCE_DIR}/browser/engine/roster.cpp
         )
+        # M5: skirmish limited to the roster that has final art (roster.cpp).
+        target_compile_definitions(VanillaTD PRIVATE WC_MINIMUM_ROSTER)
         set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")
         target_link_options(VanillaTD PRIVATE
             "--shell-file" "${CMAKE_SOURCE_DIR}/browser/engine/shell.html"

@@ -1,7 +1,9 @@
 "use strict";
 // The RGB values are original, generated numeric placeholders. Index values
 // used by stock dialogs are chosen for readable text and strong contrast.
-function rgbPalette() {
+// The M1-M4 base palette. M5 lays art ramps over it (art/palette.js); use
+// rgbPalette() for the palette the pack ships.
+function basePalette() {
   const colors=Array.from({length:256},(_,i)=>[
     Math.min(255,(i&7)*34+10),
     Math.min(255,((i>>3)&7)*31+10),
@@ -51,10 +53,14 @@ function rgbPalette() {
   for(const [key,value] of Object.entries(overrides))colors[Number(key)]=value;
   return colors;
 }
+function rgbPalette() {
+  return require("./art/palette.js").gamePalette();
+}
 function toHex(rgb) {
   return "#"+rgb.map(n=>n.toString(16).padStart(2,"0")).join("").toUpperCase();
 }
-// Palette indices of the terrain colours above (theater.js, placeholders.js).
-const TERRAIN={grass:112,grassEdge:113,water:114,waterEdge:115};
+// Palette indices of the plain terrain colours (theater.js, placeholders.js):
+// entries of the art palette's grass and water ramps (art/palette.js).
+const TERRAIN={grass:102,grassEdge:104,water:129,waterEdge:131};
 const TITLE_BACKGROUND=139;
-module.exports={TITLE_BACKGROUND,rgbPalette,toHex,TERRAIN};
+module.exports={TITLE_BACKGROUND,basePalette,rgbPalette,toHex,TERRAIN};

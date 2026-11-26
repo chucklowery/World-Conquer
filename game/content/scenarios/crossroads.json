@@ -3,27 +3,246 @@
   "file": "SCM95EA",
   "name": "Crossroads",
   "description": "Compact 48x48 map. A rich central field framed by tree lines; each corner start has a small field of its own.",
-  "map": {"theater": "TEMPERATE", "x": 8, "y": 8, "width": 48, "height": 48},
-  "terrain": {"fill": 0, "cells": []},
-  "waypoints": [[13, 13], [50, 50], [50, 13], [13, 50], [31, 12], [31, 51]],
+  "map": {
+    "theater": "TEMPERATE",
+    "x": 8,
+    "y": 8,
+    "width": 48,
+    "height": 48
+  },
+  "terrain": {
+    "fill": 0,
+    "cells": []
+  },
+  "waypoints": [
+    [
+      13,
+      13
+    ],
+    [
+      50,
+      50
+    ],
+    [
+      50,
+      13
+    ],
+    [
+      13,
+      50
+    ],
+    [
+      31,
+      12
+    ],
+    [
+      31,
+      51
+    ]
+  ],
   "fields": [
-    {"center": [31, 31], "radius": 4, "type": "TI1"},
-    {"center": [21, 14], "radius": 2, "type": "TI1"},
-    {"center": [42, 49], "radius": 2, "type": "TI1"},
-    {"center": [49, 21], "radius": 2, "type": "TI1"},
-    {"center": [14, 42], "radius": 2, "type": "TI1"}
+    {
+      "center": [
+        31,
+        31
+      ],
+      "radius": 4,
+      "type": "TI1"
+    },
+    {
+      "center": [
+        21,
+        14
+      ],
+      "radius": 2,
+      "type": "TI1"
+    },
+    {
+      "center": [
+        42,
+        49
+      ],
+      "radius": 2,
+      "type": "TI1"
+    },
+    {
+      "center": [
+        49,
+        21
+      ],
+      "radius": 2,
+      "type": "TI1"
+    },
+    {
+      "center": [
+        14,
+        42
+      ],
+      "radius": 2,
+      "type": "TI1"
+    }
   ],
   "treeLines": [
-    {"from": [22, 22], "to": [27, 22], "type": "T01", "step": 2},
-    {"from": [36, 22], "to": [41, 22], "type": "T01", "step": 2},
-    {"from": [22, 41], "to": [27, 41], "type": "T01", "step": 2},
-    {"from": [36, 41], "to": [41, 41], "type": "T01", "step": 2},
-    {"from": [22, 24], "to": [22, 28], "type": "T01", "step": 2},
-    {"from": [41, 24], "to": [41, 28], "type": "T01", "step": 2},
-    {"from": [22, 35], "to": [22, 39], "type": "T01", "step": 2},
-    {"from": [41, 35], "to": [41, 39], "type": "T01", "step": 2}
+    {
+      "from": [
+        16,
+        20
+      ],
+      "to": [
+        16,
+        26
+      ],
+      "type": "T01",
+      "step": 2
+    },
+    {
+      "from": [
+        47,
+        37
+      ],
+      "to": [
+        47,
+        43
+      ],
+      "type": "T01",
+      "step": 2
+    }
   ],
   "overlays": [],
   "trees": [],
-  "units": []
+  "units": [],
+  "ridges": [
+    {
+      "from": [
+        22,
+        22
+      ],
+      "to": [
+        26,
+        22
+      ]
+    },
+    {
+      "from": [
+        36,
+        22
+      ],
+      "to": [
+        40,
+        22
+      ]
+    },
+    {
+      "from": [
+        22,
+        40
+      ],
+      "to": [
+        26,
+        40
+      ]
+    },
+    {
+      "from": [
+        36,
+        40
+      ],
+      "to": [
+        40,
+        40
+      ]
+    },
+    {
+      "from": [
+        22,
+        24
+      ],
+      "to": [
+        22,
+        28
+      ]
+    },
+    {
+      "from": [
+        40,
+        24
+      ],
+      "to": [
+        40,
+        28
+      ]
+    },
+    {
+      "from": [
+        22,
+        34
+      ],
+      "to": [
+        22,
+        38
+      ]
+    },
+    {
+      "from": [
+        40,
+        34
+      ],
+      "to": [
+        40,
+        38
+      ]
+    }
+  ],
+  "roads": [
+    {
+      "from": [
+        18,
+        31
+      ],
+      "to": [
+        45,
+        31
+      ]
+    },
+    {
+      "from": [
+        31,
+        18
+      ],
+      "to": [
+        31,
+        45
+      ]
+    }
+  ],
+  "patches": [
+    {
+      "at": [
+        17,
+        24
+      ],
+      "template": "P07"
+    },
+    {
+      "at": [
+        42,
+        37
+      ],
+      "template": "P08"
+    },
+    {
+      "at": [
+        26,
+        47
+      ],
+      "template": "P13"
+    },
+    {
+      "at": [
+        35,
+        15
+      ],
+      "template": "P14"
+    }
+  ]
 }

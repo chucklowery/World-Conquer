@@ -38,23 +38,58 @@ body.play-view>*:not(#play-view){display:none!important}
 #load-progress{display:block;width:100%;max-width:520px;height:10px;margin:-10px 0 18px;accent-color:#69dfb2}
 #load-progress[hidden]{display:none}
 #unsupported{border-color:#c98b5f;background:#3a2a20;color:#ffd9bd}
+/* M5: sound controls and the onboarding guide (outside the canvas). */
+.audio-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:4px 0 2px;font-size:.9rem;color:#b8c8d8}
+.audio-controls input[type=range]{width:140px;accent-color:#69dfb2}
+#play-view .play-how h3{font-size:.95rem;margin:14px 0 4px}
+#play-view .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:6px 0 0;padding:0;list-style:none;color:#b8c8d8;line-height:1.5}
+#play-view .roster b{color:#edf4fa}
+#play-view kbd{font:600 .8rem ui-monospace,Consolas,monospace;padding:1px 5px;border:1px solid #516276;border-radius:4px;background:#0d1723}
 </style>
 </head>
 <body data-runtime="loading" data-mode="idle">
 <main id="play-view" hidden>
 <div class="eyebrow">World-Conquer · real-time strategy in your browser</div>
 <h1>World-Conquer</h1>
-<p class="play-intro">Build a base, harvest crystal and defeat the computer player. Everything you see is original placeholder art; the game runs entirely in this tab.</p>
+<p class="play-intro">Build a base, harvest crystal and defeat the computer player. All art, sound and voices are original; the game runs entirely in this tab.</p>
 <div id="play-view-stage"></div>
-<div class="play-how">
+<div class="audio-controls" id="audio-controls">
+<button type="button" id="audio-mute" aria-pressed="false">Sound: on</button>
+<label for="audio-volume">Volume</label>
+<input type="range" id="audio-volume" min="0" max="100" step="5" value="80" aria-label="Sound volume">
+<span class="note" id="audio-note">Sound starts after your first click.</span>
+</div>
+<div class="play-how" id="how-to-play">
 <strong>How to play</strong>
+<p class="note" style="margin:4px 0 0">Goal: destroy every enemy building and unit. You lose if all of yours are destroyed.</p>
 <ol>
-<li>Press <strong>Play</strong>, then choose <strong>Multiplayer</strong> and <strong>Skirmish</strong>.</li>
-<li>Pick a map and press <strong>OK</strong>.</li>
-<li>Select your mobile base and click it again to deploy it. Build from the sidebar on the right: power, a refinery, then barracks and a vehicle factory.</li>
-<li>Drag to select units, click to move or attack. Arrow keys or the screen edge scroll the map.</li>
-<li>Destroy every enemy building to win.</li>
+<li>Press <strong>Play</strong>, then choose <strong>Multiplayer</strong> and <strong>Skirmish</strong>. Pick a map and press <strong>OK</strong>.</li>
+<li>Click your <b>Mobile Base</b> to select it, then click it again to unfold it into a <b>Construction Yard</b>.</li>
+<li>Build from the sidebar on the right: click an icon to build it, then click the map to place a structure. Start with a <b>Power Plant</b> and a <b>Refinery</b>.</li>
+<li>Add a <b>Barracks</b> and a <b>Vehicle Factory</b>, then train an army and attack.</li>
 </ol>
+<h3>Controls</h3>
+<ul class="roster">
+<li><b>Select</b>: click a unit, or drag a box around several.</li>
+<li><b>Move / attack</b>: with units selected, click the ground or an enemy.</li>
+<li><b>Scroll</b>: arrow keys, or move the mouse to the screen edge.</li>
+<li><b>Deselect</b>: right-click.</li>
+<li><b>Sell / repair</b>: the buttons above the sidebar, then click a building.</li>
+<li><b>Options</b>: the tab at the top left (also <kbd>Esc</kbd>).</li>
+</ul>
+<h3>Your forces</h3>
+<ul class="roster" id="roster-guide">
+<li><b>Construction Yard</b>: builds every other structure.</li>
+<li><b>Power Plant</b>: powers your base; build more when power runs low.</li>
+<li><b>Refinery</b>: turns crystal into credits; comes with a Harvester.</li>
+<li><b>Barracks</b>: trains Rifle Squads.</li>
+<li><b>Vehicle Factory</b>: builds Scout Cars, Battle Tanks and Harvesters.</li>
+<li><b>Guard Tower</b>: a fixed gun post that defends your base.</li>
+<li><b>Harvester</b>: gathers crystal and brings it to the Refinery.</li>
+<li><b>Rifle Squad</b>: cheap infantry, good against other infantry.</li>
+<li><b>Scout Car</b>: fast and lightly armed; good for scouting.</li>
+<li><b>Battle Tank</b>: slow, armoured and strong against vehicles and buildings.</li>
+</ul>
 </div>
 </main>
 <div class="eyebrow">World-Conquer · VanillaTD engine in WebAssembly</div>
@@ -93,6 +128,56 @@ body.play-view>*:not(#play-view){display:none!important}
 <pre id="log" aria-live="polite"></pre>
 </section>
 </div>
+<script>
+// M5 sound. The engine plays through Emscripten's OpenAL, which uses Web
+// Audio. Every AudioContext the page creates gets a master gain node in front
+// of its destination, so the mute and volume controls (outside the canvas)
+// apply to all engine sound; both are remembered in localStorage. Browsers
+// keep audio suspended until the first click or key press; Emscripten resumes
+// it then. window.WCAudio.stats lets CI check that sound really played.
+(function () {
+  "use strict";
+  const Base = window.AudioContext || window.webkitAudioContext;
+  const store = {
+    get(key, fallback) { try { const v = localStorage.getItem(key); return v === null ? fallback : v; } catch (_) { return fallback; } },
+    set(key, value) { try { localStorage.setItem(key, String(value)); } catch (_) {} }
+  };
+  const audio = window.WCAudio = {
+    contexts: [],
+    muted: store.get("wc.audio.muted", "0") === "1",
+    volume: Math.max(0, Math.min(100, Number(store.get("wc.audio.volume", "80")) || 0)),
+    stats: { contexts: 0, sourcesStarted: 0, secondsQueued: 0, running: false },
+    level() { return audio.muted ? 0 : audio.volume / 100; },
+    apply() { for (const ctx of audio.contexts) if (ctx._wcMaster) ctx._wcMaster.gain.value = audio.level(); },
+    setMuted(value) { audio.muted = !!value; store.set("wc.audio.muted", audio.muted ? 1 : 0); audio.apply(); audio.render && audio.render(); },
+    setVolume(value) { audio.volume = Math.max(0, Math.min(100, Number(value) || 0)); store.set("wc.audio.volume", audio.volume); audio.apply(); audio.render && audio.render(); }
+  };
+  if (!Base) return;
+  class WCAudioContext extends Base {
+    constructor(options) {
+      super(options);
+      const master = Base.prototype.createGain.call(this);
+      master.gain.value = audio.level();
+      master.connect(Object.getOwnPropertyDescriptor(BaseAudioContext.prototype, "destination").get.call(this));
+      this._wcMaster = master;
+      audio.contexts.push(this);
+      audio.stats.contexts++;
+      const update = () => { audio.stats.running = audio.contexts.some(c => c.state === "running"); };
+      this.addEventListener("statechange", update);
+      update();
+    }
+    get destination() { return this._wcMaster || super.destination; }
+  }
+  window.AudioContext = WCAudioContext;
+  if (window.webkitAudioContext) window.webkitAudioContext = WCAudioContext;
+  const start = AudioBufferSourceNode.prototype.start;
+  AudioBufferSourceNode.prototype.start = function () {
+    audio.stats.sourcesStarted++;
+    if (this.buffer) audio.stats.secondsQueued += this.buffer.duration;
+    return start.apply(this, arguments);
+  };
+})();
+</script>
 <script src="asset-audit.js"></script>
 <script src="pack-loader.js"></script>
 <script src="asset-import.js"></script>
@@ -140,6 +225,17 @@ body.play-view>*:not(#play-view){display:none!important}
     document.body.classList.add("play-view");
     document.title = "World-Conquer";
   }
+  // M5 sound controls (see the WCAudio script above).
+  const muteButton = document.getElementById("audio-mute");
+  const volume = document.getElementById("audio-volume");
+  window.WCAudio.render = () => {
+    muteButton.textContent = "Sound: " + (window.WCAudio.muted ? "off" : "on");
+    muteButton.setAttribute("aria-pressed", String(window.WCAudio.muted));
+    volume.value = String(window.WCAudio.volume);
+  };
+  window.WCAudio.render();
+  muteButton.addEventListener("click", () => window.WCAudio.setMuted(!window.WCAudio.muted));
+  volume.addEventListener("input", () => window.WCAudio.setVolume(volume.value));
   // Keep the SDL back buffer at the engine's own resolution. Only its CSS
   // presentation is scaled, so native hit-testing uses the standard SDL path.
   canvas.style.imageRendering = "pixelated";
@@ -183,7 +279,7 @@ body.play-view>*:not(#play-view){display:none!important}
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && document.body.dataset.mode === "game")
-      report("[browser-game] tab hidden; no stock pause API exposed; audio disabled in M1");
+      report("[browser-game] tab hidden; no stock pause API exposed");
   });
   const count = document.getElementById("file-count");
   let ready = false;

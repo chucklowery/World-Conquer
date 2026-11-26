@@ -3,21 +3,182 @@
   "file": "SCM96EA",
   "name": "Long Valley",
   "description": "Wide 62x36 valley. Two broken tree ridges split the map into west, centre and east; the largest field sits in the contested centre.",
-  "map": {"theater": "TEMPERATE", "x": 1, "y": 14, "width": 62, "height": 36},
-  "terrain": {"fill": 0, "cells": []},
-  "waypoints": [[6, 20], [57, 43], [57, 20], [6, 43], [31, 18], [31, 45]],
+  "map": {
+    "theater": "TEMPERATE",
+    "x": 1,
+    "y": 14,
+    "width": 62,
+    "height": 36
+  },
+  "terrain": {
+    "fill": 0,
+    "cells": []
+  },
+  "waypoints": [
+    [
+      6,
+      20
+    ],
+    [
+      57,
+      43
+    ],
+    [
+      57,
+      20
+    ],
+    [
+      6,
+      43
+    ],
+    [
+      31,
+      18
+    ],
+    [
+      31,
+      45
+    ]
+  ],
   "fields": [
-    {"center": [31, 31], "radius": 5, "type": "TI1"},
-    {"center": [12, 31], "radius": 3, "type": "TI1"},
-    {"center": [51, 31], "radius": 3, "type": "TI1"}
+    {
+      "center": [
+        31,
+        31
+      ],
+      "radius": 5,
+      "type": "TI1"
+    },
+    {
+      "center": [
+        12,
+        31
+      ],
+      "radius": 3,
+      "type": "TI1"
+    },
+    {
+      "center": [
+        51,
+        31
+      ],
+      "radius": 3,
+      "type": "TI1"
+    }
   ],
   "treeLines": [
-    {"from": [20, 15], "to": [20, 26], "type": "T01", "step": 2},
-    {"from": [20, 36], "to": [20, 48], "type": "T01", "step": 2},
-    {"from": [43, 15], "to": [43, 26], "type": "T01", "step": 2},
-    {"from": [43, 36], "to": [43, 48], "type": "T01", "step": 2}
+    {
+      "from": [
+        24,
+        21
+      ],
+      "to": [
+        24,
+        25
+      ],
+      "type": "T01",
+      "step": 2
+    },
+    {
+      "from": [
+        39,
+        37
+      ],
+      "to": [
+        39,
+        41
+      ],
+      "type": "T01",
+      "step": 2
+    }
   ],
   "overlays": [],
   "trees": [],
-  "units": []
+  "units": [],
+  "ridges": [
+    {
+      "from": [
+        20,
+        15
+      ],
+      "to": [
+        20,
+        25
+      ]
+    },
+    {
+      "from": [
+        20,
+        37
+      ],
+      "to": [
+        20,
+        47
+      ]
+    },
+    {
+      "from": [
+        43,
+        15
+      ],
+      "to": [
+        43,
+        25
+      ]
+    },
+    {
+      "from": [
+        43,
+        37
+      ],
+      "to": [
+        43,
+        47
+      ]
+    }
+  ],
+  "ponds": [
+    {
+      "at": [
+        37,
+        38
+      ]
+    },
+    {
+      "at": [
+        12,
+        40
+      ]
+    }
+  ],
+  "patches": [
+    {
+      "at": [
+        10,
+        24
+      ],
+      "template": "P07"
+    },
+    {
+      "at": [
+        50,
+        37
+      ],
+      "template": "P08"
+    },
+    {
+      "at": [
+        28,
+        29
+      ],
+      "template": "P01"
+    },
+    {
+      "at": [
+        34,
+        33
+      ],
+      "template": "P03"
+    }
+  ]
 }

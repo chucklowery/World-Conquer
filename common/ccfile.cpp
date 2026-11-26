@@ -47,8 +47,10 @@
 #ifdef WC_ASSET_AUDIT
 #include <cstdio>
 #include <cstring>
+#include <cctype>
 #include <set>
 #include <string>
+#include <unordered_map>
 
 // The common file layer is used by both loose-file and registered MIX lookups.
 // Repeated misses are deliberately retained to show retry/loop behavior.
@@ -67,6 +69,45 @@ void WC_Log_Asset(const char* name, const char* source)
         std::printf("[asset-hit] %s %s\n", name, base ? base + 1 : source);
         std::fflush(stdout);
     }
+}
+
+// Resident data pointer -> file name, and whether a draw was reported yet.
+// Filled by MixFileClass::Retrieve; read by WC_Log_Draw, which the draw
+// paths call (CC_Draw_Shape and the template stamps in cell.cpp). The first
+// draw of each file prints "[asset-draw] NAME", so a test can tell what was
+// on screen, not only what was loaded.
+static std::unordered_map<const void*, std::pair<std::string, bool>>& WC_Shape_Names()
+{
+    static std::unordered_map<const void*, std::pair<std::string, bool>> names;
+    return names;
+}
+
+void WC_Register_Shape(const void* data, const char* name)
+{
+    if (!data || !name || !*name)
+        return;
+    std::string upper(name);
+    for (auto& c : upper)
+        c = (char)std::toupper((unsigned char)c);
+    auto& names = WC_Shape_Names();
+    auto it = names.find(data);
+    if (it == names.end())
+        names.emplace(data, std::make_pair(upper, false));
+    else if (it->second.first != upper)
+        it->second = std::make_pair(upper, false);
+}
+
+void WC_Log_Draw(const void* data)
+{
+    if (!data)
+        return;
+    auto& names = WC_Shape_Names();
+    auto it = names.find(data);
+    if (it == names.end() || it->second.second)
+        return;
+    it->second.second = true;
+    std::printf("[asset-draw] %s\n", it->second.first.c_str());
+    std::fflush(stdout);
 }
 #endif
 
