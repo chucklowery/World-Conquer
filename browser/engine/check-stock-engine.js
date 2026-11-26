@@ -3,7 +3,12 @@
 // Headless stock-path M1 gate. Uses original generated data only.
 const fs=require("node:fs"),path=require("node:path"),http=require("node:http"),zlib=require("node:zlib");
 const assert=require("node:assert/strict");
-const {chromium}=require("playwright");
+// WC_BROWSER selects the engine: chromium (default), firefox or webkit (M4).
+const playwright=require("playwright");
+const browserName=process.env.WC_BROWSER||"chromium";
+if(!["chromium","firefox","webkit"].includes(browserName))throw Error("WC_BROWSER must be chromium, firefox or webkit");
+const browserType=playwright[browserName];
+const launchOptions={headless:true,args:browserName==="chromium"?["--no-sandbox"]:[]};
 const root=path.resolve(__dirname,"../../build/browser-engine");
 const mime={".html":"text/html",".js":"text/javascript",".wasm":"application/wasm",
   ".json":"application/json",".mix":"application/octet-stream"};
@@ -28,7 +33,7 @@ function sizes(){
 }
 async function main(){
   await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
-  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+  const browser=await browserType.launch(launchOptions);
   const origin="http://127.0.0.1:"+server.address().port+"/vanillatd.html";
   const metrics={schema:1,sha:process.env.GITHUB_SHA||"local",status:"incomplete",sizes:[],rawBytes:{},gzipBytes:{}};
   for(const name of ["vanillatd.wasm","vanillatd.js"]){

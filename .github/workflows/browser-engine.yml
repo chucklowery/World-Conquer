@@ -371,3 +371,57 @@ jobs:
             build/browser-engine/stock-scenario-log.txt
             build/browser-engine/stock-scenario-*.png
           if-no-files-found: warn
+
+  # M4 browser reach: the stock engine and a full skirmish in Firefox and
+  # WebKit (Safari's engine) as well as Chromium. Report first: these runs
+  # find out what fails, so they do not block publishing yet. Each failure is
+  # fixed or documented in docs/ROADMAP.md, then this job becomes required.
+  browser-reach:
+    name: browser-reach (${{ matrix.browser }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    needs: wasm-vanillatd
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve built stock engine
+        uses: actions/download-artifact@v4
+        with:
+          name: vanillatd-engine-wasm
+          path: build/browser-engine
+      - name: Retrieve original data pack
+        uses: actions/download-artifact@v4
+        with:
+          name: world-conquer-data-pack
+          path: build/browser-engine/data
+      - name: Install headless ${{ matrix.browser }}
+        run: |
+          npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
+          npm exec --prefix browser/engine -- playwright install ${{ matrix.browser }}
+          npm exec --prefix browser/engine -- playwright install-deps ${{ matrix.browser }}
+      - name: Stock engine reaches its menu
+        env:
+          WC_BROWSER: ${{ matrix.browser }}
+        run: node browser/engine/check-stock-engine.js
+      - name: Play a skirmish match on original data (strict)
+        if: always()
+        env:
+          WC_BROWSER: ${{ matrix.browser }}
+          STOCK_SCENARIO_PAGE: vanillatd.html?play
+        run: node browser/engine/check-stock-scenario.js
+      - name: Publish browser-reach evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-reach-${{ matrix.browser }}
+          path: |
+            build/browser-engine/stock-*.png
+            build/browser-engine/stock-engine-metrics.json
+            build/browser-engine/stock-engine-audit.log
+            build/browser-engine/stock-scenario-audit.json
+            build/browser-engine/stock-scenario-log.txt
+          if-no-files-found: warn

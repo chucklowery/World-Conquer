@@ -3,7 +3,12 @@
 // M2a: exercise the stock VanillaTD menu with real canvas input. Audit is
 // written even when an incomplete original pack prevents scenario startup.
 const fs=require("node:fs"),path=require("node:path"),http=require("node:http");
-const {chromium}=require("playwright");
+// WC_BROWSER selects the engine: chromium (default), firefox or webkit (M4).
+const playwright=require("playwright");
+const browserName=process.env.WC_BROWSER||"chromium";
+if(!["chromium","firefox","webkit"].includes(browserName))throw Error("WC_BROWSER must be chromium, firefox or webkit");
+const browserType=playwright[browserName];
+const launchOptions={headless:true,args:browserName==="chromium"?["--no-sandbox"]:[]};
 const root=path.resolve(__dirname,"../../build/browser-engine");
 const report=path.join(root,"stock-scenario-audit.json");
 // The site to serve (default: the build directory) and the page to open.
@@ -359,7 +364,7 @@ async function main(){
   let browser,page;
   try{
     await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
-    browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+    browser=await browserType.launch(launchOptions);
     page=await browser.newPage({viewport:{width:1100,height:980}});
     page.on("console",msg=>{consoleLines.push(...msg.text().split(/\r?\n/));});
     page.on("pageerror",err=>audit.pageErrors.push(String(err.stack||err)));
