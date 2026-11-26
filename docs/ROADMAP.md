@@ -313,10 +313,10 @@ UI track (UI-B to UI-E) is delivered inside this milestone. Decisions:
       power gauge and drain marker, build clock, READY/HOLD tags, scroll
       arrows, tabs, radar housing and placement grid (`art/ui.js`); all 178
       cursor frames of the engine's cursor table (`art/cursors.js`, UI-D);
-      title screen, dialog decorations and dialog texture (UI-E). *Not
-      restyled: the bitmap fonts and the engine-drawn dialog boxes, which
-      keep the M2 fonts and the teal dialog colours.* UI-F stays optional
-      and approval-gated.
+      title screen, dialog decorations and dialog texture (UI-E). Readable
+      proportional fonts and restyled dialog boxes; UI-F (owner-approved):
+      the skirmish setup dialog uses the mock-up layout with headed
+      sections and EASY / NORMAL / HARD buttons (ADR-0005 addenda).
 - [x] **Sound.** The engine's OpenAL backend on Emscripten's Web Audio
       OpenAL; synthesised effects and spoken unit replies and COMMS lines
       (flite) in `SOUNDS.MIX` and `SPEECH.MIX` (`tools/content/sound.js`).

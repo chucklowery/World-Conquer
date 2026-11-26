@@ -399,6 +399,13 @@ async function main(){
       null,{timeout:45000});
     await screenshot("menu");
     const canvas=page.locator("#canvas");
+    async function skirmishDialog(){
+      const text=await page.evaluate(()=>document.getElementById("log").textContent);
+      const all=[...text.matchAll(/\[browser-event\] skirmish-dialog ok=(\d+),(\d+),(\d+),(\d+) cancel=\S+ maps=(\d+),(\d+),(\d+),(\d+) row=(\d+)/g)];
+      if(!all.length)return {ok:{x:126,y:359},maps:{x:152,y:79.25},row:17.5};
+      const m=all[all.length-1].slice(1).map(Number);
+      return {ok:{x:m[0]+m[2]/2,y:m[1]+m[3]/2},maps:{x:m[4],y:m[5]},row:m[8]};
+    }
     async function clickGame(x,y,label){
       const box=await canvas.boundingBox();
       if(!box)throw Error("Stock canvas has no visible bounds");
@@ -423,14 +430,18 @@ async function main(){
     // tests the real scenario dialog and records missing input/asset data.
     // M3: pick a map by its row in the skirmish dialog's list (rows are
     // ordered by scenario number: SCM94EA, SCM95EA, SCM96EA, ...).
+    // The browser build's skirmish dialog reports where its controls are
+    // ([browser-event] skirmish-dialog, browser/engine/ui_style.cpp); the
+    // stock positions are the fallback.
+    const dialog=await skirmishDialog();
     const mapRow=Number(process.env.STOCK_SCENARIO_MAP_ROW||0);
     if(mapRow>0){
-      await clickGame(192,Math.round(88+mapRow*17.5),"Select map row "+mapRow);
+      await clickGame(dialog.maps.x+40,Math.round(dialog.maps.y+(mapRow+0.5)*dialog.row),"Select map row "+mapRow);
       await page.waitForTimeout(800);
       await screenshot("map-selected");
     }
     const confirmAt=Date.now();
-    await clickGame(126,359,"Scenario dialog OK");
+    await clickGame(dialog.ok.x,dialog.ok.y,"Scenario dialog OK");
     page.waitForFunction(()=>document.getElementById("log").textContent.includes("[browser-game] scenario.loaded="),
       null,{timeout:60000}).then(()=>{audit.timeToMatchStartMs=Date.now()-confirmAt;},()=>{});
     await page.waitForTimeout(7000);
@@ -564,7 +575,8 @@ async function main(){
       await clickGame(320,200,"Dismiss score screen");
       await page.waitForTimeout(5000);
       await screenshot("restart-dialog");
-      await clickGame(126,359,"Restart: scenario dialog OK");
+      const again=await skirmishDialog();
+      await clickGame(again.ok.x,again.ok.y,"Restart: scenario dialog OK");
       await page.waitForFunction(n=>document.getElementById("log").textContent.split("[browser-event] scenario-start").length>n,
         before,{timeout:60000});
       audit.matchEnd.restarted=true;

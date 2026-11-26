@@ -33,6 +33,9 @@
  *   Com_Scenario_Dialog -- Skirmish game scenario selection dialog        *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 #include "drop.h"
 #include "framelimit.h"
 #include <time.h>
@@ -160,6 +163,55 @@ int Com_Scenario_Dialog(void)
     int d_cancel_h = 9 * factor;
     int d_cancel_x = d_dialog_x + d_dialog_w - (d_dialog_w / 6) - (d_cancel_w / 2) /*d_dialog_cx - (d_cancel_w / 2)*/;
     int d_cancel_y = d_dialog_y + d_dialog_h - d_cancel_h - d_margin1 - factor * 6;
+
+#ifdef WC_BROWSER_UI
+    // Browser layout (browser/engine/ui_style.cpp), hi-res only.
+    BrowserSkirmishLayout browser = {};
+    const bool browser_layout = (factor == 2);
+    if (browser_layout) {
+        Browser_Skirmish_Layout(browser);
+        d_dialog_x = browser.dialog.x;
+        d_dialog_y = browser.dialog.y;
+        d_dialog_w = browser.dialog.w;
+        d_dialog_h = browser.dialog.h;
+        d_dialog_cx = d_dialog_x + d_dialog_w / 2;
+        d_name_x = browser.name.x;
+        d_name_y = browser.name.y;
+        d_name_w = browser.name.w;
+        d_name_h = browser.name.h;
+        d_house_x = browser.house.x;
+        d_house_y = browser.house.y;
+        d_house_w = browser.house.w;
+        d_house_h = browser.house.h;
+        d_color_x = browser.color.x;
+        d_color_y = browser.color.y;
+        d_color_w = browser.color.w;
+        d_color_h = browser.color.h;
+        d_scenariolist_x = browser.maps.x;
+        d_scenariolist_y = browser.maps.y;
+        d_scenariolist_w = browser.maps.w;
+        d_scenariolist_h = browser.maps.h;
+        d_count_x = d_level_x = d_credits_x = d_aiplayers_x = browser.gauge_x;
+        d_count_w = d_level_w = d_credits_w = d_aiplayers_w = browser.gauge_w;
+        d_count_h = d_level_h = d_credits_h = d_aiplayers_h = browser.gauge_h;
+        d_count_y = browser.gauge_y[0];
+        d_level_y = browser.gauge_y[1];
+        d_credits_y = browser.gauge_y[2];
+        d_aiplayers_y = browser.gauge_y[3];
+        d_options_x = browser.options.x;
+        d_options_y = browser.options.y;
+        d_options_w = browser.options.w;
+        d_options_h = browser.options.h;
+        d_ok_x = browser.ok.x;
+        d_ok_y = browser.ok.y;
+        d_ok_w = browser.ok.w;
+        d_ok_h = browser.ok.h;
+        d_cancel_x = browser.cancel.x;
+        d_cancel_y = browser.cancel.y;
+        d_cancel_w = browser.cancel.w;
+        d_cancel_h = browser.cancel.h;
+    }
+#endif
 
     /*........................................................................
     Button Enumerations
@@ -319,11 +371,41 @@ int Com_Scenario_Dialog(void)
         difficulty.Set_Value(1);
     }
 
+#ifdef WC_BROWSER_UI
+    // Difficulty as three segmented buttons; they set the slider's value,
+    // which the stock code reads when the game starts.
+    TextPrintType diffstyle = TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW;
+    int diffy = browser.difficulty_y;
+    int diffw = browser.difficulty_w;
+    int diffh = browser.difficulty_h;
+    TextButtonClass easybtn(BUTTON_DIFFICULTY + 1, "EASY", diffstyle, browser.difficulty_x[0], diffy, diffw, diffh);
+    TextButtonClass normalbtn(BUTTON_DIFFICULTY + 2, "NORMAL", diffstyle, browser.difficulty_x[1], diffy, diffw, diffh);
+    TextButtonClass hardbtn(BUTTON_DIFFICULTY + 3, "HARD", diffstyle, browser.difficulty_x[2], diffy, diffw, diffh);
+    TextButtonClass* diffbtn[3] = {&easybtn, &normalbtn, &hardbtn};
+    diffbtn[1]->Turn_On();
+    if (browser_layout) {
+        // The main action is lit, as in the reference mock-up.
+        okbtn.Set_Text("OK  >>");
+        okbtn.Turn_On();
+        cancelbtn.Set_Text("CANCEL");
+    }
+#endif
+
     /*
     ------------------------- Build the button list --------------------------
     */
     commands = &name_edt;
+#ifdef WC_BROWSER_UI
+    if (browser_layout) {
+        for (int d = 0; d < 3; d++) {
+            diffbtn[d]->Add_Tail(*commands);
+        }
+    } else {
+        difficulty.Add_Tail(*commands);
+    }
+#else
     difficulty.Add_Tail(*commands);
+#endif
     scenariolist.Add_Tail(*commands);
     countgauge.Add_Tail(*commands);
     levelgauge.Add_Tail(*commands);
@@ -379,6 +461,15 @@ int Com_Scenario_Dialog(void)
 #else
     optionlist.Add_Item("Tiberium Regrows");
 #endif
+#ifdef WC_BROWSER_UI
+    // No crates or flags in the M5 roster build (browser/engine/roster.cpp):
+    // their rewards and the flag have no roster art. CheckListClass clamps
+    // out-of-range rows, so the stock rows 2 and 3 are not added or set.
+    MPlayerGoodies = 0;
+    Special.IsCaptureTheFlag = 0;
+    optionlist.Check_Item(0, MPlayerBases);
+    optionlist.Check_Item(1, MPlayerTiberium);
+#else
     optionlist.Add_Item(Text_String(TXT_CRATES_ON));
     //optionlist.Add_Item(Text_String(TXT_SHADOW_REGROWS));
     optionlist.Add_Item(Text_String(TXT_CAPTURE_THE_FLAG));
@@ -388,6 +479,7 @@ int Com_Scenario_Dialog(void)
     optionlist.Check_Item(2, MPlayerGoodies);
     //optionlist.Check_Item(3, Special.IsShadowGrow);
     optionlist.Check_Item(3, Special.IsCaptureTheFlag);
+#endif
 
     levelgauge.Set_Maximum(MPLAYER_BUILD_LEVEL_MAX - 1);
     levelgauge.Set_Value(BuildLevel - 1);
@@ -484,82 +576,92 @@ int Com_Scenario_Dialog(void)
                 Draw_Caption(TXT_NONE, d_dialog_x, d_dialog_y, d_dialog_w);
 #endif // FORCE_WINSOCK
 
-                Fancy_Text_Print(TXT_YOUR_NAME,
-                                 d_name_x + (d_name_w / 2),
-                                 d_name_y - d_txt6_h,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+#ifdef WC_BROWSER_UI
+                if (browser_layout) {
+                    Browser_Skirmish_Background(browser);
+                    Fancy_Text_Print("", 0, 0, TBLACK, TBLACK, TPF_6PT_GRAD | TPF_NOSHADOW);
+                    Browser_Skirmish_Report(browser, FontHeight + FontYSpacing - 1);
+                } else {
+#endif
+                    Fancy_Text_Print(TXT_YOUR_NAME,
+                                     d_name_x + (d_name_w / 2),
+                                     d_name_y - d_txt6_h,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print(TXT_SIDE_COLON,
-                                 d_house_x + (d_house_w / 2),
-                                 d_house_y - d_txt6_h,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print(TXT_SIDE_COLON,
+                                     d_house_x + (d_house_w / 2),
+                                     d_house_y - d_txt6_h,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print(TXT_COLOR_COLON,
-                                 d_dialog_x + ((d_dialog_w / 4) * 3),
-                                 d_color_y - d_txt6_h,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print(TXT_COLOR_COLON,
+                                     d_dialog_x + ((d_dialog_w / 4) * 3),
+                                     d_color_y - d_txt6_h,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print("Easy",
-                                 difficulty.X,
-                                 difficulty.Y - 8 * factor,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print("Easy",
+                                     difficulty.X,
+                                     difficulty.Y - 8 * factor,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print("Hard",
-                                 difficulty.X + difficulty.Width,
-                                 difficulty.Y - 8 * factor,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print("Hard",
+                                     difficulty.X + difficulty.Width,
+                                     difficulty.Y - 8 * factor,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print("Normal",
-                                 difficulty.X + difficulty.Width / 2,
-                                 difficulty.Y - 8 * factor,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print("Normal",
+                                     difficulty.X + difficulty.Width / 2,
+                                     difficulty.Y - 8 * factor,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print(TXT_SCENARIOS,
-                                 d_scenariolist_x + (d_scenariolist_w / 2),
-                                 d_scenariolist_y - d_txt6_h,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print(TXT_SCENARIOS,
+                                     d_scenariolist_x + (d_scenariolist_w / 2),
+                                     d_scenariolist_y - d_txt6_h,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print(TXT_COUNT,
-                                 d_count_x - 3 * factor,
-                                 d_count_y,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_NOSHADOW | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_RIGHT);
+                    Fancy_Text_Print(TXT_COUNT,
+                                     d_count_x - 3 * factor,
+                                     d_count_y,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_NOSHADOW | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_RIGHT);
 
-                Fancy_Text_Print(TXT_LEVEL,
-                                 d_level_x - 3 * factor,
-                                 d_level_y,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_NOSHADOW | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_RIGHT);
+                    Fancy_Text_Print(TXT_LEVEL,
+                                     d_level_x - 3 * factor,
+                                     d_level_y,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_NOSHADOW | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_RIGHT);
 
-                Fancy_Text_Print(TXT_START_CREDITS_COLON,
-                                 d_credits_x - 3 * factor,
-                                 d_credits_y,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print(TXT_START_CREDITS_COLON,
+                                     d_credits_x - 3 * factor,
+                                     d_credits_y,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
 
-                Fancy_Text_Print(TXT_AI_PLAYERS_COLON,
-                                 d_aiplayers_x - 3 * factor,
-                                 d_aiplayers_y,
-                                 CC_GREEN,
-                                 TBLACK,
-                                 TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    Fancy_Text_Print(TXT_AI_PLAYERS_COLON,
+                                     d_aiplayers_x - 3 * factor,
+                                     d_aiplayers_y,
+                                     CC_GREEN,
+                                     TBLACK,
+                                     TPF_RIGHT | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+#ifdef WC_BROWSER_UI
+                }
+#endif
             }
 
             /*..................................................................
@@ -818,8 +920,13 @@ int Com_Scenario_Dialog(void)
             Special.IsTSpread = MPlayerTiberium;
             // Rule.IsTSpread = MPlayerTiberium;
 
+#ifdef WC_BROWSER_UI
+            MPlayerGoodies = 0;
+            Special.IsCaptureTheFlag = 0;
+#else
             MPlayerGoodies = optionlist.Is_Checked(2);
             Special.IsCaptureTheFlag = optionlist.Is_Checked(3);
+#endif
 
             transmit = true;
             if (display < REDRAW_MESSAGE)
@@ -868,6 +975,22 @@ int Com_Scenario_Dialog(void)
                     break;
                 }
             }
+#ifdef WC_BROWSER_UI
+        case ((BUTTON_DIFFICULTY + 1) | KN_BUTTON):
+        case ((BUTTON_DIFFICULTY + 2) | KN_BUTTON):
+        case ((BUTTON_DIFFICULTY + 3) | KN_BUTTON): {
+            int pick = (int)(input & ~KN_BUTTON) - (BUTTON_DIFFICULTY + 1);
+            difficulty.Set_Value(Rule.IsFineDifficulty ? pick * 2 : pick);
+            for (int d = 0; d < 3; d++) {
+                if (d == pick) {
+                    diffbtn[d]->Turn_On();
+                } else {
+                    diffbtn[d]->Turn_Off();
+                }
+            }
+            break;
+        }
+#endif
         case (BUTTON_CANCEL | KN_BUTTON):
             if (!ready_to_go) {
                 process = false;

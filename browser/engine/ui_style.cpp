@@ -106,3 +106,117 @@ bool Browser_Draw_Box(int x, int y, int w, int h, BoxStyleEnum style, bool fille
     }
 }
 #endif
+
+#ifdef WC_BROWSER_UI
+namespace
+{
+    // Gold accent (palette fire ramp, art/palette.js) for header ornaments.
+    const int GOLD = 146;
+    const int GOLD_DARK = 149;
+
+    // "== TITLE ==": a centred bold heading with gold chevron bars either side.
+    void Header(char const* text, int cx, int y)
+    {
+        Fancy_Text_Print(text, cx, y, CC_GREEN, TBLACK, TPF_GREEN12 | TPF_USE_GRAD_PAL | TPF_CENTER | TPF_NOSHADOW);
+        int half = String_Pixel_Width(text) / 2 + 8;
+        for (int side = -1; side <= 1; side += 2) {
+            int x0 = cx + side * half;
+            int x1 = cx + side * (half + 22);
+            LogicPage->Draw_Line(x0, y + 3, x1, y + 3, GOLD);
+            LogicPage->Draw_Line(x0 + side * 3, y + 5, x1 + side * 4, y + 5, GOLD_DARK);
+        }
+    }
+
+    // A recessed sub-panel with a teal rim and a notched top edge.
+    void Sub_Panel(int x, int y, int w, int h)
+    {
+        LogicPage->Draw_Rect(x, y, x + w, y + h, STEEL_DARK);
+        LogicPage->Draw_Rect(x + 1, y + 1, x + w - 1, y + h - 1, TEAL_DIM);
+        LogicPage->Draw_Line(x + 2, y + 2, x + w - 2, y + 2, STEEL_LIGHT);
+        LogicPage->Draw_Line(x + w / 2 - 40, y, x + w / 2 + 40, y, TEAL);
+    }
+
+    void Label(char const* text, int x, int y)
+    {
+        Fancy_Text_Print(text, x, y, CC_GREEN, TBLACK, TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_RIGHT | TPF_NOSHADOW);
+    }
+
+    void Value_Well(int x, int y, int w, int h)
+    {
+        // Black: the dialog prints the values on BLACK (nulldlg.cpp).
+        LogicPage->Fill_Rect(x, y, x + w, y + h, BLACK);
+        LogicPage->Draw_Rect(x, y, x + w, y + h, TEAL_DIM);
+    }
+} // namespace
+
+void Browser_Skirmish_Layout(BrowserSkirmishLayout& l)
+{
+    l.dialog = {20, 4, 600, 392};
+    l.name = {44, 38, 176, 20};
+    l.house = {238, 38, 150, 46};
+    l.color = {440, 38, 26, 20};
+    l.maps = {48, 98, 532, 88};
+    l.gauge_x = 168;
+    l.gauge_w = 92;
+    l.gauge_h = 12;
+    l.gauge_y[0] = 216;
+    l.gauge_y[1] = 238;
+    l.gauge_y[2] = 260;
+    l.gauge_y[3] = 282;
+    l.options = {346, 214, 226, 76};
+    l.difficulty_y = 322;
+    l.difficulty_h = 22;
+    l.difficulty_x[0] = 110;
+    l.difficulty_x[1] = 250;
+    l.difficulty_x[2] = 390;
+    l.difficulty_w = 140;
+    l.ok = {44, 356, 170, 28};
+    l.cancel = {426, 356, 170, 28};
+}
+
+void Browser_Skirmish_Background(BrowserSkirmishLayout const& l)
+{
+    Header("PLAYER NAME", l.name.x + l.name.w / 2, 20);
+    Header("SIDE", l.house.x + l.house.w / 2, 20);
+    Header("COLOR", l.color.x + l.color.w * 3, 20);
+
+    Sub_Panel(l.maps.x - 10, l.maps.y - 24, l.maps.w + 20, l.maps.h + 32);
+    Header("SELECT MAP", l.maps.x + l.maps.w / 2, l.maps.y - 18);
+
+    Sub_Panel(36, 204, 280, 94);
+    static char const* const labels[4] = {"UNIT COUNT", "TECH LEVEL", "START CREDITS", "AI PLAYERS"};
+    for (int i = 0; i < 4; i++) {
+        Label(labels[i], l.gauge_x - 8, l.gauge_y[i]);
+        Value_Well(l.gauge_x + l.gauge_w + 6, l.gauge_y[i] - 2, 44, l.gauge_h + 3);
+    }
+
+    Sub_Panel(l.options.x - 12, 204, l.options.w + 24, 94);
+
+    Header("DIFFICULTY", l.dialog.x + l.dialog.w / 2, l.difficulty_y - 16);
+
+    // A hatched strip between the two main buttons.
+    for (int x = l.ok.x + l.ok.w + 20; x < l.cancel.x - 20; x += 6) {
+        LogicPage->Draw_Line(x, l.ok.y + l.ok.h - 6, x + 5, l.ok.y + 6, TEAL_DIM);
+    }
+}
+
+void Browser_Skirmish_Report(BrowserSkirmishLayout const& l, int list_row_height)
+{
+    // Positions for the browser tests (check-stock-scenario.js), in game pixels.
+    printf("[browser-event] skirmish-dialog ok=%d,%d,%d,%d cancel=%d,%d,%d,%d maps=%d,%d,%d,%d row=%d\n",
+           l.ok.x,
+           l.ok.y,
+           l.ok.w,
+           l.ok.h,
+           l.cancel.x,
+           l.cancel.y,
+           l.cancel.w,
+           l.cancel.h,
+           l.maps.x,
+           l.maps.y,
+           l.maps.w,
+           l.maps.h,
+           list_row_height);
+    fflush(stdout);
+}
+#endif

@@ -297,7 +297,13 @@ void TextButtonClass::Draw_Background(void)
         if (IsDisabled) {
             style = BOXSTYLE_GREEN_DIS_RAISED;
         } else {
+#ifdef WC_BROWSER_UI
+            // Browser menus: a button that is switched on (a selected
+            // segment) looks lit, like a pressed one.
+            if (IsPressed || IsOn) {
+#else
             if (IsPressed) {
+#endif
                 style = BOXSTYLE_GREEN_DOWN;
             } else {
                 style = BOXSTYLE_GREEN_RAISED;
@@ -356,7 +362,14 @@ void TextButtonClass::Draw_Text(char const* text)
                 }
             }
 
+#ifdef WC_BROWSER_UI
+            // Browser menus: centre the caption vertically in the button.
+            Fancy_Text_Print("", 0, 0, TBLACK, TBLACK, PrintFlags);
+            int text_y = Y + ((Height - FontHeight) > 2 ? (Height - FontHeight) / 2 : 1);
+            Fancy_Text_Print(text, X + (Width >> 1) - 1, text_y, color, TBLACK, PrintFlags | flags | TPF_CENTER);
+#else
             Fancy_Text_Print(text, X + (Width >> 1) - 1, Y + 1, color, TBLACK, PrintFlags | flags | TPF_CENTER);
+#endif
         } else {
             if (IsDisabled) {
                 //				color = DKGREY;

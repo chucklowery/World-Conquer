@@ -219,3 +219,16 @@ Owner feedback: the menus were hard to read and the power gauge came and went.
   transparent; the gauge frames reach the bottom of the screen.
 The look is a step toward the owner's reference mock-up, not a copy of it:
 the engine keeps its own dialog layouts and 640x400 resolution.
+
+### Addendum (2026-11-26): skirmish dialog layout (UI-F)
+The owner approved the full mock-up look ("I would like the full look"),
+which is the approval UI-F needed. Under `WC_BROWSER_UI` the skirmish setup
+dialog (`tiberiandawn/nulldlg.cpp`) takes its geometry from
+`Browser_Skirmish_Layout` (`browser/engine/ui_style.cpp`): headed sections
+(PLAYER NAME, SIDE, COLOR, SELECT MAP, DIFFICULTY), a wide map list, labelled
+gauges with value wells, and large OK >> / CANCEL buttons. Difficulty is
+three EASY / NORMAL / HARD buttons that set the stock difficulty value; the
+option list keeps Bases and Crystal regrows (crates and capture-the-flag are
+off, outside the minimum roster). Native builds keep the stock dialog. The
+dialog prints its button and list positions (`[browser-event]
+skirmish-dialog`) so the browser tests click the real controls.
