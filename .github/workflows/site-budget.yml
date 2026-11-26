@@ -1,8 +1,9 @@
 name: Play site budget
 
 # M4: measure what a visitor to the published play site downloads and how long
-# the game takes to reach its menu (browser/engine/check-site-budget.js), and
-# fail if a roadmap M4 budget is exceeded. Runs after each Pages publish, or by
+# the game takes to reach its menu in Chromium, Firefox and WebKit
+# (browser/engine/check-site-budget.js), and fail if a roadmap M4 budget is
+# exceeded in any of them. Runs after each Pages publish, or by
 # hand against any URL (with report_only to measure without failing). A failure
 # after a publish means the deployed site broke a budget: fix it or revert.
 on:
@@ -39,14 +40,14 @@ jobs:
       github.event_name != 'workflow_run' ||
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Install headless Chromium
+      - name: Install headless Chromium, Firefox and WebKit
         run: |
           npm --prefix browser/engine install --no-save --no-package-lock playwright@1.56.1
-          npm exec --prefix browser/engine -- playwright install chromium
-          npm exec --prefix browser/engine -- playwright install-deps chromium
+          npm exec --prefix browser/engine -- playwright install chromium firefox webkit
+          npm exec --prefix browser/engine -- playwright install-deps chromium firefox webkit
       - name: Measure the published site
         env:
           SITE_URL: ${{ inputs.url || 'https://chucklowery.github.io/World-Conquer/' }}
