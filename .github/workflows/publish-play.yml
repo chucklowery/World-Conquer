@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 30
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     steps:
       - name: Find the tested build
         id: source
@@ -111,7 +111,20 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./build/play-site
+      # deploy-pages looks up the github-pages artifact straight after the
+      # upload; the artifact list sometimes does not include it yet ("Found 1
+      # artifact(s)", then "No artifacts named github-pages"), which failed
+      # publish runs 45728265932 and 45746374539. Deploy once more after a
+      # pause if the first attempt fails; a second failure fails the job.
       - name: Deploy to GitHub Pages
         if: steps.pages.outputs.enabled == 'true'
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Wait before retrying the deployment
+        if: steps.pages.outputs.enabled == 'true' && steps.deployment.outcome == 'failure'
+        run: sleep 30
+      - name: Deploy to GitHub Pages (retry)
+        if: steps.pages.outputs.enabled == 'true' && steps.deployment.outcome == 'failure'
+        id: deployment_retry
         uses: actions/deploy-pages@v4
