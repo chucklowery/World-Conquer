@@ -203,3 +203,19 @@ wireframes; and each side owns only part of the minimum roster.
 - The first visit grows by about 1.2 MB (sound) and stays well inside the
   15 MB budget.
 - Both factions share one roster until M7 gives them distinct units.
+
+### Addendum (2026-11-26): readable menus and the power gauge
+Owner feedback: the menus were hard to read and the power gauge came and went.
+- **Font.** Every font file now uses an original proportional face with
+  lower case and baked shadow and outline pixels (`tools/content/art/font.js`)
+  instead of the M2 5x7 capitals-only face.
+- **Dialog style.** `WC_BROWSER_UI` (browser build only) routes `Draw_Box`
+  to `browser/engine/ui_style.cpp`: steel panels with a teal inner edge,
+  bevelled buttons that light up when pressed, dark list wells. Layout is
+  unchanged. The dialog palette entries are retuned, and generated labels
+  read "Side:", "Select map", "Crystal regrows" (no franchise term).
+- **Power gauge.** The sidebar redraws its panels without redrawing the
+  gauge (sidebar.cpp:767-806), so the panels now leave the gauge channel
+  transparent; the gauge frames reach the bottom of the screen.
+The look is a step toward the owner's reference mock-up, not a copy of it:
+the engine keeps its own dialog layouts and 640x400 resolution.

@@ -60,6 +60,9 @@ function text(f,str,x,y,c,shadow){
 }
 const accent=i=>rampIndex("crystal",i);   // teal trim (the brief's glow accent)
 
+// Hi-res power gauge: PowY = RadY + RadHeight + 26 - 4 = 176, to the bottom
+// of the screen (power.cpp:132-140, radar.cpp:128-131).
+const GAUGE_TOP=176,GAUGE_HEIGHT=224;
 function sidebarPanel(top){
   const f=frame(160,120);
   plate(f,0,0,160,120,{face:10,edge:1});
@@ -72,6 +75,10 @@ function sidebarPanel(top){
   if(top)rect(f,16,20,144,1,accent(2));
   if(!top){plate(f,16,98,144,22,{face:11,edge:1});rect(f,16,97,144,1,accent(2));}
   for(const [x,y] of [[2,2],[156,2],[2,116],[156,116],[81,top?24:2],[81,top?116:94]])rivet(f,x,y);
+  // Leave the power gauge (x 480-495, y 176-399; power.cpp:132-140) see-
+  // through: the sidebar redraws these panels without redrawing the gauge
+  // (sidebar.cpp:767-806), so opaque pixels here erased it.
+  rect(f,0,top?GAUGE_TOP-158:0,16,top?120-(GAUGE_TOP-158):120,0);
   return [f];
 }
 function button(icon,{w=50,h=18}={}){
@@ -88,13 +95,14 @@ function button(icon,{w=50,h=18}={}){
 const wrench=(f,o,c)=>{for(let i=0;i<9;i++)rect(f,18+i+o,13-i+o,2,2,c);rect(f,27+o,2+o,5,2,c);rect(f,27+o,6+o,5,2,c);rect(f,30+o,2+o,2,6,c);};
 const coin=(f,o,c)=>{for(let y=0;y<12;y++)for(let x=0;x<12;x++){const d=Math.hypot(x-5.5,y-5.5);if(d<6&&d>4.2)rect(f,19+x+o,3+y+o,1,1,c);}rect(f,24+o,5+o,2,8,c);};
 const grid=(f,o,c)=>{for(let i=0;i<4;i++){rect(f,17+o,3+i*4+o,16,1,c);rect(f,17+i*5+o,3+o,1,13,c);}};
-function arrow(up){
+function arrow(up,W=32,H=24){
   const frames=[];
   for(const state of ["up","down","off"]){
-    const f=frame(32,24);
-    plate(f,0,0,32,24,{face:state==="down"?11:8,sunk:state==="down"});
+    const f=frame(W,H);
+    plate(f,0,0,W,H,{face:state==="down"?11:8,sunk:state==="down"});
     const c=state==="off"?S(12):state==="down"?accent(1):S(1),o=state==="down"?1:0;
-    for(let i=0;i<6;i++){const y=up?8+i:15-i;rect(f,16-i-1+o,y+o,2*i+2,1,c);}
+    const n=Math.min(6,Math.floor(H/3)),top=Math.floor((H-n)/2);
+    for(let i=0;i<n;i++){const y=up?top+i:top+n-1-i;rect(f,W/2-i-1+o,y+o,2*i+2,1,c);}
     frames.push(f);
   }
   return frames;
@@ -129,11 +137,14 @@ function pips(){
   out.push(pip(rampIndex("fire",2)),pip(rampIndex("sand",0)),pip(rampIndex("fire",8)));
   return out;
 }
+// The engine draws each pair at PowY and PowY+100 (power.cpp:208-262), so a
+// frame must be GAUGE_HEIGHT-100 tall for the pair to reach the bottom.
 function powerBar(){
   const out=[];
-  const half=(fill,bottom)=>{const f=frame(16,100);plate(f,0,0,16,100,{face:13,sunk:true,edge:1});
-    for(let y=bottom?2:4;y<100;y+=5)rect(f,2,y,3,1,S(11));
-    if(fill!==null)for(let y=0;y<100;y++){const t=(y%5)===4;rect(f,5,y,8,1,t?fill+2:fill);}
+  const H=GAUGE_HEIGHT-100;
+  const half=(fill,bottom)=>{const f=frame(16,H);plate(f,0,0,16,H,{face:13,sunk:true,edge:1});
+    for(let y=bottom?2:4;y<H;y+=5)rect(f,2,y,3,1,S(11));
+    if(fill!==null)for(let y=0;y<H;y++){const t=(y%5)===4;rect(f,5,y,8,1,t?fill+2:fill);}
     return f;};
   out.push(half(null,false),half(null,true));
   for(const [ramp,shade] of [["grass",2],["sand",0],["fire",8]]){
@@ -159,9 +170,10 @@ function radar(){
   const frames=[];
   for(let i=0;i<=41;i++){
     const open=i<=22?i/22:(41-i)/19;
-    const f=frame(160,136);
-    plate(f,0,0,160,136,{face:9,edge:2});
-    brush(f,2,2,156,132,9);
+    // 143 rows: from RadY+1 (15) down to the sidebar panel at 158.
+    const f=frame(160,143);
+    plate(f,0,0,160,143,{face:9,edge:2});
+    brush(f,2,2,156,139,9);
     plate(f,6,6,148,124,{face:14,sunk:true,edge:2});
     const gap=Math.round(open*60);
     // Two shutters slide apart from the middle.
@@ -173,7 +185,7 @@ function radar(){
       for(let y=14;y<124;y+=8)rect(f,x+3,y,w-6,1,S(12));
     }
     if(open>=1)rect(f,8,8,144,120,0);   // fully open: the engine draws the map here
-    for(const [x,y] of [[3,3],[155,3],[3,131],[155,131]])rivet(f,x,y);
+    for(const [x,y] of [[3,3],[155,3],[3,139],[155,139]])rivet(f,x,y);
     frames.push(f);
   }
   return frames;
@@ -273,6 +285,10 @@ function files(){
     "HCLOCK.SHP":clock(),"HPIPS.SHP":pips(),"HPWRBAR.SHP":powerBar(),"HPOWER.SHP":drainMarker(),
     "HTABS.SHP":tabs(),"HRADAR.GDI":radar(),"HRADAR.NOD":radar(),
     "OPTIONS.SHP":options(),
+    // List and slider scroll buttons (expand.cpp:95-99, ShapeButtonClass
+    // frames up / pressed / disabled).
+    "HBTN-UP.SHP":arrow(true,32,18),"HBTN-DN.SHP":arrow(false,32,18),
+    "HBTN-UP2.SHP":arrow(true,32,18),"HBTN-DN2.SHP":arrow(false,32,18),
   };
 }
 module.exports={files,placementGrid,texture,title,encodePCXImage};

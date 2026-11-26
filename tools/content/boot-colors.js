@@ -31,7 +31,7 @@ function basePalette() {
     9:[110,176,255],
     233:[230,186,52],234:[252,212,72],235:[255,236,140],236:[255,224,104],237:[240,200,64],
     15:[250,253,247],
-    41:[147,240,192],
+    41:[190,232,232],  // medium text (dialog.cpp _textpalmedium)
     42:[94,204,153],
     43:[55,158,130],
     // Fixed engine colors (common/wwstd.h ColorType): the shroud and many
@@ -45,10 +45,13 @@ function basePalette() {
     113:[56,104,36],  // grass edge
     114:[44,92,168],  // water
     115:[32,68,136],  // water edge
-    140:[8,33,42],  // dialog shadow
-    141:[32,76,88], // dialog background
-    159:[62,177,145],
-    167:[188,250,215]
+    140:[18,84,92],  // dialog: selection bar, dim teal edge
+    141:[20,40,48], // dialog panel
+    159:[64,200,200], // dialog teal edge and text
+    167:[110,226,220], // bright teal: slider bars, top of gradient text
+    // LTGREEN: bright (selected) dialog text (dialog.cpp _textpalbright). Art
+    // uses index 4 only as the translucent shadow marker, so its RGB is free.
+    4:[214,255,250]
   };
   for(const [key,value] of Object.entries(overrides))colors[Number(key)]=value;
   return colors;

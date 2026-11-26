@@ -25,6 +25,10 @@ const LABELS={
   TXT_NONE:"",
   TXT_CREDIT_FORMAT:"Credits: %d",
   TXT_START_NEW_GAME:"New Game",
+  TXT_TIBERIUM_ON:"Crystal regrows",
+  TXT_SIDE_COLON:"Side:",
+  TXT_COLOR_COLON:"Color:",
+  TXT_SCENARIOS:"Select map",
   TXT_LOAD_MISSION:"Load Game",
   TXT_SAVE_MISSION:"Save Game",
   TXT_MULTIPLAYER_GAME:"Multiplayer",
@@ -77,7 +81,6 @@ const LABELS={
   TXT_SCENARIO_WON:"Victory",
   TXT_SCENARIO_LOST:"Defeat",
   TXT_TIBERIUM:"Crystal",
-  TXT_TIBERIUM_ON:"Crystal On",
   TXT_TIBERIUM_OFF:"Crystal Off",
   // Top tabs (tab.cpp:116-117).
   TXT_TAB_BUTTON_CONTROLS:"Options",
@@ -145,11 +148,14 @@ function originalText(name) {
   const authored=authoredText(name);
   if(authored!==null)return authored;
   // Internal names such as TXT_MAP_GDISTAT0 embed the side names.
-  return name.slice(4).replace(/GDI/g,"ASTER").replace(/NOD/g,"FORGE").split("_").map(part=>({
+  // A trailing _COLON is a label: "Start credits:" rather than "Start Credits Colon".
+  const label=/_COLON$/.test(name);
+  const words=name.slice(4).replace(/_COLON$/,"").replace(/GDI/g,"ASTER").replace(/NOD/g,"FORGE").split("_").map(part=>({
     GDI:"Aster",NOD:"Forge",TIB:"Crystal",TIBERIUM:"Crystal",
     CNC:"World",CONQUER:"World",WESTWOOD:"Studio",EA:"World",
-    CHOAM:"Market",JURASSIC:"Ancient"
+    CHOAM:"Market",JURASSIC:"Ancient",AI:"AI",IRQ:"IRQ"
   }[part]||part.toLowerCase().replace(/^./,letter=>letter.toUpperCase()))).join(" ");
+  return label?words+":":words;
 }
 function stringTable() {
   const header=fs.readFileSync(path.join(ROOT,"tiberiandawn/conquer.h"),"utf8");
@@ -228,7 +234,9 @@ function build(outdir,options={}) {
   const fonts=[...new Set(fontNames)];
   // Font colour per file (encode-font.js): see FONT_INK.
   const inks=new Map([...new Set(Object.values(FONT_INK))].map(ink=>{const f=encodeFont(ink);verifyFont(f);return [ink,f];}));
-  for(const name of fonts)write(stage,name,FONT_INK[name]?inks.get(FONT_INK[name]):font);
+  // M5: the proportional face (art/font.js) for every font file.
+  const {encodeFace,FACES}=require("./art/font.js");
+  for(const name of fonts){const f=encodeFace(FACES[name]||{});verifyFont(f);write(stage,name,f);}
   write(stage,"MOUSE.SHP",mouse);
   write(stage,"BTEXTURE.SHP",texture);
   write(stage,"PREPICK.CPS",cps);
@@ -261,7 +269,7 @@ function build(outdir,options={}) {
   write(game,"TEMPERAT.PAL",palette);
   write(game,"CONQUER.ENG",strings);
   // Loose decoder fixtures are also usable by the stock engine's fallback lookup.
-  write(game,"8POINT.FNT",font);
+  write(game,"8POINT.FNT",require("./art/font.js").encodeFace({}));
   write(game,"PREPICK.CPS",cps);
   write(game,"TITLE.CPS",cps);
   write(game,"HTITLE.PCX",pcx);

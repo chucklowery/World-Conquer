@@ -44,6 +44,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 #include "settings.h"
 
 /***********************************************************************************************
@@ -94,6 +97,12 @@ extern void CC_Texture_Fill(void const* shapefile, int shapenum, int xpos, int y
 
 void Draw_Box(int x, int y, int w, int h, BoxStyleEnum up, bool filled)
 {
+#ifdef WC_BROWSER_UI
+    // Browser menu style (browser/engine/ui_style.cpp).
+    if (Browser_Draw_Box(x, y, w, h, up, filled)) {
+        return;
+    }
+#endif
     static BoxStyleType const ButtonColorsClassic[BOXSTYLE_COUNT] = {
         // Filler, Shadow, Hilite, Corner colors
         {LTGREY, WHITE, DKGREY, LTGREY},                                    // 0 Button is down.

@@ -243,7 +243,10 @@ if(BUILD_VANILLATD)
             ${CMAKE_SOURCE_DIR}/browser/engine/shape_probe.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/test_hooks.cpp
             ${CMAKE_SOURCE_DIR}/browser/engine/roster.cpp
+            ${CMAKE_SOURCE_DIR}/browser/engine/ui_style.cpp
         )
+        # Browser menu style and labels (ui_style.cpp).
+        target_compile_definitions(VanillaTD PRIVATE WC_BROWSER_UI)
         # M5: skirmish limited to the roster that has final art (roster.cpp).
         target_compile_definitions(VanillaTD PRIVATE WC_MINIMUM_ROSTER)
         set_target_properties(VanillaTD PROPERTIES SUFFIX ".html")

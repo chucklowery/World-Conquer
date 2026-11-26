@@ -374,7 +374,11 @@ int Com_Scenario_Dialog(void)
     optionlist.Set_Read_Only(0);
 
     optionlist.Add_Item(Text_String(TXT_BASES_ON));
+#ifdef WC_BROWSER_UI
+    optionlist.Add_Item(Text_String(TXT_TIBERIUM_ON));
+#else
     optionlist.Add_Item("Tiberium Regrows");
+#endif
     optionlist.Add_Item(Text_String(TXT_CRATES_ON));
     //optionlist.Add_Item(Text_String(TXT_SHADOW_REGROWS));
     optionlist.Add_Item(Text_String(TXT_CAPTURE_THE_FLAG));

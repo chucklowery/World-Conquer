@@ -60,6 +60,13 @@ assert.equal(roster["HRADAR.GDI"].length,42);
 for(const b of ["HREPAIR.SHP","HSELL.SHP","HMAP.SHP","HSTRIPUP.SHP","HSTRIPDN.SHP"])assert.equal(roster[b].length,3,b);
 assert.deepEqual([roster["HSIDE1.SHP"][0].width,roster["HSIDE1.SHP"][0].height],[160,120]);
 assert.equal(roster["HPWRBAR.SHP"].length,8);
+// Power gauge (hi-res y 176-399): the pair of frames drawn at PowY and
+// PowY+100 reaches the bottom, and the sidebar panels leave it see-through.
+assert.equal(roster["HPWRBAR.SHP"][0].height,124);
+{const p1=roster["HSIDE1.SHP"][0],p2=roster["HSIDE2.SHP"][0];
+  for(let y=18;y<120;y++)for(let x=0;x<16;x++)assert.equal(p1.pixels[y*160+x],0,"HSIDE1 covers the gauge");
+  for(let y=0;y<120;y++)for(let x=0;x<16;x++)assert.equal(p2.pixels[y*160+x],0,"HSIDE2 covers the gauge");}
+assert.equal(roster["HRADAR.GDI"][0].height,143);
 console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine frame contracts");
 
 const {render}=require("./render.js"),m=require("./models.js");
