@@ -62,6 +62,7 @@ four tracks:
   tested; there is no human playtest on record.
 - **Cleaned up (2026-11-24):** the legacy demos, their scripts, content and
   workflows are removed; the play site ships only engine files.
+- **M3 complete (2026-11-26).** The first live-site measurement is under M4.
 
 ## How milestones work
 
@@ -162,7 +163,7 @@ lookups, built entirely by CI.
 
 Evidence: 2026-11-23 · `58d86a51e71f42b199e8a1333211990d3099a4a3` · [stock-scenario CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45167410607) · headless Chromium (Playwright 1.56.1) · Skirmish match on 100% original data (pack built in CI: 66,994,806 bytes, 2,031,885 gzip): MCV deployed; placed power plant, refinery, barracks and vehicle factory; harvest +25 credits; produced rifle infantry and a light vehicle; box-select move, force-fire, keyboard and edge scrolling; ran 2 more minutes; zero required or unclassified misses (149 optional probes, each documented); no stall over the 1 s limit (0 ms in three local runs); frame p95 16.7 ms; heap flat at 99,876,864 bytes; match start in about 2 s.
 
-### M3: First playable skirmish and cleanup (1–2 sessions left)
+### M3: First playable skirmish and cleanup — done
 
 Session notes: [`docs/browser/M3_SESSION_LOG.md`](browser/M3_SESSION_LOG.md).
 
@@ -208,21 +209,27 @@ Progress: 2026-11-25 · `86d4cfc56478c7a194377fd60a3cfe48d3f5aca6` · [CI run](h
 
 Progress: 2026-11-25 · `55b3042f8f2b80d39decacc711883664289b78b6` · [CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45562526792) · headless Chromium (Playwright 1.56.1) · automated win: the hook left the computer one power plant; the player's 6 starting units, box-selected with real input, destroyed it 112 s later (kill credited to the player); `match-end result=won`, score screen drawn, new match started. Every job in the run passed, including `ai-match` (losses) on all three maps.
 
+Evidence: 2026-11-26 · `c9ec628d10660a7bc1ee8940eb769ebd241e7199` · [vanilla CI run](https://github.com/chucklowery/World-Conquer/actions/runs/45725682642), [publish run](https://github.com/chucklowery/World-Conquer/actions/runs/45728265932) (attempt 2; attempt 1 failed in `deploy-pages` with a GitHub artifact-metadata error), [site measurement](https://github.com/chucklowery/World-Conquer/actions/runs/45728790265) · headless Chromium (Playwright 1.56.1) · on `vanilla`: `ai-match` lost to the computer on all three maps and `win-match` won; per-PR CI runs only the native matrix, the WASM build and the stock-engine jobs; the published site (34 files, down from 41) has no legacy demo files.
+
 ### M4: Load, budgets and browser reach (2–3 sessions)
 
 Every visitor pays for load time before seeing anything, so this comes before
 art and features. Track: Platform.
 
-- [ ] **Measure first.** A `site-budget` CI job serves the packaged site with
-      the same compression Pages uses and records the transfer size, the
-      uncompressed size, the WASM size and time to menu on a throttled
-      connection (Playwright, 20 Mbps profile).
-- [ ] **Shrink the transfer.** Pick the cheapest option that meets the
-      budget, in this order: precompressed archives (`.mix.gz` or Brotli,
-      decompressed in `pack-loader.js` with `DecompressionStream`); lazy
-      loading of data not needed for the menu (theater and score archives
-      after the menu appears); placeholder frames that are smaller in the
-      file. Do not change engine file formats.
+- [x] **Measure first.** `browser/engine/check-site-budget.js` and
+      `site-budget.yml` measure the **live** site after each publish: every
+      file as served (bytes and encoding), and a Chromium visit at 20 Mbps
+      / 40 ms timing Play to the engine's menu, then a repeat visit with the
+      same disk cache. Report only until "Budgets in CI".
+- [ ] **Shrink the transfer.** The measurement changed the order. Pages
+      already gzips every file, including `.MIX` archives (the pack is 2.3 MB
+      as served), so precompressing archives is not needed. The engine is
+      the cost: `vanillatd.wasm` is 6.8 MB of the 9.2 MB first visit because
+      CI builds it as Debug with `-sASSERTIONS=1`. In this order: an
+      optimised release build of the published engine (`-O2`/`-Os`, no
+      assertions, CI tests run against the same build); then lazy loading of
+      data not needed for the menu if time to menu is still over budget.
+      Do not change engine file formats.
 - [ ] **Cache it.** A versioned service worker caches the engine and pack by
       SHA-256 from `site.json`, so a second visit loads from cache and a new
       deploy replaces only changed files.
@@ -235,13 +242,16 @@ art and features. Track: Platform.
 
 | Budget | Target | Current |
 | --- | --- | --- |
-| First-visit transfer (engine and pack) | ≤ 15 MB | not measured (≈96 MB raw) |
-| Repeat-visit transfer | ≤ 100 KB | not measured |
-| Time to menu, 20 Mbps, first visit | ≤ 8 s | not measured |
-| Time to menu, repeat visit | ≤ 2 s | ≈0.85 s on CI (local files) |
+| First-visit transfer (engine and pack) | ≤ 15 MB | 9.16 MB (82.7 MB raw; WASM 6.78 MB) |
+| Repeat-visit transfer | ≤ 100 KB | 0 B |
+| Time to menu, 20 Mbps, first visit | ≤ 8 s | 8.0 s |
+| Time to menu, repeat visit | ≤ 2 s | 2.8 s (over) |
 | Match frame time p95 | ≤ 20 ms | 16.7 ms |
 | Heap growth over a 10-minute match | ≤ 5% | flat over 2 minutes |
 | Longest main-thread stall after start | ≤ 250 ms | 0 ms |
+
+Current values for the first four rows: live site at `c9ec628`, 2026-11-26,
+[site-budget run 45728790265](https://github.com/chucklowery/World-Conquer/actions/runs/45728790265).
 
 **Exit gate (CI and budget):** the budget job passes on `vanilla` in
 Chromium, Firefox and WebKit, and a repeat visit to the published site
