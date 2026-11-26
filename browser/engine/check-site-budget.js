@@ -242,7 +242,10 @@ async function main() {
     ...Object.entries(report.browsers).filter(([, r]) => r.results).map(([name, r]) =>
       "- " + name + " requests: first visit " + r.firstVisit.requests + " (" + r.firstVisit.dataRequests +
       " for data/, " + mb(r.firstVisit.dataBytes) + "); repeat visit " + r.repeatVisit.requests + " (" +
-      r.repeatVisit.dataRequests + " for data/, " + r.repeatVisit.notModified + " not modified)."),
+      r.repeatVisit.dataRequests + " for data/, " + r.repeatVisit.notModified + " not modified). " +
+      "Engine ready after " + sec(r.firstVisit.timeToRuntimeReadyMs) + " / " + sec(r.repeatVisit.timeToRuntimeReadyMs) +
+      " (first / repeat); Play to menu " + sec(r.firstVisit.timeToMenuMs - r.firstVisit.timeToRuntimeReadyMs) + " / " +
+      sec(r.repeatVisit.timeToMenuMs - r.repeatVisit.timeToRuntimeReadyMs) + "."),
     "",
     "Site files: " + report.totals.files + ", " + mb(report.totals.rawBytes) + " raw, " + mb(report.totals.sentBytes) +
       " as served. Served bytes by encoding: " +
