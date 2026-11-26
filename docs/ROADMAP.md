@@ -333,6 +333,13 @@ plays in Chromium after the first click, and the M4 budgets still pass.
 *Implemented:* the engine logs each file's first draw (`[asset-draw]`) and
 every match job fails on a wireframe draw; the default skirmish job fails
 unless an audio context is running and buffers were played.
+Evidence (CI and budget parts): browser CI run 45861069057 on `vanilla` at
+d7a698e, all nine jobs green (skirmish with sound, win test, three AI matches,
+Firefox and WebKit skirmishes) with no wireframe drawn; Linux, Windows and
+MinGW green. Strict budget run 45865249108 on the published site: first
+visit 7.52-7.53 MB (M4: 6.27 MB), time to menu 5.5 / 6.1 / 6.2 s
+(Chromium / Firefox / WebKit; M4: 4.7-5.4 s), repeat visit 0 B and
+0.6-1.5 s. The player part is open.
 
 **Exit gate (player):** at least 3 of 3 testers start a match unaided, at
 least 2 of 3 finish a match against the AI, and every tester can name what
