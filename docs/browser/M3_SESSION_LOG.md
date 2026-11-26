@@ -97,11 +97,8 @@ requests, all three on `vanilla` and manual runs.
 
 ## Open
 
-- **Win path.** Only losses are automated (the idle human always loses).
-  `Do_Win` uses the same score screen and restart path; a scripted win
-  needs the test to find and destroy the computer's base.
-- **Publishing** is set up (approved by the owner); it goes live after this
-  branch is merged and Pages is set to deploy from GitHub Actions.
+- **Win path** (closed 2026-11-25, [run 45562526792](https://github.com/chucklowery/World-Conquer/actions/runs/45562526792)): see "Automated win" below.
+- **Publishing** went live on 2026-11-23 (publish run 45262345913).
 
 ## Publishing (step 4)
 
@@ -143,3 +140,62 @@ three maps.
 Manual runs with the default `legacy_soak` on also run the frozen legacy
 demo soak; its R02 order check timed out once in that slow path (pull
 requests run it in fast mode). It does not involve the stock engine path.
+
+## Automated win (2026-11-25)
+
+The engine declares a skirmish won only when every other house has no
+buildings, units, infantry or aircraft (`house.cpp:1445`,
+`MPlayer_Defeated`). Beating the computer by scripted play is slow and
+unreliable, so the owner approved a CI-only test hook (roadmap M3, ADR-0004).
+
+- **Hook.** `browser/engine/test_hooks.cpp`, compiled into the Emscripten
+  build only. `main()` strips `--browser-test-hooks` before the engine's own
+  command-line parser and enables the hook; without it,
+  `Browser_Test_Request()` returns 0. The play page passes no arguments; the
+  test supplies the flag through `window.WCTestArgs` in an init script.
+  `check-stock-scenario.js` fails if the hooks are on when a test did not
+  ask for them.
+- **Request 1 (reduce).** Removes every computer unit, infantry, aircraft
+  and all buildings but one the way the engine removes a sabotaged building
+  (`Limbo()` then `delete`, `scenario.cpp:593`): no death, no explosion.
+  The kept building is the first one that neither builds (`ToBuild ==
+  RTTI_NONE`) nor shoots (`Primary == WEAPON_NONE`). The house's expert AI
+  is switched off (`IQ = 0` and `IsBaseBuilding = false`; `house.cpp:932`
+  re-enables base building every tick while IQ is high enough, and
+  `house.cpp:1596` runs the expert AI, so no fire sale or power sale) and it gets at least 5000 credits, so a damaged building
+  repairs instead of selling itself (`building.cpp:1187`). Safe to repeat.
+- **Why each of those** (CI runs on this branch): 45546655452 weakened the
+  kept building and destroyed its neighbours through `Take_Damage`; their
+  death explosions killed it (`by=none`). 45549805362 kept it at full
+  strength; the explosions still killed it. 45551864057 removed the others
+  quietly; the computer then sold the weakened building, which the engine
+  logs as a kill with no attacker (`building.cpp:4274`). 45553930818 cleared
+  `IsBaseBuilding` only; the engine set it again and the AI still sold the
+  building (crew left, and no `destroyed` event, which every real
+  destruction logs). 45556700656 stopped the sale, but the player never
+  attacked in 24 orders over 18 minutes: the box selection was made around
+  the base while the units were still at the spawn cell, and the target was
+  under the shroud.
+- **Reveal.** Request 1 also reveals the area around the kept building to
+  the player (`Map.Sight_From`), so the click is an attack order, not a
+  move into the shroud.
+- **Request 3 (units).** Centres the view on the player's own units and logs
+  how many are on screen. They start around the MCV's spawn cell, which the
+  deploy step may have left. The test box-selects them and checks with Home
+  (`centered` events) that the selection took.
+- **Request 2 (show).** Centres the view on the kept building and logs its
+  screen position on the next frame (`[browser-event] test-target`).
+- **Test** (`STOCK_SCENARIO_WIN=1`, CI job `win-match`). Waits until the
+  computer has placed two buildings, reduces it, box-selects the player's
+  starting units where they are, centres on the target and attacks with a normal
+  click, repeating every 45 s and reselecting units that have arrived. It
+  requires `match-end result=won`, a kill of the target credited to the
+  player, the score screen, and a restart.
+
+**Evidence.** [Run 45562526792](https://github.com/chucklowery/World-Conquer/actions/runs/45562526792)
+on `55b3042`: the computer had placed NUKE, HAND and PROC; the hook removed
+12 objects and kept the NUKE at cell 31,11; all 6 of the player's starting
+units were on screen and selected; after three attack orders the NUKE was
+destroyed by `Multi1` (the player) at 112 s; the match ended `won`, the score
+screen drew (99% non-black) and a new match started. Every other job in the
+run passed.

@@ -1,5 +1,9 @@
 # R01 — Camera, selection, and command UX
 
+> **Historical (removed 2026-11-24).** This document describes the parallel
+> world layer and legacy demos deleted in M3 (see `docs/ROADMAP.md`). The
+> code is in git history before the M3 cleanup commit.
+
 The native Courier Extraction mission remains 18 × 11 tiles. The engine renders
 the tactical map and moves `InfantryClass` actors; the browser controller owns
 only the camera framing, visual multi-selection, control groups, and input

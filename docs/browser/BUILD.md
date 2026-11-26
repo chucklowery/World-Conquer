@@ -71,34 +71,11 @@ cmake --build build/browser-engine --target VanillaTD --parallel 2
 
 Output (verified in engine CI): `build/browser-engine/vanillatd.html`, `vanillatd.js`, `vanillatd.wasm`. A linked game is not proof of a browser-friendly event loop or playable mission.
 
-The Chromium CI gameplay suite verifies the native alpha's movement, crate
-recovery, extraction, restart, and combat order. For a clean static hosting
-package with `index.html`, runtime scripts, WebAssembly and original assets,
-run `node browser/engine/package-alpha.js build/browser-engine build/tactical-alpha-site`
-after the asset-staging steps in the engine workflow. The publication workflow
-uses GitHub's official Pages artifact deployment, and repository settings must
-select **GitHub Actions** as the Pages source before the public URL becomes active. See
-[`browser/engine/README.md`](../../browser/engine/README.md#github-pages-publication).
-
-The gameplay launcher now transitions to a full-viewport tactical HUD with an
-aspect-correct battlefield, responsive minimap and sidebar. Build cards are
-clearly labeled as previews, not functional construction. The native browser
-test verifies the HUD layout at both desktop and compact viewport sizes.
-
-R01 adds viewport-scaled zoom/pan and a visible minimap camera rectangle, drag
-selection, Shift-add, browser-local groups, contextual native move/attack, and
-touch-friendly camera/order buttons. **Shift+1–9** stores groups (without
-intercepting browser Ctrl+digit tab shortcuts), **1–9** recalls, **M/A** selects
-target mode, arrows aim and **Enter** orders, **S** stops, **C** centers, **+/-**
-zooms, and **R** restarts. Minimap clicks pan the camera, never a unit. See
-[`R01_INPUT_UX.md`](R01_INPUT_UX.md) for the UX and keyboard-only guide. CI now
-runs `test-rts-camera.js` and Chromium `check-r01-ui.js` for multiple viewport
-shapes before the full native `check-runtime.js` mission play-through.
-R03 adds deterministic C++ weapon/armor data, typed shot/hit/damage/death
-events and an opt-in armored-sentry native defeat drill. The normal Courier
-extraction balance remains intact. See
-[`R03_COMBAT_WEAPONS.md`](R03_COMBAT_WEAPONS.md) for faction data extension,
-host commands and WebAssembly/Chromium acceptance evidence.
+The public play site is packaged by `browser/engine/package-play.js` and
+deployed by `.github/workflows/publish-play.yml` after a green engine run on
+`vanilla`. `browser/engine/check-runtime.js` covers the engine diagnostics
+(SDL2 probe, cooperative loop, SHP drawing, file staging); the game itself is
+covered by `check-stock-engine.js` and `check-stock-scenario.js`.
 
 [Engine WASM compile CI](../../.github/workflows/browser-engine.yml) runs the same command and uploads the browser bundle **only when build succeeds**. CI build errors are evidence for targeted platform fixes, not a reason to weaken native targets or upload game data.
 
@@ -159,8 +136,7 @@ open. The importer caps each file at 512 MiB and each selection at 1 GiB.
 
 ## M1: Original boot-pack build and stock-engine launcher (in development)
 
-M1 uses the historical VanillaTD `main()` without browser-mode flags; the
-legacy tactical demos remain frozen. The generated pack contains only original
+M1 uses the historical VanillaTD `main()` without browser-mode flags. The generated pack contains only original
 CC0 placeholder media; no commercial game assets are required by CI.
 
 After installing and activating emsdk **3.1.68**, build VanillaTD with the

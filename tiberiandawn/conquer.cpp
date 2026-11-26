@@ -69,6 +69,7 @@
 #include "common/framelimit.h"
 #ifdef __EMSCRIPTEN__
 #include "../browser/engine/cooperative.h"
+#include "../browser/engine/test_hooks.h"
 #endif
 #include "common/paths.h"
 #include "common/vqatask.h"
@@ -1661,6 +1662,10 @@ bool Main_Loop()
             //			HidPage.Unlock();
         }
     }
+#ifdef __EMSCRIPTEN__
+    // CI-only test requests; inert without --browser-test-hooks.
+    Browser_Test_Hooks_Frame();
+#endif
 
     /*
     ** Save map's position & selected objects, if we're recording the game.

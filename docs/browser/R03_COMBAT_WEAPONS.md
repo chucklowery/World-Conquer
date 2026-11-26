@@ -1,5 +1,9 @@
 # R03 — deterministic weapons, armor and combat events
 
+> **Historical (removed 2026-11-24).** This document describes the parallel
+> world layer and legacy demos deleted in M3 (see `docs/ROADMAP.md`). The
+> code is in git history before the M3 cleanup commit.
+
 R03 is a portable C++11 subsystem (`browser/engine/rts_weapon_system.h`) used by
 the native VanillaTD browser scenario, not a JavaScript gameplay loop. The live
 `InfantryClass` and `MapClass` still own player movement and terrain placement;

@@ -9,8 +9,7 @@ const fs=require("node:fs"),path=require("node:path"),crypto=require("node:crypt
 const ENGINE=["vanillatd.html","vanillatd.js","vanillatd.wasm"];
 // Every script the page loads (shell.html <script src>), in browser/engine.
 const SCRIPTS=["asset-audit.js","pack-loader.js","asset-import.js","original-asset.js",
-  "wireframe-asset.js","cargo-hd.js","vertical-slice.js","mission-pack.js","tactical-hud.js",
-  "simulation-bridge.js","rts-camera.js","rts-input-ui.js"];
+  "wireframe-asset.js"];
 
 function main(){
   const [engineDir,dataDir,outDir,sha]=process.argv.slice(2);

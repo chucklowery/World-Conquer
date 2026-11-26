@@ -4271,6 +4271,11 @@ int BuildingClass::Mission_Deconstruction(void)
                 **	attributed to the enemy.
                 */
                 WhoLastHurtMe = HOUSE_NONE;
+#ifdef __EMSCRIPTEN__
+                // Test log: a sale also records a kill with no attacker.
+                std::printf("[browser-event] sold name=%s house=%s\n", Class->IniName, House->Class->IniName);
+                std::fflush(stdout);
+#endif
                 Record_The_Kill(NULL);
 
                 /*
