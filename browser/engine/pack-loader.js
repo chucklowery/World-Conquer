@@ -6,6 +6,7 @@
 })(typeof window !== "undefined" ? window : null, function () {
   "use strict";
   const shaPattern = /^[0-9a-f]{64}$/i;
+  const VERIFIED_HEADER = "x-wc-sha256";
   const namePattern = /^[A-Z0-9_.-]+$/;
   const disc = new Set(["gdi", "nod", "covertops"]);
   function pathValid(value) {
@@ -63,11 +64,21 @@
       const url = baseUrl + "/game/" + file.path.split("/").map(encodeURIComponent).join("/");
       let raw = null;
       let fromCache = false;
+      let trusted = false;
       if (cache) {
         try {
           const cached = await cache.match(url);
-          if (cached) { raw = await cached.arrayBuffer(); fromCache = true; }
-        } catch (_) { raw = null; }
+          if (cached) {
+            raw = await cached.arrayBuffer();
+            fromCache = true;
+            // M4: an entry this loader stored after verifying it carries the
+            // SHA-256 it was verified against. If that matches the manifest it
+            // is not hashed again (re-hashing ~76 MB was most of a repeat
+            // visit in Firefox and WebKit). Entries without it are verified.
+            const stored = cached.headers && cached.headers.get && cached.headers.get(VERIFIED_HEADER);
+            trusted = !!stored && stored.toLowerCase() === file.sha256.toLowerCase();
+          }
+        } catch (_) { raw = null; fromCache = false; trusted = false; }
       }
       if (!raw) {
         const result = await fetchImpl(url);
@@ -75,11 +86,14 @@
         raw = await result.arrayBuffer();
       }
       if (raw.byteLength !== file.bytes) throw Error("Pack size mismatch: " + file.path);
-      if ((await sha256(raw, cryptoApi)).toLowerCase() !== file.sha256.toLowerCase())
+      if (!trusted && (await sha256(raw, cryptoApi)).toLowerCase() !== file.sha256.toLowerCase())
         throw Error("Pack SHA-256 mismatch: " + file.path);
       staged.push({ path: file.path, bytes: new Uint8Array(raw) });
-      if (cache && !fromCache && typeof Response !== "undefined") {
-        try { await cache.put(url, new Response(raw)); } catch (_) { /* private mode */ }
+      if (cache && !trusted && typeof Response !== "undefined") {
+        // Store (or upgrade an older entry) with the hash it was verified against.
+        try {
+          await cache.put(url, new Response(raw, { headers: { [VERIFIED_HEADER]: file.sha256.toLowerCase() } }));
+        } catch (_) { /* private mode */ }
       }
       if (onProgress) onProgress(index + 1, manifest.files.length, file.path);
     }

@@ -23,6 +23,31 @@ async function main(){
   await assert.rejects(api.load(fs,"data",async url=>url.endsWith("pack.json")?response(manifest):response(new TextEncoder().encode("original demos")),null,{crypto:webcrypto}),/size mismatch/);
   const wrong = {schema:1,packVersion:"test",files:[{...entry,sha256:"0".repeat(64)}]};
   await assert.rejects(api.load(fs,"data",async url=>url.endsWith("pack.json")?response(wrong):response(bytes),null,{crypto:webcrypto}),/SHA-256 mismatch/);
+  // Cache Storage: a verified entry is stored with its SHA-256 and trusted
+  // on the next load without hashing; an entry without it, or with a
+  // different one, is hashed (and the bad one rejected).
+  const store = new Map();
+  const caches = { open: async () => ({
+    match: async url => store.has(url) ? store.get(url).clone() : undefined,
+    put: async (url, res) => { store.set(url, res); } }) };
+  let digests = 0;
+  const countingCrypto = { subtle: { digest: (alg, data) => { digests++; return webcrypto.subtle.digest(alg, data); } } };
+  await api.load(fs, "data", fetcher, null, { crypto: countingCrypto, caches });
+  assert.equal(digests, 1, "first load hashes the downloaded file");
+  assert.equal(store.get("data/game/CONQUER.MIX").headers.get("x-wc-sha256"), digest);
+  let fetched = 0;
+  const noNetwork = async url => { if (url.endsWith("pack.json")) return response(manifest); fetched++; return response(bytes); };
+  await api.load(fs, "data", noNetwork, null, { crypto: countingCrypto, caches });
+  assert.equal(digests, 1, "a verified cache entry is not hashed again");
+  assert.equal(fetched, 0, "a cache hit is not downloaded");
+  store.set("data/game/CONQUER.MIX", new Response(bytes));
+  await api.load(fs, "data", noNetwork, null, { crypto: countingCrypto, caches });
+  assert.equal(digests, 2, "an entry without the header is hashed");
+  assert.equal(store.get("data/game/CONQUER.MIX").headers.get("x-wc-sha256"), digest, "and upgraded");
+  store.set("data/game/CONQUER.MIX", new Response(new TextEncoder().encode("original dem0"),
+    { headers: { "x-wc-sha256": "0".repeat(64) } }));
+  await assert.rejects(api.load(fs, "data", noNetwork, null, { crypto: countingCrypto, caches }), /SHA-256 mismatch/,
+    "a header that does not match the manifest is not trusted");
   console.log("pack loader tests passed");
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
