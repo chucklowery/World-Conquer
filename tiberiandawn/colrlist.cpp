@@ -39,6 +39,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 
 /***************************************************************************
  * ColorListClass::ColorListClass -- class constructor                     *
@@ -202,13 +205,20 @@ void ColorListClass::Set_Selected_Style(SelectStyleType style, int color)
  *=========================================================================*/
 void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected)
 {
+#ifdef WC_BROWSER_UI
+    // Browser menus: centre the text vertically in its row.
+    int text_y = Browser_Text_Top(y, LineHeight);
+#else
+    int text_y = y;
+#endif
+
     int color;
 
     /*
     ** Draw a non-selected item in its color
     */
     if (!selected) {
-        Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+        Conquer_Clip_Text_Print(List[index], x, text_y, Colors[index], TBLACK, TextFlags, width, Tabs);
         return;
     }
 
@@ -226,7 +236,7 @@ void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected
     **	NONE: Just print the string in its native color
     */
     case SELECT_NONE:
-        Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+        Conquer_Clip_Text_Print(List[index], x, text_y, Colors[index], TBLACK, TextFlags, width, Tabs);
         break;
 
     /*
@@ -235,9 +245,9 @@ void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected
     */
     case SELECT_HIGHLIGHT:
         if (TextFlags & TPF_6PT_GRAD) {
-            Conquer_Clip_Text_Print(List[index], x, y, color, TBLACK, TextFlags | TPF_BRIGHT_COLOR, width, Tabs);
+            Conquer_Clip_Text_Print(List[index], x, text_y, color, TBLACK, TextFlags | TPF_BRIGHT_COLOR, width, Tabs);
         } else {
-            Conquer_Clip_Text_Print(List[index], x, y, color, TBLACK, TextFlags, width, Tabs);
+            Conquer_Clip_Text_Print(List[index], x, text_y, color, TBLACK, TextFlags, width, Tabs);
         }
         break;
 
@@ -246,7 +256,7 @@ void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected
     */
     case SELECT_BOX:
         LogicPage->Draw_Rect(x, y, x + width - 2, y + LineHeight - 2, color);
-        Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+        Conquer_Clip_Text_Print(List[index], x, text_y, Colors[index], TBLACK, TextFlags, width, Tabs);
         break;
 
     /*
@@ -256,10 +266,10 @@ void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected
         if (TextFlags & TPF_6PT_GRAD) {
             LogicPage->Fill_Rect(x, y, x + width - 1, y + LineHeight - 1, SelectColor);
             Conquer_Clip_Text_Print(
-                List[index], x, y, Colors[index], TBLACK, TextFlags | TPF_BRIGHT_COLOR, width, Tabs);
+                List[index], x, text_y, Colors[index], TBLACK, TextFlags | TPF_BRIGHT_COLOR, width, Tabs);
         } else {
             LogicPage->Fill_Rect(x, y, x + width - 2, y + LineHeight - 2, SelectColor);
-            Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+            Conquer_Clip_Text_Print(List[index], x, text_y, Colors[index], TBLACK, TextFlags, width, Tabs);
         }
         break;
 
@@ -269,10 +279,10 @@ void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected
     case SELECT_INVERT:
         if (TextFlags & TPF_6PT_GRAD) {
             LogicPage->Fill_Rect(x, y, x + width - 1, y + LineHeight - 1, Colors[index]);
-            Conquer_Clip_Text_Print(List[index], x, y, BLACK, TBLACK, TextFlags, width, Tabs);
+            Conquer_Clip_Text_Print(List[index], x, text_y, BLACK, TBLACK, TextFlags, width, Tabs);
         } else {
             LogicPage->Fill_Rect(x, y, x + width - 2, y + LineHeight - 2, Colors[index]);
-            Conquer_Clip_Text_Print(List[index], x, y, LTGREY, TBLACK, TextFlags, width, Tabs);
+            Conquer_Clip_Text_Print(List[index], x, text_y, LTGREY, TBLACK, TextFlags, width, Tabs);
         }
         break;
     }

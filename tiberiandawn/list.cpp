@@ -55,6 +55,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 
 /***************************************************************************
  * ListClass::ListClass -- class constructor                               *
@@ -678,6 +681,13 @@ void ListClass::Set_Tabs(int const* tabs)
  *=============================================================================================*/
 void ListClass::Draw_Entry(int index, int x, int y, int width, int selected)
 {
+#ifdef WC_BROWSER_UI
+    // Browser menus: centre the text vertically in its row.
+    int text_y = Browser_Text_Top(y, LineHeight);
+#else
+    int text_y = y;
+#endif
+
     if (TextFlags & TPF_6PT_GRAD) {
         TextPrintType flags = TextFlags;
 
@@ -690,10 +700,10 @@ void ListClass::Draw_Entry(int index, int x, int y, int width, int selected)
             }
         }
 
-        Conquer_Clip_Text_Print(List[index], x, y, CC_GREEN, TBLACK, flags, width, Tabs);
+        Conquer_Clip_Text_Print(List[index], x, text_y, CC_GREEN, TBLACK, flags, width, Tabs);
 
     } else {
-        Conquer_Clip_Text_Print(List[index], x, y, (selected ? BLUE : WHITE), TBLACK, TextFlags, width, Tabs);
+        Conquer_Clip_Text_Print(List[index], x, text_y, (selected ? BLUE : WHITE), TBLACK, TextFlags, width, Tabs);
     }
 }
 

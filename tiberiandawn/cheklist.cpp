@@ -43,6 +43,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 
 /***************************************************************************
  * CheckListClass::CheckListClass -- constructor                           *
@@ -324,6 +327,13 @@ int CheckListClass::Action(unsigned flags, KeyNumType& key)
  *=========================================================================*/
 void CheckListClass::Draw_Entry(int index, int x, int y, int width, int selected)
 {
+#ifdef WC_BROWSER_UI
+    // Browser menus: centre the text vertically in its row.
+    int text_y = Browser_Text_Top(y, LineHeight);
+#else
+    int text_y = y;
+#endif
+
     if (index >= Count())
         return;
 
@@ -351,6 +361,6 @@ void CheckListClass::Draw_Entry(int index, int x, int y, int width, int selected
             }
         }
 
-        Conquer_Clip_Text_Print(buffer, x, y, CC_GREEN, TBLACK, flags, width, Tabs);
+        Conquer_Clip_Text_Print(buffer, x, text_y, CC_GREEN, TBLACK, flags, width, Tabs);
     }
 }

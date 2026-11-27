@@ -36,6 +36,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 
 /***********************************************************************************************
  * CreditClass::CreditClass -- Default constructor for the credit class object.                *
@@ -109,7 +112,13 @@ void CreditClass::Graphic_Logic(bool forced)
         unsigned fore = factor ? 11 : WHITE;
 
         TabClass::Draw_Credits_Tab();
-        Fancy_Text_Print("%d", xx, 0, fore, TBLACK, flags, Current);
+        int text_y = 0;
+#ifdef WC_BROWSER_UI
+        // Browser menus: centre the credits in their tab.
+        Fancy_Text_Print("", 0, 0, TBLACK, TBLACK, flags);
+        text_y = Browser_Text_Top(0, Map.Get_Tab_Height() - 1);
+#endif
+        Fancy_Text_Print("%d", xx, text_y, fore, TBLACK, flags, Current);
 
         IsToRedraw = false;
         IsAudible = false;

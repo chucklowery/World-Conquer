@@ -37,6 +37,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 
 void const* TabClass::TabShape = NULL;
 
@@ -113,8 +116,14 @@ void TabClass::Draw_It(bool complete)
                 Draw_Credits_Tab();
                 LogicPage->Draw_Line(0, Tab_Height - 1, rightx, Tab_Height - 1, BLACK);
 
-                Fancy_Text_Print(TXT_TAB_BUTTON_CONTROLS, Eva_Width / 2, 0, fore, TBLACK, flags);
-                Fancy_Text_Print(TXT_TAB_SIDEBAR, width - (Eva_Width / 2), 0, fore, TBLACK, flags);
+                int text_y = 0;
+#ifdef WC_BROWSER_UI
+                // Browser menus: centre the captions in the tabs.
+                Fancy_Text_Print("", 0, 0, TBLACK, TBLACK, flags);
+                text_y = Browser_Text_Top(0, Tab_Height - 1);
+#endif
+                Fancy_Text_Print(TXT_TAB_BUTTON_CONTROLS, Eva_Width / 2, text_y, fore, TBLACK, flags);
+                Fancy_Text_Print(TXT_TAB_SIDEBAR, width - (Eva_Width / 2), text_y, fore, TBLACK, flags);
             }
             LogicPage->Unlock();
         }
@@ -160,7 +169,12 @@ void TabClass::Hilite_Tab(int tab)
     unsigned fore = factor ? 11 : WHITE;
 
     CC_Draw_Shape(TabShape, 1, xpos, 0, WINDOW_MAIN, SHAPE_NORMAL);
-    Fancy_Text_Print(TXT_TAB_BUTTON_CONTROLS, x, 0, fore, TBLACK, flags);
+    int text_y = 0;
+#ifdef WC_BROWSER_UI
+    Fancy_Text_Print("", 0, 0, TBLACK, TBLACK, flags);
+    text_y = Browser_Text_Top(0, Map.Get_Tab_Height() - 1);
+#endif
+    Fancy_Text_Print(TXT_TAB_BUTTON_CONTROLS, x, text_y, fore, TBLACK, flags);
 }
 
 /***********************************************************************************************

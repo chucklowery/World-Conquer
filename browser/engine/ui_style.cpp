@@ -200,6 +200,18 @@ void Browser_Skirmish_Background(BrowserSkirmishLayout const& l)
     }
 }
 
+int Browser_Text_Top(int top, int height)
+{
+    // Every generated face (tools/content/art/font.js) draws capitals in the
+    // top 7 rows of the glyph cell. FontHeight is not used: the generated font
+    // header puts the height where the engine does not read it (font.cpp
+    // FONTINFOMAXHEIGHT), so the engine sees 20, and list rows and menu
+    // layouts are sized from that value today.
+    const int cap = 7;
+    int y = top + (height - cap + 1) / 2;
+    return y < top ? top : y;
+}
+
 void Browser_Skirmish_Report(BrowserSkirmishLayout const& l, int list_row_height)
 {
     // Positions for the browser tests (check-stock-scenario.js), in game pixels.

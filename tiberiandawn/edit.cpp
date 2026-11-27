@@ -41,6 +41,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#ifdef WC_BROWSER_UI
+#include "browser/engine/ui_style.h"
+#endif
 
 /***********************************************************************************************
  * EditClass::EditClass -- Normal constructor for edit class object.                           *
@@ -329,6 +332,12 @@ void EditClass::Draw_Background(void)
  *=============================================================================================*/
 void EditClass::Draw_Text(char const* text)
 {
+    int text_top = Y;
+#ifdef WC_BROWSER_UI
+    // Browser menus: centre the text vertically in the field.
+    Fancy_Text_Print("", 0, 0, TBLACK, TBLACK, TextFlags);
+    text_top = Browser_Text_Top(Y, Height) - 1;
+#endif
     if (FontPtr == GradFont6Ptr) {
         TextPrintType flags;
 
@@ -338,18 +347,19 @@ void EditClass::Draw_Text(char const* text)
             flags = (TextPrintType)0;
         }
 
-        Conquer_Clip_Text_Print(text, X + 1, Y + 1, Color, TBLACK, TextFlags | flags, Width - 2);
+        Conquer_Clip_Text_Print(text, X + 1, text_top + 1, Color, TBLACK, TextFlags | flags, Width - 2);
 
         if (Has_Focus() && (int)strlen(text) < MaxLength
             && ((int)String_Pixel_Width(text) + (int)String_Pixel_Width("_") < Width - 2)) {
-            Conquer_Clip_Text_Print("_", X + 1 + String_Pixel_Width(text), Y + 1, Color, TBLACK, TextFlags | flags);
+            Conquer_Clip_Text_Print(
+                "_", X + 1 + String_Pixel_Width(text), text_top + 1, Color, TBLACK, TextFlags | flags);
         }
     } else {
-        Conquer_Clip_Text_Print(text, X + 1, Y + 1, Has_Focus() ? BLUE : WHITE, TBLACK, TextFlags, Width - 2);
+        Conquer_Clip_Text_Print(text, X + 1, text_top + 1, Has_Focus() ? BLUE : WHITE, TBLACK, TextFlags, Width - 2);
 
         if (Has_Focus() && (int)strlen(text) < MaxLength
             && ((int)String_Pixel_Width(text) + (int)String_Pixel_Width("_") < Width - 2)) {
-            Conquer_Clip_Text_Print("_", X + 1 + String_Pixel_Width(text), Y + 1, BLUE, TBLACK, TextFlags);
+            Conquer_Clip_Text_Print("_", X + 1 + String_Pixel_Width(text), text_top + 1, BLUE, TBLACK, TextFlags);
         }
     }
 }

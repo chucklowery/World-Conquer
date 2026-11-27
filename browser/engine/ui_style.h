@@ -24,4 +24,11 @@ void Browser_Skirmish_Layout(BrowserSkirmishLayout& layout);
 void Browser_Skirmish_Background(BrowserSkirmishLayout const& layout);
 void Browser_Skirmish_Report(BrowserSkirmishLayout const& layout, int list_row_height);
 
+// Text in buttons, edit fields and tabs: the y at which to print in the
+// current font so its capital letters sit centred in a box of `height`
+// pixels starting at `top`. The generated fonts (tools/content/art/font.js)
+// put capitals in the top 7 rows of each glyph cell, with descenders and the
+// shadow below; stock code prints at the top of the box.
+int Browser_Text_Top(int top, int height);
+
 #endif
