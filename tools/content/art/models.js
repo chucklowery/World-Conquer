@@ -36,9 +36,43 @@ function slope(min,max,zFront,mat){
   // Plane through (y0,zFront) and (y1,z1): normal (0, -(z1-zFront), (y1-y0)) normalised.
   const ny=-(z1-zFront),nz=(y1-y0),l=Math.hypot(ny,nz);
   const n=[0,ny/l,nz/l];
-  return {shape:"poly",mat,planes:[
+  return {shape:"poly",mat,bounds:[min,max],planes:[
     {n:[-1,0,0],d:-x0},{n:[1,0,0],d:x1},{n:[0,-1,0],d:-y0},{n:[0,1,0],d:y1},{n:[0,0,-1],d:-z0},
     {n,d:n[1]*y0+n[2]*zFront}]};
+}
+
+// ----- fine detail -----
+// Parts marked detail are drawn only at scale 2 and above (HD sheets and
+// cameos, render.js); at 1x they would only add noise. ADR-0006.
+const D=list=>list.map(p=>({...p,detail:true}));
+const HZ={ramp:"fire",lo:2,hi:7};                 // hazard yellow
+// Hazard stripes along x (dir "x") or y on a flat strip at height z.
+function stripes(x0,y0,x1,y1,z,step=2,dir="x"){
+  const out=[];let k=0;
+  if(dir==="x")for(let x=x0;x<x1-0.01;x+=step,k++)out.push(box([x,y0,z],[Math.min(x1,x+step),y1,z+0.25],k%2?M.track:HZ));
+  else for(let y=y0;y<y1-0.01;y+=step,k++)out.push(box([x0,y,z],[x1,Math.min(y1,y+step),z+0.25],k%2?M.track:HZ));
+  return out;
+}
+// Raised seams across a roof (lines along y, every step in x, or along x).
+function seams(x0,y0,x1,y1,z,step,dir="y",mat=M.steel){
+  const out=[];
+  if(dir==="y")for(let x=x0+step;x<x1-0.5;x+=step)out.push(box([x-0.3,y0,z],[x+0.3,y1,z+0.3],mat));
+  else for(let y=y0+step;y<y1-0.5;y+=step)out.push(box([x0,y-0.3,z],[x1,y+0.3,z+0.3],mat));
+  return out;
+}
+// A row of n windows on the south face y (the face the camera sees).
+function windows(x0,x1,y,z0,z1,n,mat=M.glass){
+  const out=[],w=(x1-x0)/n;
+  for(let i=0;i<n;i++)out.push(box([x0+i*w+w*0.2,y,z0],[x0+(i+1)*w-w*0.2,y+0.4,z1],mat));
+  return out;
+}
+// Roof vent: a steel box with a dark slot.
+const vent=(x,y,z,w=2.4)=>[box([x-w/2,y-w/2,z],[x+w/2,y+w/2,z+1.2],M.steel),box([x-w/2+0.4,y+w/2,z+0.3],[x+w/2-0.4,y+w/2+0.2,z+0.9],M.track)];
+// Ladder up a south face from z0 to z1.
+function ladder(x,y,z0,z1){
+  const out=[box([x-1,y,z0],[x-0.7,y+0.4,z1],M.steelDk),box([x+0.7,y,z0],[x+1,y+0.4,z1],M.steelDk)];
+  for(let z=z0+1;z<z1;z+=1.4)out.push(box([x-1,y,z],[x+1,y+0.4,z+0.3],M.steelDk));
+  return out;
 }
 
 // ----- vehicles -----
@@ -51,13 +85,13 @@ function tankBody(){
     box([-6.5,-2,3],[-5.5,6,4],M.house),box([5.5,-2,3],[6.5,6,4],M.house),
     // Fine detail, mostly seen in the HD sheet (ADR-0006): engine grille,
     // exhaust, headlights.
-    ...[0,1,2].map(i=>box([-4,5.5+i*0.9,5.5],[4,5.9+i*0.9,5.8],M.oliveDk)),
-    cyl([4.6,7.2,0],0.55,5,6.6,M.steelDk),
-    sphere([-3.8,-8.6,3.1],0.6,M.glass),sphere([3.8,-8.6,3.1],0.6,M.glass),
+    ...D([0,1,2].map(i=>box([-4,5.5+i*0.9,5.5],[4,5.9+i*0.9,5.8],M.oliveDk))),
+    ...D([cyl([4.6,7.2,0],0.55,5,6.6,M.steelDk),
+      sphere([-3.8,-8.6,3.1],0.6,M.glass),sphere([3.8,-8.6,3.1],0.6,M.glass)]),
   ];
   // Track links across the top of each track, and road wheel hubs.
-  for(let y=-8.4;y<9;y+=1.5)for(const x of [-7,4])parts.push(box([x,y,3],[x+3,y+0.55,3.35],M.steelDk));
-  for(const y of [-6,-2,2,6])for(const x of [-7.05,7.05])parts.push(cyl([x,y,1.5],0.8,x-0.15,x+0.15,M.steel,"x"));
+  for(let y=-8.4;y<9;y+=1.5)for(const x of [-7,4])parts.push(...D([box([x,y,3],[x+3,y+0.55,3.35],M.steelDk)]));
+  for(const y of [-6,-2,2,6])for(const x of [-7.05,7.05])parts.push(...D([cyl([x,y,1.5],0.8,x-0.15,x+0.15,M.steel,"x")]));
   return parts;
 }
 function tankTurret(){
@@ -68,10 +102,10 @@ function tankTurret(){
     cyl([0,-6,6.2],1.1,-10.4,-9.4,M.steelDk,"y"),
     box([-1.2,3,7.5],[1.2,5,9],M.oliveDk),
     // Fine detail: gun mantlet, commander's hatch, periscope, antenna.
-    box([-1.8,-4.2,5.6],[1.8,-3,7.6],M.oliveDk),
-    cyl([1.6,1.8,0],1.1,8.8,9.3,M.oliveDk),
-    box([-2,-0.6,8.8],[-0.8,0.2,9.5],M.glass),
-    cyl([-3,3.2,0],0.35,8,12.5,M.steelDk),
+    ...D([box([-1.8,-4.2,5.6],[1.8,-3,7.6],M.oliveDk),
+      cyl([1.6,1.8,0],1.1,8.8,9.3,M.oliveDk),
+      box([-2,-0.6,8.8],[-0.8,0.2,9.5],M.glass),
+      cyl([-3,3.2,0],0.35,8,12.5,M.steelDk)]),
   ];
 }
 // Light vehicle (JEEP): fast four-wheeler with an open cab and a pintle gun.
@@ -83,6 +117,14 @@ function jeepBody(){
     box([-3.8,-1,4],[3.8,0,6],M.steelDk),
     box([-3,-2.5,4],[3,-1,5.5],M.glass),
     box([-3.8,3,4],[3.8,6.5,4.8],M.house),
+    // Detail: wheel hubs, headlights, bumper, spare wheel, grille.
+    ...D([
+      ...[[-5.65,-4.5],[-5.65,4.5],[5.65,-4.5],[5.65,4.5]].map(([x,y])=>cyl([x,y,1.7],0.7,x-0.1,x+0.1,M.steel,"x")),
+      sphere([-2.6,-7.1,2.6],0.55,M.glass),sphere([2.6,-7.1,2.6],0.55,M.glass),
+      box([-4,-7.6,1.2],[4,-7,1.8],M.steelDk),
+      cyl([0,7.1,3.4],1.3,6.8,7.6,M.track,"y"),cyl([0,7.1,3.4],0.5,7.6,7.7,M.steel,"y"),
+      ...seams(-2,-6.8,2,-4.5,2.75,0.8,"y",M.oliveDk),
+    ]),
   ];
 }
 function jeepTurret(){
@@ -90,6 +132,7 @@ function jeepTurret(){
     cyl([0,2,4],1.6,4,6.6,M.steel),
     cyl([0,-1.5,6],0.6,-5.5,1,M.steelDk,"y"),
     box([-1.4,1.2,6],[1.4,2.8,7.6],M.house),
+    ...D([box([-0.5,-1,6.5],[0.5,0,7],M.steel),cyl([-1.8,3,0],0.3,6,10,M.steelDk)]),
   ];
 }
 // Harvester (HARV): tracked collector with a ribbed drum across the front,
@@ -108,6 +151,16 @@ function harvester(stage=0){
     box([0.5,-6,4],[4,-3,5.5],M.steelDk),
     box([-5.5,-8,1.2],[-4.5,-5,2.6],M.steel),box([4.5,-8,1.2],[5.5,-5,2.6],M.steel),
     cyl([0,-9,1.8],1.7,-5.2,5.2,M.steelDk,"x"),
+    // Detail: crystal chunks in the hopper, hopper ribs, exhaust, lights,
+    // ladder, track links.
+    ...D([
+      ...[[-2.5,2],[1.5,1.5],[-1,4.5],[2.5,5]].map(([x,y])=>sphere([x,y,9.3],1,M.crystal)),
+      ...[1.5,3.5,5.5].map(y=>box([-5.3,y,4.5],[5.3,y+0.5,8.5],M.oliveDk)),
+      cyl([3.5,-3.8,0],0.6,5.5,9,M.steelDk),
+      sphere([-3.5,-6.5,6.6],0.5,M.glass),sphere([-1.5,-6.5,6.6],0.5,M.glass),
+      ...ladder(3,8,2.5,8.4),
+      ...[...Array(10).keys()].flatMap(i=>[box([-6.5,-6.8+i*1.5,2.6],[-4,-6.3+i*1.5,2.9],M.steelDk),box([4,-6.8+i*1.5,2.6],[6.5,-6.3+i*1.5,2.9],M.steelDk)]),
+    ]),
   ];
   for(let r=-2;r<=2;r++){const x=r*2.1+(stage%4)*0.52;parts.push(cyl([x,-9,1.8],2.1,x-0.35,x+0.35,M.steel,"x"));}
   return parts;
@@ -128,6 +181,14 @@ function mcv(){
     box([2.8,-4,9],[4.2,7.4,9.9],M.steel),
     box([2.9,-4,8],[4.1,-3,9],M.steelDk),
     ...[[-1,-1],[1,-1],[-1,1],[1,1]].map(([sx,sy])=>box(sx<0?[-8.2,sy*7-1,0.6]:[7.2,sy*7-1,0.6],sx<0?[-7.2,sy*7+1,2]:[8.2,sy*7+1,2],M.steel)),
+    // Detail: deck seams, folded wall panels, cab lights, track links.
+    ...D([
+      ...seams(-4.5,-4,1,7.5,8.6,2.2,"x",M.concrete),
+      ...windows(-5.5,5.5,8.5,5,7.6,3,M.concDk),
+      sphere([-4,-11.8,4],0.5,M.glass),sphere([4,-11.8,4],0.5,M.glass),
+      sphere([-4.5,-6.5,8.4],0.4,M.light),
+      ...[...Array(13).keys()].flatMap(i=>[box([-7,-9.6+i*1.5,2.8],[-4.5,-9.1+i*1.5,3.1],M.steelDk),box([4.5,-9.6+i*1.5,2.8],[7,-9.1+i*1.5,3.1],M.steelDk)]),
+    ]),
   ];
 }
 
@@ -152,6 +213,19 @@ function constructionYard({busy=0,blink=0}={}){
     box([22-1,10-1,19],[22+armX+1,10+armY+1,20.5],M.steel),
     box([22+armX-1.5,10+armY-1.5,15],[22+armX+1.5,10+armY+1.5,19],M.steelDk),
     sphere([-30,-4,11],1.3,blink?M.light:M.lightOff),
+    // Detail: roof seams and vents, hall windows and doors, cabin vents,
+    // hazard stripes on the pad, crane cable.
+    ...D([
+      ...seams(-28,0,2,16,11,4,"y"),
+      ...vent(-12,-2,9),...vent(-4,-2,9),
+      ...windows(-32,-2,20,4,7,5),
+      box([-6,20,1],[2,20.4,7],M.steelDk),
+      ...vent(16,13,12),...vent(27,13,12),
+      ...windows(13,31,20,6,9,3),
+      ...stripes(-33,21,8,23,1,2),
+      ...stripes(-35,-22,-33,22,1,2,"y"),
+      box([22+armX-0.2,10+armY-0.2,15],[22+armX+0.2,10+armY+0.2,19],M.steel),
+    ]),
   ];
 }
 // Power plant (NUKE, 2x2): two cooling stacks with glowing vents.
@@ -166,6 +240,15 @@ function powerPlant({phase=0}={}){
     box([-20,8,7],[-4,14,9],M.house),
     box([-2,6,7],[20,16,10],M.olive),
     sphere([-9,-2,15.2],2.4+0.6*(phase%2),glow),sphere([10,-2,15.2],2.4+0.6*((phase+1)%2),glow),
+    // Detail: stack bands and ladders, pipe bridge, roof vents, windows.
+    ...D([
+      ...[5,10].flatMap(z=>[cyl([-9,-2,0],8.25,z,z+0.6,M.steelDk),cyl([10,-2,0],8.25,z,z+0.6,M.steelDk)]),
+      ...ladder(-9,6,1,14.5),...ladder(10,6,1,14.5),
+      cyl([0.5,4,5.5],0.8,-3,3,M.steelDk,"x"),
+      ...vent(6,11,10),...vent(14,11,10),
+      ...windows(-2,20,16,3,6,4),
+      ...windows(-20,-4,20,3,5.5,3),
+    ]),
   ];
 }
 // Refinery (PROC, 3x3): silo bank, processing hall and an unloading pad on
@@ -185,6 +268,21 @@ function refinery({lights=0,full=false,dump=0}={}){
     box([-10,16,2],[14,32,3+tilt],M.steelDk),
     box([-4,-4,12],[10,4,14],M.glass),
     sphere([-30,12,13],1.6,lit),sphere([16,12,13],1.6,lit),sphere([33,-6,17],1.6,lit),
+    // Detail: silo bands and ladders, feed pipes, hall roof seams and vents,
+    // windows, hazard stripes round the unloading pad.
+    ...D([
+      ...[4,8,12].flatMap(z=>[cyl([-22,-15,0],8.25,z,z+0.6,M.steelDk),cyl([-3,-15,0],8.25,z,z+0.6,M.steelDk)]),
+      ...ladder(-22,-7,1,13.5),...ladder(-3,-7,1,13.5),
+      cyl([-12.5,-15,11],0.9,-15,-10,M.steelDk,"x"),
+      cyl([-22,-5,11.5],0.8,-8,-6,M.steelDk,"y"),cyl([-3,-5,11.5],0.8,-8,-6,M.steelDk,"y"),
+      ...seams(-32,-6,-4,11,12,4,"y"),
+      ...vent(-26,4,12),...vent(-18,4,12),
+      ...windows(-30,-12,14,3,7,4),
+      ...windows(20,32,14,8,12,3),
+      ...vent(22,-12,18,2),...vent(30,-12,18,2),
+      ...stripes(-12,34,16,35.2,1,2),
+      ...stripes(-13.2,14,-12,35.2,1,2,"y"),...stripes(16,14,17.2,35.2,1,2,"y"),
+    ]),
   ];
 }
 // Barracks (PYLE, 2x2): long quarters with a mast and a flag that waves.
@@ -199,6 +297,16 @@ function barracks({wave=0}={}){
     box([-18,14,1],[-14,20,4],M.concrete),box([2,14,1],[6,20,4],M.concrete),
     cyl([16,10,0],0.9,1,16,M.steel),
     box([16,10+w*0.6,12],[22,10.6+w*1.2,16],M.house),
+    // Detail: roof seams, windows and door, sandbags along the front, a
+    // drill-yard line.
+    ...D([
+      ...seams(-21,-10,13,11,8,3.4,"y",M.oliveDk),
+      ...windows(-21,13,14,3.5,6,6),
+      box([-12,14,1],[-6,14.4,6],M.steelDk),
+      ...[...Array(9).keys()].map(i=>box([-20+i*3.6,18.5,1],[-17+i*3.6,20.5,2.2],M.sand)),
+      ...stripes(8,16,13,22,1,1.2,"y"),
+      cyl([16,10,0],1.6,1,1.8,M.concrete),
+    ]),
   ];
 }
 // Vehicle factory (WEAP, 3x3): tall assembly hall with a big south door.
@@ -219,6 +327,16 @@ function factory({open=0,doorOnly=false}={}){
     box([-16,28,13],[16,30,14.5],M.house),
     box([-14,25,1],[14,26,2],M.track),
     box([-12,26,0.2],[12,34,1],M.concDk),
+    // Detail: roof trusses, skylight frames, vents, wall windows, hazard
+    // stripes on the apron.
+    ...D([
+      ...seams(-30,-19,30,22,13,6,"x"),
+      ...seams(-28,-15,-8,1,14.5,4,"y",M.steelDk),...seams(8,-15,28,1,14.5,4,"y",M.steelDk),
+      ...vent(-20,10,13),...vent(-10,10,13),...vent(10,10,13),...vent(20,10,13),
+      ...windows(-32,-16,24,6,10,3),...windows(16,32,24,6,10,3),
+      ...stripes(-12,33,12,34,1,2),
+      ...stripes(-14,30,-12,34,1,1,"y"),...stripes(12,30,14,34,1,1,"y"),
+    ]),
   ];
 }
 // Guard tower (GTWR, 1x1): sandbagged base, post and an armoured gun cab.
@@ -234,6 +352,13 @@ function guardTower(){
     box([-5,-0.5,11.5],[5,8,12.3],M.oliveDk),
     box([-3,-0.4,8.6],[3,0,9.6],M.glass),
     cyl([0,-1.5,9.2],0.6,-3.5,0,M.steelDk,"y"),
+    // Detail: individual sandbags, a ladder, roof hatch and aerial.
+    ...D([
+      ...[...Array(10).keys()].map(i=>{const a=i/10*Math.PI*2;return box([Math.cos(a)*6-1,4+Math.sin(a)*6-0.7,1.4],[Math.cos(a)*6+1,4+Math.sin(a)*6+0.7,2.5],M.sand);}),
+      ...ladder(0,6.6,2.8,8),
+      cyl([1.5,4,0],1,12.3,12.7,M.olive),
+      cyl([-3.5,6.5,0],0.25,12.3,15,M.steelDk),
+    ]),
   ];
 }
 
@@ -283,6 +408,12 @@ function rifleman(p={}){
     parts.push(box([-2.6,-0.6,3.4-kneel],[-1.9,0.6,6-kneel],M.uniform));
   }
   if(p.wave){parts.push(box([-2.8,-0.6,6.4-kneel],[-1.9,0.6,6.4-kneel+2.6*p.wave],M.skin));}
+  // Detail: belt, ammo pouches, helmet brim.
+  parts.push(...D([
+    box([-1.95,-1.15,3.6-kneel],[1.95,1.45,4.1-kneel],M.track),
+    box([-1.6,-1.35,3.7-kneel],[-0.6,-1.1,4.6-kneel],M.oliveDk),box([0.6,-1.35,3.7-kneel],[1.6,-1.1,4.6-kneel],M.oliveDk),
+    cyl([0,0.2,0],1.6,7.9-kneel,8.1-kneel,M.houseDk),
+  ]));
   return parts;
 }
 

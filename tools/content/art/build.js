@@ -8,7 +8,16 @@
 const fs=require("node:fs");
 const path=require("node:path");
 const {encodeTacticalShape}=require("../encode-shape.js");
-const {render,frameHeading}=require("./render.js");
+const {render:renderRaw,frameHeading}=require("./render.js");
+// Many frames repeat a pose (infantry guard frames, single-frame buildings
+// drawn at 1x and HD, cameos); render each distinct model and view once.
+const renderCache=new Map();
+function render(parts,opts){
+  const key=JSON.stringify([parts,opts]);
+  let px=renderCache.get(key);
+  if(!px){px=renderRaw(parts,opts);renderCache.set(key,px);}
+  return px.slice();
+}
 const m=require("./models.js");
 
 // ---------- helpers ----------
@@ -30,13 +39,16 @@ function hash(n){n=(n^61)^(n>>>16);n=n+(n<<3);n^=n>>>4;n=Math.imul(n,0x27d4eb2d)
 function damaged(parts,seed,flicker=0){
   const M=m.M;
   const candidates=[];
-  for(let i=1;i<parts.length;i++){const p=parts[i];if(p.mat!==M.house&&p.mat!==M.houseDk&&!p.mat.glow)candidates.push(i);}
-  const ranked=candidates.slice().sort((a,b)=>hash(seed*31+a)-hash(seed*31+b));
-  const burn=new Set(ranked.slice(0,Math.max(2,Math.ceil(candidates.length/2))));
+  for(let i=1;i<parts.length;i++){const p=parts[i];if(!p.detail&&p.mat!==M.house&&p.mat!==M.houseDk&&!p.mat.glow)candidates.push(i);}
+  // Detail parts (HD only) burn about half the time.
+  for(let i=1;i<parts.length;i++)if(parts[i].detail&&hash(seed*41+i)<0.5)candidates.push(-i);
+  const main=candidates.filter(i=>i>0);
+  const ranked=main.slice().sort((a,b)=>hash(seed*31+a)-hash(seed*31+b));
+  const burn=new Set([...ranked.slice(0,Math.max(2,Math.ceil(main.length/2))),...candidates.filter(i=>i<0).map(i=>-i)]);
   const out=parts.map((p,i)=>burn.has(i)?{...p,mat:M.burnt}:p);
   // Largest roofs: box parts by top area.
   const roofs=[];
-  for(let i=1;i<parts.length;i++){const p=parts[i];if(p.shape==="box"&&!p.mat.glow&&p.max[2]>1.5)roofs.push(p);}
+  for(let i=1;i<parts.length;i++){const p=parts[i];if(!p.detail&&p.shape==="box"&&!p.mat.glow&&p.max[2]>1.5)roofs.push(p);}
   roofs.sort((a,b)=>(b.max[0]-b.min[0])*(b.max[1]-b.min[1])-(a.max[0]-a.min[0])*(a.max[1]-a.min[1]));
   const decals=[],fires=[];
   roofs.slice(0,2).forEach((p,r)=>{
@@ -77,7 +89,7 @@ function clip(parts,h){
 // rising mass and a house-coloured walkway round it at the cut.
 function scaffold(parts,z){
   let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
-  for(const p of parts.slice(1))if(p.shape==="box"){x0=Math.min(x0,p.min[0]);y0=Math.min(y0,p.min[1]);x1=Math.max(x1,p.max[0]);y1=Math.max(y1,p.max[1]);}
+  for(const p of parts.slice(1))if(p.shape==="box"&&!p.detail){x0=Math.min(x0,p.min[0]);y0=Math.min(y0,p.min[1]);x1=Math.max(x1,p.max[0]);y1=Math.max(y1,p.max[1]);}
   if(!isFinite(x0))return [];
   const out=[];
   const top=z+1.2;
@@ -114,18 +126,19 @@ function turretVehicle(body,turret,size=32,scale=1){
 // Harvester: 32 body frames, then harvesting frames
 // 32 + ((BodyShape+2)/4)*4 + stage(0-3) (unit.cpp:2138-2141): nine
 // directions (the ninth repeats north) of four scoop stages.
-function harvesterFrames(){
+function harvesterFrames(scale=1){
   const frames=[];
-  for(let k=0;k<32;k++)frames.push(unitFrame(m.harvester(0),32,k));
-  for(let d=0;d<9;d++)for(let st=0;st<4;st++)frames.push(unitFrame(m.harvester(st),32,(d*4)%32));
+  for(let k=0;k<32;k++)frames.push(unitFrame(m.harvester(0),32,k,{},scale));
+  for(let d=0;d<9;d++)for(let st=0;st<4;st++)frames.push(unitFrame(m.harvester(st),32,(d*4)%32,{},scale));
   return frames;
 }
 // Rifle infantry: the MiniGunnerDos table (idata.cpp:63-98); frame =
 // Frame + facing*Jump + stage, facing from HumanShape (infantry.cpp:84):
 // 0 north, then counter-clockwise in 45-degree steps.
-function infantryFrames(){
-  const N=532,frames=new Array(N).fill(null);
-  const put=(i,pose,face=4)=>{if(i<N)frames[i]=frame(24,24,render(m.rifleman(pose),{width:24,height:24,origin:INFANTRY.origin,heading:face*Math.PI/4,scale:INFANTRY.scale}));};
+function infantryFrames(scale=1){
+  const N=532,frames=new Array(N).fill(null),S=INFANTRY.size*scale;
+  const put=(i,pose,face=4)=>{if(i<N)frames[i]=frame(S,S,render(m.rifleman(pose),{width:S,height:S,
+    origin:INFANTRY.origin.map(v=>v*scale),heading:face*Math.PI/4,scale:INFANTRY.scale*scale}));};
   const seq=(start,count,jump,poseOf)=>{
     if(jump)for(let f=0;f<8;f++)for(let s=0;s<count;s++)put(start+f*jump+s,poseOf(s,count),f);
     else for(let s=0;s<count;s++)put(start+s,poseOf(s,count),4);
@@ -151,23 +164,23 @@ function infantryFrames(){
   seq(460,3,3,s=>({wave:1}));                            // salute 1
   seq(484,3,3,s=>({wave:(3-s)/3}));                      // gesture 2
   seq(508,3,3,s=>({wave:1}));                            // salute 2
-  const blank=frame(24,24,new Array(576).fill(0));
+  const blank=frame(S,S,new Array(S*S).fill(0));
   return frames.map(f=>f||blank);
 }
 // Structures, centred on the footprint (building.cpp:645, SHAPE_CENTER).
-function structureFrames(w,h,normal,count){
-  const frames=[];
-  for(let i=0;i<count;i++)frames.push(frame(w,h,render(normal(i),{width:w,height:h,origin:[w/2,h/2]})));
+function structureFrames(w,h,normal,count,scale=1){
+  const frames=[],W=w*scale,H=h*scale,opts={width:W,height:H,origin:[W/2,H/2],scale};
+  for(let i=0;i<count;i++)frames.push(frame(W,H,render(normal(i),opts)));
   // Damaged frames follow the normal ones (building.cpp:612-626).
-  for(let i=0;i<count;i++)frames.push(frame(w,h,render(damaged(normal(i),w+h,i),{width:w,height:h,origin:[w/2,h/2]})));
+  for(let i=0;i<count;i++)frames.push(frame(W,H,render(damaged(normal(i),w+h,i),opts)));
   return frames;
 }
 // Build-up: the first frames lay the pad and stake out the footprint, the
 // middle ones raise the walls as open shells under scaffolding, the last is
 // the finished building (the engine then switches to the normal frames).
-function buildup(w,h,model,count=16){
-  const frames=[];
-  const top=Math.max(...model.map(p=>p.shape==="box"?p.max[2]:p.shape==="cyl"?((p.axis||"z")==="z"?p.hi:p.c[2]+p.r):p.shape==="sphere"?p.c[2]+p.r:20));
+function buildup(w,h,model,count=16,scale=1){
+  const frames=[],W=w*scale,H=h*scale;
+  const top=Math.max(...model.filter(p=>!p.detail).map(p=>p.shape==="box"?p.max[2]:p.shape==="cyl"?((p.axis||"z")==="z"?p.hi:p.c[2]+p.r):p.shape==="sphere"?p.c[2]+p.r:20));
   const pad=model[0];
   const ground=2,rise=count-1-ground;
   for(let f=0;f<count;f++){
@@ -181,7 +194,7 @@ function buildup(w,h,model,count=16){
       const z=Math.max(1.2,top*(f-ground+1)/(rise+1));
       parts=[pad,...clip(model.slice(1),z),...scaffold(model,z)];
     }
-    frames.push(frame(w,h,render(parts,{width:w,height:h,origin:[w/2,h/2]})));
+    frames.push(frame(W,H,render(parts,{width:W,height:H,origin:[W/2,H/2],scale})));
   }
   return frames;
 }
@@ -203,7 +216,7 @@ function cameo(parts,label,{k=28,maxScale=3.2}={}){
   const scale=Math.min(maxScale,areaW/(x1-x0+1),areaH/(y1-y0+1));
   const cx=(x0+x1+1)/2-P/2,cy=(y0+y1+1)/2-P/2;
   const origin=[W/2-cx*scale,2+areaH/2+1-cy*scale];
-  const art=render(parts,{width:W,height:H,origin,heading:frameHeading(k),scale,groundShadow:false});
+  const art=render(parts,{width:W,height:H,origin,heading:frameHeading(k),scale,groundShadow:false,samples:3});
   const px=new Array(W*H);
   const stripTop=H-STRIP-1;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
@@ -225,18 +238,19 @@ function cameo(parts,label,{k=28,maxScale=3.2}={}){
 }
 
 // ---------- the roster ----------
-function files(){
+// Every map sprite of the roster at a scale: 1 for the SHP files, HD_SCALE
+// for the HD sheets (hd.js), which must match them frame for frame.
+function rosterFrames(scale=1){
   const out={};
-  const tankB=m.tankBody(),tankT=m.tankTurret(),jeepB=m.jeepBody(),jeepT=m.jeepTurret();
-  out["MTNK.SHP"]=turretVehicle(tankB,tankT);
-  out["JEEP.SHP"]=turretVehicle(jeepB,jeepT);
-  out["HARV.SHP"]=harvesterFrames();
-  out["MCV.SHP"]=Array.from({length:32},(_,k)=>unitFrame(m.mcv(),32,k));
-  out["E1.SHP"]=infantryFrames();
+  out["MTNK.SHP"]=turretVehicle(m.tankBody(),m.tankTurret(),32,scale);
+  out["JEEP.SHP"]=turretVehicle(m.jeepBody(),m.jeepTurret(),32,scale);
+  out["HARV.SHP"]=harvesterFrames(scale);
+  out["MCV.SHP"]=Array.from({length:32},(_,k)=>unitFrame(m.mcv(),32,k,{},scale));
+  out["E1.SHP"]=infantryFrames(scale);
   // Construction yard: idle 0-3, active 4-23 (bdata.cpp:3792-3793).
-  out["FACT.SHP"]=structureFrames(72,48,i=>i<4?m.constructionYard({blink:i%2}):m.constructionYard({busy:(i-4)/20,blink:i%2}),24);
+  out["FACT.SHP"]=structureFrames(72,48,i=>i<4?m.constructionYard({blink:i%2}):m.constructionYard({busy:(i-4)/20,blink:i%2}),24,scale);
   // Power plant: idle 0-3 (bdata.cpp:3798).
-  out["NUKE.SHP"]=structureFrames(48,48,i=>m.powerPlant({phase:i}),4);
+  out["NUKE.SHP"]=structureFrames(48,48,i=>m.powerPlant({phase:i}),4,scale);
   // Refinery: idle 0-5, full 6-11, docking 12-18, siphon 19-23, undock
   // 24-29 (bdata.cpp:3801-3805).
   out["PROC.SHP"]=structureFrames(72,72,i=>{
@@ -245,26 +259,31 @@ function files(){
     if(i<19)return m.refinery({lights:i,dump:(i-12)/6});
     if(i<24)return m.refinery({lights:i,dump:1-((i-19)%2)*0.15});
     return m.refinery({lights:i,dump:1-(i-24)/5});
-  },30);
+  },30,scale);
   // Barracks: idle/active 0-9 (bdata.cpp:3790-3791).
-  out["PYLE.SHP"]=structureFrames(48,48,i=>m.barracks({wave:i}),10);
+  out["PYLE.SHP"]=structureFrames(48,48,i=>m.barracks({wave:i}),10,scale);
   // Vehicle factory: 0 normal, 1 damaged (building.cpp:584-589).
-  out["WEAP.SHP"]=structureFrames(72,72,()=>m.factory({doorOnly:false,open:1}),1);
+  out["WEAP.SHP"]=structureFrames(72,72,()=>m.factory({doorOnly:false,open:1}),1,scale);
   // Door overlay WEAP2 (72x48, drawn centred on the factory, building.cpp:
   // 674-683): Door_Stage 0..9, +10 when damaged.
-  const door=[];
-  for(let d=0;d<10;d++)door.push(frame(72,48,render(m.factory({open:d/9,doorOnly:true}),{width:72,height:48,origin:[36,24]})));
-  for(let d=0;d<10;d++)door.push(frame(72,48,render(damaged([m.box([0,0,0],[0,0,0],m.M.concDk),...m.factory({open:d/9,doorOnly:true})],5,d),{width:72,height:48,origin:[36,24]})));
+  const door=[],DW=72*scale,DH=48*scale,dopts={width:DW,height:DH,origin:[DW/2,DH/2],scale};
+  for(let d=0;d<10;d++)door.push(frame(DW,DH,render(m.factory({open:d/9,doorOnly:true}),dopts)));
+  for(let d=0;d<10;d++)door.push(frame(DW,DH,render(damaged([m.box([0,0,0],[0,0,0],m.M.concDk),...m.factory({open:d/9,doorOnly:true})],5,d),dopts)));
   out["WEAP2.SHP"]=door;
   // Guard tower: 0 normal, 1 damaged.
-  out["GTWR.SHP"]=structureFrames(24,24,()=>m.guardTower(),1);
+  out["GTWR.SHP"]=structureFrames(24,24,()=>m.guardTower(),1,scale);
   // Build-up animations: any length (bdata.cpp:3839-3849).
-  out["FACTMAKE.SHP"]=buildup(72,48,m.constructionYard());
-  out["NUKEMAKE.SHP"]=buildup(48,48,m.powerPlant());
-  out["PROCMAKE.SHP"]=buildup(72,72,m.refinery());
-  out["PYLEMAKE.SHP"]=buildup(48,48,m.barracks());
-  out["WEAPMAKE.SHP"]=buildup(72,72,m.factory({open:0}));
-  out["GTWRMAKE.SHP"]=buildup(24,24,m.guardTower(),12);
+  out["FACTMAKE.SHP"]=buildup(72,48,m.constructionYard(),16,scale);
+  out["NUKEMAKE.SHP"]=buildup(48,48,m.powerPlant(),16,scale);
+  out["PROCMAKE.SHP"]=buildup(72,72,m.refinery(),16,scale);
+  out["PYLEMAKE.SHP"]=buildup(48,48,m.barracks(),16,scale);
+  out["WEAPMAKE.SHP"]=buildup(72,72,m.factory({open:0}),16,scale);
+  out["GTWRMAKE.SHP"]=buildup(24,24,m.guardTower(),12,scale);
+  return out;
+}
+function files(){
+  const out=rosterFrames(1);
+  const tankB=m.tankBody(),tankT=m.tankTurret();
   // Cameos for everything the roster can build (sidebar.cpp:1283-1303 picks
   // the .TEM or .SHP variant; both are written).
   // Labels are the authored names (shell.html roster guide), shortened only
@@ -295,9 +314,13 @@ function files(){
 // height, frames}. The frames match NAME.SHP one for one.
 const HD_SCALE=2;
 function hdFiles(scale=HD_SCALE){
-  return {
-    "MTNK.HD2":{scale,width:32,height:32,frames:turretVehicle(m.tankBody(),m.tankTurret(),32,scale)},
-  };
+  const out={};
+  const base=rosterFrames(1);
+  for(const [name,frames] of Object.entries(rosterFrames(scale))){
+    const b=base[name][0];
+    out[name.replace(/\.SHP$/,".HD2")]={scale,width:b.width,height:b.height,frames};
+  }
+  return out;
 }
 
 // Write every roster file into dir; returns the file names written.

@@ -78,7 +78,7 @@ async function sidebarStats(page,png){
 const audit={schema:1,pathDecision:"pending (Skirmish candidate)",status:"incomplete",
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
   pageErrors:[],screenshots:[],input:[],requiredMisses:[],optionalMisses:[],unclassifiedMisses:[],
-  drawn:[],drawnBySource:{},wireframeDrawn:[],
+  drawn:[],drawnBySource:{},wireframeDrawn:[],hdDrawn:[],hdMissing:[],
   ciSha:process.env.GITHUB_SHA||"local"};
 const consoleLines=[];
 function parse(rawLine){
@@ -93,6 +93,9 @@ function parse(rawLine){
   // M5: every file drawn at least once ([asset-draw], common/ccfile.cpp).
   const drawn=line.match(/^\[asset-draw\] (\S+)/);
   if(drawn&&!audit.drawn.includes(drawn[1]))audit.drawn.push(drawn[1]);
+  // ADR-0006: files drawn from their HD sheet ([hd-draw], common/hdlayer.cpp).
+  const hd=line.match(/^\[hd-draw\] (\S+)/);
+  if(hd&&!audit.hdDrawn.includes(hd[1]))audit.hdDrawn.push(hd[1]);
   const miss=line.match(/^\[asset-miss\] (\S+)/);
   if(miss&&!audit.misses.some(x=>x.name===miss[1]))audit.misses.push({name:miss[1],firstSeenStage:audit.stage});
   const fatal=line.match(/^\[browser-game\] fatal=(.*)/);
@@ -673,6 +676,11 @@ async function main(){
         const gen=source.get(name.toUpperCase())||"unknown";
         (audit.drawnBySource[gen]=audit.drawnBySource[gen]||[]).push(name);
         if(/wireframes\.js$/.test(gen))audit.wireframeDrawn.push(name);
+        // HD gate: a drawn file whose HD sheet is in the pack must have been
+        // drawn from that sheet at least once.
+        const sheet=name.toUpperCase().replace(/\.SHP$/,".HD2");
+        if(sheet!==name.toUpperCase()&&source.has(sheet)&&!audit.hdDrawn.map(x=>x.toUpperCase()).includes(name.toUpperCase()))
+          audit.hdMissing.push(name);
       }
     }catch(e){audit.drawnBySource.error=[String(e.message)];}
     const reached=audit.lastGameLines.some(x=>x.includes("scenario.request="));
@@ -682,10 +690,12 @@ async function main(){
         (!audit.lastGameLines.some(x=>x.includes("scenario.loaded="))||
           audit.requiredMisses.length||audit.unclassifiedMisses.length||
           (process.env.STOCK_SCENARIO_ALLOW_WIREFRAMES!=="1"&&audit.wireframeDrawn.length)||
+          (process.env.STOCK_SCENARIO_ALLOW_NO_HD!=="1"&&audit.hdMissing.length)||
           audit.fatal||audit.pageErrors.length||audit.error)){
       audit.error=audit.error||("Scenario probe failed: stage="+audit.stage+
         " fatal="+audit.fatal+" pageErrors="+audit.pageErrors.length+
-        (audit.wireframeDrawn.length?" wireframes drawn="+audit.wireframeDrawn.join(","):""));
+        (audit.wireframeDrawn.length?" wireframes drawn="+audit.wireframeDrawn.join(","):"")+
+        (audit.hdMissing.length?" drawn without their HD sheet="+audit.hdMissing.join(","):""));
       audit.status="error";
       process.exitCode=1;
     }
@@ -702,6 +712,7 @@ async function main(){
   // Put the failure and progress in the job log itself; the artifact is not
   // always reachable from where the log is read.
   console.log("Drawn files by source:",JSON.stringify(audit.drawnBySource));
+  console.log("Drawn from HD sheets:",audit.hdDrawn.join(" ")||"none");
   if(audit.audio!==undefined)console.log("Audio:",JSON.stringify(audit.audio));
   if(audit.error)console.log("Error:",audit.error);
   if(audit.gameplay)console.log("Gameplay steps:",JSON.stringify(audit.gameplay.steps));

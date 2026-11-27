@@ -97,6 +97,13 @@ console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine f
     assert.ok(lit>20,name+" has no name strip");
   }
   assert.throws(()=>cameo(m.guardTower(),"MUCH TOO LONG A NAME HERE"),/too wide/);
+  // The same at 2x, with the fine detail the HD sheets add.
+  for(const [n,[parts,w,h]] of Object.entries(structures))assert.equal(overflow(parts,w*2,h*2,{scale:2}),0,n+" HD reaches past its frame");
+  for(const [n,models] of Object.entries(vehicles))for(const parts of models)for(let k=0;k<32;k+=4)
+    assert.equal(overflow(parts,64,64,{heading:frameHeading(k),scale:2}),0,n+" HD reaches past its frame at heading "+k);
+  for(const pose of [{},{aim:true,flash:true},{prone:true},{fall:1}])for(let f=0;f<8;f+=2)
+    assert.equal(overflow(m.rifleman(pose),INFANTRY.size*2,INFANTRY.size*2,{heading:f*Math.PI/4,origin:INFANTRY.origin.map(v=>v*2),scale:INFANTRY.scale*2}),0,
+      "E1 HD "+JSON.stringify(pose)+" reaches past its frame facing "+f);
   console.log("PASS: roster art stays inside its frames; damaged, build-up and cameo name checks");
 }
 
@@ -114,7 +121,7 @@ console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine f
       assert.ok(sheet.frames[i].pixels.every(p=>p<32||p>38),name+" uses a colour-cycling index");
     });
     const back=decodeHD(encodeHD(sheet.frames,sheet.scale,sheet.width,sheet.height));
-    assert.deepEqual(back.frames.map(f=>f.pixels),sheet.frames.map(f=>f.pixels),name+" round trip");
+    back.frames.forEach((f,i)=>assert.ok(Buffer.from(f.pixels).equals(Buffer.from(sheet.frames[i].pixels)),name+" frame "+i+" round trip"));
   }
   console.log("PASS: HD sheets match their SHP frames and round-trip");
 }

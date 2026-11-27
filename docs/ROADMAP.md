@@ -363,12 +363,17 @@ from HD sheets (`NAME.HD2`) where the page still shows what their blit left.
       cursor, `MTNK.HD2` with detail that only resolves at 2x
       (`tools/content/art/hd.js`). Compose rules unit-tested
       (`tests/test-hd-layer.cpp`); the strict skirmish passes with HD on.
-- [ ] **Whole roster at 2x:** the other three units, the base vehicle, the
-      six structures with their build-ups, doors and damage, infantry, then
-      effects, crystal, trees and craters; model detail added where 2x shows
-      it.
-- [ ] **CI evidence:** a match job fails unless `[hd-draw]` is logged for
-      every roster object, and saves a 2x crop.
+- [x] **Roster units and buildings at 2x:** all four units, the base
+      vehicle, rifle infantry (every animation), the six structures with
+      their build-ups, factory door and damaged frames (18 sheets, 3.8 MB raw,
+      0.2 MB gzipped). Models carry fine detail (roof seams, vents, windows,
+      ladders, hazard stripes, track links, crystal load) that only HD
+      sheets and cameos draw; the 1x sprites are unchanged.
+- [ ] **Effects and terrain at 2x:** explosions, fire, projectiles, crystal,
+      trees and craters.
+- [x] **CI evidence:** every match job fails if a file with an HD sheet in
+      the pack was drawn but never drawn from that sheet
+      (`[hd-draw]`, `hdMissing` in the scenario audit).
 - [ ] **Cameos and sidebar** (non-tactical windows) and the 1x/2x seam
       where sprites overlap.
 - [ ] **Budgets:** first visit inside the M4 budget with all sheets;
