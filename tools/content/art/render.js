@@ -23,6 +23,8 @@ const MIN_COVER=4;
 const SHADOW=4;
 const LIGHT=norm([-0.55,-0.75,1.0]);
 const OUTLINE={ramp:"dark",shade:15};
+const CAP_GIRDER={ramp:"steel",lo:4,hi:11};
+const CAP_HOLE={ramp:"dark",lo:9,hi:14};
 
 function norm(v){const l=Math.hypot(...v)||1;return v.map(c=>c/l);}
 const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
@@ -177,7 +179,13 @@ function render(parts,opts){
         let l=(bp.mat.ambient??0.32)+(1-(bp.mat.ambient??0.32))*Math.max(0,dot(n,toLight));
         if(bp.mat.spec){const h=norm([toLight[0]+view[0],toLight[1]+view[1],toLight[2]+view[2]]);l+=bp.mat.spec*Math.pow(Math.max(0,dot(n,h)),12);}
         if(castShadow&&!bp.mat.glow&&blocked(p))l*=0.55;
-        const key=bp.mat;
+        // A part cut open by the build-up animation (build.js clip) shows its
+        // cut face as a dark interior crossed by girders.
+        let key=bp.mat;
+        if(bp.cap&&n[2]>0.9&&Math.abs(p[2]-bp.cap.z)<1e-3){
+          const g=bp.cap.grid||6,gx=((p[0]%g)+g)%g,gy=((p[1]%g)+g)%g;
+          key=gx<1.2||gy<1.2?CAP_GIRDER:CAP_HOLE;
+        }
         const e=counts.get(key)||{n:0,l:0};e.n++;e.l+=l;counts.set(key,e);
       }else if(castShadow&&opts.groundShadow!==false){
         const gp=[o[0]+dir[0]*ztop,o[1]+dir[1]*ztop,0];

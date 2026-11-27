@@ -23,6 +23,7 @@ const M={
   crystal: {ramp:"crystal",lo:0,hi:7,spec:0.8},
   fire:    {ramp:"fire",lo:0,hi:6,glow:true},
   burnt:   {ramp:"dark",lo:6,hi:16},
+  uniform: {ramp:"olive",lo:0,hi:9},
 };
 
 const box=(min,max,mat,extra={})=>({shape:"box",min,max,mat,...extra});
@@ -46,7 +47,7 @@ function tankBody(){
   return [
     box([-7,-9,0],[-4,9,3],M.track),box([4,-9,0],[7,9,3],M.track),
     slope([-5.5,-8.5,1.5],[5.5,8,5],3,M.olive),
-    box([-5.5,5,4.5],[5.5,8,5.5],M.oliveDk),
+    box([-5.5,5,4.5],[5.5,8,5.5],M.house),
     box([-6.5,-2,3],[-5.5,6,4],M.house),box([5.5,-2,3],[6.5,6,4],M.house),
   ];
 }
@@ -54,7 +55,8 @@ function tankTurret(){
   return [
     cyl([0,1,0],4.4,5,8,M.olive),
     box([-2.6,-1,8],[2.6,3.5,8.8],M.house),
-    cyl([0,-6,6.6],0.9,-13,-3,M.steel,"y"),
+    cyl([0,-6,6.2],0.9,-9.4,-3,M.steel,"y"),
+    cyl([0,-6,6.2],1.1,-10.4,-9.4,M.steelDk,"y"),
     box([-1.2,3,7.5],[1.2,5,9],M.oliveDk),
   ];
 }
@@ -76,32 +78,44 @@ function jeepTurret(){
     box([-1.4,1.2,6],[1.4,2.8,7.6],M.house),
   ];
 }
-// Harvester (HARV): tracked hopper truck with a front collector drum.
+// Harvester (HARV): tracked collector with a ribbed drum across the front,
+// a cab offset to the left and an open hopper heaped with crystal. stage
+// 0-3 turns the drum (the ribs step sideways). House colour is trim only.
 function harvester(stage=0){
-  const drum=Math.sin(stage*Math.PI/2)*0.6;
-  return [
-    box([-7,-8,0],[-4.5,9,3],M.track),box([4.5,-8,0],[7,9,3],M.track),
-    box([-5,-6,2],[5,9,6],M.olive),
-    box([-5.5,-1,6],[5.5,9,10],M.house),
-    box([-4.2,0,9.5],[4.2,8,10.5],M.houseDk),
-    slope([-4,-9,2],[4,-3,8],5,M.steel),
-    box([-3,-8.5,6],[3,-5,8],M.glass),
-    cyl([0,-11+drum,2],2,-6,6,M.steelDk,"x"),
+  const parts=[
+    box([-6.5,-7,0],[-4,8,2.6],M.track),box([4,-7,0],[6.5,8,2.6],M.track),
+    box([-4.5,-6,1.5],[4.5,8,4],M.oliveDk),
+    box([-5,-1,4],[5,8,8.5],M.olive),
+    box([-4,0,8.5],[4,7,9.2],M.crystal),
+    box([-5,-1.2,8.5],[5,-0.2,9.4],M.house),
+    box([-5.3,1,5],[-5,7,6.5],M.house),box([5,1,5],[5.3,7,6.5],M.house),
+    box([-4.5,-6,4],[-0.5,-2,7.5],M.olive),
+    box([-4.2,-6.3,5.4],[-0.8,-5.8,7],M.glass),
+    box([0.5,-6,4],[4,-3,5.5],M.steelDk),
+    box([-5.5,-8,1.2],[-4.5,-5,2.6],M.steel),box([4.5,-8,1.2],[5.5,-5,2.6],M.steel),
+    cyl([0,-9,1.8],1.7,-5.2,5.2,M.steelDk,"x"),
   ];
+  for(let r=-2;r<=2;r++){const x=r*2.1+(stage%4)*0.52;parts.push(cyl([x,-9,1.8],2.1,x-0.35,x+0.35,M.steel,"x"));}
+  return parts;
 }
-// Mobile base vehicle (MCV): long truck carrying a folded construction yard.
+// Mobile base vehicle (MCV): long truck carrying a folded construction yard,
+// its crane boom laid along the deck and outrigger feet at the corners.
 function mcv(){
   return [
-    box([-7.5,-11,0],[-4.5,11,3],M.track),box([4.5,-11,0],[7.5,11,3],M.track),
-    box([-6,-12,2],[6,11,5],M.oliveDk),
-    slope([-5,-13,4],[5,-6,9],6,M.olive),
-    box([-3.5,-12,6.5],[3.5,-9,8.5],M.glass),
-    box([-6,-5,5],[6,10,10],M.concrete),
-    box([-6.5,-4,9.5],[6.5,9,11],M.house),
-    cyl([3,6,11],1.5,11,15,M.steel),box([-3,5,14],[4,7,15],M.steel),
+    box([-7,-10,0],[-4.5,10,2.8],M.track),box([4.5,-10,0],[7,10,2.8],M.track),
+    box([-5.5,-11,2],[5.5,10,4.5],M.oliveDk),
+    slope([-5,-11.5,3.5],[5,-6,7.5],4.5,M.olive),
+    box([-3.5,-10.4,4.6],[3.5,-8,6.2],M.glass),
+    box([-5,-7.5,7.5],[5,-6,8.2],M.house),
+    box([-5.5,-5,4.5],[5.5,8.5,8],M.concrete),
+    box([-5.8,-4,5.6],[5.8,7.5,6.8],M.house),
+    box([-4.5,-4,8],[1,7.5,8.6],M.concDk),
+    cyl([3.5,6.3,8],1.1,8,9.9,M.steel),
+    box([2.8,-4,9],[4.2,7.4,9.9],M.steel),
+    box([2.9,-4,8],[4.1,-3,9],M.steelDk),
+    ...[[-1,-1],[1,-1],[-1,1],[1,1]].map(([sx,sy])=>box(sx<0?[-8.2,sy*7-1,0.6]:[7.2,sy*7-1,0.6],sx<0?[-7.2,sy*7+1,2]:[8.2,sy*7+1,2],M.steel)),
   ];
 }
-
 
 // ----- structures -----
 // Concrete pad helper: a low slab covering the footprint.
@@ -147,8 +161,8 @@ function refinery({lights=0,full=false,dump=0}={}){
   const tilt=dump*4;
   return [
     pad(72,72),
-    cyl([-22,-18,0],9,1,18,M.steel),cyl([-22,-18,0],7,18,19,M.steelDk),
-    cyl([-2,-18,0],9,1,18,M.steel),cyl([-2,-18,0],7,18,19,M.steelDk),
+    cyl([-22,-15,0],8,1,14,M.steel),cyl([-22,-15,0],6,14,15,M.steelDk),
+    cyl([-3,-15,0],8,1,14,M.steel),cyl([-3,-15,0],6,14,15,M.steelDk),
     box([-32,-6,1],[18,14,12],M.concrete),
     box([-32,11,1],[18,14,12],M.house),
     box([18,-20,1],[34,14,16],M.olive),
@@ -178,30 +192,34 @@ function barracks({wave=0}={}){
 // can animate it; open = 0..1.
 function factory({open=0,doorOnly=false}={}){
   const door=[];
-  const h=12*(1-open);
-  if(h>0.4)door.push(box([-14,24,2+12-h],[14,26,14],M.steelDk));
+  const h=10*(1-open);
+  if(h>0.4)door.push(box([-14,24,2+10-h],[14,26,12],M.steelDk));
   if(doorOnly)return door;
   return [
     pad(72,72),
-    box([-32,-28,1],[32,24,14],M.concrete),
-    box([-32,-28,14],[32,-24,16],M.house),
-    box([-30,-22,14],[30,22,15],M.steelDk),
-    box([-28,-18,15],[-8,0,17],M.glass),box([8,-18,15],[28,0,17],M.glass),
-    box([-16,24,1],[-14,30,15],M.olive),box([14,24,1],[16,30,15],M.olive),
-    box([-16,28,15],[16,30,17],M.house),
+    box([-32,-24,1],[32,24,12],M.concrete),
+    box([-32,-24,12],[32,-21,13.5],M.house),
+    box([-30,-19,12],[30,22,13],M.steelDk),
+    box([-28,-15,13],[-8,1,14.5],M.glass),box([8,-15,13],[28,1,14.5],M.glass),
+    box([-16,24,1],[-14,30,13],M.olive),box([14,24,1],[16,30,13],M.olive),
+    box([-16,28,13],[16,30,14.5],M.house),
     box([-14,25,1],[14,26,2],M.track),
     box([-12,26,0.2],[12,34,1],M.concDk),
   ];
 }
 // Guard tower (GTWR, 1x1): sandbagged base, post and an armoured gun cab.
+// Set south of centre so the cab and gun stay inside the 24x24 frame; house
+// colour is a band round the cab, not the whole roof.
 function guardTower(){
   return [
-    cyl([0,2,0],8,0,2,M.sand),
-    cyl([0,2,0],3,2,10,M.concrete),
-    box([-5,-3,10],[5,6,14],M.olive),
-    box([-5,-3,14],[5,6,15],M.house),
-    box([-3.5,-3.5,11],[3.5,-2.5,12.5],M.glass),
-    cyl([0,-6,12],0.6,-9,-3,M.steelDk,"y"),
+    cyl([0,4,0],7,0,2.2,M.sand),
+    cyl([0,4,0],5,2.2,2.8,M.sand),
+    cyl([0,4,0],2.6,2,8,M.concrete),
+    box([-4.5,0,8],[4.5,7.5,11.5],M.olive),
+    box([-5.3,-0.2,9.8],[5.3,8.6,10.8],M.house),
+    box([-5,-0.5,11.5],[5,8,12.3],M.oliveDk),
+    box([-3,-0.4,8.6],[3,0,9.6],M.glass),
+    cyl([0,-1.5,9.2],0.6,-3.5,0,M.steelDk,"y"),
   ];
 }
 
@@ -213,21 +231,22 @@ function rifleman(p={}){
   if(p.fall!==undefined){
     // Toppling backward: lean the soldier toward +y and lower him.
     const f=Math.min(1,p.fall);
-    const lean=f*7;
+    const lean=f*5;
     return [
-      box([-1.6,-1+lean*0.4,0],[1.6,2+lean,Math.max(1.2,5.5-f*4.5)],M.olive),
+      box([-1.6,-1+lean*0.4,0],[1.6,2+lean,Math.max(1.2,5.5-f*4.5)],M.uniform),
       sphere([0,lean+1,Math.max(1.4,7.6-f*6)],1.5,M.skin),
       sphere([0,lean+1.2,Math.max(1.8,8.2-f*6)],1.4,M.house),
-      ...(f>0.5?[box([-3,lean-1,0],[3,lean+4,0.4],M.burnt)]:[]),
+      ...(f>0.5?[box([-3,lean-1,0],[3,lean+1.5,0.4],M.burnt)]:[]),
     ];
   }
   if(p.prone){
     const c=Math.sin((p.crawl||0)*Math.PI*2)*0.8;
     return [
-      box([-1.6,-2,0],[1.6,5,1.8],M.olive),
-      box([-1.4+c*0.3,5,0],[-0.2+c*0.3,8,1.2],M.oliveDk),box([0.2-c*0.3,5,0],[1.4-c*0.3,8,1.2],M.oliveDk),
+      box([-1.6,-2,0],[1.6,4.5,1.8],M.uniform),
+      box([-1.3,0.5,1.8],[1.3,3,2.6],M.oliveDk),
+      box([-1.4+c*0.3,4.5,0],[-0.2+c*0.3,6.5,1.2],M.oliveDk),box([0.2-c*0.3,4.5,0],[1.4-c*0.3,6.5,1.2],M.oliveDk),
       sphere([0,-3.4,1.6],1.5,M.skin),sphere([0,-3.2,2.2],1.4,M.house),
-      cyl([0.9,-6,1.2],0.4,-9.5,-2,M.steelDk,"y"),
+      cyl([0.9,-6,1.2],0.45,-6.5,-2,M.steel,"y"),
     ];
   }
   const ph=(p.walk||0)*Math.PI*2,st=Math.sin(ph)*1.4;
@@ -235,18 +254,19 @@ function rifleman(p={}){
   const parts=[
     box([-1.5,-0.6+st,0],[-0.2,0.8+st,3.2-kneel],M.oliveDk),
     box([0.2,-0.6-st,0],[1.5,0.8-st,3.2-kneel],M.oliveDk),
-    box([-1.9,-1.1,3-kneel],[1.9,1.4,6.6-kneel],M.olive),
+    box([-1.9,-1.1,3-kneel],[1.9,1.4,6.6-kneel],M.uniform),
+    box([-1.5,1.4,3.6-kneel],[1.5,2.4,6.1-kneel],M.oliveDk),
     box([-1.9,-0.4,5.6-kneel],[1.9,0.6,6.6-kneel],M.house),
     sphere([0,0,7.7-kneel],1.4,M.skin),
     sphere([0,0.2,8.3-kneel],1.35,M.house),
   ];
   if(p.aim){
-    parts.push(cyl([1.0,-3.2,6.2-kneel],0.45,-7.2,-0.8,M.steelDk,"y"));
-    parts.push(box([0.4,-2.2,5.4-kneel],[1.8,-0.6,6.4-kneel],M.olive));
-    if(p.flash)parts.push(sphere([1.0,-7.8,6.2-kneel],1.4,M.fire,{noShadow:true}));
+    parts.push(cyl([1.0,-3.2,6.2-kneel],0.5,-5.8,-0.8,M.steel,"y"));
+    parts.push(box([0.4,-2.2,5.4-kneel],[1.8,-0.6,6.4-kneel],M.uniform));
+    if(p.flash)parts.push(sphere([1.0,-5.9,5.6-kneel],0.8,M.fire,{noShadow:true}));
   }else{
-    parts.push(cyl([1.9,0.2,4],0.4,1.2,6.8-kneel,M.steelDk,"z"));
-    parts.push(box([-2.6,-0.6,3.4-kneel],[-1.9,0.6,6-kneel],M.olive));
+    parts.push(cyl([1.9,0.2,4],0.45,1.2,6.8-kneel,M.steel,"z"));
+    parts.push(box([-2.6,-0.6,3.4-kneel],[-1.9,0.6,6-kneel],M.uniform));
   }
   if(p.wave){parts.push(box([-2.8,-0.6,6.4-kneel],[-1.9,0.6,6.4-kneel+2.6*p.wave],M.skin));}
   return parts;

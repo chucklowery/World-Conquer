@@ -20,38 +20,85 @@ function unitFrame(parts,size,k,opts={}){
 function overlay(under,over){return under.map((v,i)=>over[i]&&over[i]!==4?over[i]:(v||over[i]));}
 // Deterministic hash for damage variation.
 function hash(n){n=(n^61)^(n>>>16);n=n+(n<<3);n^=n>>>4;n=Math.imul(n,0x27d4eb2d);n^=n>>>15;return (n>>>0)/4294967296;}
-// Damaged version of a structure: some parts burnt, small fires (flicker by
-// frame). The pad (first part) stays.
+// Damaged version of a structure. Small models with few parts must still
+// read as hurt, so this always: burns at least half of the parts that are
+// not house colour (two at the least), lays scorch marks and a hole on the
+// two largest roofs, and sets two or three fires (flicker by frame). The pad
+// (first part) stays.
 function damaged(parts,seed,flicker=0){
-  const out=parts.map((p,i)=>i>0&&hash(seed*31+i)<0.4&&p.mat!==m.M.house?{...p,mat:m.M.burnt}:p);
-  const fires=[];
-  for(let i=1;i<parts.length&&fires.length<3;i++){
-    const p=parts[i];if(p.shape!=="box")continue;
-    if(hash(seed*7+i)<0.5){
-      const c=[(p.min[0]+p.max[0])/2,(p.min[1]+p.max[1])/2,p.max[2]+1];
-      fires.push(m.sphere(c,1.2+((flicker+i)%3)*0.5,m.M.fire,{noShadow:true}));
+  const M=m.M;
+  const candidates=[];
+  for(let i=1;i<parts.length;i++){const p=parts[i];if(p.mat!==M.house&&p.mat!==M.houseDk&&!p.mat.glow)candidates.push(i);}
+  const ranked=candidates.slice().sort((a,b)=>hash(seed*31+a)-hash(seed*31+b));
+  const burn=new Set(ranked.slice(0,Math.max(2,Math.ceil(candidates.length/2))));
+  const out=parts.map((p,i)=>burn.has(i)?{...p,mat:M.burnt}:p);
+  // Largest roofs: box parts by top area.
+  const roofs=[];
+  for(let i=1;i<parts.length;i++){const p=parts[i];if(p.shape==="box"&&!p.mat.glow&&p.max[2]>1.5)roofs.push(p);}
+  roofs.sort((a,b)=>(b.max[0]-b.min[0])*(b.max[1]-b.min[1])-(a.max[0]-a.min[0])*(a.max[1]-a.min[1]));
+  const decals=[],fires=[];
+  roofs.slice(0,2).forEach((p,r)=>{
+    const w=p.max[0]-p.min[0],h=p.max[1]-p.min[1],z=p.max[2];
+    const at=(k,f)=>[p.min[0]+w*(0.15+0.7*hash(seed*13+r*5+k)),p.min[1]+h*(0.15+0.7*hash(seed*17+r*5+k))];
+    // Scorch: a dark patch about half the roof; hole: a small black pit.
+    const [sx,sy]=at(1),sw=Math.max(1.5,w*0.3),sh=Math.max(1.5,h*0.3);
+    decals.push(m.box([Math.max(p.min[0],sx-sw),Math.max(p.min[1],sy-sh),z],[Math.min(p.max[0],sx+sw),Math.min(p.max[1],sy+sh),z+0.25],M.burnt));
+    const [hx,hy]=at(2),hw=Math.max(1,w*0.12),hh=Math.max(1,h*0.12);
+    decals.push(m.box([Math.max(p.min[0],hx-hw),Math.max(p.min[1],hy-hh),z],[Math.min(p.max[0],hx+hw),Math.min(p.max[1],hy+hh),z+0.35],{ramp:"dark",lo:15,hi:17}));
+    for(let k=0;k<(r===0?2:1);k++){
+      const [fx,fy]=at(3+k);
+      fires.push(m.sphere([fx,fy,z+1],1.1+((flicker+k+r)%3)*0.45,M.fire,{noShadow:true}));
     }
-  }
-  return out.concat(fires);
+  });
+  return out.concat(decals,fires);
 }
-// Clip a model to z <= h (build-up animation).
+// Clip a model to z <= h (build-up animation). Every part the cut goes
+// through is marked so its cut face renders as an open interior crossed by
+// girders (render.js cap) instead of a finished roof.
 function clip(parts,h){
   const out=[];
+  const cap={z:h};
   for(const p of parts){
-    if(p.shape==="box"){if(p.min[2]>=h)continue;out.push({...p,max:[p.max[0],p.max[1],Math.min(p.max[2],h)],_planes:undefined});}
-    else if(p.shape==="cyl"){
-      if((p.axis||"z")==="z"){if(p.lo>=h)continue;out.push({...p,hi:Math.min(p.hi,h)});}
-      else if(p.c[2]-p.r<h)out.push(p);}
-    else if(p.shape==="sphere"){if(p.c[2]-p.r<h)out.push(p);}
-    else if(p.shape==="poly"){out.push({...p,planes:[...p.planes,{n:[0,0,1],d:h}]});}
+    if(p.shape==="box"){
+      if(p.min[2]>=h)continue;
+      if(p.max[2]<=h)out.push(p);
+      else out.push({...p,max:[p.max[0],p.max[1],h],_planes:undefined,cap});
+    }else if(p.shape==="cyl"){
+      if((p.axis||"z")==="z"){if(p.lo>=h)continue;out.push(p.hi<=h?p:{...p,hi:h,cap});}
+      else if(p.c[2]-p.r<h)out.push(p);
+    }else if(p.shape==="sphere"){if(p.c[2]+p.r<=h)out.push(p);}
+    else if(p.shape==="poly"){out.push({...p,planes:[...p.planes,{n:[0,0,1],d:h}],cap});}
   }
   return out;
 }
-// Scaffolding drawn at the cut while a structure builds up.
-function scaffold(w,h,z){
-  return [m.box([-w/2+2,-h/2+2,Math.max(0,z-0.6)],[w/2-2,-h/2+3,z],m.M.house),
-    m.box([-w/2+2,h/2-3,Math.max(0,z-0.6)],[w/2-2,h/2-2,z],m.M.house)];
+// Scaffolding while a structure builds up: steel poles at the corners of the
+// rising mass and a house-coloured walkway round it at the cut.
+function scaffold(parts,z){
+  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  for(const p of parts.slice(1))if(p.shape==="box"){x0=Math.min(x0,p.min[0]);y0=Math.min(y0,p.min[1]);x1=Math.max(x1,p.max[0]);y1=Math.max(y1,p.max[1]);}
+  if(!isFinite(x0))return [];
+  const out=[];
+  const top=z+1.2;
+  for(const [x,y] of [[x0-1,y0-1],[x1+1,y0-1],[x0-1,y1+1],[x1+1,y1+1]])out.push(m.box([x-0.5,y-0.5,0],[x+0.5,y+0.5,top],m.M.steel));
+  out.push(m.box([x0-1.5,y1+0.5,z],[x1+1.5,y1+1.5,z+0.5],m.M.house));
+  out.push(m.box([x1+0.5,y0-1.5,z],[x1+1.5,y1+1.5,z+0.5],m.M.house));
+  return out;
 }
+
+// How many pixels a model reaches past the edges of a w x h frame: it is
+// rendered on a padded canvas, and any model pixel outside the frame counts.
+// The engine stores only the frame, so anything past it is cut off.
+function overflow(parts,w,h,{heading=0,origin=[w/2,h/2],scale=1}={}){
+  const P=24,W=w+2*P,H=h+2*P;
+  const px=render(parts,{width:W,height:H,origin:[origin[0]+P,origin[1]+P],heading,scale,groundShadow:false,shadow:false});
+  let worst=0;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const v=px[y*W+x];if(!v||v===4)continue;
+    worst=Math.max(worst,P-y,y-(P+h-1),P-x,x-(P+w-1));
+  }
+  return worst;
+}
+const INFANTRY={size:24,origin:[12,15],scale:1.3};
 
 // ---------- objects ----------
 // Vehicles with a turret: 32 body frames, then 32 turret frames
@@ -76,7 +123,7 @@ function harvesterFrames(){
 // 0 north, then counter-clockwise in 45-degree steps.
 function infantryFrames(){
   const N=532,frames=new Array(N).fill(null);
-  const put=(i,pose,face=4)=>{if(i<N)frames[i]=frame(24,24,render(m.rifleman(pose),{width:24,height:24,origin:[12,13],heading:face*Math.PI/4,scale:1.15}));};
+  const put=(i,pose,face=4)=>{if(i<N)frames[i]=frame(24,24,render(m.rifleman(pose),{width:24,height:24,origin:INFANTRY.origin,heading:face*Math.PI/4,scale:INFANTRY.scale}));};
   const seq=(start,count,jump,poseOf)=>{
     if(jump)for(let f=0;f<8;f++)for(let s=0;s<count;s++)put(start+f*jump+s,poseOf(s,count),f);
     else for(let s=0;s<count;s++)put(start+s,poseOf(s,count),4);
@@ -113,31 +160,66 @@ function structureFrames(w,h,normal,count){
   for(let i=0;i<count;i++)frames.push(frame(w,h,render(damaged(normal(i),w+h,i),{width:w,height:h,origin:[w/2,h/2]})));
   return frames;
 }
+// Build-up: the first frames lay the pad and stake out the footprint, the
+// middle ones raise the walls as open shells under scaffolding, the last is
+// the finished building (the engine then switches to the normal frames).
 function buildup(w,h,model,count=16){
   const frames=[];
   const top=Math.max(...model.map(p=>p.shape==="box"?p.max[2]:p.shape==="cyl"?((p.axis||"z")==="z"?p.hi:p.c[2]+p.r):p.shape==="sphere"?p.c[2]+p.r:20));
+  const pad=model[0];
+  const ground=2,rise=count-1-ground;
   for(let f=0;f<count;f++){
-    const z=Math.max(0.6,top*(f+1)/count);
-    const parts=f===count-1?model:clip(model,z).concat(scaffold(w,h,z));
+    let parts;
+    if(f===count-1)parts=model;
+    else if(f<ground){
+      // Pad only, with stakes and tape marking where the walls will go.
+      parts=[pad,...scaffold(model,0.3).slice(0,4).map(p=>({...p,max:[p.max[0],p.max[1],2]}))];
+      if(f===1)parts=parts.concat(clip(model.slice(1),1.2));
+    }else{
+      const z=Math.max(1.2,top*(f-ground+1)/(rise+1));
+      parts=[pad,...clip(model.slice(1),z),...scaffold(model,z)];
+    }
     frames.push(frame(w,h,render(parts,{width:w,height:h,origin:[w/2,h/2]})));
   }
   return frames;
 }
-// Sidebar cameo (64x48): the object on a dark plate with a bevel
-// (sidebar.h:216-217; frame 0 only).
-function cameo(parts,{scale=1.6,k=28,dy=6}={}){
-  const W=64,H=48;
-  const art=render(parts,{width:W,height:H,origin:[W/2,H/2+dy],heading:frameHeading(k),scale,groundShadow:false});
+// Sidebar cameo (64x48, sidebar.h:216-217; frame 0 only): the object on a
+// dark plate with a bevel, sized to fill the picture area at one viewing
+// angle, over a name strip. The engine draws READY / HOLD 8 px above the
+// bottom edge "now that icons have names on them" (sidebar.cpp:2009-2037),
+// so the bottom rows are the name strip.
+const CAMEO_W=64,CAMEO_H=48,STRIP=9;
+function cameo(parts,label,{k=28,maxScale=3.2}={}){
   const {rampIndex}=require("./palette.js");
+  const ui=require("./ui.js");
+  const W=CAMEO_W,H=CAMEO_H;
+  // Probe at scale 1 to find the object's screen extent.
+  const P=160,probe=render(parts,{width:P,height:P,origin:[P/2,P/2],heading:frameHeading(k),groundShadow:false,shadow:false});
+  let x0=P,y0=P,x1=-1,y1=-1;
+  for(let y=0;y<P;y++)for(let x=0;x<P;x++)if(probe[y*P+x]&&probe[y*P+x]!==4){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+  const areaW=W-6,areaH=H-STRIP-5;
+  const scale=Math.min(maxScale,areaW/(x1-x0+1),areaH/(y1-y0+1));
+  const cx=(x0+x1+1)/2-P/2,cy=(y0+y1+1)/2-P/2;
+  const origin=[W/2-cx*scale,2+areaH/2+1-cy*scale];
+  const art=render(parts,{width:W,height:H,origin,heading:frameHeading(k),scale,groundShadow:false});
   const px=new Array(W*H);
+  const stripTop=H-STRIP-1;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
     const i=y*W+x;
     let bg=rampIndex("steel",13-Math.round(y/H*2));
+    if(y>=stripTop)bg=rampIndex("steel",15);
+    if(y===stripTop)bg=rampIndex("steel",10);
     if(x===0||y===0)bg=rampIndex("steel",6);
     else if(x===W-1||y===H-1)bg=rampIndex("steel",15);
-    px[i]=art[i]&&art[i]!==4?art[i]:bg;
+    px[i]=y<stripTop&&art[i]&&art[i]!==4?art[i]:bg;
   }
-  return [frame(W,H,px)];
+  const f=frame(W,H,px);
+  if(label){
+    const tw=ui.textWidth(label);
+    if(tw>W-4)throw Error("Cameo label too wide: "+label);
+    ui.text(f,label,Math.floor((W-tw)/2),stripTop+2,rampIndex("steel",1));
+  }
+  return [f];
 }
 
 // ---------- the roster ----------
@@ -183,19 +265,22 @@ function files(){
   out["GTWRMAKE.SHP"]=buildup(24,24,m.guardTower(),12);
   // Cameos for everything the roster can build (sidebar.cpp:1283-1303 picks
   // the .TEM or .SHP variant; both are written).
+  // Labels are the authored names (shell.html roster guide), shortened only
+  // where the strip is too narrow.
   const cameos={
-    NUKE:cameo(m.powerPlant({phase:1}),{scale:1.0,dy:6}),
-    PROC:cameo(m.refinery(),{scale:0.72,dy:4}),
-    PYLE:cameo(m.barracks({wave:2}),{scale:1.0,dy:4}),
-    WEAP:cameo(m.factory({open:0}),{scale:0.72,dy:4}),
-    GTWR:cameo(m.guardTower(),{scale:2.1,dy:12}),
-    FACT:cameo(m.constructionYard(),{scale:0.8,dy:4}),
-    HARV:cameo(m.harvester(0),{scale:1.7,dy:8}),
-    JEEP:cameo(m.jeepBody().concat(m.jeepTurret()),{scale:2.1,dy:6}),
-    MTNK:cameo(tankB.concat(tankT),{scale:1.8,dy:6}),
-    MCV:cameo(m.mcv(),{scale:1.5,dy:8}),
-    E1:cameo(m.rifleman({aim:true}),{scale:3.0,dy:16}),
+    NUKE:cameo(m.powerPlant({phase:1}),"POWER PLANT"),
+    PROC:cameo(m.refinery(),"REFINERY"),
+    PYLE:cameo(m.barracks({wave:2}),"BARRACKS"),
+    WEAP:cameo(m.factory({open:0}),"VEHICLE FACTORY"),
+    GTWR:cameo(m.guardTower(),"GUARD TOWER"),
+    FACT:cameo(m.constructionYard(),"CONST YARD"),
+    HARV:cameo(m.harvester(0),"HARVESTER"),
+    JEEP:cameo(m.jeepBody().concat(m.jeepTurret()),"SCOUT CAR"),
+    MTNK:cameo(tankB.concat(tankT),"BATTLE TANK"),
+    MCV:cameo(m.mcv(),"MOBILE BASE"),
+    E1:cameo(m.rifleman({aim:true}),"RIFLE SQUAD"),
   };
+
   for(const [name,f] of Object.entries(cameos)){out[name+"ICNH.SHP"]=f;out[name+"ICNH.TEM"]=f;}
   // Explosions, hits, flashes, fire, smoke and projectiles (effects.js).
   Object.assign(out,require("./effects.js").files());
@@ -217,7 +302,7 @@ function build(dir){
   return made;
 }
 build.sources=["tools/content/art/build.js","tools/content/art/models.js","tools/content/art/effects.js","tools/content/art/ui.js","tools/content/art/render.js","tools/content/art/palette.js"];
-module.exports={build,files,cameo,damaged,clip};
+module.exports={build,files,cameo,damaged,clip,overflow,INFANTRY};
 if(require.main===module){
   const out=process.argv[2];
   if(!out){console.error("Usage: node tools/content/art/build.js <outDir>");process.exit(1);}

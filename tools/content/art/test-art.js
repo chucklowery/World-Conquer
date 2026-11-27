@@ -69,6 +69,37 @@ assert.equal(roster["HPWRBAR.SHP"][0].height,124);
 assert.equal(roster["HRADAR.GDI"][0].height,143);
 console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine frame contracts");
 
+// Readability (M5 art pass 2): no model reaches past its frame, damaged
+// frames are visibly different, build-ups do not stall, cameos carry a name.
+{
+  const {overflow,INFANTRY,cameo}=require("./build.js"),m=require("./models.js"),{frameHeading}=require("./render.js");
+  const structures={FACT:[m.constructionYard(),72,48],NUKE:[m.powerPlant(),48,48],PROC:[m.refinery(),72,72],
+    PYLE:[m.barracks(),48,48],WEAP:[m.factory(),72,72],GTWR:[m.guardTower(),24,24]};
+  for(const [n,[parts,w,h]] of Object.entries(structures))assert.equal(overflow(parts,w,h),0,n+" reaches past its frame");
+  const vehicles={MTNK:[m.tankBody(),m.tankTurret()],JEEP:[m.jeepBody(),m.jeepTurret()],HARV:[m.harvester(0),m.harvester(3)],MCV:[m.mcv()]};
+  for(const [n,models] of Object.entries(vehicles))for(const parts of models)for(let k=0;k<32;k+=2)
+    assert.equal(overflow(parts,32,32,{heading:frameHeading(k)}),0,n+" reaches past its frame at heading "+k);
+  for(const pose of [{},{walk:0.25},{aim:true,flash:true},{prone:true,crawl:0.5},{fall:1},{wave:1}])for(let f=0;f<8;f++)
+    assert.equal(overflow(m.rifleman(pose),INFANTRY.size,INFANTRY.size,{heading:f*Math.PI/4,origin:INFANTRY.origin,scale:INFANTRY.scale}),0,
+      "E1 "+JSON.stringify(pose)+" reaches past its frame facing "+f);
+  const diff=(a,b)=>a.pixels.filter((v,i)=>v!==b.pixels[i]).length;
+  for(const n of Object.keys(structures)){
+    const fr=roster[n+".SHP"],half=fr.length/2;
+    assert.ok(diff(fr[0],fr[half])>=0.08*fr[0].pixels.length,n+" damaged frame is too close to the normal one");
+    const make=roster[n+"MAKE.SHP"];let repeats=0;
+    for(let i=1;i<make.length;i++)if(diff(make[i],make[i-1])===0)repeats++;
+    assert.ok(repeats<=1,n+"MAKE repeats "+repeats+" frames");
+  }
+  const {rampIndex}=require("./palette.js"),ink=rampIndex("steel",1);
+  for(const name of Object.keys(roster).filter(k=>k.endsWith("ICNH.SHP"))){
+    const f=roster[name][0];let lit=0;
+    for(let y=39;y<48;y++)for(let x=0;x<64;x++)if(f.pixels[y*64+x]===ink)lit++;
+    assert.ok(lit>20,name+" has no name strip");
+  }
+  assert.throws(()=>cameo(m.guardTower(),"MUCH TOO LONG A NAME HERE"),/too wide/);
+  console.log("PASS: roster art stays inside its frames; damaged, build-up and cameo name checks");
+}
+
 const {render}=require("./render.js"),m=require("./models.js");
 const a=render(m.tankBody(),{width:32,height:32,origin:[16,16],heading:1});
 const b=render(m.tankBody(),{width:32,height:32,origin:[16,16],heading:1});
