@@ -12027,6 +12027,13 @@
  ],
  "optionalPatterns": [
   {
+   "pattern": "\\.HD2$",
+   "reason": "HD sprite sheets: the HD layer looks one up for each sprite it sees drawn and keeps the 1x frame when there is none (ADR-0006)",
+   "referencedAt": [
+    "common/hdlayer.cpp"
+   ]
+  },
+  {
    "pattern": "^SC[MGBJ]\\d\\d[EW][A-Z]\\.INI$",
    "reason": "scenario list scans for numbered scenarios and variants; only SCM94EA exists",
    "referencedAt": [

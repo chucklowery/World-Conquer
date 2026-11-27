@@ -14,8 +14,10 @@ const m=require("./models.js");
 // ---------- helpers ----------
 const frame=(width,height,pixels)=>({width,height,pixels});
 // Body (and optional turret) at a 32-step heading, centred (SHAPE_CENTER).
-function unitFrame(parts,size,k,opts={}){
-  return frame(size,size,render(parts,{width:size,height:size,origin:[size/2,size/2],heading:frameHeading(k),...opts}));
+// scale > 1 renders the HD version (hd.js): same view, scale times the pixels.
+function unitFrame(parts,size,k,opts={},scale=1){
+  const S=size*scale;
+  return frame(S,S,render(parts,{width:S,height:S,origin:[S/2,S/2],heading:frameHeading(k),scale,...opts}));
 }
 function overlay(under,over){return under.map((v,i)=>over[i]&&over[i]!==4?over[i]:(v||over[i]));}
 // Deterministic hash for damage variation.
@@ -103,10 +105,10 @@ const INFANTRY={size:24,origin:[12,15],scale:1.3};
 // ---------- objects ----------
 // Vehicles with a turret: 32 body frames, then 32 turret frames
 // (unit.cpp:2143 body, unit.cpp:2229 turret = BodyShape + 32).
-function turretVehicle(body,turret,size=32){
+function turretVehicle(body,turret,size=32,scale=1){
   const frames=[];
-  for(let k=0;k<32;k++)frames.push(unitFrame(body,size,k));
-  for(let k=0;k<32;k++)frames.push(unitFrame(turret,size,k,{groundShadow:false}));
+  for(let k=0;k<32;k++)frames.push(unitFrame(body,size,k,{},scale));
+  for(let k=0;k<32;k++)frames.push(unitFrame(turret,size,k,{groundShadow:false},scale));
   return frames;
 }
 // Harvester: 32 body frames, then harvesting frames
@@ -289,9 +291,23 @@ function files(){
   return out;
 }
 
+// HD sheets (hd.js) for the engine's HD layer: name -> {scale, width,
+// height, frames}. The frames match NAME.SHP one for one.
+const HD_SCALE=2;
+function hdFiles(scale=HD_SCALE){
+  return {
+    "MTNK.HD2":{scale,width:32,height:32,frames:turretVehicle(m.tankBody(),m.tankTurret(),32,scale)},
+  };
+}
+
 // Write every roster file into dir; returns the file names written.
 function build(dir){
   const made=[];
+  const {encodeHD}=require("./hd.js");
+  for(const [name,sheet] of Object.entries(hdFiles())){
+    fs.writeFileSync(path.join(dir,name),encodeHD(sheet.frames,sheet.scale,sheet.width,sheet.height));
+    made.push(name);
+  }
   for(const [name,frames] of Object.entries(files())){
     fs.writeFileSync(path.join(dir,name),encodeTacticalShape({frames}));
     made.push(name);
@@ -301,8 +317,8 @@ function build(dir){
   made.push("TRANS.ICN");
   return made;
 }
-build.sources=["tools/content/art/build.js","tools/content/art/models.js","tools/content/art/effects.js","tools/content/art/ui.js","tools/content/art/render.js","tools/content/art/palette.js"];
-module.exports={build,files,cameo,damaged,clip,overflow,INFANTRY};
+build.sources=["tools/content/art/build.js","tools/content/art/hd.js","tools/content/art/models.js","tools/content/art/effects.js","tools/content/art/ui.js","tools/content/art/render.js","tools/content/art/palette.js"];
+module.exports={build,files,hdFiles,HD_SCALE,cameo,damaged,clip,overflow,INFANTRY};
 if(require.main===module){
   const out=process.argv[2];
   if(!out){console.error("Usage: node tools/content/art/build.js <outDir>");process.exit(1);}

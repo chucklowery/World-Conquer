@@ -97,6 +97,17 @@ void WC_Register_Shape(const void* data, const char* name)
         it->second = std::make_pair(upper, false);
 }
 
+// Name of a resident file (upper case), or null: the HD layer (hdlayer.cpp)
+// finds NAME.HD2 from it.
+const char* WC_Shape_Name(const void* data)
+{
+    if (!data)
+        return nullptr;
+    auto& names = WC_Shape_Names();
+    auto it = names.find(data);
+    return it == names.end() ? nullptr : it->second.first.c_str();
+}
+
 void WC_Log_Draw(const void* data)
 {
     if (!data)

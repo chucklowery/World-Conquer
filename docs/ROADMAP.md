@@ -351,6 +351,35 @@ visit 7.52-7.53 MB (M4: 6.27 MB), time to menu 5.5 / 6.1 / 6.2 s
 least 2 of 3 finish a match against the AI, and every tester can name what
 each of the 10 roster objects is for.
 
+### HD: High-resolution sprites (4–6 sessions; after the M5 CI gate)
+
+Track: Platform and Data. The owner chose an HD sprite layer over the
+640x400 engine ([ADR-0006](browser/DECISIONS.md)): the game logic, input and
+1x art stay as they are; the browser presents at 2x and repaints sprites
+from HD sheets (`NAME.HD2`) where the page still shows what their blit left.
+
+- [x] **Prototype: medium tank.** `WC_HD` capture in `CC_Draw_Shape`,
+      compose in the SDL2 presenter (`common/hdlayer.cpp`), 2x window and
+      cursor, `MTNK.HD2` with detail that only resolves at 2x
+      (`tools/content/art/hd.js`). Compose rules unit-tested
+      (`tests/test-hd-layer.cpp`); the strict skirmish passes with HD on.
+- [ ] **Whole roster at 2x:** the other three units, the base vehicle, the
+      six structures with their build-ups, doors and damage, infantry, then
+      effects, crystal, trees and craters; model detail added where 2x shows
+      it.
+- [ ] **CI evidence:** a match job fails unless `[hd-draw]` is logged for
+      every roster object, and saves a 2x crop.
+- [ ] **Cameos and sidebar** (non-tactical windows) and the 1x/2x seam
+      where sprites overlap.
+- [ ] **Budgets:** first visit inside the M4 budget with all sheets;
+      frame time with complete tactical redraws measured in all three
+      browsers.
+- [ ] **Setting:** HD on/off in the play view (`[Video] HDScale`).
+
+**Exit gate:** every roster object is drawn from its HD sheet in the
+default skirmish in Chromium, Firefox and WebKit, the strict skirmish and
+budget jobs pass, and the owner signs off a side-by-side capture.
+
 ### M6: Persistence, controls and settings (2–4 sessions; parallel with M5)
 
 Track: Platform. It can run alongside M5 because it touches different files.

@@ -100,6 +100,25 @@ console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine f
   console.log("PASS: roster art stays inside its frames; damaged, build-up and cameo name checks");
 }
 
+// HD sheets (ADR-0006): one HD frame per SHP frame, scale times the size,
+// same palette rules, and the encoding round-trips.
+{
+  const {hdFiles,HD_SCALE}=require("./build.js"),{encodeHD,decodeHD}=require("./hd.js");
+  for(const [name,sheet] of Object.entries(hdFiles())){
+    const shp=roster[name.replace(/\.HD2$/,".SHP")];
+    assert.ok(shp,name+" has no matching SHP");
+    assert.equal(sheet.scale,HD_SCALE);
+    assert.equal(sheet.frames.length,shp.length,name+" frame count");
+    shp.forEach((f,i)=>{
+      assert.deepEqual([sheet.frames[i].width,sheet.frames[i].height],[f.width*HD_SCALE,f.height*HD_SCALE],name+" frame "+i+" size");
+      assert.ok(sheet.frames[i].pixels.every(p=>p<32||p>38),name+" uses a colour-cycling index");
+    });
+    const back=decodeHD(encodeHD(sheet.frames,sheet.scale,sheet.width,sheet.height));
+    assert.deepEqual(back.frames.map(f=>f.pixels),sheet.frames.map(f=>f.pixels),name+" round trip");
+  }
+  console.log("PASS: HD sheets match their SHP frames and round-trip");
+}
+
 const {render}=require("./render.js"),m=require("./models.js");
 const a=render(m.tankBody(),{width:32,height:32,origin:[16,16],heading:1});
 const b=render(m.tankBody(),{width:32,height:32,origin:[16,16],heading:1});

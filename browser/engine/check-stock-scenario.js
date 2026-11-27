@@ -374,7 +374,12 @@ async function main(){
   try{
     await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
     browser=await browserType.launch(launchOptions);
-    page=await browser.newPage({viewport:{width:1100,height:980}});
+    // STOCK_SCENARIO_VIEWPORT=WxH and STOCK_SCENARIO_DPR (optional) size the
+    // page, e.g. to keep every pixel of the HD layer (ADR-0006) in the
+    // screenshots.
+    const [vw,vh]=(process.env.STOCK_SCENARIO_VIEWPORT||"1100x980").split("x").map(Number);
+    const dpr=Number(process.env.STOCK_SCENARIO_DPR||1);
+    page=await browser.newPage({viewport:{width:vw,height:vh},deviceScaleFactor:dpr});
     page.on("console",msg=>{consoleLines.push(...msg.text().split(/\r?\n/));});
     page.on("pageerror",err=>audit.pageErrors.push(String(err.stack||err)));
     // Record the stack of any uncaught error (WebAssembly traps included).

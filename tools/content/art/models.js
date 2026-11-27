@@ -44,12 +44,21 @@ function slope(min,max,zFront,mat){
 // ----- vehicles -----
 // Medium tank (MTNK): wide tracked hull with a round turret and long gun.
 function tankBody(){
-  return [
+  const parts=[
     box([-7,-9,0],[-4,9,3],M.track),box([4,-9,0],[7,9,3],M.track),
     slope([-5.5,-8.5,1.5],[5.5,8,5],3,M.olive),
     box([-5.5,5,4.5],[5.5,8,5.5],M.house),
     box([-6.5,-2,3],[-5.5,6,4],M.house),box([5.5,-2,3],[6.5,6,4],M.house),
+    // Fine detail, mostly seen in the HD sheet (ADR-0006): engine grille,
+    // exhaust, headlights.
+    ...[0,1,2].map(i=>box([-4,5.5+i*0.9,5.5],[4,5.9+i*0.9,5.8],M.oliveDk)),
+    cyl([4.6,7.2,0],0.55,5,6.6,M.steelDk),
+    sphere([-3.8,-8.6,3.1],0.6,M.glass),sphere([3.8,-8.6,3.1],0.6,M.glass),
   ];
+  // Track links across the top of each track, and road wheel hubs.
+  for(let y=-8.4;y<9;y+=1.5)for(const x of [-7,4])parts.push(box([x,y,3],[x+3,y+0.55,3.35],M.steelDk));
+  for(const y of [-6,-2,2,6])for(const x of [-7.05,7.05])parts.push(cyl([x,y,1.5],0.8,x-0.15,x+0.15,M.steel,"x"));
+  return parts;
 }
 function tankTurret(){
   return [
@@ -58,6 +67,11 @@ function tankTurret(){
     cyl([0,-6,6.2],0.9,-9.4,-3,M.steel,"y"),
     cyl([0,-6,6.2],1.1,-10.4,-9.4,M.steelDk,"y"),
     box([-1.2,3,7.5],[1.2,5,9],M.oliveDk),
+    // Fine detail: gun mantlet, commander's hatch, periscope, antenna.
+    box([-1.8,-4.2,5.6],[1.8,-3,7.6],M.oliveDk),
+    cyl([1.6,1.8,0],1.1,8.8,9.3,M.oliveDk),
+    box([-2,-0.6,8.8],[-0.8,0.2,9.5],M.glass),
+    cyl([-3,3.2,0],0.35,8,12.5,M.steelDk),
   ];
 }
 // Light vehicle (JEEP): fast four-wheeler with an open cab and a pintle gun.

@@ -76,6 +76,7 @@
  *   DisplayClass::Prev_Object -- Searches for the previous object on the map.                 *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 #include "function.h"
+#include "hdlayer.h"
 #include "common/fading.h"
 #include "ccini.h"
 
@@ -2094,6 +2095,17 @@ void DisplayClass::Draw_It(bool forced)
 
     if (IsToRedraw || forced) {
         IsToRedraw = false;
+#ifdef WC_HD
+        /*
+        **	HD layer: the recorded sprites describe the last complete redraw, so
+        **	redraw the whole view (no scroll copy, no partial cell redraw) and
+        **	record afresh.
+        */
+        if (HD::Scale() > 1) {
+            forced = true;
+            HD::Clear();
+        }
+#endif
 
         /*
         **	In rubber band mode, mark all cells under the "rubber band" to be
