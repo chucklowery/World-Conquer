@@ -309,6 +309,12 @@ UI track (UI-B to UI-E) is delivered inside this milestone. Decisions:
       fire (`tools/content/art/`), generated from models in the engine's
       exact frame layouts; house colour through the remap band. *The
       per-slot entries in the wireframe catalog are not ticked yet.*
+      Readability pass: no model reaches past its frame (the guard tower,
+      refinery, factory, tank, harvester and base vehicle were cut off);
+      build-ups show open shells under scaffolding; damaged frames always
+      burn, scorch and set fires; harvester and base vehicle redrawn to
+      read apart; larger rifleman; house colour as trim; cameos framed
+      alike with a name strip (`test-art.js` checks all of these).
 - [x] **Command interface.** Sidebar plates, buttons with pictograms,
       power gauge and drain marker, build clock, READY/HOLD tags, scroll
       arrows, tabs, radar housing and placement grid (`art/ui.js`); all 178
