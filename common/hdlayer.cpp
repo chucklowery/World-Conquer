@@ -138,6 +138,26 @@ namespace HD
 
         std::vector<Blit> pendingBlits;
 
+        // One line per sheet and kind, for the browser tests.
+        void Report_Once(const char* kind, const Sheet* sheet, const char* name, const Blit& b)
+        {
+            static std::unordered_map<std::string, bool> reported;
+            std::string key = std::string(kind) + name;
+            if (reported[key])
+                return;
+            reported[key] = true;
+            printf("%s %s frame %d size %dx%d sheet %dx%d frames %d\n",
+                   kind,
+                   name,
+                   b.frame,
+                   b.w,
+                   b.h,
+                   sheet->w,
+                   sheet->h,
+                   (int)sheet->frames.size());
+            fflush(stdout);
+        }
+
     } // namespace
 
     void Add_Sheet(const char* shape_name, int scale, int w, int h, const unsigned char* const* frames, int count)
@@ -174,8 +194,13 @@ namespace HD
         if (!name)
             return -1;
         const Sheet* sheet = Find(name);
-        if (!sheet || b.frame < 0 || b.frame >= (int)sheet->frames.size() || sheet->w != b.w || sheet->h != b.h)
+        if (!sheet)
             return -1;
+        if (b.frame < 0 || b.frame >= (int)sheet->frames.size() || sheet->w != b.w || sheet->h != b.h) {
+            // A sheet that does not match its SHP: the browser tests fail on it.
+            Report_Once("[hd-reject]", sheet, name, b);
+            return -1;
+        }
         Record r;
         r.sheet = sheet;
         r.frame = b.frame;
@@ -185,8 +210,11 @@ namespace HD
         int y0 = r.y > b.windowY ? r.y : b.windowY;
         int x1 = r.x + b.w < b.windowX + b.windowW ? r.x + b.w : b.windowX + b.windowW;
         int y1 = r.y + b.h < b.windowY + b.windowH ? r.y + b.h : b.windowY + b.windowH;
-        if (x1 <= x0 || y1 <= y0)
+        if (x1 <= x0 || y1 <= y0) {
+            // Drawn wholly outside the window (the audit still logs the draw).
+            Report_Once("[hd-offscreen]", sheet, name, b);
             return -1;
+        }
         r.cx = x0;
         r.cy = y0;
         r.cw = x1 - x0;

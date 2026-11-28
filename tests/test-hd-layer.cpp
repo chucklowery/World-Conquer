@@ -84,6 +84,20 @@ int main()
     // A later draw (a health bar) over (2,3).
     page[3 * W + 2] = 99;
 
+    // Wholly outside the window: not recorded ([hd-offscreen] is logged).
+    {
+        HD::Blit off = b;
+        off.x = W + 4;
+        CHECK(HD::Begin(off) < 0, "off-screen blit is not recorded");
+        // A sheet that does not match the SHP frame size ([hd-reject]).
+        HD::Blit bad = b;
+        bad.w = 3;
+        CHECK(HD::Begin(bad) < 0, "mismatched sheet is not used");
+        bad = b;
+        bad.frame = 5;
+        CHECK(HD::Begin(bad) < 0, "frame past the sheet is not used");
+    }
+
     b.shapefile = &page; // not a registered file
     CHECK(HD::Begin(b) < 0, "sprite without a sheet is not recorded");
 

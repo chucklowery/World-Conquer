@@ -78,7 +78,7 @@ async function sidebarStats(page,png){
 const audit={schema:1,pathDecision:"pending (Skirmish candidate)",status:"incomplete",
   stage:"startup",misses:[],fatal:null,lastGameLines:[],lastEventLines:[],
   pageErrors:[],screenshots:[],input:[],requiredMisses:[],optionalMisses:[],unclassifiedMisses:[],
-  drawn:[],drawnBySource:{},wireframeDrawn:[],hdDrawn:[],hdMissing:[],
+  drawn:[],drawnBySource:{},wireframeDrawn:[],hdDrawn:[],hdOffscreen:[],hdRejected:[],hdMissing:[],
   ciSha:process.env.GITHUB_SHA||"local"};
 const consoleLines=[];
 function parse(rawLine){
@@ -96,6 +96,12 @@ function parse(rawLine){
   // ADR-0006: files drawn from their HD sheet ([hd-draw], common/hdlayer.cpp).
   const hd=line.match(/^\[hd-draw\] (\S+)/);
   if(hd&&!audit.hdDrawn.includes(hd[1]))audit.hdDrawn.push(hd[1]);
+  // Draws wholly outside the map window (logged as drawn, never on screen),
+  // and sheets that do not match their SHP (always a failure).
+  const off=line.match(/^\[hd-offscreen\] (\S+)/);
+  if(off&&!audit.hdOffscreen.includes(off[1]))audit.hdOffscreen.push(off[1]);
+  const rej=line.match(/^\[hd-reject\] (.*)/);
+  if(rej)audit.hdRejected.push(rej[1]);
   const miss=line.match(/^\[asset-miss\] (\S+)/);
   if(miss&&!audit.misses.some(x=>x.name===miss[1]))audit.misses.push({name:miss[1],firstSeenStage:audit.stage});
   const fatal=line.match(/^\[browser-game\] fatal=(.*)/);
@@ -679,7 +685,8 @@ async function main(){
         // HD gate: a drawn file whose HD sheet is in the pack must have been
         // drawn from that sheet at least once.
         const sheet=name.toUpperCase().replace(/\.SHP$/,".HD2");
-        if(sheet!==name.toUpperCase()&&source.has(sheet)&&!audit.hdDrawn.map(x=>x.toUpperCase()).includes(name.toUpperCase()))
+        const seen=[...audit.hdDrawn,...audit.hdOffscreen].map(x=>x.toUpperCase());
+        if(sheet!==name.toUpperCase()&&source.has(sheet)&&!seen.includes(name.toUpperCase()))
           audit.hdMissing.push(name);
       }
     }catch(e){audit.drawnBySource.error=[String(e.message)];}
@@ -690,12 +697,13 @@ async function main(){
         (!audit.lastGameLines.some(x=>x.includes("scenario.loaded="))||
           audit.requiredMisses.length||audit.unclassifiedMisses.length||
           (process.env.STOCK_SCENARIO_ALLOW_WIREFRAMES!=="1"&&audit.wireframeDrawn.length)||
-          (process.env.STOCK_SCENARIO_ALLOW_NO_HD!=="1"&&audit.hdMissing.length)||
+          (process.env.STOCK_SCENARIO_ALLOW_NO_HD!=="1"&&(audit.hdMissing.length||audit.hdRejected.length))||
           audit.fatal||audit.pageErrors.length||audit.error)){
       audit.error=audit.error||("Scenario probe failed: stage="+audit.stage+
         " fatal="+audit.fatal+" pageErrors="+audit.pageErrors.length+
         (audit.wireframeDrawn.length?" wireframes drawn="+audit.wireframeDrawn.join(","):"")+
-        (audit.hdMissing.length?" drawn without their HD sheet="+audit.hdMissing.join(","):""));
+        (audit.hdMissing.length?" drawn without their HD sheet="+audit.hdMissing.join(","):"")+
+        (audit.hdRejected.length?" HD sheets rejected="+audit.hdRejected.join("; "):""));
       audit.status="error";
       process.exitCode=1;
     }
@@ -712,7 +720,8 @@ async function main(){
   // Put the failure and progress in the job log itself; the artifact is not
   // always reachable from where the log is read.
   console.log("Drawn files by source:",JSON.stringify(audit.drawnBySource));
-  console.log("Drawn from HD sheets:",audit.hdDrawn.join(" ")||"none");
+  console.log("Drawn from HD sheets:",audit.hdDrawn.join(" ")||"none",
+    audit.hdOffscreen.length?"(also drawn off screen: "+audit.hdOffscreen.join(" ")+")":"");
   if(audit.audio!==undefined)console.log("Audio:",JSON.stringify(audit.audio));
   if(audit.error)console.log("Error:",audit.error);
   if(audit.gameplay)console.log("Gameplay steps:",JSON.stringify(audit.gameplay.steps));
