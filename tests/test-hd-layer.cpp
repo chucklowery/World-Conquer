@@ -239,7 +239,10 @@ int main()
         HD::Clear_Area(HD::GROUP_SIDEBAR, 6, 0, 1, H);
         HD::Clear(HD::GROUP_TACTICAL);
         HD::Compose(pg, W, W, H, out, W * S);
-        CHECK(at(12, 0) == 41 && at(13, 0) == 41, "cleared overlay and tile leave the scaled page: %d %d", at(12, 0), at(13, 0));
+        CHECK(at(12, 0) == 41 && at(13, 0) == 41,
+              "cleared overlay and tile leave the scaled page: %d %d",
+              at(12, 0),
+              at(13, 0));
         CHECK(at(5, 4) == 20, "the sprite outside the cleared area stays: %d", at(5, 4));
         HD::Clear(HD::GROUP_SIDEBAR);
         HD::Compose(pg, W, W, H, out, W * S);

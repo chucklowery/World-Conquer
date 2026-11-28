@@ -39,7 +39,7 @@ namespace HD
         struct Record
         {
             int group;
-            const Sheet* sheet;                // null: draw the logical frame below, scaled
+            const Sheet* sheet;                 // null: draw the logical frame below, scaled
             std::vector<unsigned char> logical; // w x h, when there is no sheet
             int w;
             int frame;
@@ -189,10 +189,9 @@ namespace HD
     void Clear(int group)
     {
         size_t n = records.size();
-        records.erase(std::remove_if(records.begin(),
-                                     records.end(),
-                                     [group](const Record& r) { return r.group == group; }),
-                      records.end());
+        records.erase(
+            std::remove_if(records.begin(), records.end(), [group](const Record& r) { return r.group == group; }),
+            records.end());
         if (records.size() != n)
             generation++;
     }
