@@ -684,7 +684,7 @@ async function main(){
         if(/wireframes\.js$/.test(gen))audit.wireframeDrawn.push(name);
         // HD gate: a drawn file whose HD sheet is in the pack must have been
         // drawn from that sheet at least once.
-        const sheet=name.toUpperCase().replace(/\.SHP$/,".HD2");
+        const sheet=name.toUpperCase().replace(/\.(SHP|TEM)$/,".HD2");
         const seen=[...audit.hdDrawn,...audit.hdOffscreen].map(x=>x.toUpperCase());
         if(sheet!==name.toUpperCase()&&source.has(sheet)&&!seen.includes(name.toUpperCase()))
           audit.hdMissing.push(name);

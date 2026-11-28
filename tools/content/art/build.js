@@ -204,7 +204,7 @@ function buildup(w,h,model,count=16,scale=1){
 // bottom edge "now that icons have names on them" (sidebar.cpp:2009-2037),
 // so the bottom rows are the name strip.
 const CAMEO_W=64,CAMEO_H=48,STRIP=9;
-function cameo(parts,label,{k=28,maxScale=3.2}={}){
+function cameo(parts,label,{k=28,maxScale=3.2,scale:sc=1}={}){
   const {rampIndex}=require("./palette.js");
   const ui=require("./ui.js");
   const W=CAMEO_W,H=CAMEO_H;
@@ -216,25 +216,32 @@ function cameo(parts,label,{k=28,maxScale=3.2}={}){
   const scale=Math.min(maxScale,areaW/(x1-x0+1),areaH/(y1-y0+1));
   const cx=(x0+x1+1)/2-P/2,cy=(y0+y1+1)/2-P/2;
   const origin=[W/2-cx*scale,2+areaH/2+1-cy*scale];
-  const art=render(parts,{width:W,height:H,origin,heading:frameHeading(k),scale,groundShadow:false,samples:3});
-  const px=new Array(W*H);
+  // The HD version (sc 2) renders the object at sc times the pixels; plate,
+  // bevel and name strip are the 1x ones, each pixel sc x sc.
+  const SW=W*sc,SH=H*sc;
+  const art=render(parts,{width:SW,height:SH,origin:[origin[0]*sc,origin[1]*sc],heading:frameHeading(k),scale:scale*sc,groundShadow:false,samples:3});
   const stripTop=H-STRIP-1;
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    const i=y*W+x;
+  const plateAt=(x,y)=>{
     let bg=rampIndex("steel",13-Math.round(y/H*2));
     if(y>=stripTop)bg=rampIndex("steel",15);
     if(y===stripTop)bg=rampIndex("steel",10);
     if(x===0||y===0)bg=rampIndex("steel",6);
     else if(x===W-1||y===H-1)bg=rampIndex("steel",15);
-    px[i]=y<stripTop&&art[i]&&art[i]!==4?art[i]:bg;
-  }
-  const f=frame(W,H,px);
+    return bg;
+  };
+  const f=frame(W,H,Array.from({length:W*H},(_,i)=>plateAt(i%W,Math.floor(i/W))));
   if(label){
     const tw=ui.textWidth(label);
     if(tw>W-4)throw Error("Cameo label too wide: "+label);
     ui.text(f,label,Math.floor((W-tw)/2),stripTop+2,rampIndex("steel",1));
   }
-  return [f];
+  const px=new Array(SW*SH);
+  for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){
+    const X=Math.floor(x/sc),Y=Math.floor(y/sc),i=y*SW+x;
+    const inner=Y<stripTop;
+    px[i]=inner&&art[i]&&art[i]!==4?art[i]:f.pixels[Y*W+X];
+  }
+  return [frame(SW,SH,px)];
 }
 
 // ---------- the roster ----------
@@ -281,27 +288,28 @@ function rosterFrames(scale=1){
   out["GTWRMAKE.SHP"]=buildup(24,24,m.guardTower(),12,scale);
   return out;
 }
+// Cameos for everything the roster can build (sidebar.cpp:1283-1303 picks
+// the .TEM or .SHP variant; both are written). Labels are the authored names
+// (shell.html roster guide), shortened only where the strip is too narrow.
+function cameoFrames(scale=1){
+  const tankB=m.tankBody(),tankT=m.tankTurret(),c=(p,l)=>cameo(p,l,{scale});
+  return {
+    NUKE:c(m.powerPlant({phase:1}),"POWER PLANT"),
+    PROC:c(m.refinery(),"REFINERY"),
+    PYLE:c(m.barracks({wave:2}),"BARRACKS"),
+    WEAP:c(m.factory({open:0}),"VEHICLE FACTORY"),
+    GTWR:c(m.guardTower(),"GUARD TOWER"),
+    FACT:c(m.constructionYard(),"CONST YARD"),
+    HARV:c(m.harvester(0),"HARVESTER"),
+    JEEP:c(m.jeepBody().concat(m.jeepTurret()),"SCOUT CAR"),
+    MTNK:c(tankB.concat(tankT),"BATTLE TANK"),
+    MCV:c(m.mcv(),"MOBILE BASE"),
+    E1:c(m.rifleman({aim:true}),"RIFLE SQUAD"),
+  };
+}
 function files(){
   const out=rosterFrames(1);
-  const tankB=m.tankBody(),tankT=m.tankTurret();
-  // Cameos for everything the roster can build (sidebar.cpp:1283-1303 picks
-  // the .TEM or .SHP variant; both are written).
-  // Labels are the authored names (shell.html roster guide), shortened only
-  // where the strip is too narrow.
-  const cameos={
-    NUKE:cameo(m.powerPlant({phase:1}),"POWER PLANT"),
-    PROC:cameo(m.refinery(),"REFINERY"),
-    PYLE:cameo(m.barracks({wave:2}),"BARRACKS"),
-    WEAP:cameo(m.factory({open:0}),"VEHICLE FACTORY"),
-    GTWR:cameo(m.guardTower(),"GUARD TOWER"),
-    FACT:cameo(m.constructionYard(),"CONST YARD"),
-    HARV:cameo(m.harvester(0),"HARVESTER"),
-    JEEP:cameo(m.jeepBody().concat(m.jeepTurret()),"SCOUT CAR"),
-    MTNK:cameo(tankB.concat(tankT),"BATTLE TANK"),
-    MCV:cameo(m.mcv(),"MOBILE BASE"),
-    E1:cameo(m.rifleman({aim:true}),"RIFLE SQUAD"),
-  };
-
+  const cameos=cameoFrames(1);
   for(const [name,f] of Object.entries(cameos)){out[name+"ICNH.SHP"]=f;out[name+"ICNH.TEM"]=f;}
   // Explosions, hits, flashes, fire, smoke and projectiles (effects.js).
   Object.assign(out,require("./effects.js").files());
@@ -324,6 +332,9 @@ function hdSources(scale){
   for(let n=1;n<=12;n++)out["TI"+n+".TEM"]=terrain.crystalFrames(n,scale);
   out["T01.TEM"]=terrain.treeFrames(scale);
   Object.assign(out,terrain.smudges(scale));
+  // Sidebar cameos (drawn from NAMEICNH.SHP; the HD layer records the
+  // sidebar too).
+  for(const [name,f] of Object.entries(cameoFrames(scale)))out[name+"ICNH.SHP"]=f;
   // Terrain templates: icon sets (cell.cpp Draw_Stamp); one frame per icon.
   for(const [name,{icons}] of Object.entries(terrain.templates(scale))){
     const C=Math.round(Math.sqrt(icons[0].length));

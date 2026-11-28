@@ -2744,12 +2744,16 @@ void CC_Draw_Shape(void const* shapefile,
             if (draw_window.Lock()) {
 #ifdef WC_HD
                 /*
-                **	HD layer (common/hdlayer.h): record map sprites that have an
-                **	HD version, with the same tables the blit below uses.
+                **	HD layer (common/hdlayer.h): record map and sidebar sprites
+                **	that have an HD version (and translucent overlays), with the
+                **	same tables the blit below uses.
                 */
                 int hd_token = -1;
-                if (window == WINDOW_TACTICAL && !(flags & SHAPE_PREDATOR) && HD::Scale() > 1) {
+                if ((window == WINDOW_TACTICAL || window == WINDOW_SIDEBAR) && !(flags & SHAPE_PREDATOR)
+                    && HD::Scale() > 1) {
                     HD::Blit blit;
+                    blit.group = window == WINDOW_TACTICAL ? HD::GROUP_TACTICAL : HD::GROUP_SIDEBAR;
+                    blit.pixels = (const unsigned char*)shape_pointer;
                     blit.shapefile = shapefile;
                     blit.frame = shapenum;
                     blit.window = (unsigned char*)draw_window.Get_Offset();

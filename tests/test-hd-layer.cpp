@@ -6,16 +6,22 @@
 //   unchanged background; HD-transparent pixels the logical frame covered
 //   show what was under the sprite;
 // - shadow pixels go through the blit's ghost table on the pixel under the
-//   sprite, and every pixel through its remap table, as the blitter does.
+//   sprite, and every pixel through its remap table, as the blitter does;
+// - a recorded sprite on top of another leaves the lower one in HD under
+//   its own transparent pixels, and a translucent overlay without a sheet
+//   darkens the HD pixels under it;
+// - records are cleared per group, and per area for the sidebar.
 #include "hdlayer.h"
 #include <cstdio>
 #include <cstring>
 
 static const char* registered = "TEST.SHP";
 static const unsigned char shape_data = 0; // stands for the resident SHP
+// Any non-null pointer but the page names the file registered last.
+static const void* unnamed = nullptr;
 const char* WC_Shape_Name(const void* data)
 {
-    return data == &shape_data ? registered : nullptr;
+    return data && data != unnamed ? registered : nullptr;
 }
 
 static int failures = 0;
@@ -98,6 +104,7 @@ int main()
         CHECK(HD::Begin(bad) < 0, "frame past the sheet is not used");
     }
 
+    unnamed = &page;
     b.shapefile = &page; // not a registered file
     CHECK(HD::Begin(b) < 0, "sprite without a sheet is not recorded");
 
@@ -146,6 +153,98 @@ int main()
     page[0] = 11;
     CHECK(HD::Compose(page, W, W, H, out, W * S), "changed page is recomposed");
     CHECK(at(0, 0) == 11 && at(1, 1) == 11, "recomposed page: %d", at(1, 1));
+
+    // Stacking: a sprite on a recorded tile; a translucent overlay without a
+    // sheet (the build clock over a cameo) on top of both.
+    {
+        HD::Clear();
+        static const char* tile_name = "TILE.SHP";
+        static const unsigned char tile_data = 0, clock_data = 0;
+        registered = tile_name;
+        unsigned char tile_hd[W * S * H * S];
+        for (int i = 0; i < W * S * H * S; i++)
+            tile_hd[i] = (unsigned char)(40 + (i & 1)); // a 2x-only pattern: 40 41 40 41
+        const unsigned char* tile_frames[] = {tile_hd};
+        HD::Add_Sheet(tile_name, S, W, H, tile_frames, 1);
+
+        unsigned char pg[W * H];
+        memset(pg, 7, sizeof(pg));
+        HD::Blit t = {};
+        t.group = HD::GROUP_SIDEBAR;
+        t.shapefile = &tile_data;
+        t.window = pg;
+        t.pitch = W;
+        t.windowW = W;
+        t.windowH = H;
+        t.w = W;
+        t.h = H;
+        int tok = HD::Begin(t);
+        CHECK(tok >= 0, "tile recorded");
+        memset(pg, 40, sizeof(pg));
+        HD::End(tok);
+
+        // The sprite (TEST.SHP above, 2x2) at (2,2), drawn over the tile.
+        registered = "TEST.SHP";
+        HD::Blit u = b;
+        u.group = HD::GROUP_SIDEBAR;
+        u.shapefile = &shape_data;
+        u.window = pg;
+        u.ghostLookup = nullptr;
+        u.fade = nullptr;
+        tok = HD::Begin(u);
+        CHECK(tok >= 0, "sprite on the tile recorded");
+        pg[2 * W + 2] = 30;
+        pg[2 * W + 3] = 30;
+        pg[3 * W + 2] = 30;
+        HD::End(tok);
+
+        // A translucent overlay with no sheet over column 6: one shadow pixel
+        // per row (frame value 4 through the ghost table), the rest clear.
+        static const char* overlay_name = "CLOCK.SHP";
+        registered = overlay_name;
+        unsigned char logical[W * H];
+        memset(logical, 0, sizeof(logical));
+        for (int y = 0; y < H; y++)
+            logical[y * W + 6] = 4;
+        HD::Blit c = {};
+        c.group = HD::GROUP_SIDEBAR;
+        c.shapefile = &clock_data;
+        c.window = pg;
+        c.pitch = W;
+        c.windowW = W;
+        c.windowH = H;
+        c.w = W;
+        c.h = H;
+        c.ghostLookup = ghost;
+        c.pixels = logical;
+        tok = HD::Begin(c);
+        CHECK(tok >= 0, "translucent overlay without a sheet is recorded");
+        for (int y = 0; y < H; y++)
+            pg[y * W + 6] = 41;
+        HD::End(tok);
+        HD::Blit opaque = c;
+        opaque.ghostLookup = nullptr;
+        CHECK(HD::Begin(opaque) < 0, "opaque sprite without a sheet is not recorded");
+
+        HD::Compose(pg, W, W, H, out, W * S);
+        CHECK(at(0, 0) == 40 && at(1, 0) == 41, "tile in HD: %d %d", at(0, 0), at(1, 0));
+        CHECK(at(4, 4) == 40, "the tile in HD under the sprite's transparent pixel: %d", at(4, 4));
+        CHECK(at(5, 4) == 20, "sprite in HD over the tile: %d", at(5, 4));
+        CHECK(at(12, 0) == 41 && at(13, 0) == 42,
+              "overlay darkens the HD tile pixel by pixel: %d %d",
+              at(12, 0),
+              at(13, 0));
+
+        // The column is redrawn: its records go, the rest stay.
+        HD::Clear_Area(HD::GROUP_SIDEBAR, 6, 0, 1, H);
+        HD::Clear(HD::GROUP_TACTICAL);
+        HD::Compose(pg, W, W, H, out, W * S);
+        CHECK(at(12, 0) == 41 && at(13, 0) == 41, "cleared overlay and tile leave the scaled page: %d %d", at(12, 0), at(13, 0));
+        CHECK(at(5, 4) == 20, "the sprite outside the cleared area stays: %d", at(5, 4));
+        HD::Clear(HD::GROUP_SIDEBAR);
+        HD::Compose(pg, W, W, H, out, W * S);
+        CHECK(at(5, 4) == 30, "sidebar group cleared: %d", at(5, 4));
+    }
 
     if (failures)
         return 1;

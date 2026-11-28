@@ -383,8 +383,11 @@ from HD sheets (`NAME.HD2`) where the page still shows what their blit left.
 - [x] **CI evidence:** every match job fails if a file with an HD sheet in
       the pack was drawn but never drawn from that sheet
       (`[hd-draw]`, `hdMissing` in the scenario audit).
-- [ ] **Cameos and sidebar** (non-tactical windows) and the 1x/2x seam
-      where sprites overlap.
+- [x] **Cameos and sidebar:** build cameos at 2x (`NAMEICNH.HD2`),
+      recorded in the sidebar window; the build clock is recorded from its
+      1x frame and darkens the HD cameo. Overlapping recorded sprites chain,
+      so a unit's transparent pixels show the HD tile under it (no 1x/2x
+      seam).
 - [ ] **Budgets:** first visit inside the M4 budget with all sheets;
       frame time with complete tactical redraws measured in all three
       browsers.

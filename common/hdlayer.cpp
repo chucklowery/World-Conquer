@@ -8,6 +8,7 @@
 #include "ccfile.h"
 #endif
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -37,7 +38,10 @@ namespace HD
 
         struct Record
         {
-            const Sheet* sheet;
+            int group;
+            const Sheet* sheet;                // null: draw the logical frame below, scaled
+            std::vector<unsigned char> logical; // w x h, when there is no sheet
+            int w;
             int frame;
             int x, y;           // frame top-left on the page (logical pixels)
             int cx, cy, cw, ch; // visible part on the page
@@ -182,10 +186,29 @@ namespace HD
         scale_ = scale < 1 ? 1 : (scale > 4 ? 4 : scale);
     }
 
-    void Clear()
+    void Clear(int group)
     {
-        records.clear();
-        generation++;
+        size_t n = records.size();
+        records.erase(std::remove_if(records.begin(),
+                                     records.end(),
+                                     [group](const Record& r) { return r.group == group; }),
+                      records.end());
+        if (records.size() != n)
+            generation++;
+    }
+
+    void Clear_Area(int group, int x, int y, int w, int h)
+    {
+        size_t n = records.size();
+        records.erase(std::remove_if(records.begin(),
+                                     records.end(),
+                                     [=](const Record& r) {
+                                         return r.group == group && r.cx < x + w && x < r.cx + r.cw && r.cy < y + h
+                                                && y < r.cy + r.ch;
+                                     }),
+                      records.end());
+        if (records.size() != n)
+            generation++;
     }
 
     int Begin(const Blit& b)
@@ -196,15 +219,19 @@ namespace HD
         if (!name)
             return -1;
         const Sheet* sheet = Find(name);
-        if (!sheet)
+        if (!sheet && !(b.ghostLookup && b.pixels))
             return -1;
-        if (b.frame < 0 || b.frame >= (int)sheet->frames.size() || sheet->w != b.w || sheet->h != b.h) {
+        if (sheet && (b.frame < 0 || b.frame >= (int)sheet->frames.size() || sheet->w != b.w || sheet->h != b.h)) {
             // A sheet that does not match its SHP: the browser tests fail on it.
             Report_Once("[hd-reject]", sheet, name, b);
             return -1;
         }
         Record r;
+        r.group = b.group;
         r.sheet = sheet;
+        r.w = b.w;
+        if (!sheet)
+            r.logical.assign(b.pixels, b.pixels + (size_t)b.w * b.h);
         r.frame = b.frame;
         r.x = b.windowX + b.x;
         r.y = b.windowY + b.y;
@@ -214,7 +241,8 @@ namespace HD
         int y1 = r.y + b.h < b.windowY + b.windowH ? r.y + b.h : b.windowY + b.windowH;
         if (x1 <= x0 || y1 <= y0) {
             // Drawn wholly outside the window (the audit still logs the draw).
-            Report_Once("[hd-offscreen]", sheet, name, b);
+            if (sheet)
+                Report_Once("[hd-offscreen]", sheet, name, b);
             return -1;
         }
         r.cx = x0;
@@ -240,7 +268,7 @@ namespace HD
         pendingBlits.pop_back();
         Snapshot(b, r, r.after);
         static std::unordered_map<const Sheet*, bool> reported;
-        if (!reported[r.sheet]) {
+        if (r.sheet && !reported[r.sheet]) {
             reported[r.sheet] = true;
             printf("[hd-draw] %s\n", WC_Shape_Name(b.shapefile));
             fflush(stdout);
@@ -285,29 +313,30 @@ namespace HD
             for (int sy = 1; sy < s; sy++)
                 memcpy(out + (size_t)(y * s + sy) * out_pitch, dst, (size_t)w * s);
         }
-        for (const Record& r : records) {
-            /*
-            ** A sprite whose own pixels are mostly gone from the page (the
-            ** screen changed without a tactical redraw: score screen, menus)
-            ** is not repainted, so pixels that merely happen to match stay
-            ** as they are.
-            */
+        /*
+        ** Which recorded pixels are still on screen. Walking the records from
+        ** the last drawn down, "expected" holds what the page showed just
+        ** before the records above were drawn: a record owns a pixel if its
+        ** "after" is that value, and then hands its own "before" further down.
+        ** A pixel something unrecorded drew over ends the chain there.
+        */
+        const int BROKEN = -1;
+        static std::vector<short> expected, base;
+        static std::vector<std::vector<unsigned char>> owns;
+        static std::vector<char> drawn;
+        expected.resize((size_t)w * h);
+        base.assign((size_t)w * h, BROKEN);
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                expected[(size_t)y * w + x] = page[(size_t)y * pitch + x];
+        if (owns.size() < records.size())
+            owns.resize(records.size());
+        drawn.assign(records.size(), 0);
+        for (size_t i = records.size(); i-- > 0;) {
+            const Record& r = records[i];
+            std::vector<unsigned char>& mask = owns[i];
+            mask.assign((size_t)r.cw * r.ch, 0);
             int painted = 0, kept = 0;
-            for (int row = 0; row < r.ch; row++) {
-                const unsigned char* line = page + (size_t)(r.cy + row) * pitch + r.cx;
-                for (int col = 0; col < r.cw; col++) {
-                    size_t k = (size_t)row * r.cw + col;
-                    if (r.after[k] != r.before[k]) {
-                        painted++;
-                        kept += line[col] == r.after[k];
-                    }
-                }
-            }
-            if (kept * 2 < painted)
-                continue;
-            const Sheet& sheet = *r.sheet;
-            const unsigned char* hd = sheet.frames[r.frame].data();
-            const int hw = sheet.w * s;
             for (int row = 0; row < r.ch; row++) {
                 int py = r.cy + row;
                 if (py < 0 || py >= h)
@@ -317,25 +346,77 @@ namespace HD
                     if (px < 0 || px >= w)
                         continue;
                     size_t k = (size_t)row * r.cw + col;
-                    // Only where the page still shows what this blit left.
-                    if (page[(size_t)py * pitch + px] != r.after[k])
+                    bool valid = expected[(size_t)py * w + px] == r.after[k];
+                    mask[k] = valid;
+                    if (r.after[k] != r.before[k]) {
+                        painted++;
+                        kept += valid;
+                    }
+                }
+            }
+            /*
+            ** A sprite whose own pixels are mostly gone (the screen changed
+            ** without a redraw: score screen, menus) is not repainted, so
+            ** pixels that merely happen to match stay as they are.
+            */
+            const bool live = kept * 2 >= painted;
+            drawn[i] = live;
+            for (int row = 0; row < r.ch; row++) {
+                int py = r.cy + row;
+                if (py < 0 || py >= h)
+                    continue;
+                for (int col = 0; col < r.cw; col++) {
+                    int px = r.cx + col;
+                    if (px < 0 || px >= w)
                         continue;
-                    const unsigned char under = r.before[k];
-                    const bool painted = r.after[k] != under;
+                    size_t k = (size_t)row * r.cw + col, p = (size_t)py * w + px;
+                    if (!mask[k] || (!live && r.after[k] != r.before[k])) {
+                        expected[p] = BROKEN;
+                        mask[k] = 0;
+                        continue;
+                    }
+                    expected[p] = r.before[k];
+                    if (live)
+                        base[p] = r.before[k];
+                }
+            }
+        }
+        // Under the lowest sprite that owns a pixel: what was there before it.
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++) {
+                short v = base[(size_t)y * w + x];
+                if (v == BROKEN)
+                    continue;
+                for (int sy = 0; sy < s; sy++)
+                    memset(out + (size_t)(y * s + sy) * out_pitch + x * s, v, s);
+            }
+        // Then the sprites in draw order, from their HD frames.
+        for (size_t i = 0; i < records.size(); i++) {
+            if (!drawn[i])
+                continue;
+            const Record& r = records[i];
+            const std::vector<unsigned char>& mask = owns[i];
+            const unsigned char* hd = r.sheet ? r.sheet->frames[r.frame].data() : nullptr;
+            const int hw = r.w * s;
+            for (int row = 0; row < r.ch; row++) {
+                int py = r.cy + row;
+                for (int col = 0; col < r.cw; col++) {
+                    size_t k = (size_t)row * r.cw + col;
+                    if (!mask[k])
+                        continue;
+                    int px = r.cx + col;
                     for (int sy = 0; sy < s; sy++) {
-                        const unsigned char* line = hd + (size_t)((py - r.y) * s + sy) * hw + (px - r.x) * s;
+                        const unsigned char* line =
+                            hd ? hd + (size_t)((py - r.y) * s + sy) * hw + (px - r.x) * s : nullptr;
                         unsigned char* dst = out + (size_t)(py * s + sy) * out_pitch + px * s;
                         for (int sx = 0; sx < s; sx++) {
-                            unsigned char v = line[sx];
-                            if (v == 0) {
-                                // The logical frame covered this pixel and the HD one
-                                // does not: show what was under the sprite.
-                                if (painted)
-                                    dst[sx] = under;
+                            unsigned char v = hd ? line[sx] : r.logical[(size_t)(py - r.y) * r.w + (px - r.x)];
+                            // HD-transparent: whatever is under the sprite shows.
+                            if (v == 0)
                                 continue;
-                            }
+                            // Shadows darken what is under them, in HD.
                             if (r.ghostLookup && r.ghostLookup[v] != 0xFF)
-                                v = r.ghostLookup[256 + under + r.ghostLookup[v] * 256];
+                                v = r.ghostLookup[256 + dst[sx] + r.ghostLookup[v] * 256];
                             for (int f = 0; r.fade && f < r.fadeCount; f++)
                                 v = r.fade[v];
                             dst[sx] = v;

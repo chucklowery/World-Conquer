@@ -2103,7 +2103,13 @@ void DisplayClass::Draw_It(bool forced)
         */
         if (HD::Scale() > 1) {
             forced = true;
-            HD::Clear();
+            HD::Clear(HD::GROUP_TACTICAL);
+            // Sidebar sprites under a view that grew over them (sidebar off).
+            HD::Clear_Area(HD::GROUP_SIDEBAR,
+                           WindowList[WINDOW_TACTICAL][WINDOWX] + LogicPage->Get_XPos(),
+                           WindowList[WINDOW_TACTICAL][WINDOWY] + LogicPage->Get_YPos(),
+                           WindowList[WINDOW_TACTICAL][WINDOWWIDTH],
+                           WindowList[WINDOW_TACTICAL][WINDOWHEIGHT]);
         }
 #endif
 
