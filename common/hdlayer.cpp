@@ -319,105 +319,145 @@ namespace HD
         ** "after" is that value, and then hands its own "before" further down.
         ** A pixel something unrecorded drew over ends the chain there.
         */
-        const int BROKEN = -1;
-        static std::vector<short> expected, base;
-        static std::vector<std::vector<unsigned char>> owns;
+        const short BROKEN = -1;
+        static std::vector<short> expected;
+        static std::vector<unsigned char> owns; // all records' masks, back to back
+        static std::vector<size_t> at;          // each record's mask offset
         static std::vector<char> drawn;
+        static std::vector<unsigned> based; // stamp: pixel already has its base
+        static unsigned stamp = 0;
         expected.resize((size_t)w * h);
-        base.assign((size_t)w * h, BROKEN);
-        for (int y = 0; y < h; y++)
+        for (int y = 0; y < h; y++) {
+            const unsigned char* src = page + (size_t)y * pitch;
+            short* e = &expected[(size_t)y * w];
             for (int x = 0; x < w; x++)
-                expected[(size_t)y * w + x] = page[(size_t)y * pitch + x];
-        if (owns.size() < records.size())
-            owns.resize(records.size());
+                e[x] = src[x];
+        }
+        size_t total = 0;
+        at.resize(records.size());
+        for (size_t i = 0; i < records.size(); i++) {
+            at[i] = total;
+            total += (size_t)records[i].cw * records[i].ch;
+        }
+        owns.resize(total);
         drawn.assign(records.size(), 0);
         for (size_t i = records.size(); i-- > 0;) {
             const Record& r = records[i];
-            std::vector<unsigned char>& mask = owns[i];
-            mask.assign((size_t)r.cw * r.ch, 0);
+            unsigned char* mask = owns.data() + at[i];
             int painted = 0, kept = 0;
             for (int row = 0; row < r.ch; row++) {
-                int py = r.cy + row;
-                if (py < 0 || py >= h)
+                const int py = r.cy + row;
+                unsigned char* m = mask + (size_t)row * r.cw;
+                if (py < 0 || py >= h) {
+                    memset(m, 0, r.cw);
                     continue;
-                for (int col = 0; col < r.cw; col++) {
-                    int px = r.cx + col;
-                    if (px < 0 || px >= w)
-                        continue;
-                    size_t k = (size_t)row * r.cw + col;
-                    bool valid = expected[(size_t)py * w + px] == r.after[k];
-                    mask[k] = valid;
-                    if (r.after[k] != r.before[k]) {
-                        painted++;
-                        kept += valid;
-                    }
+                }
+                const unsigned char* af = &r.after[(size_t)row * r.cw];
+                const unsigned char* bf = &r.before[(size_t)row * r.cw];
+                short* e = &expected[(size_t)py * w];
+                // Columns off the page own nothing.
+                const int c0 = r.cx < 0 ? -r.cx : 0;
+                const int c1 = r.cx + r.cw > w ? w - r.cx : r.cw;
+                if (c0 > 0)
+                    memset(m, 0, c0);
+                if (c1 < r.cw)
+                    memset(m + (c1 > 0 ? c1 : 0), 0, r.cw - (c1 > 0 ? c1 : 0));
+                for (int col = c0; col < c1; col++) {
+                    const int px = r.cx + col;
+                    const bool valid = e[px] == af[col];
+                    m[col] = valid;
+                    const bool paints = af[col] != bf[col];
+                    painted += paints;
+                    kept += paints & valid;
+                    e[px] = valid ? bf[col] : BROKEN;
                 }
             }
             /*
             ** A sprite whose own pixels are mostly gone (the screen changed
             ** without a redraw: score screen, menus) is not repainted, so
-            ** pixels that merely happen to match stay as they are.
+            ** pixels that merely happen to match stay as they are, and the
+            ** chain ends where it painted.
             */
-            const bool live = kept * 2 >= painted;
-            drawn[i] = live;
+            if (kept * 2 >= painted) {
+                drawn[i] = 1;
+                continue;
+            }
             for (int row = 0; row < r.ch; row++) {
-                int py = r.cy + row;
+                const int py = r.cy + row;
                 if (py < 0 || py >= h)
                     continue;
                 for (int col = 0; col < r.cw; col++) {
-                    int px = r.cx + col;
-                    if (px < 0 || px >= w)
-                        continue;
-                    size_t k = (size_t)row * r.cw + col, p = (size_t)py * w + px;
-                    if (!mask[k] || (!live && r.after[k] != r.before[k])) {
-                        expected[p] = BROKEN;
-                        mask[k] = 0;
-                        continue;
-                    }
-                    expected[p] = r.before[k];
-                    if (live)
-                        base[p] = r.before[k];
+                    const int px = r.cx + col;
+                    size_t k = (size_t)row * r.cw + col;
+                    if (px >= 0 && px < w && mask[k] && r.after[k] != r.before[k])
+                        expected[(size_t)py * w + px] = BROKEN;
                 }
             }
         }
-        // Under the lowest sprite that owns a pixel: what was there before it.
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++) {
-                short v = base[(size_t)y * w + x];
-                if (v == BROKEN)
-                    continue;
-                for (int sy = 0; sy < s; sy++)
-                    memset(out + (size_t)(y * s + sy) * out_pitch + x * s, v, s);
-            }
-        // Then the sprites in draw order, from their HD frames.
+        /*
+        ** Then the sprites in draw order, from their HD frames. The first
+        ** sprite to own a pixel lays down what was under it.
+        */
+        based.resize((size_t)w * h, 0);
+        if (++stamp == 0) {
+            std::fill(based.begin(), based.end(), 0);
+            stamp = 1;
+        }
         for (size_t i = 0; i < records.size(); i++) {
             if (!drawn[i])
                 continue;
             const Record& r = records[i];
-            const std::vector<unsigned char>& mask = owns[i];
+            const unsigned char* mask = owns.data() + at[i];
             const unsigned char* hd = r.sheet ? r.sheet->frames[r.frame].data() : nullptr;
             const int hw = r.w * s;
+            const bool plain = !r.ghostLookup && !r.fade;
             for (int row = 0; row < r.ch; row++) {
-                int py = r.cy + row;
+                const int py = r.cy + row;
+                const unsigned char* m = mask + (size_t)row * r.cw;
                 for (int col = 0; col < r.cw; col++) {
-                    size_t k = (size_t)row * r.cw + col;
-                    if (!mask[k])
+                    if (!m[col])
                         continue;
-                    int px = r.cx + col;
+                    const int px = r.cx + col;
+                    const size_t p = (size_t)py * w + px;
+                    unsigned char* d0 = out + (size_t)(py * s) * out_pitch + px * s;
+                    if (based[p] != stamp) {
+                        based[p] = stamp;
+                        const unsigned char under = r.before[(size_t)row * r.cw + col];
+                        for (int sy = 0; sy < s; sy++)
+                            for (int sx = 0; sx < s; sx++)
+                                d0[(size_t)sy * out_pitch + sx] = under;
+                    }
+                    if (hd && plain && s == 2) {
+                        // The common case: an opaque-or-transparent 2x2 block.
+                        const unsigned char* l0 = hd + (size_t)((py - r.y) * 2) * hw + (px - r.x) * 2;
+                        const unsigned char* l1 = l0 + hw;
+                        unsigned char* d1 = d0 + out_pitch;
+                        if (l0[0])
+                            d0[0] = l0[0];
+                        if (l0[1])
+                            d0[1] = l0[1];
+                        if (l1[0])
+                            d1[0] = l1[0];
+                        if (l1[1])
+                            d1[1] = l1[1];
+                        continue;
+                    }
                     for (int sy = 0; sy < s; sy++) {
+                        unsigned char* dst = out + (size_t)(py * s + sy) * out_pitch + px * s;
                         const unsigned char* line =
                             hd ? hd + (size_t)((py - r.y) * s + sy) * hw + (px - r.x) * s : nullptr;
-                        unsigned char* dst = out + (size_t)(py * s + sy) * out_pitch + px * s;
                         for (int sx = 0; sx < s; sx++) {
                             unsigned char v = hd ? line[sx] : r.logical[(size_t)(py - r.y) * r.w + (px - r.x)];
                             // HD-transparent: whatever is under the sprite shows.
                             if (v == 0)
                                 continue;
-                            // Shadows darken what is under them, in HD.
-                            if (r.ghostLookup && r.ghostLookup[v] != 0xFF)
-                                v = r.ghostLookup[256 + dst[sx] + r.ghostLookup[v] * 256];
-                            for (int f = 0; r.fade && f < r.fadeCount; f++)
-                                v = r.fade[v];
+                            if (!plain) {
+                                // Shadows darken what is under them, in HD.
+                                if (r.ghostLookup && r.ghostLookup[v] != 0xFF)
+                                    v = r.ghostLookup[256 + dst[sx] + r.ghostLookup[v] * 256];
+                                for (int f = 0; r.fade && f < r.fadeCount; f++)
+                                    v = r.fade[v];
+                            }
                             dst[sx] = v;
                         }
                     }
