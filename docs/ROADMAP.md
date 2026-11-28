@@ -373,9 +373,10 @@ from HD sheets (`NAME.HD2`) where the page still shows what their blit left.
       fire, smoke and projectile file, the crystal overlay, trees, building
       aprons, craters and scorch marks (105 sheets in all, 0.64 MB
       gzipped); the 1x files are unchanged.
-- [ ] **Terrain templates at 2x:** grass, roads, rock and water are drawn as
-      icons (cell.cpp), which the shape capture does not see; they need an
-      icon capture of their own.
+- [x] **Terrain templates at 2x:** grass, roads, rock, shore and water
+      icons are captured where cell.cpp stamps them and painted at 2x by the
+      same painters (0.28 MB gzipped); water keeps its colour cycling.
+- [ ] **Shroud edges at 2x** (`SHADOW.SHP`, still a placeholder shape).
 - [x] **CI evidence:** every match job fails if a file with an HD sheet in
       the pack was drawn but never drawn from that sheet
       (`[hd-draw]`, `hdMissing` in the scenario audit).

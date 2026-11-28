@@ -316,14 +316,19 @@ const HD_SCALE=2;
 // Every file that gets an HD sheet, built at a scale: the roster's map
 // sprites, every effect and projectile (effects.js), and the terrain objects
 // drawn as shapes (crystal, trees, aprons, craters and scorch marks;
-// terrain.js). Terrain templates are drawn as icons, not shapes, so the HD
-// layer does not see them.
+// terrain.js), and the terrain templates, whose icons the HD layer captures
+// in cell.cpp.
 function hdSources(scale){
   const terrain=require("./terrain.js");
   const out={...rosterFrames(scale),...require("./effects.js").files(scale)};
   for(let n=1;n<=12;n++)out["TI"+n+".TEM"]=terrain.crystalFrames(n,scale);
   out["T01.TEM"]=terrain.treeFrames(scale);
   Object.assign(out,terrain.smudges(scale));
+  // Terrain templates: icon sets (cell.cpp Draw_Stamp); one frame per icon.
+  for(const [name,{icons}] of Object.entries(terrain.templates(scale))){
+    const C=Math.round(Math.sqrt(icons[0].length));
+    out[name]=icons.map(px=>({width:C,height:C,pixels:px}));
+  }
   return out;
 }
 const hdName=name=>name.replace(/\.(SHP|TEM)$/,".HD2");

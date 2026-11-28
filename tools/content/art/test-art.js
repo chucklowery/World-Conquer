@@ -117,9 +117,11 @@ console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine f
     if(roster[sheet.source])assert.deepEqual(roster[sheet.source].map(f=>f.width),shp.map(f=>f.width),name+" source differs from the shipped "+sheet.source);
     assert.equal(sheet.scale,HD_SCALE);
     assert.equal(sheet.frames.length,shp.length,name+" frame count");
+    const cycles=shp.some(f=>f.pixels.some(p=>p>=32&&p<=38));
     shp.forEach((f,i)=>{
       assert.deepEqual([sheet.frames[i].width,sheet.frames[i].height],[f.width*HD_SCALE,f.height*HD_SCALE],name+" frame "+i+" size");
-      assert.ok(sheet.frames[i].pixels.every(p=>p<32||p>38),name+" uses a colour-cycling index");
+      // Water templates cycle colours (32-38) on purpose; nothing else may.
+      if(!cycles)assert.ok(sheet.frames[i].pixels.every(p=>p<32||p>38),name+" uses a colour-cycling index");
     });
     const back=decodeHD(encodeHD(sheet.frames,sheet.scale,sheet.width,sheet.height));
     back.frames.forEach((f,i)=>assert.ok(Buffer.from(f.pixels).equals(Buffer.from(sheet.frames[i].pixels)),name+" frame "+i+" round trip"));

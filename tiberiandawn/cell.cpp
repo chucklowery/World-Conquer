@@ -73,6 +73,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "hdlayer.h"
 
 /*
 ** New sidebar for GlyphX multiplayer. ST - 3/26/2019 12:24PM
@@ -975,7 +976,39 @@ void CellClass::Draw_It(int x, int y, int draw_type) const
 #ifdef WC_ASSET_AUDIT
                 WC_Log_Draw(ttype->Get_Image_Data());
 #endif
+#ifdef WC_HD
+                /*
+                **	HD layer (common/hdlayer.h): record the terrain icon too, so the
+                **	ground is presented from its HD sheet like the sprites on it.
+                */
+                int hd_token = -1;
+                const bool hd_locked = HD::Scale() > 1 && !remap && LogicPage->Lock();
+                if (hd_locked) {
+                    HD::Blit blit = {};
+                    const int pitch = LogicPage->Get_XAdd() + LogicPage->Get_Width() + LogicPage->Get_Pitch();
+                    blit.shapefile = ttype->Get_Image_Data();
+                    blit.frame = icon;
+                    blit.windowX = WindowList[WINDOW_TACTICAL][WINDOWX] + LogicPage->Get_XPos();
+                    blit.windowY = WindowList[WINDOW_TACTICAL][WINDOWY] + LogicPage->Get_YPos();
+                    blit.windowW = WindowList[WINDOW_TACTICAL][WINDOWWIDTH];
+                    blit.windowH = WindowList[WINDOW_TACTICAL][WINDOWHEIGHT];
+                    blit.window = (unsigned char*)LogicPage->Get_Offset() + WindowList[WINDOW_TACTICAL][WINDOWY] * pitch
+                                  + WindowList[WINDOW_TACTICAL][WINDOWX];
+                    blit.pitch = pitch;
+                    blit.x = x;
+                    blit.y = y;
+                    blit.w = ICON_PIXEL_W;
+                    blit.h = ICON_PIXEL_H;
+                    hd_token = HD::Begin(blit);
+                }
+#endif
                 LogicPage->Draw_Stamp(ttype->Get_Image_Data(), icon, x, y, NULL, WINDOW_TACTICAL);
+#ifdef WC_HD
+                if (hd_locked) {
+                    HD::End(hd_token);
+                    LogicPage->Unlock();
+                }
+#endif
                 if (remap) {
                     LogicPage->Remap(x + Map.TacPixelX, y + Map.TacPixelY, ICON_PIXEL_W, ICON_PIXEL_H, remap);
                 }

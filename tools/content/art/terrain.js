@@ -89,10 +89,13 @@ function rockShade(t,x,y,seed){
 }
 
 // Template art: the template's icons, in order.
-function templateIcons(t,{seed=1,style=null}={}){
-  const W=t.w*CELL,H=t.h*CELL;
+// scale > 1 paints the HD icons (hd.js): every painter is evaluated at the
+// HD pixel's position in logical pixels, so scale 1 is unchanged.
+function templateIcons(t,{seed=1,style=null,scale=1}={}){
+  const C=CELL*scale,W=t.w*C,H=t.h*C;
   const px=new Array(W*H);
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  for(let Y=0;Y<H;Y++)for(let X=0;X<W;X++){
+    const x=(X+0.5)/scale-0.5,y=(Y+0.5)/scale-0.5;
     const {kind,w}=landAt(t,x,y,seed);
     let v;
     if(kind==="water")v=water(x,y,seed,w.clear+w.beach+w.rock);
@@ -104,30 +107,34 @@ function templateIcons(t,{seed=1,style=null}={}){
       if(w.water>0.22)v=sand(x,y,seed);
       else if(w.rock>0.32)v=rampIndex("grass",8+Math.round(w.rock*6));
     }
-    px[y*W+x]=v;
+    px[Y*W+X]=v;
   }
-  if(style)style(px,W,H,seed);
+  if(style)style(px,W,H,seed,scale);
   const icons=[];
   for(let iy=0;iy<t.h;iy++)for(let ix=0;ix<t.w;ix++){
-    const icon=new Array(CELL*CELL);
-    for(let y=0;y<CELL;y++)for(let x=0;x<CELL;x++)icon[y*CELL+x]=px[(iy*CELL+y)*W+ix*CELL+x];
+    const icon=new Array(C*C);
+    for(let y=0;y<C;y++)for(let x=0;x<C;x++)icon[y*C+x]=px[(iy*C+y)*W+ix*C+x];
     icons.push(icon);
   }
   return icons;
 }
 // Cosmetic overlays on clear ground (roads and dirt patches are clear land
 // in the engine, cdata.cpp).
-const roadStyle=(axis)=>(px,W,H,seed)=>{
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+const roadStyle=(axis)=>(px,PW,PH,seed,scale=1)=>{
+  const W=PW/scale,H=PH/scale;
+  for(let Y=0;Y<PH;Y++)for(let X=0;X<PW;X++){
+    const x=(X+0.5)/scale-0.5,y=(Y+0.5)/scale-0.5;
     const d=axis==="x"?Math.abs(y-H/2+0.5):axis==="y"?Math.abs(x-W/2+0.5):Math.min(Math.abs(y-H/2+0.5),Math.abs(x-W/2+0.5));
     const edge=5+fbm(x,y,seed+70)*2;
-    if(d<edge)px[y*W+x]=d>edge-1.2?rampIndex("earth",10):rampIndex("earth",4+Math.round(fbm(x,y,seed+71)*3));
+    if(d<edge)px[Y*PW+X]=d>edge-1.2?rampIndex("earth",10):rampIndex("earth",4+Math.round(fbm(x,y,seed+71)*3));
   }
 };
-const patchStyle=(px,W,H,seed)=>{
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+const patchStyle=(px,PW,PH,seed,scale=1)=>{
+  const W=PW/scale,H=PH/scale;
+  for(let Y=0;Y<PH;Y++)for(let X=0;X<PW;X++){
+    const x=(X+0.5)/scale-0.5,y=(Y+0.5)/scale-0.5;
     const dx=(x-W/2)/(W/2),dy=(y-H/2)/(H/2);
-    if(dx*dx+dy*dy+(fbm(x,y,seed+80)-0.5)*0.9<0.6)px[y*W+x]=dirt(x,y,seed);
+    if(dx*dx+dy*dy+(fbm(x,y,seed+80)-0.5)*0.9<0.6)px[Y*PW+X]=dirt(x,y,seed);
   }
 };
 const STYLE={D03:roadStyle("y"),D10:roadStyle("x"),D04:roadStyle("+"),P01:patchStyle,P03:patchStyle,
@@ -219,18 +226,20 @@ function smudges(scale=1){
 }
 
 // Every temperate template, keyed by its .TEM file name.
-function templates(){
+function templates(scale=1){
   const out={};
   for(const t of TEMPLATES){
     if(!t.temperate)continue;
     const file=t.name+".TEM";
     if(out[file])continue;
-    out[file]={t,icons:templateIcons(t,{seed:hashName(t.name),style:STYLE[t.name]})};
+    out[file]={t,icons:templateIcons(t,{seed:hashName(t.name),style:STYLE[t.name],scale})};
   }
   // CLEAR1: 16 grass variants; the engine picks one per cell.
+  const C=CELL*scale;
   out["CLEAR1.TEM"]={t:{name:"CLEAR1",w:4,h:4},icons:Array.from({length:16},(_,i)=>{
-    const icon=new Array(CELL*CELL);
-    for(let y=0;y<CELL;y++)for(let x=0;x<CELL;x++)icon[y*CELL+x]=grass(x+(i%4)*CELL,y+Math.floor(i/4)*CELL,1,4*CELL);
+    const icon=new Array(C*C);
+    for(let y=0;y<C;y++)for(let x=0;x<C;x++)
+      icon[y*C+x]=grass((x+0.5)/scale-0.5+(i%4)*CELL,(y+0.5)/scale-0.5+Math.floor(i/4)*CELL,1,4*CELL);
     return icon;})};
   return out;
 }
