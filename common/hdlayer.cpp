@@ -48,6 +48,7 @@ namespace HD
         };
 
         int scale_ = 1;
+        unsigned generation = 0; // bumped whenever the records change
         std::vector<Record> records;
         std::vector<Record> pending; // between Begin and End
 
@@ -184,6 +185,7 @@ namespace HD
     void Clear()
     {
         records.clear();
+        generation++;
     }
 
     int Begin(const Blit& b)
@@ -244,19 +246,44 @@ namespace HD
             fflush(stdout);
         }
         records.push_back(std::move(r));
+        generation++;
     }
 
-    void Compose(const unsigned char* page, int pitch, int w, int h, unsigned char* out, int out_pitch)
+    bool Compose(const unsigned char* page, int pitch, int w, int h, unsigned char* out, int out_pitch)
     {
         const int s = scale_;
+        /*
+        ** The engine presents more often than the page changes. When neither
+        ** the page nor the records changed, out already holds this frame.
+        */
+        static std::vector<unsigned char> last;
+        static unsigned last_generation = ~0u;
+        static const unsigned char* last_out = nullptr;
+        bool same = last_generation == generation && last_out == out && last.size() == (size_t)w * h;
+        for (int y = 0; same && y < h; y++)
+            same = memcmp(&last[(size_t)y * w], page + (size_t)y * pitch, w) == 0;
+        if (same)
+            return false;
+        last.resize((size_t)w * h);
+        for (int y = 0; y < h; y++)
+            memcpy(&last[(size_t)y * w], page + (size_t)y * pitch, w);
+        last_generation = generation;
+        last_out = out;
+
         for (int y = 0; y < h; y++) {
             const unsigned char* src = page + (size_t)y * pitch;
-            for (int sy = 0; sy < s; sy++) {
-                unsigned char* dst = out + (size_t)(y * s + sy) * out_pitch;
+            unsigned char* dst = out + (size_t)(y * s) * out_pitch;
+            if (s == 2) {
+                for (int x = 0; x < w; x++) {
+                    dst[2 * x] = src[x];
+                    dst[2 * x + 1] = src[x];
+                }
+            } else {
                 for (int x = 0; x < w; x++)
-                    for (int sx = 0; sx < s; sx++)
-                        *dst++ = src[x];
+                    memset(dst + x * s, src[x], s);
             }
+            for (int sy = 1; sy < s; sy++)
+                memcpy(out + (size_t)(y * s + sy) * out_pitch, dst, (size_t)w * s);
         }
         for (const Record& r : records) {
             /*
@@ -317,6 +344,7 @@ namespace HD
                 }
             }
         }
+        return true;
     }
 
 } // namespace HD

@@ -141,6 +141,12 @@ int main()
     HD::Compose(page, W, W, H, out, W * S);
     CHECK(at(5, 4) == 30, "cleared records leave the scaled page: %d", at(5, 4));
 
+    // Nothing changed since the last call: out is left as it is.
+    CHECK(!HD::Compose(page, W, W, H, out, W * S), "unchanged frame is not recomposed");
+    page[0] = 11;
+    CHECK(HD::Compose(page, W, W, H, out, W * S), "changed page is recomposed");
+    CHECK(at(0, 0) == 11 && at(1, 1) == 11, "recomposed page: %d", at(1, 1));
+
     if (failures)
         return 1;
     printf("PASS: HD layer compose rules\n");

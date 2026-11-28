@@ -837,12 +837,37 @@ public:
 
 #ifdef WC_HD
         if (hdSurface) {
-            HD::Compose((const unsigned char*)surface->pixels,
-                        surface->pitch,
-                        surface->w,
-                        surface->h,
-                        (unsigned char*)hdSurface->pixels,
-                        hdSurface->pitch);
+            const bool changed = HD::Compose((const unsigned char*)surface->pixels,
+                                             surface->pitch,
+                                             surface->w,
+                                             surface->h,
+                                             (unsigned char*)hdSurface->pixels,
+                                             hdSurface->pitch);
+            /*
+            ** Software cursor: drawn over the converted frame, so the composed
+            ** frame stays clean and an unchanged frame needs no new upload.
+            */
+            const bool swCursor = !Settings.Video.HardwareCursor && !Get_Mouse_State() && hwcursor.Surface != nullptr;
+            int mx = 0, my = 0;
+            if (swCursor) {
+                Get_Video_Mouse(mx, my);
+            }
+            static int lastX = -1, lastY = -1;
+            static bool lastShown = false;
+            static void* lastRaw = nullptr;
+            static unsigned lastSum = 0, lastPalette = 0;
+            unsigned sum = 0;
+            if (swCursor && hwcursor.Raw) {
+                // Animated cursors can redraw the same buffer.
+                const unsigned char* raw = (const unsigned char*)hwcursor.Raw;
+                for (int i = 0; i < hwcursor.W * hwcursor.H; i++)
+                    sum = sum * 31 + raw[i];
+            }
+            // A palette change (fades) changes the colours, not the indices.
+            const bool paletteChanged = palette->version != lastPalette;
+            const bool cursorMoved =
+                swCursor != lastShown
+                || (swCursor && (mx != lastX || my != lastY || hwcursor.Raw != lastRaw || sum != lastSum));
             if (Settings.Video.HardwareCursor) {
                 if (hwcursor.Pending) {
                     SDL_SetCursor(hwcursor.Pending);
@@ -853,29 +878,22 @@ public:
                     hwcursor.Pending = nullptr;
                 }
                 SDL_ShowCursor(!Get_Mouse_State());
-            } else if (!Get_Mouse_State() && hwcursor.Surface != nullptr) {
-                /*
-                ** Software cursor, scaled with the page (colour 0 is clear).
-                */
-                int x, y;
-                const int s = HD::Scale();
-                Get_Video_Mouse(x, y);
-                const unsigned char* raw = (const unsigned char*)hwcursor.Raw;
-                for (int cy = 0; raw && cy < hwcursor.H * s; cy++) {
-                    int dy = (y - hwcursor.HotY) * s + cy;
-                    if (dy < 0 || dy >= hdSurface->h)
-                        continue;
-                    unsigned char* dst = (unsigned char*)hdSurface->pixels + (size_t)dy * hdSurface->pitch;
-                    for (int cx = 0; cx < hwcursor.W * s; cx++) {
-                        int dx = (x - hwcursor.HotX) * s + cx;
-                        unsigned char c = raw[(cy / s) * hwcursor.W + cx / s];
-                        if (c && dx >= 0 && dx < hdSurface->w)
-                            dst[dx] = c;
-                    }
-                }
             }
-            SDL_BlitSurface(hdSurface, NULL, windowSurface, NULL);
-            SDL_UpdateTexture(texture, NULL, windowSurface->pixels, windowSurface->pitch);
+            if (changed || cursorMoved || paletteChanged) {
+                SDL_BlitSurface(hdSurface, NULL, windowSurface, NULL);
+                if (swCursor) {
+                    const int s = HD::Scale();
+                    SDL_Rect dst = {(mx - hwcursor.HotX) * s, (my - hwcursor.HotY) * s, hwcursor.W * s, hwcursor.H * s};
+                    SDL_BlitScaled(hwcursor.Surface, nullptr, windowSurface, &dst);
+                }
+                SDL_UpdateTexture(texture, NULL, windowSurface->pixels, windowSurface->pitch);
+                lastX = mx;
+                lastY = my;
+                lastShown = swCursor;
+                lastRaw = hwcursor.Raw;
+                lastSum = sum;
+                lastPalette = palette->version;
+            }
             SDL_RenderClear(renderer);
             SDL_RenderCopy(renderer, texture, NULL, &render_dst);
             SDL_RenderPresent(renderer);

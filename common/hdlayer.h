@@ -51,7 +51,9 @@ namespace HD
 
     // Scale the presented page (w x h, palette indices) into out ((w*s) x (h*s))
     // and repaint the recorded sprites in HD.
-    void Compose(const unsigned char* page, int pitch, int w, int h, unsigned char* out, int out_pitch);
+    // Returns false (and leaves out alone) when neither the page nor the
+    // records changed since the last call with the same out buffer.
+    bool Compose(const unsigned char* page, int pitch, int w, int h, unsigned char* out, int out_pitch);
 
 } // namespace HD
 
