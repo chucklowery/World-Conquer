@@ -51,6 +51,9 @@ for(const [name,frames] of Object.entries(roster)){
   }
   if(!/MAKE|ICNH|WEAP2/.test(name)&&!effectNames.has(name))assert.ok(frames[0].pixels.some(p=>p>=176&&p<=191),name+" shows house colour (remap band)");
 }
+// Shroud edge: only clear, the two working ShadowTrans colours and black.
+assert.equal(roster["SHADOW.SHP"].length,48);
+for(const f of roster["SHADOW.SHP"])assert.ok(f.pixels.every(p=>[0,12,15,16].includes(p)),"SHADOW.SHP uses a colour the shroud draws as plain grey");
 assert.equal(roster["E1.SHP"].length,532);
 assert.equal(roster["HARV.SHP"].length,68);
 // Command interface contracts (ui.js header): clock reaches STEP_COUNT+1,

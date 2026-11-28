@@ -141,6 +141,36 @@ function projectile(size,{len=4,width=1,ramp="fire",extra=0}={}){
   }
   return frames;
 }
+// Shroud edge (SHADOW.SHP), drawn with SHAPE_GHOST through ShadowTrans
+// (display.cpp:2542): colours 16 and 15 darken what is under them (levels
+// 130 and 170, ShadowCols, display.cpp:356) and 12 is the solid shroud
+// black. Colours 14 and 13 are listed in ShadowCols too, but the running
+// engine draws them as plain grey, so they are not used.
+// Cell_Shadow (display.cpp:1632) picks frame 0-7 from the explored
+// neighbours N, E, N+E, S, E+S, W, N+W, S+W, and 8-11 from a single explored
+// diagonal NE, SE, SW, NW. Darkness grows with the distance from the
+// explored sides, ordered-dithered through the three levels. The engine reads
+// up to 48 frames (requirements.json), so the twelve repeat.
+function shroud(){
+  const N=24*SC,LEVEL=[0,16,15,12];
+  const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+  const sides={N:(u,v)=>v,S:(u,v)=>24-v,E:(u,v)=>24-u,W:(u,v)=>u,
+    NE:(u,v)=>Math.hypot(24-u,v),SE:(u,v)=>Math.hypot(24-u,24-v),SW:(u,v)=>Math.hypot(u,24-v),NW:(u,v)=>Math.hypot(u,v)};
+  const defs=[["N"],["E"],["N","E"],["S"],["E","S"],["W"],["N","W"],["S","W"],["NE"],["SE"],["SW"],["NW"]];
+  const frames=defs.map(open=>{
+    const f=blank(N,N);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const u=(x+0.5)/SC,v=(y+0.5)/SC;
+      let d=Math.min(...open.map(k=>sides[k](u,v)))/24;
+      d+=(hash(Math.floor(u/3),Math.floor(v/3),open.length*7+open[0].charCodeAt(0))-0.5)*0.16;
+      const level=Math.max(0,Math.min(1,d*1.2))*3;
+      const t=(BAYER[(y%4)*4+(x%4)]+0.5)/16;
+      f.pixels[y*N+x]=LEVEL[Math.max(0,Math.min(3,Math.floor(level+t)))];
+    }
+    return f;
+  });
+  return Array.from({length:48},(_,i)=>frames[i%12]);
+}
 // A frame size from the engine's redraw size (adata.cpp "size"), even, 8..64.
 const fit=n=>Math.max(8,Math.min(64,Math.ceil((Number(n)||32)/2)*2));
 
@@ -180,6 +210,7 @@ function files(scale=1){
   for(const d of ["N","NE","E","SE","S","SW","W","NW"]){put("FLAME-"+d+".SHP",flames(z(32),10,60,1));put("CHEM-"+d+".SHP",flames(z(32),10,61,1));}
   // Smoke loops from frame 67 (SMOKE_M) and 72-91 (SMOKLAND).
   put("SMOKE_M.SHP",smokeLoop(z(28),92,71));put("SMOKLAND.SHP",smokeLoop(z(32),92,73));put("SMOKEY.SHP",smokeLoop(z(24),12,75));
+  put("SHADOW.SHP",shroud());
   put("MOVEFLSH.SHP",ring(z(24),5));put("BEACON.SHP",ring(z(24),5));
   // Projectiles.
   put("120MM.SHP",projectile(z(16),{len:4}));put("50CAL.SHP",projectile(z(16),{len:3}));
@@ -190,4 +221,4 @@ function files(scale=1){
   put("GORE.SHP",projectile(z(16),{len:2}));put("CHEW.SHP",projectile(z(16),{len:2}));
   return out;
 }
-module.exports={files,explosion,hit,flash,flames,smokeLoop,projectile,fit};
+module.exports={files,shroud,explosion,hit,flash,flames,smokeLoop,projectile,fit};

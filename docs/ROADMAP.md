@@ -376,7 +376,10 @@ from HD sheets (`NAME.HD2`) where the page still shows what their blit left.
 - [x] **Terrain templates at 2x:** grass, roads, rock, shore and water
       icons are captured where cell.cpp stamps them and painted at 2x by the
       same painters (0.28 MB gzipped); water keeps its colour cycling.
-- [ ] **Shroud edges at 2x** (`SHADOW.SHP`, still a placeholder shape).
+- [x] **Shroud edges:** `SHADOW.SHP` is real art (frames 0-11 fade from
+      the explored sides into the shroud, ordered-dithered) at 1x and 2x.
+      Only ShadowTrans colours 16 and 15 darken in practice; 14 and 13 draw
+      as plain grey, so the art does not use them.
 - [x] **CI evidence:** every match job fails if a file with an HD sheet in
       the pack was drawn but never drawn from that sheet
       (`[hd-draw]`, `hdMissing` in the scenario audit).
