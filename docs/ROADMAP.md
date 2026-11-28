@@ -309,6 +309,12 @@ UI track (UI-B to UI-E) is delivered inside this milestone. Decisions:
       fire (`tools/content/art/`), generated from models in the engine's
       exact frame layouts; house colour through the remap band. *The
       per-slot entries in the wireframe catalog are not ticked yet.*
+      Readability pass: no model reaches past its frame (the guard tower,
+      refinery, factory, tank, harvester and base vehicle were cut off);
+      build-ups show open shells under scaffolding; damaged frames always
+      burn, scorch and set fires; harvester and base vehicle redrawn to
+      read apart; larger rifleman; house colour as trim; cameos framed
+      alike with a name strip (`test-art.js` checks all of these).
 - [x] **Command interface.** Sidebar plates, buttons with pictograms,
       power gauge and drain marker, build clock, READY/HOLD tags, scroll
       arrows, tabs, radar housing and placement grid (`art/ui.js`); all 178
@@ -344,6 +350,52 @@ visit 7.52-7.53 MB (M4: 6.27 MB), time to menu 5.5 / 6.1 / 6.2 s
 **Exit gate (player):** at least 3 of 3 testers start a match unaided, at
 least 2 of 3 finish a match against the AI, and every tester can name what
 each of the 10 roster objects is for.
+
+### HD: High-resolution sprites (4–6 sessions; after the M5 CI gate)
+
+Track: Platform and Data. The owner chose an HD sprite layer over the
+640x400 engine ([ADR-0006](browser/DECISIONS.md)): the game logic, input and
+1x art stay as they are; the browser presents at 2x and repaints sprites
+from HD sheets (`NAME.HD2`) where the page still shows what their blit left.
+
+- [x] **Prototype: medium tank.** `WC_HD` capture in `CC_Draw_Shape`,
+      compose in the SDL2 presenter (`common/hdlayer.cpp`), 2x window and
+      cursor, `MTNK.HD2` with detail that only resolves at 2x
+      (`tools/content/art/hd.js`). Compose rules unit-tested
+      (`tests/test-hd-layer.cpp`); the strict skirmish passes with HD on.
+- [x] **Roster units and buildings at 2x:** all four units, the base
+      vehicle, rifle infantry (every animation), the six structures with
+      their build-ups, factory door and damaged frames (18 sheets, 3.8 MB raw,
+      0.2 MB gzipped). Models carry fine detail (roof seams, vents, windows,
+      ladders, hazard stripes, track links, crystal load) that only HD
+      sheets and cameos draw; the 1x sprites are unchanged.
+- [x] **Effects and terrain objects at 2x:** every explosion, hit, flash,
+      fire, smoke and projectile file, the crystal overlay, trees, building
+      aprons, craters and scorch marks (105 sheets in all, 0.64 MB
+      gzipped); the 1x files are unchanged.
+- [x] **Terrain templates at 2x:** grass, roads, rock, shore and water
+      icons are captured where cell.cpp stamps them and painted at 2x by the
+      same painters (0.28 MB gzipped); water keeps its colour cycling.
+- [x] **Shroud edges:** `SHADOW.SHP` is real art (frames 0-11 fade from
+      the explored sides into the shroud, ordered-dithered) at 1x and 2x.
+      Only ShadowTrans colours 16 and 15 darken in practice; 14 and 13 draw
+      as plain grey, so the art does not use them.
+- [x] **CI evidence:** every match job fails if a file with an HD sheet in
+      the pack was drawn but never drawn from that sheet
+      (`[hd-draw]`, `hdMissing` in the scenario audit).
+- [x] **Cameos and sidebar:** build cameos at 2x (`NAMEICNH.HD2`),
+      recorded in the sidebar window; the build clock is recorded from its
+      1x frame and darkens the HD cameo. Overlapping recorded sprites chain,
+      so a unit's transparent pixels show the HD tile under it (no 1x/2x
+      seam).
+- [ ] **Budgets:** first visit inside the M4 budget with all sheets;
+      frame time with complete tactical redraws measured in all three
+      browsers.
+- [ ] **Setting:** HD on/off in the play view (`[Video] HDScale`).
+
+**Exit gate:** every roster object is drawn from its HD sheet in the
+default skirmish in Chromium, Firefox and WebKit, the strict skirmish and
+budget jobs pass, and the owner signs off a side-by-side capture.
 
 ### M6: Persistence, controls and settings (2–4 sessions; parallel with M5)
 

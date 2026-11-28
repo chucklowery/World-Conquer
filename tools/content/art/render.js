@@ -23,6 +23,8 @@ const MIN_COVER=4;
 const SHADOW=4;
 const LIGHT=norm([-0.55,-0.75,1.0]);
 const OUTLINE={ramp:"dark",shade:15};
+const CAP_GIRDER={ramp:"steel",lo:4,hi:11};
+const CAP_HOLE={ramp:"dark",lo:9,hi:14};
 
 function norm(v){const l=Math.hypot(...v)||1;return v.map(c=>c/l);}
 const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
@@ -142,30 +144,66 @@ function toWorld(v,heading){
   const c=Math.cos(heading),s=Math.sin(heading);
   return [v[0]*c+v[1]*s,-v[0]*s+v[1]*c,v[2]];
 }
+// Model-space bounds of a part, or null when unknown (no culling).
+function modelBounds(p){
+  if(p.yaw)return null;
+  switch(p.shape){
+    case "box":return [p.min,p.max];
+    case "sphere":return [p.c.map(v=>v-p.r),p.c.map(v=>v+p.r)];
+    case "cyl":{const ai={x:0,y:1,z:2}[p.axis||"z"];const lo=p.c.map(v=>v-p.r),hi=p.c.map(v=>v+p.r);lo[ai]=p.lo;hi[ai]=p.hi;return [lo,hi];}
+    case "poly":return p.bounds||null;
+  }
+  return null;
+}
+function screenBounds(p,heading,scale,ox,oy){
+  const b=modelBounds(p);if(!b)return null;
+  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  for(let c=0;c<8;c++){
+    const v=toWorld([b[c&1][0],b[(c>>1)&1][1],b[(c>>2)&1][2]],heading);
+    const sx=v[0]*scale+ox,sy=(v[1]-K*v[2])*scale+oy;
+    x0=Math.min(x0,sx);x1=Math.max(x1,sx);y0=Math.min(y0,sy);y1=Math.max(y1,sy);
+  }
+  return [Math.floor(x0)-1,Math.floor(y0)-1,Math.ceil(x1)+1,Math.ceil(y1)+1];
+}
 function render(parts,opts){
   const W=opts.width,H=opts.height,[ox,oy]=opts.origin;
   const ztop=opts.ztop??64;
   const heading=opts.heading||0;
   const scale=opts.scale||1;          // screen pixels per world unit
+  // Fine detail (models.js D) only from 2x up: HD sheets and cameos.
+  if(!(opts.detail??scale>=2))parts=parts.filter(p=>!p.detail);
   const pixels=new Array(W*H).fill(0);
   const castShadow=opts.shadow!==false;
   const dir=toModel([0,-K,-1],heading);  // the view ray, in model space
   const toLight=toModel(LIGHT,heading);
   const view=toModel([0,K,1],heading);
+  // Fine detail is too small to cast a visible shadow; leaving it out keeps
+  // HD renders fast.
+  const casters=parts.filter(p=>!p.noShadow&&!p.detail);
   const blocked=(p)=>{
     const o=[p[0]+toLight[0]*0.05,p[1]+toLight[1]*0.05,p[2]+toLight[2]*0.05];
-    for(const part of parts){if(part.noShadow)continue;const h=partHit(part,o,toLight);if(h&&h.t>0.02)return true;}
+    for(const part of casters){const h=partHit(part,o,toLight);if(h&&h.t>0.02)return true;}
     return false;
   };
+  // Samples per pixel side: 3 at 1x; 2 for HD frames (scale >= 2), which
+  // already have 4+ pixels per logical pixel. Coverage threshold to match.
+  const SS=opts.samples??(scale>=2?2:S);
+  const minCover=SS===S?MIN_COVER:Math.ceil(SS*SS*MIN_COVER/(S*S));
   const cover=new Uint8Array(W*H);
+  // Screen-space bounds of each part (1 px margin): a pixel only tests the
+  // parts whose bounds cover it.
+  const bounds=parts.map(p=>screenBounds(p,heading,scale,ox,oy));
+  const live=[];
   for(let py=0;py<H;py++)for(let px=0;px<W;px++){
+    live.length=0;
+    for(let i=0;i<parts.length;i++){const b=bounds[i];if(!b||(px>=b[0]&&px<=b[2]&&py>=b[1]&&py<=b[3]))live.push(parts[i]);}
     const counts=new Map();let hits=0,ground=0,shadowed=0;
-    for(let sy=0;sy<S;sy++)for(let sx=0;sx<S;sx++){
-      const X=(px+(sx+0.5)/S-ox)/scale,Y=(py+(sy+0.5)/S-oy)/scale;
+    for(let sy=0;sy<SS;sy++)for(let sx=0;sx<SS;sx++){
+      const X=(px+(sx+0.5)/SS-ox)/scale,Y=(py+(sy+0.5)/SS-oy)/scale;
       // Start high above: screen y = y - K z  =>  y = Y + K*ztop at z=ztop.
       const o=toModel([X,Y+K*ztop,ztop],heading);
       let best=null,bp=null;
-      for(const part of parts){
+      for(const part of live){
         const h=partHit(part,o,dir);
         if(h&&(!best||h.t<best.t)){best=h;bp=part;}
       }
@@ -177,7 +215,13 @@ function render(parts,opts){
         let l=(bp.mat.ambient??0.32)+(1-(bp.mat.ambient??0.32))*Math.max(0,dot(n,toLight));
         if(bp.mat.spec){const h=norm([toLight[0]+view[0],toLight[1]+view[1],toLight[2]+view[2]]);l+=bp.mat.spec*Math.pow(Math.max(0,dot(n,h)),12);}
         if(castShadow&&!bp.mat.glow&&blocked(p))l*=0.55;
-        const key=bp.mat;
+        // A part cut open by the build-up animation (build.js clip) shows its
+        // cut face as a dark interior crossed by girders.
+        let key=bp.mat;
+        if(bp.cap&&n[2]>0.9&&Math.abs(p[2]-bp.cap.z)<1e-3){
+          const g=bp.cap.grid||6,gx=((p[0]%g)+g)%g,gy=((p[1]%g)+g)%g;
+          key=gx<1.2||gy<1.2?CAP_GIRDER:CAP_HOLE;
+        }
         const e=counts.get(key)||{n:0,l:0};e.n++;e.l+=l;counts.set(key,e);
       }else if(castShadow&&opts.groundShadow!==false){
         const gp=[o[0]+dir[0]*ztop,o[1]+dir[1]*ztop,0];
@@ -185,11 +229,11 @@ function render(parts,opts){
       }
     }
     const i=py*W+px;cover[i]=hits;
-    if(hits>=MIN_COVER){
+    if(hits>=minCover){
       let bestMat=null,bestE=null;
       for(const [m,e] of counts)if(!bestE||e.n>bestE.n){bestMat=m;bestE=e;}
       pixels[i]=materialIndex(bestMat,bestE.l/bestE.n);
-    }else if(shadowed*2>S*S){
+    }else if(shadowed*2>SS*SS){
       pixels[i]=SHADOW;
     }
   }

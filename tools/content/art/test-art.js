@@ -51,6 +51,9 @@ for(const [name,frames] of Object.entries(roster)){
   }
   if(!/MAKE|ICNH|WEAP2/.test(name)&&!effectNames.has(name))assert.ok(frames[0].pixels.some(p=>p>=176&&p<=191),name+" shows house colour (remap band)");
 }
+// Shroud edge: only clear, the two working ShadowTrans colours and black.
+assert.equal(roster["SHADOW.SHP"].length,48);
+for(const f of roster["SHADOW.SHP"])assert.ok(f.pixels.every(p=>[0,12,15,16].includes(p)),"SHADOW.SHP uses a colour the shroud draws as plain grey");
 assert.equal(roster["E1.SHP"].length,532);
 assert.equal(roster["HARV.SHP"].length,68);
 // Command interface contracts (ui.js header): clock reaches STEP_COUNT+1,
@@ -68,6 +71,66 @@ assert.equal(roster["HPWRBAR.SHP"][0].height,124);
   for(let y=0;y<120;y++)for(let x=0;x<16;x++)assert.equal(p2.pixels[y*160+x],0,"HSIDE2 covers the gauge");}
 assert.equal(roster["HRADAR.GDI"][0].height,143);
 console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine frame contracts");
+
+// Readability (M5 art pass 2): no model reaches past its frame, damaged
+// frames are visibly different, build-ups do not stall, cameos carry a name.
+{
+  const {overflow,INFANTRY,cameo}=require("./build.js"),m=require("./models.js"),{frameHeading}=require("./render.js");
+  const structures={FACT:[m.constructionYard(),72,48],NUKE:[m.powerPlant(),48,48],PROC:[m.refinery(),72,72],
+    PYLE:[m.barracks(),48,48],WEAP:[m.factory(),72,72],GTWR:[m.guardTower(),24,24]};
+  for(const [n,[parts,w,h]] of Object.entries(structures))assert.equal(overflow(parts,w,h),0,n+" reaches past its frame");
+  const vehicles={MTNK:[m.tankBody(),m.tankTurret()],JEEP:[m.jeepBody(),m.jeepTurret()],HARV:[m.harvester(0),m.harvester(3)],MCV:[m.mcv()]};
+  for(const [n,models] of Object.entries(vehicles))for(const parts of models)for(let k=0;k<32;k+=2)
+    assert.equal(overflow(parts,32,32,{heading:frameHeading(k)}),0,n+" reaches past its frame at heading "+k);
+  for(const pose of [{},{walk:0.25},{aim:true,flash:true},{prone:true,crawl:0.5},{fall:1},{wave:1}])for(let f=0;f<8;f++)
+    assert.equal(overflow(m.rifleman(pose),INFANTRY.size,INFANTRY.size,{heading:f*Math.PI/4,origin:INFANTRY.origin,scale:INFANTRY.scale}),0,
+      "E1 "+JSON.stringify(pose)+" reaches past its frame facing "+f);
+  const diff=(a,b)=>a.pixels.filter((v,i)=>v!==b.pixels[i]).length;
+  for(const n of Object.keys(structures)){
+    const fr=roster[n+".SHP"],half=fr.length/2;
+    assert.ok(diff(fr[0],fr[half])>=0.08*fr[0].pixels.length,n+" damaged frame is too close to the normal one");
+    const make=roster[n+"MAKE.SHP"];let repeats=0;
+    for(let i=1;i<make.length;i++)if(diff(make[i],make[i-1])===0)repeats++;
+    assert.ok(repeats<=1,n+"MAKE repeats "+repeats+" frames");
+  }
+  const {rampIndex}=require("./palette.js"),ink=rampIndex("steel",1);
+  for(const name of Object.keys(roster).filter(k=>k.endsWith("ICNH.SHP"))){
+    const f=roster[name][0];let lit=0;
+    for(let y=39;y<48;y++)for(let x=0;x<64;x++)if(f.pixels[y*64+x]===ink)lit++;
+    assert.ok(lit>20,name+" has no name strip");
+  }
+  assert.throws(()=>cameo(m.guardTower(),"MUCH TOO LONG A NAME HERE"),/too wide/);
+  // The same at 2x, with the fine detail the HD sheets add.
+  for(const [n,[parts,w,h]] of Object.entries(structures))assert.equal(overflow(parts,w*2,h*2,{scale:2}),0,n+" HD reaches past its frame");
+  for(const [n,models] of Object.entries(vehicles))for(const parts of models)for(let k=0;k<32;k+=4)
+    assert.equal(overflow(parts,64,64,{heading:frameHeading(k),scale:2}),0,n+" HD reaches past its frame at heading "+k);
+  for(const pose of [{},{aim:true,flash:true},{prone:true},{fall:1}])for(let f=0;f<8;f+=2)
+    assert.equal(overflow(m.rifleman(pose),INFANTRY.size*2,INFANTRY.size*2,{heading:f*Math.PI/4,origin:INFANTRY.origin.map(v=>v*2),scale:INFANTRY.scale*2}),0,
+      "E1 HD "+JSON.stringify(pose)+" reaches past its frame facing "+f);
+  console.log("PASS: roster art stays inside its frames; damaged, build-up and cameo name checks");
+}
+
+// HD sheets (ADR-0006): one HD frame per SHP frame, scale times the size,
+// same palette rules, and the encoding round-trips.
+{
+  const {hdFiles,HD_SCALE}=require("./build.js"),{encodeHD,decodeHD}=require("./hd.js");
+  for(const [name,sheet] of Object.entries(hdFiles())){
+    const shp=sheet.base;
+    assert.ok(shp&&shp.length,name+" has no matching 1x file");
+    if(roster[sheet.source])assert.deepEqual(roster[sheet.source].map(f=>f.width),shp.map(f=>f.width),name+" source differs from the shipped "+sheet.source);
+    assert.equal(sheet.scale,HD_SCALE);
+    assert.equal(sheet.frames.length,shp.length,name+" frame count");
+    const cycles=shp.some(f=>f.pixels.some(p=>p>=32&&p<=38));
+    shp.forEach((f,i)=>{
+      assert.deepEqual([sheet.frames[i].width,sheet.frames[i].height],[f.width*HD_SCALE,f.height*HD_SCALE],name+" frame "+i+" size");
+      // Water templates cycle colours (32-38) on purpose; nothing else may.
+      if(!cycles)assert.ok(sheet.frames[i].pixels.every(p=>p<32||p>38),name+" uses a colour-cycling index");
+    });
+    const back=decodeHD(encodeHD(sheet.frames,sheet.scale,sheet.width,sheet.height));
+    back.frames.forEach((f,i)=>assert.ok(Buffer.from(f.pixels).equals(Buffer.from(sheet.frames[i].pixels)),name+" frame "+i+" round trip"));
+  }
+  console.log("PASS: HD sheets match their SHP frames and round-trip");
+}
 
 const {render}=require("./render.js"),m=require("./models.js");
 const a=render(m.tankBody(),{width:32,height:32,origin:[16,16],heading:1});

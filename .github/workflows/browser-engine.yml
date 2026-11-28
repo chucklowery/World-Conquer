@@ -82,6 +82,9 @@ jobs:
           node tools/content/test-wsa.js
           node tools/content/test-scenario.js
           node tools/content/art/test-art.js
+          # ADR-0006: HD layer compose rules, without the engine.
+          g++ -std=c++11 -DWC_HD '-DWC_HD_TEST_FILES="hd-stub/ccfile.h"' -Itests -Icommon tests/test-hd-layer.cpp common/hdlayer.cpp -o build/native/test-hd-layer
+          build/native/test-hd-layer
           node -e 'require("fs").writeFileSync("build/native/test-m2.icn",require("./tools/content/encode-iconset.js").encodeIconset({icons:[Array(576).fill(42)]}))'
           g++ -std=c++11 -DTRUE_FALSE_DEFINED -include cstdint -I. -Icommon -Itiberiandawn tests/test-m2-iconset.cpp tiberiandawn/iconset.cpp build/native/common/libcommon.a -lpthread -ldl -o build/native/test-m2-iconset
           build/native/test-m2-iconset build/native/test-m2.icn

@@ -59,6 +59,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "hdlayer.h"
 #ifdef __EMSCRIPTEN__
 #include <cstdio>
 #endif
@@ -2741,6 +2742,40 @@ void CC_Draw_Shape(void const* shapefile,
             }
 
             if (draw_window.Lock()) {
+#ifdef WC_HD
+                /*
+                **	HD layer (common/hdlayer.h): record map and sidebar sprites
+                **	that have an HD version (and translucent overlays), with the
+                **	same tables the blit below uses.
+                */
+                int hd_token = -1;
+                if ((window == WINDOW_TACTICAL || window == WINDOW_SIDEBAR) && !(flags & SHAPE_PREDATOR)
+                    && HD::Scale() > 1) {
+                    HD::Blit blit;
+                    blit.group = window == WINDOW_TACTICAL ? HD::GROUP_TACTICAL : HD::GROUP_SIDEBAR;
+                    blit.pixels = (const unsigned char*)shape_pointer;
+                    blit.shapefile = shapefile;
+                    blit.frame = shapenum;
+                    blit.window = (unsigned char*)draw_window.Get_Offset();
+                    blit.pitch = draw_window.Get_XAdd() + draw_window.Get_Width() + draw_window.Get_Pitch();
+                    blit.windowX = WindowList[window][WINDOWX] + LogicPage->Get_XPos();
+                    blit.windowY = WindowList[window][WINDOWY] + LogicPage->Get_YPos();
+                    blit.windowW = draw_window.Get_Width();
+                    blit.windowH = draw_window.Get_Height();
+                    blit.w = Get_Build_Frame_Width(shapefile);
+                    blit.h = Get_Build_Frame_Height(shapefile);
+                    blit.x = x;
+                    blit.y = y;
+                    if (flags & SHAPE_CENTER) {
+                        blit.x -= blit.w / 2;
+                        blit.y -= blit.h / 2;
+                    }
+                    blit.ghostLookup = (flags & SHAPE_GHOST) ? (const unsigned char*)ghostdata : nullptr;
+                    blit.fade = (flags & SHAPE_FADING) ? (const unsigned char*)fadingdata : nullptr;
+                    blit.fadeCount = 1;
+                    hd_token = HD::Begin(blit);
+                }
+#endif
                 if ((flags & (SHAPE_GHOST | SHAPE_FADING)) == (SHAPE_GHOST | SHAPE_FADING)) {
                     Buffer_Frame_To_Page(x,
                                          y,
@@ -2788,6 +2823,9 @@ void CC_Draw_Shape(void const* shapefile,
                         }
                     }
                 }
+#ifdef WC_HD
+                HD::End(hd_token);
+#endif
             }
             draw_window.Unlock();
             //		} else {

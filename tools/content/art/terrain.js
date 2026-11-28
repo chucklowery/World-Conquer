@@ -89,10 +89,13 @@ function rockShade(t,x,y,seed){
 }
 
 // Template art: the template's icons, in order.
-function templateIcons(t,{seed=1,style=null}={}){
-  const W=t.w*CELL,H=t.h*CELL;
+// scale > 1 paints the HD icons (hd.js): every painter is evaluated at the
+// HD pixel's position in logical pixels, so scale 1 is unchanged.
+function templateIcons(t,{seed=1,style=null,scale=1}={}){
+  const C=CELL*scale,W=t.w*C,H=t.h*C;
   const px=new Array(W*H);
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  for(let Y=0;Y<H;Y++)for(let X=0;X<W;X++){
+    const x=(X+0.5)/scale-0.5,y=(Y+0.5)/scale-0.5;
     const {kind,w}=landAt(t,x,y,seed);
     let v;
     if(kind==="water")v=water(x,y,seed,w.clear+w.beach+w.rock);
@@ -104,30 +107,34 @@ function templateIcons(t,{seed=1,style=null}={}){
       if(w.water>0.22)v=sand(x,y,seed);
       else if(w.rock>0.32)v=rampIndex("grass",8+Math.round(w.rock*6));
     }
-    px[y*W+x]=v;
+    px[Y*W+X]=v;
   }
-  if(style)style(px,W,H,seed);
+  if(style)style(px,W,H,seed,scale);
   const icons=[];
   for(let iy=0;iy<t.h;iy++)for(let ix=0;ix<t.w;ix++){
-    const icon=new Array(CELL*CELL);
-    for(let y=0;y<CELL;y++)for(let x=0;x<CELL;x++)icon[y*CELL+x]=px[(iy*CELL+y)*W+ix*CELL+x];
+    const icon=new Array(C*C);
+    for(let y=0;y<C;y++)for(let x=0;x<C;x++)icon[y*C+x]=px[(iy*C+y)*W+ix*C+x];
     icons.push(icon);
   }
   return icons;
 }
 // Cosmetic overlays on clear ground (roads and dirt patches are clear land
 // in the engine, cdata.cpp).
-const roadStyle=(axis)=>(px,W,H,seed)=>{
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+const roadStyle=(axis)=>(px,PW,PH,seed,scale=1)=>{
+  const W=PW/scale,H=PH/scale;
+  for(let Y=0;Y<PH;Y++)for(let X=0;X<PW;X++){
+    const x=(X+0.5)/scale-0.5,y=(Y+0.5)/scale-0.5;
     const d=axis==="x"?Math.abs(y-H/2+0.5):axis==="y"?Math.abs(x-W/2+0.5):Math.min(Math.abs(y-H/2+0.5),Math.abs(x-W/2+0.5));
     const edge=5+fbm(x,y,seed+70)*2;
-    if(d<edge)px[y*W+x]=d>edge-1.2?rampIndex("earth",10):rampIndex("earth",4+Math.round(fbm(x,y,seed+71)*3));
+    if(d<edge)px[Y*PW+X]=d>edge-1.2?rampIndex("earth",10):rampIndex("earth",4+Math.round(fbm(x,y,seed+71)*3));
   }
 };
-const patchStyle=(px,W,H,seed)=>{
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+const patchStyle=(px,PW,PH,seed,scale=1)=>{
+  const W=PW/scale,H=PH/scale;
+  for(let Y=0;Y<PH;Y++)for(let X=0;X<PW;X++){
+    const x=(X+0.5)/scale-0.5,y=(Y+0.5)/scale-0.5;
     const dx=(x-W/2)/(W/2),dy=(y-H/2)/(H/2);
-    if(dx*dx+dy*dy+(fbm(x,y,seed+80)-0.5)*0.9<0.6)px[y*W+x]=dirt(x,y,seed);
+    if(dx*dx+dy*dy+(fbm(x,y,seed+80)-0.5)*0.9<0.6)px[Y*PW+X]=dirt(x,y,seed);
   }
 };
 const STYLE={D03:roadStyle("y"),D10:roadStyle("x"),D04:roadStyle("+"),P01:patchStyle,P03:patchStyle,
@@ -136,7 +143,9 @@ const STYLE={D03:roadStyle("y"),D10:roadStyle("x"),D04:roadStyle("+"),P01:patchS
 // ----- objects -----
 // Crystal resource overlay (TI1-TI12): frame = growth stage 0..11
 // (odata.cpp:828-839). Each type is a different cluster layout.
-function crystalFrames(type){
+// scale > 1 renders the frames of the HD sheet (hd.js); the same for the
+// generators below.
+function crystalFrames(type,scale=1){
   const frames=[];
   for(let f=0;f<16;f++){
     const stage=Math.min(11,f);
@@ -154,77 +163,83 @@ function crystalFrames(type){
         {n:norm3([0,h,s]),d:dot3(norm3([0,h,s]),[cx,cy+s,0])},
         {n:norm3([0,-h,s]),d:dot3(norm3([0,-h,s]),[cx,cy-s,0])}]});
     }
-    frames.push({width:24,height:24,pixels:render(parts,{width:24,height:24,origin:[12,14]})});
+    const S=24*scale;
+    frames.push({width:S,height:S,pixels:render(parts,{width:S,height:S,origin:[12*scale,14*scale],scale})});
   }
   return frames;
 }
 function norm3(v){const l=Math.hypot(...v);return v.map(c=>c/l);}
 function dot3(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
 // Tree (T01): trunk and a layered crown; later frames are the burnt tree.
-function treeFrames(){
+function treeFrames(scale=1){
   const leaf={ramp:"grass",lo:2,hi:14},trunk={ramp:"earth",lo:6,hi:14};
   const tree=[m.cyl([0,2,0],1.6,0,8,trunk),m.sphere([0,2,10],6,leaf),m.sphere([-3,0,8],4,leaf),m.sphere([3,4,8],4.5,leaf),m.sphere([1,-1,14],3.8,leaf)];
   const burnt=[m.cyl([0,2,0],1.6,0,8,m.M.burnt),m.sphere([0,2,10],3.5,m.M.burnt)];
   const frames=[];
-  for(let f=0;f<16;f++)frames.push({width:32,height:32,pixels:render(f<8?tree:burnt,{width:32,height:32,origin:[16,22]})});
+  const S=32*scale;
+  for(let f=0;f<16;f++)frames.push({width:S,height:S,pixels:render(f<8?tree:burnt,{width:S,height:S,origin:[16*scale,22*scale],scale})});
   return frames;
 }
 
 // Building aprons (BIB1-3, w x h cells, sdata.cpp:148-175): one 24x24 frame
 // per cell, drawn at the cell's corner (sdata.cpp:449). Concrete slabs with
 // seams, a bevelled outer edge and a little grime.
-function bibFrames(w,h,seed){
-  const W=w*CELL,H=h*CELL,px=new Array(W*H);
+function bibFrames(w,h,seed,scale=1){
+  const C=CELL*scale,W=w*C,H=h*C,px=new Array(W*H);
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    let v=4+Math.round(fbm(x,y,seed+90)*3);
-    if(x%24===0||y%24===0)v+=3;                       // slab seams
+    const bx=x/scale,by=y/scale;
+    let v=4+Math.round(fbm(bx,by,seed+90)*3);
+    if(x%C<scale||y%C<scale)v+=3;                     // slab seams
     if(hash2(x,y,seed+91)<0.03)v+=2;                  // grime
-    if(x<2||y<2)v=2;else if(x>=W-2||y>=H-2)v=11;      // bevel
+    if(bx<2||by<2)v=2;else if(bx>=W/scale-2||by>=H/scale-2)v=11; // bevel
     px[y*W+x]=rampIndex("rock",v);
   }
   const frames=[];
   for(let cy=0;cy<h;cy++)for(let cx=0;cx<w;cx++){
-    const f=new Array(CELL*CELL);
-    for(let y=0;y<CELL;y++)for(let x=0;x<CELL;x++)f[y*CELL+x]=px[(cy*CELL+y)*W+cx*CELL+x];
-    frames.push({width:CELL,height:CELL,pixels:f});
+    const f=new Array(C*C);
+    for(let y=0;y<C;y++)for(let x=0;x<C;x++)f[y*C+x]=px[(cy*C+y)*W+cx*C+x];
+    frames.push({width:C,height:C,pixels:f});
   }
   return frames;
 }
 // Craters (CR1-6) and scorch marks (SC1-6): ragged dark marks, a few sizes.
-function markFrames(seed,crater){
-  const frames=[];
+function markFrames(seed,crater,scale=1){
+  const frames=[],C=CELL*scale;
   for(let i=0;i<5;i++){
-    const f=new Array(CELL*CELL).fill(0),r=5+i*1.4;
-    for(let y=0;y<CELL;y++)for(let x=0;x<CELL;x++){
-      const dx=x+0.5-12,dy=y+0.5-12,d=Math.hypot(dx,dy*1.2)/(r*(0.8+0.4*noise(x,y,4,seed+i)));
+    const f=new Array(C*C).fill(0),r=5+i*1.4;
+    for(let y=0;y<C;y++)for(let x=0;x<C;x++){
+      const bx=(x+0.5)/scale-0.5,by=(y+0.5)/scale-0.5;
+      const dx=bx+0.5-12,dy=by+0.5-12,d=Math.hypot(dx,dy*1.2)/(r*(0.8+0.4*noise(bx,by,4,seed+i)));
       if(d<1){
-        if(crater)f[y*CELL+x]=d<0.55?rampIndex("dark",8+Math.round(d*6)):rampIndex("earth",8+Math.round(d*5));
-        else if(hash2(x,y,seed+i)<1.1-d)f[y*CELL+x]=rampIndex("dark",4+Math.round(d*8));
+        if(crater)f[y*C+x]=d<0.55?rampIndex("dark",8+Math.round(d*6)):rampIndex("earth",8+Math.round(d*5));
+        else if(hash2(x,y,seed+i)<1.1-d)f[y*C+x]=rampIndex("dark",4+Math.round(d*8));
       }
     }
-    frames.push({width:CELL,height:CELL,pixels:f});
+    frames.push({width:C,height:C,pixels:f});
   }
   return frames;
 }
-function smudges(){
-  const out={"BIB1.TEM":bibFrames(4,2,1),"BIB2.TEM":bibFrames(3,2,2),"BIB3.TEM":bibFrames(2,2,3)};
-  for(let n=1;n<=6;n++){out["CR"+n+".TEM"]=markFrames(10+n,true);out["SC"+n+".TEM"]=markFrames(20+n,false);}
+function smudges(scale=1){
+  const out={"BIB1.TEM":bibFrames(4,2,1,scale),"BIB2.TEM":bibFrames(3,2,2,scale),"BIB3.TEM":bibFrames(2,2,3,scale)};
+  for(let n=1;n<=6;n++){out["CR"+n+".TEM"]=markFrames(10+n,true,scale);out["SC"+n+".TEM"]=markFrames(20+n,false,scale);}
   return out;
 }
 
 // Every temperate template, keyed by its .TEM file name.
-function templates(){
+function templates(scale=1){
   const out={};
   for(const t of TEMPLATES){
     if(!t.temperate)continue;
     const file=t.name+".TEM";
     if(out[file])continue;
-    out[file]={t,icons:templateIcons(t,{seed:hashName(t.name),style:STYLE[t.name]})};
+    out[file]={t,icons:templateIcons(t,{seed:hashName(t.name),style:STYLE[t.name],scale})};
   }
   // CLEAR1: 16 grass variants; the engine picks one per cell.
+  const C=CELL*scale;
   out["CLEAR1.TEM"]={t:{name:"CLEAR1",w:4,h:4},icons:Array.from({length:16},(_,i)=>{
-    const icon=new Array(CELL*CELL);
-    for(let y=0;y<CELL;y++)for(let x=0;x<CELL;x++)icon[y*CELL+x]=grass(x+(i%4)*CELL,y+Math.floor(i/4)*CELL,1,4*CELL);
+    const icon=new Array(C*C);
+    for(let y=0;y<C;y++)for(let x=0;x<C;x++)
+      icon[y*C+x]=grass((x+0.5)/scale-0.5+(i%4)*CELL,(y+0.5)/scale-0.5+Math.floor(i/4)*CELL,1,4*CELL);
     return icon;})};
   return out;
 }

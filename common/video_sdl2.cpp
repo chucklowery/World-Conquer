@@ -40,6 +40,7 @@
 #include "gbuffer.h"
 #include "palette.h"
 #include "video.h"
+#include "hdlayer.h"
 #include "wwkeyboard.h"
 #include "wwmouse.h"
 #include "settings.h"
@@ -218,6 +219,9 @@ bool Set_Video_Mode(int w, int h, int bits_per_pixel)
 {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     SDL_ShowCursor(SDL_DISABLE);
+#ifdef WC_HD
+    HD::Set_Scale(Settings.Video.HDScale);
+#endif
 
     int win_w = w;
     int win_h = h;
@@ -245,6 +249,18 @@ bool Set_Video_Mode(int w, int h, int bits_per_pixel)
         Settings.Video.WindowHeight = win_h;
     }
 
+#ifdef WC_HD
+    /*
+    ** The HD layer presents at HDScale times the logical size; a smaller
+    ** window would only scale it back down.
+    */
+    if (Settings.Video.Windowed && HD::Scale() > 1) {
+        if (win_w < w * HD::Scale())
+            win_w = w * HD::Scale();
+        if (win_h < h * HD::Scale())
+            win_h = h * HD::Scale();
+    }
+#endif
     window =
         SDL_CreateWindow("Vanilla Conquer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, win_w, win_h, win_flags);
     if (window == nullptr) {
@@ -721,14 +737,30 @@ public:
     VideoSurfaceSDL2(int w, int h, GBC_Enum flags)
         : flags(flags)
         , windowSurface(nullptr)
+        , hdSurface(nullptr)
         , texture(nullptr)
     {
         surface = SDL_CreateRGBSurface(0, w, h, 8, 0, 0, 0, 0);
         SDL_SetSurfacePalette(surface, palette);
 
         if (flags & GBC_VISIBLE) {
-            windowSurface = SDL_CreateRGBSurfaceWithFormat(0, w, h, SDL_BITSPERPIXEL(pixel_format), pixel_format);
-            texture = SDL_CreateTexture(renderer, windowSurface->format->format, SDL_TEXTUREACCESS_STREAMING, w, h);
+            int s = 1;
+#ifdef WC_HD
+            /*
+            ** HD layer: present at s times the logical size. The page is scaled
+            ** up and HD sprites repainted into hdSurface (palette indices),
+            ** which then converts to the window format like the page does.
+            */
+            s = HD::Scale();
+            if (s > 1) {
+                hdSurface = SDL_CreateRGBSurface(0, w * s, h * s, 8, 0, 0, 0, 0);
+                SDL_SetSurfacePalette(hdSurface, palette);
+            }
+#endif
+            windowSurface =
+                SDL_CreateRGBSurfaceWithFormat(0, w * s, h * s, SDL_BITSPERPIXEL(pixel_format), pixel_format);
+            texture =
+                SDL_CreateTexture(renderer, windowSurface->format->format, SDL_TEXTUREACCESS_STREAMING, w * s, h * s);
             frontSurface = this;
         }
     }
@@ -747,6 +779,10 @@ public:
 
         if (windowSurface) {
             SDL_FreeSurface(windowSurface);
+        }
+
+        if (hdSurface) {
+            SDL_FreeSurface(hdSurface);
         }
     }
 
@@ -799,6 +835,71 @@ public:
         void* pixels;
         int pitch;
 
+#ifdef WC_HD
+        if (hdSurface) {
+            const bool changed = HD::Compose((const unsigned char*)surface->pixels,
+                                             surface->pitch,
+                                             surface->w,
+                                             surface->h,
+                                             (unsigned char*)hdSurface->pixels,
+                                             hdSurface->pitch);
+            /*
+            ** Software cursor: drawn over the converted frame, so the composed
+            ** frame stays clean and an unchanged frame needs no new upload.
+            */
+            const bool swCursor = !Settings.Video.HardwareCursor && !Get_Mouse_State() && hwcursor.Surface != nullptr;
+            int mx = 0, my = 0;
+            if (swCursor) {
+                Get_Video_Mouse(mx, my);
+            }
+            static int lastX = -1, lastY = -1;
+            static bool lastShown = false;
+            static void* lastRaw = nullptr;
+            static unsigned lastSum = 0, lastPalette = 0;
+            unsigned sum = 0;
+            if (swCursor && hwcursor.Raw) {
+                // Animated cursors can redraw the same buffer.
+                const unsigned char* raw = (const unsigned char*)hwcursor.Raw;
+                for (int i = 0; i < hwcursor.W * hwcursor.H; i++)
+                    sum = sum * 31 + raw[i];
+            }
+            // A palette change (fades) changes the colours, not the indices.
+            const bool paletteChanged = palette->version != lastPalette;
+            const bool cursorMoved =
+                swCursor != lastShown
+                || (swCursor && (mx != lastX || my != lastY || hwcursor.Raw != lastRaw || sum != lastSum));
+            if (Settings.Video.HardwareCursor) {
+                if (hwcursor.Pending) {
+                    SDL_SetCursor(hwcursor.Pending);
+                    if (hwcursor.Current) {
+                        SDL_FreeCursor(hwcursor.Current);
+                    }
+                    hwcursor.Current = hwcursor.Pending;
+                    hwcursor.Pending = nullptr;
+                }
+                SDL_ShowCursor(!Get_Mouse_State());
+            }
+            if (changed || cursorMoved || paletteChanged) {
+                SDL_BlitSurface(hdSurface, NULL, windowSurface, NULL);
+                if (swCursor) {
+                    const int s = HD::Scale();
+                    SDL_Rect dst = {(mx - hwcursor.HotX) * s, (my - hwcursor.HotY) * s, hwcursor.W * s, hwcursor.H * s};
+                    SDL_BlitScaled(hwcursor.Surface, nullptr, windowSurface, &dst);
+                }
+                SDL_UpdateTexture(texture, NULL, windowSurface->pixels, windowSurface->pitch);
+                lastX = mx;
+                lastY = my;
+                lastShown = swCursor;
+                lastRaw = hwcursor.Raw;
+                lastSum = sum;
+                lastPalette = palette->version;
+            }
+            SDL_RenderClear(renderer);
+            SDL_RenderCopy(renderer, texture, NULL, &render_dst);
+            SDL_RenderPresent(renderer);
+            return;
+        }
+#endif
         SDL_BlitSurface(surface, NULL, windowSurface, NULL);
 
         if (Settings.Video.HardwareCursor) {
@@ -846,6 +947,7 @@ public:
 private:
     SDL_Surface* surface;
     SDL_Surface* windowSurface;
+    SDL_Surface* hdSurface;
     SDL_Texture* texture;
     GBC_Enum flags;
 };

@@ -32,6 +32,7 @@ public:
         int FrameLimit;
         int InterpolationMode;
         bool HardwareCursor;
+        int HDScale;
         bool DOSMode;
         int ButtonStyle;
         std::string Scaler;

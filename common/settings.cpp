@@ -29,6 +29,7 @@ SettingsClass::SettingsClass()
     Video.FrameLimit = 120;
     Video.InterpolationMode = 2;
     Video.HardwareCursor = false;
+    Video.HDScale = 1;
     Video.DOSMode = false;
     Video.Scaler = "nearest";
     Video.Driver = "default";
@@ -43,6 +44,13 @@ SettingsClass::SettingsClass()
     */
     Mouse.RawInput = false;
     Video.Windowed = true;
+#ifdef WC_HD
+    /*
+    ** Present at twice the logical resolution with HD sprites (hdlayer.h).
+    ** [Video] HDScale=1 in conquer.ini turns it off.
+    */
+    Video.HDScale = 2;
+#endif
 #endif
 }
 
@@ -75,6 +83,7 @@ void SettingsClass::Load(INIClass& ini)
     Video.Height = ini.Get_Int("Video", "Height", Video.Height);
     Video.FrameLimit = ini.Get_Int("Video", "FrameLimit", Video.FrameLimit);
     Video.HardwareCursor = ini.Get_Bool("Video", "HardwareCursor", Video.HardwareCursor);
+    Video.HDScale = ini.Get_Int("Video", "HDScale", Video.HDScale);
     Video.DOSMode = ini.Get_Bool("Video", "DOSMode", Video.DOSMode);
     Video.Scaler = ini.Get_String("Video", "Scaler", Video.Scaler);
     Video.Driver = ini.Get_String("Video", "Driver", Video.Driver);

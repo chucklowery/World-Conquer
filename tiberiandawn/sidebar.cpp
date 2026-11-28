@@ -76,6 +76,7 @@
 
 #include "function.h"
 #include "settings.h"
+#include "hdlayer.h"
 #ifdef __EMSCRIPTEN__
 #include <cstdio>
 #endif
@@ -1804,6 +1805,17 @@ void SidebarClass::StripClass::Draw_It(bool complete)
         if (RunningAsDLL) {
             return;
         }
+#ifdef WC_HD
+        /*
+        **	HD layer: every slot of this column is drawn again below, so forget
+        **	the sprites recorded there.
+        */
+        HD::Clear_Area(HD::GROUP_SIDEBAR,
+                       X + LeftEdgeOffset + LogicPage->Get_XPos(),
+                       WindowList[WINDOW_SIDEBAR][WINDOWY] + LogicPage->Get_YPos(),
+                       ObjectWidth,
+                       WindowList[WINDOW_SIDEBAR][WINDOWHEIGHT]);
+#endif
         /*
         **	Fills the background to the side strip. We shouldnt need to do this if the strip
         ** has a full complement of icons.

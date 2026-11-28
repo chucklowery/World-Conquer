@@ -19,6 +19,7 @@ set(COMMON_SRC
     buffer.cpp
     buffglbl.cpp
     ccfile.cpp
+    hdlayer.cpp
     cdfile.cpp
     cliprect.cpp
     combuf.cpp
@@ -173,6 +174,13 @@ target_compile_definitions(common PRIVATE FIXIT_FAST_LOAD $<$<CONFIG:Debug>:_DEB
 if(WC_ASSET_AUDIT)
     # PUBLIC: MixFileClass is a header template instantiated in game code too.
     target_compile_definitions(common PUBLIC WC_ASSET_AUDIT=1)
+endif()
+if(WC_HD)
+    # The HD sprite layer names sprites through the asset audit's registry.
+    if(NOT WC_ASSET_AUDIT)
+        message(FATAL_ERROR "WC_HD needs WC_ASSET_AUDIT")
+    endif()
+    target_compile_definitions(common PUBLIC WC_HD=1)
 endif()
 target_compile_options(common PUBLIC ${VC_CXX_FLAGS})
 target_compile_features(common PUBLIC cxx_std_11)

@@ -232,3 +232,57 @@ option list keeps Bases and Crystal regrows (crates and capture-the-flag are
 off, outside the minimum roster). Native builds keep the stock dialog. The
 dialog prints its button and list positions (`[browser-event]
 skirmish-dialog`) so the browser tests click the real controls.
+
+## ADR-0006: HD sprite layer over the 640x400 engine
+**Status:** Accepted on 2026-11-27 (owner chose option 3 of the M5 resolution
+review). Roadmap: HD track.
+
+### Context
+The engine draws one 640x400, 8-bit page with 24-pixel cells
+(`ICON_PIXEL_W`, display.h:41), and the browser stretches it. Sprite detail is
+capped by those cells: 32x32 vehicles, 24x24 infantry, 48-72 px structures.
+The art generator can already render any frame at any scale. The options
+reviewed were (1) a larger logical screen, which shows more map at the same
+detail; (2) 48-pixel cells, which breaks the 256-lepton cell arithmetic in
+about 60 places and every layout and art contract; and (3) an HD sprite
+layer at presentation time, the route the engine's own `REMASTER_BUILD`
+intercepts (`DLL_Draw_Intercept`, conquer.cpp) were made for.
+
+### Decision
+1. **The game keeps its logical resolution.** Rules, coordinates, input,
+   layouts and the 1x art stay as they are; the 1x frames remain the
+   fallback and what the CI draw audit checks.
+2. **`WC_HD` (Emscripten only, needs `WC_ASSET_AUDIT`)** presents the page at
+   `[Video] HDScale` times its size (default 2 in the browser; 1 turns it
+   off), with the window grown to match.
+3. **Capture.** `CC_Draw_Shape` records each tactical-map and sidebar blit
+   of a file that has an HD sheet (and each translucent `SHAPE_GHOST` blit,
+   such as the build clock, from its own logical frame): file (named through the MIX loader registry), frame,
+   page rectangle, remap and shadow tables, and the page pixels just before
+   and just after the blit (`common/hdlayer.cpp`). A tactical redraw clears
+   the records, and with HD on every tactical redraw is complete (no scroll
+   copy or partial cell redraw), so the records always describe the page.
+   A sidebar column forgets the records in its area before it redraws.
+4. **Compose.** At presentation the page is scaled up in palette indices and
+   each record is repainted from its HD frame wherever the page still holds
+   what its blit left. Later draws (shroud, pips, health bars, text, other
+   sprites) changed those pixels, so they stay on top with no draw list.
+   A record drawn over another passes the pixel down when its "before" is
+   the lower record's "after", so a unit's transparent HD pixels show the
+   terrain tile under it in HD, and the clock darkens the HD cameo.
+   Shadow pixels use the blit's own ghost table on the HD pixel under the
+   sprite, house colour its remap table, as the 8-bit blitter does.
+   The software cursor is drawn after, scaled.
+5. **HD sheets** (`NAME.HD2`, `tools/content/art/hd.js`): every frame of
+   `NAME.SHP` rendered at the scale, same palette and frame order, run-length
+   coded. A sheet is used only if its scale and frame size match.
+
+### Consequences
+- An unrecorded opaque draw between two recorded ones ends the chain: the
+  lower sprite shows at 1x where they overlap.
+- With HD on, the tactical view is fully redrawn whenever it is redrawn at
+  all; the cost is small at 640x400 but is measured by the budget job.
+- HD sheets add download size (the medium tank at 2x is 66 KB); the whole
+  roster must stay inside the M4 budget.
+- Sidebar chrome, dialogs and text stay 1x (pixel art, scaled); the build
+  cameos are recorded in the sidebar window.

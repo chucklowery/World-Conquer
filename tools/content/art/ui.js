@@ -51,12 +51,19 @@ function brush(f,x0,y0,w,h,face){
 // 3x5 pixel font for the few status words.
 const GLYPHS={A:"010101111101101",D:"110101101101110",E:"111100110100111",H:"101101111101101",
   I:"111010010010111",L:"100100100100111",O:"111101101101111",P:"110101110100100",R:"110101110101101",
-  Y:"101101010010010",N:"101111111111101",M:"101111111101101",S:"111100111001111",C:"111100100100111",G:"111100101101111"};
+  Y:"101101010010010",N:"10011101101110011001",M:"1000111011101011000110001",S:"111100111001111",C:"111100100100111",G:"111100101101111",
+  B:"110101110101110",F:"111100110100100",K:"101101110101101",T:"111010010010010",U:"101101101101111",V:"101101101101010",
+  W:"1000110001101011101110001",Q:"010101101110011"};
+// Width in pixels of a word set in the 3x5 font (4 px advance).
+const textWidth=str=>[...str].reduce((w,ch)=>w+(GLYPHS[ch]?glyphWidth(GLYPHS[ch]):3)+1,0)-1;
+// Glyphs are 3 wide except where the string says otherwise (N, M, W are
+// 4-5 wide: a 3-wide N or M reads as a block).
+const glyphWidth=g=>g.length/5;
 function text(f,str,x,y,c,shadow){
-  for(const ch of str){const g=GLYPHS[ch];if(g){for(let i=0;i<15;i++)if(g[i]==="1"){
-    const px=x+i%3,py=y+Math.floor(i/3);
+  for(const ch of str){const g=GLYPHS[ch];const w=g?glyphWidth(g):3;if(g){for(let i=0;i<g.length;i++)if(g[i]==="1"){
+    const px=x+i%w,py=y+Math.floor(i/w);
     if(shadow!==undefined)rect(f,px+1,py+1,1,1,shadow);
-    rect(f,px,py,1,1,c);}}x+=4;}
+    rect(f,px,py,1,1,c);}}x+=w+1;}
 }
 const accent=i=>rampIndex("crystal",i);   // teal trim (the brief's glow accent)
 
@@ -131,7 +138,7 @@ function pips(){
   const W=28,H=8,out=[];
   const pip=(fill)=>{const f=frame(W,H);rect(f,0,0,4,4,S(14));if(fill)rect(f,1,1,2,2,fill);return f;};
   out.push(pip(0),pip(accent(1)));
-  const tag=(word,c)=>{const f=frame(W,H);const w=word.length*4+3;const x=Math.floor((W-w)/2);
+  const tag=(word,c)=>{const f=frame(W,H);const w=textWidth(word)+4;const x=Math.floor((W-w)/2);
     plate(f,x,0,w,7,{face:13,edge:1});text(f,word,x+2,1,c);return f;};
   out.push(tag("PRI",S(1)),tag("READY",accent(0)),tag("HOLD",rampIndex("fire",2)));
   out.push(pip(rampIndex("fire",2)),pip(rampIndex("sand",0)),pip(rampIndex("fire",8)));
@@ -291,4 +298,4 @@ function files(){
     "HBTN-UP2.SHP":arrow(true,32,18),"HBTN-DN2.SHP":arrow(false,32,18),
   };
 }
-module.exports={files,placementGrid,texture,title,encodePCXImage};
+module.exports={files,placementGrid,texture,title,encodePCXImage,text,textWidth,GLYPHS};
