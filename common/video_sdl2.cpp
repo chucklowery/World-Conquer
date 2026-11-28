@@ -882,9 +882,30 @@ public:
             if (changed || cursorMoved || paletteChanged) {
                 SDL_BlitSurface(hdSurface, NULL, windowSurface, NULL);
                 if (swCursor) {
+                    /*
+                    ** SDL_BlitScaled does not scale an 8-bit colour-keyed
+                    ** surface into the window format (nothing is drawn), so
+                    ** the cursor is scaled up in palette indices first and
+                    ** blitted like the 1x one.
+                    */
                     const int s = HD::Scale();
-                    SDL_Rect dst = {(mx - hwcursor.HotX) * s, (my - hwcursor.HotY) * s, hwcursor.W * s, hwcursor.H * s};
-                    SDL_BlitScaled(hwcursor.Surface, nullptr, windowSurface, &dst);
+                    static SDL_Surface* scaled = nullptr;
+                    if (!scaled || scaled->w != hwcursor.W * s || scaled->h != hwcursor.H * s) {
+                        if (scaled)
+                            SDL_FreeSurface(scaled);
+                        scaled = SDL_CreateRGBSurfaceWithFormat(
+                            0, hwcursor.W * s, hwcursor.H * s, 8, SDL_PIXELFORMAT_INDEX8);
+                        SDL_SetSurfacePalette(scaled, palette);
+                        SDL_SetColorKey(scaled, SDL_TRUE, 0);
+                    }
+                    const unsigned char* src = (const unsigned char*)hwcursor.Raw;
+                    for (int y = 0; src && y < scaled->h; y++) {
+                        unsigned char* row = (unsigned char*)scaled->pixels + (size_t)y * scaled->pitch;
+                        for (int x = 0; x < scaled->w; x++)
+                            row[x] = src[(y / s) * hwcursor.W + x / s];
+                    }
+                    SDL_Rect dst = {(mx - hwcursor.HotX) * s, (my - hwcursor.HotY) * s, scaled->w, scaled->h};
+                    SDL_BlitSurface(scaled, nullptr, windowSurface, &dst);
                 }
                 SDL_UpdateTexture(texture, NULL, windowSurface->pixels, windowSurface->pitch);
                 lastX = mx;

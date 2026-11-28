@@ -413,6 +413,18 @@ async function main(){
       null,{timeout:45000});
     await screenshot("menu");
     const canvas=page.locator("#canvas");
+    // The page hides the system cursor over the game (CSS cursor: none), so
+    // the engine's own cursor must show: moving it over the menu backdrop,
+    // away from any button, must change the picture.
+    {
+      const box=await canvas.boundingBox();
+      await page.mouse.move(box.x+box.width*0.06,box.y+box.height*0.75);
+      await page.waitForTimeout(600);
+      const here=await canvas.screenshot();
+      await page.mouse.move(box.x+box.width*0.12,box.y+box.height*0.80);
+      await page.waitForTimeout(600);
+      if(here.equals(await canvas.screenshot()))throw Error("The game cursor is not drawn (moving the mouse did not change the canvas)");
+    }
     // STOCK_SCENARIO_FULLSCREEN=1: F12 puts the game frame in full screen
     // (shell.html); the canvas must fill the viewport at the game's aspect
     // ratio and every click below must land on its game pixel.
