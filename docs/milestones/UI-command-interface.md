@@ -1,4 +1,4 @@
-# UI: Command interface in the late-90s "command bar" style (six-session plan)
+# UI: Blacksite tactical command interface (six-session plan)
 
 Read `docs/milestones/AGENT_GUIDE.md` first. Apart from that guide, this file
 has everything a session needs. It sets the visual design of World-Conquer's
@@ -10,16 +10,7 @@ You are doing **one session only**: the one named in your prompt.
 
 ## Goal
 
-Give the stock VanillaTD engine's own interface (sidebar, radar, tabs, power
-bar, cursors, selection, menus and dialogs) an original look and feel modeled
-on the **conventions of *Command & Conquer: Tiberian Sun* (1999)**. That
-means a heavy, industrial command bar down the right edge, an armored radar
-housing, a vertical power gauge, two columns of build icons with a sweeping
-build clock, terse status text, and faction-tinted metal.
-
-"Designed after" means **layout, information hierarchy and mood**. It does
-**not** mean copying. Every pixel, glyph, color ramp, string and sound is
-original and generated or authored in this repository.
+Give the stock VanillaTD engine's own interface an original blacksite tactical console: disciplined menace, precise angular framing, matte charcoal surfaces, selective crimson action accents and cyan technical clarity. Retain the right-edge command bar, radar, vertical power gauge, two build columns, build clock and terse COMMS hierarchy. Modernize the visual treatment, not the engine layout. Every pixel, glyph, color ramp, string and sound is original and generated or authored in this repository.
 
 ## Hard rules for this plan (in addition to AGENT_GUIDE.md section 2)
 
@@ -56,11 +47,9 @@ original and generated or authored in this repository.
 
 ### Mood
 
-Late-90s near-future military hardware: worn gunmetal, riveted plates, bevels
-cut at 45°, recessed screens with a faint scanline glow, cable runs and
-hazard striping used sparingly. It should feel like a field command console
-bolted onto a vehicle, not a clean modern app. Density beats whitespace.
-Each panel looks physically mounted.
+Stealth command hardware in a blacksite operations room: severe, controlled, gritty and legible. Use layered matte black and graphite, thin 1–2 engine-pixel strokes, clipped corners, inset technical segments and selective luminous edges. Prefer restrained, flat surfaces to thick bevels, prominent rivets or glossy metal. Grain is subtle (2–4% contrast modulation where practical); scanlines are confined to radar/data zones and never obscure information. No full-screen bloom, heavy rust, neon wash or decorative clutter. At 1×, readability outranks texture.
+
+Target chrome-only visual area balance (excluding battlefield and unit artwork): 70% deep neutrals, 15% raised steel, 8% text/borders, 5% crimson, 2% utility hues. These are approximate review targets, not mandatory per-frame quotas. Red signals action/selection/threat with contextual glyphs; cyan signals focus/data; amber caution; lime healthy/success. See UI_SPEC.md and tools/content/ui/design-tokens.json for exact targets and measurable criteria. The supplied design brief is the sole visual reference.
 
 ### Screen layout (engine coordinates, 640×400 hi-res)
 
@@ -90,29 +79,29 @@ scroll arrows. UI-A to UI-E restyle it in place. UI-F may extend it.
 
 | Component | Cues to follow |
 | --- | --- |
-| **Command bar frame** (`SIDE1.SHP`, `SIDE2.SHP`) | Thick dark-steel plates with lighter bevel highlights on the upper-left edges and shadows on the lower-right. Bolt heads at the corners. A recessed channel behind the icon columns. A faction-tinted trim stripe. |
+| **Command bar frame** (`SIDE1.SHP`, `SIDE2.SHP`) | Matte graphite panels, 1–2 px angular outlines, recessed icon channels and restrained crimson active-state marks. No thick bevels or decorative bolts. |
 | **Top tabs** (`TABS.SHP`) | Angular tabs with chamfered ends. Left tab reads OPTIONS. The right tab holds the credit counter in an inset readout. |
-| **Credit readout** (`LED.FNT` or the font the tab uses; verify) | Segmented or LED-style digits in a high-contrast amber or green on near-black. The engine's counting-up and down animation stays as is. |
-| **Radar** (radar frame art, `HRADAR`/radar shapes; verify names) | A heavy bezel with shutters or an iris that the engine's activation animation opens. When offline, a dark glass panel with faint static. When online, a glowing border in the faction tint. |
+| **Credit readout** (`12GRNGRD.FNT` / `GRAD6FNT.FNT`; verified in UI-A) | Controlled, tabular digits in a high-contrast cyan-white or amber on near-black. The engine's counting-up and down animation stays as is. |
+| **Radar** (radar frame art, `HRADAR`/radar shapes; verify names) | A thin angular bezel with inset technical segments and shutters or an iris that the engine's activation animation opens. When offline, a dark glass panel with faint static. When online, a glowing border in the faction tint. |
 | **Command buttons** (`REPAIR.SHP`, `SELL.SHP`, `MAP.SHP`) | Square push-buttons with pictograms (wrench, currency mark, map grid). The pressed and active frames are visibly sunk and lit. No words, so they work in any language. |
 | **Power bar** (`POWER.SHP`/`HPOWER.SHP`, `PWRBAR.SHP`) | A tall vertical gauge in a slot. Segments run green to yellow to red. The drain indicator is a clear notched pointer. A low-power state must read at a glance. |
 | **Build icons / cameos** (object/resolution/theater-specific `*ICON` or `*ICNH` variants; verify dimensions) | Three-quarter studio renders of the unit or structure on a dark, faction-tinted backdrop with a thin bevel frame. Readable at 1×. One silhouette per icon, no text. |
 | **Build clock** (`CLOCK.SHP`) | A translucent dark radial sweep over the icon. It must not hide the silhouette. |
-| **Icon status text** | Short uppercase labels drawn by the engine (READY, ON HOLD and similar; verify which `TXT_*` exist) in a small, bold, high-contrast font. |
-| **Strip scroll arrows** (`STRIPUP.SHP`, `STRIPDN.SHP`) | Chunky chevron buttons that match the command buttons. |
+| **Icon status text** | Short uppercase labels (READY, HOLDING) in verified pip artwork, with high contrast and distinct state glyphs. |
+| **Strip scroll arrows** (`STRIPUP.SHP`, `STRIPDN.SHP`) | Crisp chevron buttons with clipped corners and clear pressed/disabled states. |
 | **Strip logo / filler** (`STRIP.SHP`) | Faction crest panels or plain plating behind empty slots, never blank black. |
 | **Cursors** (`MOUSE.SHP`) | Thin, bright, high-contrast vector cursors with a dark outline: a select arrow, a move reticle, a no-move cross, an attack crosshair that pulses, deploy, enter, sell, repair, and eight edge-scroll chevrons, with "can't scroll" variants. Every frame and hotspot must match the engine's cursor table. |
-| **Selection and health** (selection-box and pip art; verify names, e.g. `SELECT.SHP`, `PIPS.SHP`) | Corner brackets rather than full boxes. A segmented health bar above the object that runs green, yellow, red. Cargo or ore pips are small squares. |
+| **Selection and health** (selection-box and pip art; verify names, e.g. `SELECT.SHP`, `PIPS.SHP`) | Corner brackets rather than full boxes. Preserve the existing code-drawn health bar; use distinct value and fill length, with segmentation only after approved engine changes. Cargo or ore pips are small squares. |
 | **Placement grid** (`TRANS.ICN` or the engine's placement art; verify) | Hatched cells, green for allowed and red for blocked. |
 | **Tooltips and messages** (`HelpClass`, `MessageListClass`, fonts `6POINT.FNT`, `GRAD6FNT.FNT`, `8FAT.FNT`) | Tooltips are a dark plate with a 1-px faction-tint border. COMMS messages appear at the top-left in a clean, slightly condensed font with a soft drop shadow. |
-| **Menus and dialogs** (`BTEXTURE.SHP`, `OPTIONS.SHP`, `BTN-UP*.SHP`, `BTN-DN*.SHP`, title CPS) | The same metal language: framed plates, inset list boxes, chunky buttons. A title screen with original key art or a clean wordmark that reads "World-Conquer". |
+| **Menus and dialogs** (`BTEXTURE.SHP`, `OPTIONS.SHP`, `BTN-UP*.SHP`, `BTN-DN*.SHP`, title CPS) | The same matte angular language: framed plates, inset list boxes, clipped-corner buttons and cyan focus cues where supported. A title screen with original key art or a clean wordmark that reads "World-Conquer". |
 
 ### Faction identity
 
 | Faction | Metal | Trim and glow | Readout color |
 | --- | --- | --- | --- |
-| Aster Expedition | Cool blue-grey steel | Teal (remap range `6–9`) | Cyan-white |
-| Forge Compact | Dark warm iron, near black | Rust/amber (remap range `10–13`) | Amber |
+| Aster Expedition | Cool charcoal / blue smoke | Cyber cyan | Ice blue |
+| Forge Compact | Near-black / infrared charcoal | Crimson | Cold white or amber |
 
 The engine loads one shared `SIDE1.SHP`/`SIDE2.SHP` sidebar set, so UI-A to
 UI-E ship **one neutral command bar** (neutral steel, with trim drawn from
