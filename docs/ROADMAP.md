@@ -369,8 +369,13 @@ from HD sheets (`NAME.HD2`) where the page still shows what their blit left.
       0.2 MB gzipped). Models carry fine detail (roof seams, vents, windows,
       ladders, hazard stripes, track links, crystal load) that only HD
       sheets and cameos draw; the 1x sprites are unchanged.
-- [ ] **Effects and terrain at 2x:** explosions, fire, projectiles, crystal,
-      trees and craters.
+- [x] **Effects and terrain objects at 2x:** every explosion, hit, flash,
+      fire, smoke and projectile file, the crystal overlay, trees, building
+      aprons, craters and scorch marks (105 sheets in all, 0.64 MB
+      gzipped); the 1x files are unchanged.
+- [ ] **Terrain templates at 2x:** grass, roads, rock and water are drawn as
+      icons (cell.cpp), which the shape capture does not see; they need an
+      icon capture of their own.
 - [x] **CI evidence:** every match job fails if a file with an HD sheet in
       the pack was drawn but never drawn from that sheet
       (`[hd-draw]`, `hdMissing` in the scenario audit).

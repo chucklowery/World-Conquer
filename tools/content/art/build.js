@@ -313,12 +313,26 @@ function files(){
 // HD sheets (hd.js) for the engine's HD layer: name -> {scale, width,
 // height, frames}. The frames match NAME.SHP one for one.
 const HD_SCALE=2;
+// Every file that gets an HD sheet, built at a scale: the roster's map
+// sprites, every effect and projectile (effects.js), and the terrain objects
+// drawn as shapes (crystal, trees, aprons, craters and scorch marks;
+// terrain.js). Terrain templates are drawn as icons, not shapes, so the HD
+// layer does not see them.
+function hdSources(scale){
+  const terrain=require("./terrain.js");
+  const out={...rosterFrames(scale),...require("./effects.js").files(scale)};
+  for(let n=1;n<=12;n++)out["TI"+n+".TEM"]=terrain.crystalFrames(n,scale);
+  out["T01.TEM"]=terrain.treeFrames(scale);
+  Object.assign(out,terrain.smudges(scale));
+  return out;
+}
+const hdName=name=>name.replace(/\.(SHP|TEM)$/,".HD2");
 function hdFiles(scale=HD_SCALE){
   const out={};
-  const base=rosterFrames(1);
-  for(const [name,frames] of Object.entries(rosterFrames(scale))){
-    const b=base[name][0];
-    out[name.replace(/\.SHP$/,".HD2")]={scale,width:b.width,height:b.height,frames};
+  const base=hdSources(1);
+  for(const [name,frames] of Object.entries(hdSources(scale))){
+    const b=base[name].find(f=>f)||base[name][0];
+    out[hdName(name)]={scale,width:b.width,height:b.height,frames,source:name,base:base[name]};
   }
   return out;
 }
@@ -340,8 +354,8 @@ function build(dir){
   made.push("TRANS.ICN");
   return made;
 }
-build.sources=["tools/content/art/build.js","tools/content/art/hd.js","tools/content/art/models.js","tools/content/art/effects.js","tools/content/art/ui.js","tools/content/art/render.js","tools/content/art/palette.js"];
-module.exports={build,files,hdFiles,HD_SCALE,cameo,damaged,clip,overflow,INFANTRY};
+build.sources=["tools/content/art/build.js","tools/content/art/hd.js","tools/content/art/terrain.js","tools/content/art/models.js","tools/content/art/effects.js","tools/content/art/ui.js","tools/content/art/render.js","tools/content/art/palette.js"];
+module.exports={build,files,hdFiles,hdSources,HD_SCALE,cameo,damaged,clip,overflow,INFANTRY};
 if(require.main===module){
   const out=process.argv[2];
   if(!out){console.error("Usage: node tools/content/art/build.js <outDir>");process.exit(1);}

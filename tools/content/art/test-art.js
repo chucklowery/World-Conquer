@@ -112,8 +112,9 @@ console.log("PASS: "+Object.keys(roster).length+" roster files meet the engine f
 {
   const {hdFiles,HD_SCALE}=require("./build.js"),{encodeHD,decodeHD}=require("./hd.js");
   for(const [name,sheet] of Object.entries(hdFiles())){
-    const shp=roster[name.replace(/\.HD2$/,".SHP")];
-    assert.ok(shp,name+" has no matching SHP");
+    const shp=sheet.base;
+    assert.ok(shp&&shp.length,name+" has no matching 1x file");
+    if(roster[sheet.source])assert.deepEqual(roster[sheet.source].map(f=>f.width),shp.map(f=>f.width),name+" source differs from the shipped "+sheet.source);
     assert.equal(sheet.scale,HD_SCALE);
     assert.equal(sheet.frames.length,shp.length,name+" frame count");
     shp.forEach((f,i)=>{
